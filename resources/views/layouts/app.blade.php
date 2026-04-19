@@ -3,11 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Mi Sistema</title>
+    <title>BTI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
     /* SIDEBAR */
     .sidebar {
@@ -40,12 +42,12 @@
     .sidebar-header h4 {
         margin: 0;
         font-weight: bold;
-           color: #e0f2fe;
+        color: #e0f2fe;
     }
 
     /* LINKS */
     .sidebar .nav-link {
-       color: #93c5fd;
+        color: #93c5fd;
         border-radius: 10px;
         padding: 10px 12px;
         transition: all 0.25s ease;
@@ -57,7 +59,7 @@
     /* HOVER */
     .sidebar .nav-link:hover {
         background: #1e3a8a;
-    color: #bfdbfe;
+        color: #bfdbfe;
         transform: translateX(5px);
     }
 
@@ -101,19 +103,20 @@
         background: #93c5fd;
         border-radius: 10px;
     }
-     .table-hover tbody tr:hover {
-            background-color: #f1f5f9;
-            transition: 0.2s;
-        }
 
-        .badge {
-            font-size: 12px;
-            padding: 6px 10px;
-        }
+    .table-hover tbody tr:hover {
+        background-color: #f1f5f9;
+        transition: 0.2s;
+    }
 
-        .btn-sm {
-            border-radius: 8px;
-        }
+    .badge {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    .btn-sm {
+        border-radius: 8px;
+    }
     </style>
 </head>
 
@@ -121,61 +124,66 @@
 
     <div class="d-flex">
 
-       <div class="sidebar">
+        <div class="sidebar">
 
-    <!-- HEADER -->
-    <div class="sidebar-header">
-        <img src="{{ asset('img/logo.png') }}" alt="logo">
-        <h4>BTI</h4>
-    </div>
-
-    <!-- MENÚ -->
-    <ul class="nav flex-column">
-
-        <li class="nav-item mb-2">
-            <a class="nav-link menu-toggle" data-bs-toggle="collapse" href="#alumnosMenu">
-                <span><i class="bi bi-person"></i> Alumnos</span>
-            </a>
-            <div class="collapse ps-2" id="alumnosMenu">
-                <a href="/alumnos/buscador" class="nav-link">Buscador de alumnos</a>
+            <!-- HEADER -->
+            <div class="sidebar-header">
+                <img src="{{ asset('img/logo.png') }}" alt="logo">
+                <h4>BTI</h4>
             </div>
-        </li>
 
-        <li class="nav-item mb-2">
-            <a class="nav-link menu-toggle" data-bs-toggle="collapse" href="#docentesMenu">
-                <span><i class="bi bi-people"></i> Docentes</span>
-            </a>
-            <div class="collapse ps-2" id="docentesMenu">
-                <a href="/docentes" class="nav-link">Docentes</a>
-            </div>
-        </li>
+            <!-- MENÚ -->
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2">
+                    <a class="nav-link" href="/">
+                        <i class="bi bi-house"></i>Inicio</a>
+                </li>
 
-        <li class="nav-item mb-2">
-            <a class="nav-link menu-toggle" data-bs-toggle="collapse" href="#materiasMenu">
-                <span><i class="bi bi-book"></i> Materias</span>
-            </a>
-            <div class="collapse ps-2" id="materiasMenu">
-                <a href="/materias" class="nav-link">Materias</a>
-            </div>
-        </li>
 
-        <li class="nav-item mb-2">
-            <a href="/equivalencias" class="nav-link">
-                <span><i class="bi bi-file-earmark-text"></i> Equivalencias</span>
-            </a>
-        </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link menu-toggle" data-bs-toggle="collapse" href="#alumnosMenu">
+                        <span><i class="bi bi-person"></i> Alumnos</span>
+                    </a>
+                    <div class="collapse ps-2" id="alumnosMenu">
+                        <a href="/alumnos" class="nav-link">Buscador de alumnos</a>
+                    </div>
+                </li>
 
-        <li class="nav-item mb-2">
-            <a class="nav-link menu-toggle" data-bs-toggle="collapse" href="#gruposMenu">
-                <span><i class="bi bi-diagram-3"></i> Grupos</span>
-            </a>
-            <div class="collapse ps-2" id="gruposMenu">
-                <a href="/grupos/alta" class="nav-link">Alta grupos</a>
-            </div>
-        </li>
+                <li class="nav-item mb-2">
+                    <a class="nav-link menu-toggle" data-bs-toggle="collapse" href="#docentesMenu">
+                        <span><i class="bi bi-people"></i> Docentes</span>
+                    </a>
+                    <div class="collapse ps-2" id="docentesMenu">
+                        <a href="/docentes" class="nav-link">Docentes</a>
+                    </div>
+                </li>
 
-    </ul>
-</div>
+                <li class="nav-item mb-2">
+                    <a class="nav-link menu-toggle" data-bs-toggle="collapse" href="#materiasMenu">
+                        <span><i class="bi bi-book"></i> Materias</span>
+                    </a>
+                    <div class="collapse ps-2" id="materiasMenu">
+                        <a href="/materias" class="nav-link">Materias</a>
+                    </div>
+                </li>
+
+                <li class="nav-item mb-2">
+                    <a href="/equivalencias" class="nav-link">
+                        <span><i class="bi bi-file-earmark-text"></i> Equivalencias</span>
+                    </a>
+                </li>
+
+                <li class="nav-item mb-2">
+                    <a class="nav-link menu-toggle" data-bs-toggle="collapse" href="#gruposMenu">
+                        <span><i class="bi bi-diagram-3"></i> Grupos</span>
+                    </a>
+                    <div class="collapse ps-2" id="gruposMenu">
+                        <a href="/grupos/alta" class="nav-link">Alta grupos</a>
+                    </div>
+                </li>
+
+            </ul>
+        </div>
 
         <!-- CONTENIDO -->
         <div class="p-4 w-100">
