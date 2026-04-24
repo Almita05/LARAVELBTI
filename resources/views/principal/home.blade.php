@@ -30,7 +30,8 @@
     $cards = [
         ['titulo'=>'Buscador de Alumnos','icon'=>'fa-user-graduate','color'=>'primary','ruta'=>'alumnos'],
         ['titulo'=>'Alta Docentes','icon'=>'fa-chalkboard-teacher','color'=>'success','ruta'=>'docentes'],
-        ['titulo'=>'Planes de Estudios','icon'=>'fa-book','color'=>'warning','ruta'=>'planes'],
+        ['titulo'=>'Planes de Estudios BTI','icon'=>'fa-book','color'=>'warning','ruta'=>'planesBTI'],
+         ['titulo'=>'Planes de Estudios BGNE','icon'=>'fa-book','color'=>'warning','ruta'=>'planesBGNE'],
         ['titulo'=>'Equivalencias','icon'=>'fa-exchange-alt','color'=>'info','ruta'=>'equivalencias'],
         ['titulo'=>'Alta Grupos','icon'=>'fa-users','color'=>'dark','ruta'=>'grupos'],
         ['titulo'=>'Alta Materias','icon'=>'fa-file-alt','color'=>'danger','ruta'=>'materias'],
@@ -41,7 +42,6 @@
         @foreach($cards as $card)
             <div class="col-md-4 mb-4">
 
-                <!-- 🔥 AQUÍ VA TU CÓDIGO -->
                 <a href="{{ route($card['ruta']) }}" style="text-decoration:none;">
                     <div class="card card-dashboard bg-gradient-{{ $card['color'] }} text-center p-4">
                         <i class="fas {{ $card['icon'] }}"></i>

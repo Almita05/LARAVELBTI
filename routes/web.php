@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\AlumnoController;
+use App\Http\Controllers\PlanEstudioController;
 
 Route::get('/', function () {
     return view('principal.home');
@@ -33,7 +34,8 @@ Route::post('/materias', [MateriaController::class, 'store']);
 //rutas para cards de header_remove
 Route::get('/alumnos', [AlumnoController::class, 'index'])->name('alumnos');
 Route::get('/docentes', [DocenteController::class, 'index'])->name('docentes');
-Route::get('/planes', [PlanController::class, 'index'])->name('planes');
+Route::get('/planesBTI', [PlanEstudioController::class, 'bti'])->name('planesBTI');
+Route::get('/planesBGNE', [PlanEstudioController::class, 'bgne'])->name('planesBGNE');
 Route::get('/equivalencias', [EquivalenciaController::class, 'index'])->name('equivalencias');
 Route::get('/grupos', [GrupoController::class, 'index'])->name('grupos');
 Route::get('/materias', [MateriaController::class, 'index'])->name('materias');
