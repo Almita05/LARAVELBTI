@@ -70,7 +70,7 @@
             </div>
 
             <div class="col-md-3">
-                <a href="{{ route('equivalencias') }}" style="text-decoration:none;">
+                <a href="{{ route('planesBTI') }}" style="text-decoration:none;">
                     <div class="portal-card">
                         <i class="bi bi-file-earmark-text"></i></i>
                         <h5>Planes de estudio BTI</h5>
@@ -80,7 +80,7 @@
 
 
             <div class="col-md-3">
-                <a href="{{ route('equivalencias') }}" style="text-decoration:none;">
+                <a href="{{ route('planesBGNE') }}" style="text-decoration:none;">
                     <div class="portal-card">
                         <i class="bi bi-file-earmark-text"></i></i>
                         <h5>Planes de estudio BGNE</h5>
