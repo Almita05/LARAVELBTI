@@ -2,197 +2,146 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <title>BTI</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <style>
-    /* SIDEBAR */
-    .sidebar {
-        width: 250px;
-        height: 100vh;
-        background: #142855;
-        /* azul muy ligero */
-        color: #1e293b;
-        padding: 15px;
-        border-right: 1px solid #dbeafe;
-        overflow-y: auto;
-    }
+<meta charset="UTF-8">
+<title>BTI</title>
 
-    /* HEADER CON LOGO */
-    .sidebar-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 20px;
-    }
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
-    /* LOGO */
-    .sidebar-header img {
-        width: 40px;
-        height: 40px;
-        object-fit: contain;
-    }
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+}
 
-    /* TITULO */
-    .sidebar-header h4 {
-        margin: 0;
-        font-weight: bold;
-        color: #e0f2fe;
-    }
+/* NAVBAR */
+.navbar {
+    background: #1A338F;
+    padding: 10px 20px;
+}
 
-    /* LINKS */
-    .sidebar .nav-link {
-        color: #93c5fd;
-        border-radius: 10px;
-        padding: 10px 12px;
-        transition: all 0.25s ease;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+/* TEXTO NAV */
+.navbar .nav-link {
+    color: #ffffff !important;
+    font-weight: 500;
+    margin-right: 10px;
+}
 
-    /* HOVER */
-    .sidebar .nav-link:hover {
-        background: #1e3a8a;
-        color: #bfdbfe;
-        transform: translateX(5px);
-    }
+.navbar .nav-link:hover {
+    color: #8ACFDE !important;
+}
 
-    /* ACTIVO */
-    .sidebar .nav-link.active {
-        background: #0ea5e9;
-        color: #fff;
-        box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
-    }
+/* DROPDOWN */
+.dropdown-menu {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
 
-    /* SUBMENU */
-    .sidebar .collapse .nav-link {
-        font-size: 14px;
-        padding-left: 20px;
-        color: #93c5fd;
-    }
+.dropdown-item:hover {
+    background: #1A338F;
+    color: #fff;
+}
 
-    /* HOVER SUBMENU */
-    .sidebar .collapse .nav-link:hover {
-        color: #0284c7;
-    }
+/* CONTENIDO */
+.content {
+    padding: 20px;
+}
+</style>
 
-    /* FLECHA */
-    .menu-toggle::after {
-        content: "▼";
-        font-size: 12px;
-        transition: transform 0.3s ease;
-    }
-
-    /* ROTAR */
-    .menu-toggle[aria-expanded="true"]::after {
-        transform: rotate(180deg);
-    }
-
-    /* SCROLL */
-    .sidebar::-webkit-scrollbar {
-        width: 5px;
-    }
-
-    .sidebar::-webkit-scrollbar-thumb {
-        background: #93c5fd;
-        border-radius: 10px;
-    }
-
-    .table-hover tbody tr:hover {
-        background-color: #f1f5f9;
-        transition: 0.2s;
-    }
-
-    .badge {
-        font-size: 12px;
-        padding: 6px 10px;
-    }
-
-    .btn-sm {
-        border-radius: 8px;
-    }
-    </style>
 </head>
 
 <body>
 
-    <div class="d-flex">
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container-fluid">
 
-        <div class="sidebar">
+     <img src="{{ asset('img/logo.png') }}" alt="logo" width="40px" height="40px">
+        <a class="navbar-brand text-white fw-bold" href="/">Bachillerato Tecnológico Interamericano</a>
 
-            <!-- HEADER -->
-            <div class="sidebar-header">
-                <img src="{{ asset('img/logo.png') }}" alt="logo">
-                <h4>BTI</h4>
-            </div>
+        <!-- BOTÓN RESPONSIVE -->
+        <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#menuNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-            <!-- MENÚ -->
-            <ul class="nav flex-column">
-                <li class="nav-item mb-2">
+        <!-- MENÚ -->
+        <div class="collapse navbar-collapse" id="menuNav">
+
+            <ul class="navbar-nav ms-auto">
+
+                <!-- INICIO -->
+                <li class="nav-item">
                     <a class="nav-link" href="/">
-                        <i class="bi bi-house"></i>Inicio</a>
-                </li>
-
-
-                <li class="nav-item mb-2">
-                    <a class="nav-link menu-toggle" data-bs-toggle="collapse" href="#alumnosMenu">
-                        <span><i class="bi bi-person"></i> Alumnos</span>
-                    </a>
-                    <div class="collapse ps-2" id="alumnosMenu">
-                        <a href="/alumnos" class="nav-link">Buscador de alumnos</a>
-                    </div>
-                </li>
-
-                <li class="nav-item mb-2">
-                    <a class="nav-link menu-toggle" data-bs-toggle="collapse" href="#docentesMenu">
-                        <span><i class="bi bi-people"></i> Docentes</span>
-                    </a>
-                    <div class="collapse ps-2" id="docentesMenu">
-                        <a href="/docentes" class="nav-link">Docentes</a>
-                    </div>
-                </li>
-
-                <li class="nav-item mb-2">
-                    <a class="nav-link menu-toggle" data-bs-toggle="collapse" href="#materiasMenu">
-                        <span><i class="bi bi-book"></i> Materias</span>
-                    </a>
-                    <div class="collapse ps-2" id="materiasMenu">
-                        <a href="/materias" class="nav-link">Materias</a>
-                    </div>
-                </li>
-
-                <li class="nav-item mb-2">
-                    <a href="/equivalencias" class="nav-link">
-                        <span><i class="bi bi-file-earmark-text"></i> Equivalencias</span>
+                        <i class="bi bi-house"></i> Inicio
                     </a>
                 </li>
 
-                <li class="nav-item mb-2">
-                    <a class="nav-link menu-toggle" data-bs-toggle="collapse" href="#gruposMenu">
-                        <span><i class="bi bi-diagram-3"></i> Grupos</span>
+                <!-- ALUMNOS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-person"></i> Alumnos
                     </a>
-                    <div class="collapse ps-2" id="gruposMenu">
-                        <a href="/grupos/alta" class="nav-link">Alta grupos</a>
-                    </div>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/alumnos">Buscador</a></li>
+                    </ul>
+                </li>
+
+                <!-- DOCENTES -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/docentes">
+                        <i class="bi bi-people"></i> Docentes
+                    </a>
+                </li>
+
+                <!-- MATERIAS -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/materias">
+                        <i class="bi bi-book"></i> Materias
+                    </a>
+                </li>
+
+                <!-- EQUIVALENCIAS -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/equivalencias">
+                        <i class="bi bi-file-earmark-text"></i> Equivalencias
+                    </a>
+                </li>
+
+                <!-- GRUPOS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-diagram-3"></i> Grupos
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/grupos/alta">Alta</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-gear"></i> Perfil  
+                    </a>
+                    
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/">Editar perfil</a></li>
+                    </ul>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/grupos/alta">Cerrar sesión</a></li>
+                    </ul>
                 </li>
 
             </ul>
-        </div>
 
-        <!-- CONTENIDO -->
-        <div class="p-4 w-100">
-            @yield('content')
         </div>
-
     </div>
+</nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- CONTENIDO -->
+<div class="content" style="margin-top:70px;">
+    @yield('content')
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 

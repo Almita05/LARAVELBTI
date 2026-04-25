@@ -3,55 +3,126 @@
 @section('content')
 
 <style>
-.card-dashboard {
-    border: none;
+.hero {
+    background: #1A338F;
+    padding: 60px 20px;
+    text-align: center;
+    color: white;
+    min-height: calc(100vh - 60px);
+}
+
+.cards-container {
+    margin-top: -40px;
+}
+
+.portal-card {
+    background: transparent;
+    border: 2px solid #ffffff;
     border-radius: 15px;
+    padding: 30px 20px;
+    text-align: center;
+    color: white;
     transition: all 0.3s ease;
-    cursor: pointer;
 }
 
-.card-dashboard:hover {
-    transform: translateY(-10px) scale(1.03);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+.portal-card i {
+    font-size: 40px;
+    margin-bottom: 15px;
 }
 
-.bg-gradient-primary { background: linear-gradient(45deg, #4e73df, #224abe); color:white; }
-.bg-gradient-success { background: linear-gradient(45deg, #1cc88a, #13855c); color:white; }
-.bg-gradient-warning { background: linear-gradient(45deg, #f6c23e, #dda20a); color:white; }
-.bg-gradient-info { background: linear-gradient(45deg, #36b9cc, #258391); color:white; }
-.bg-gradient-dark { background: linear-gradient(45deg, #5a5c69, #2e2f37); color:white; }
-.bg-gradient-danger { background: linear-gradient(45deg, #e74a3b, #be2617); color:white; }
+.portal-card h5 {
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+/* HOVER */
+.portal-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
 </style>
 
-<div class="container">
-    <h2 class="mb-4">¡Bienvenido(a) !</h2>
+<!-- SECCIÓN AZUL -->
+<div class="hero">
+    <!--<h2 class="fw-bold mb-4">Bienvenido al Sistema</h2>-->
 
-    @php
-    $cards = [
-        ['titulo'=>'Buscador de Alumnos','icon'=>'fa-user-graduate','color'=>'primary','ruta'=>'alumnos'],
-        ['titulo'=>'Alta Docentes','icon'=>'fa-chalkboard-teacher','color'=>'success','ruta'=>'docentes'],
-        ['titulo'=>'Planes de Estudios BTI','icon'=>'fa-book','color'=>'warning','ruta'=>'planesBTI'],
-         ['titulo'=>'Planes de Estudios BGNE','icon'=>'fa-book','color'=>'warning','ruta'=>'planesBGNE'],
-        ['titulo'=>'Equivalencias','icon'=>'fa-exchange-alt','color'=>'info','ruta'=>'equivalencias'],
-        ['titulo'=>'Alta Grupos','icon'=>'fa-users','color'=>'dark','ruta'=>'grupos'],
-        ['titulo'=>'Alta Materias','icon'=>'fa-file-alt','color'=>'danger','ruta'=>'materias'],
-    ];
-    @endphp
+    <div class="container cards-container">
+        <div class="row justify-content-center g-4">
 
-    <div class="row">
-        @foreach($cards as $card)
-            <div class="col-md-4 mb-4">
-
-                <a href="{{ route($card['ruta']) }}" style="text-decoration:none;">
-                    <div class="card card-dashboard bg-gradient-{{ $card['color'] }} text-center p-4">
-                        <i class="fas {{ $card['icon'] }}"></i>
-                        <h5 class="fw-bold">{{ $card['titulo'] }}</h5>
-                        <p class="small">Haz clic para acceder</p>
+            <div class="col-md-3">
+                <a href="{{ route('alumnos') }}" style="text-decoration:none;">
+                    <div class="portal-card">
+                        <i class="bi bi-person-check-fill"></i>
+                        <h5>Buscador de alumnos</h5>
                     </div>
                 </a>
-
             </div>
-        @endforeach
+
+
+            <div class="col-md-3">
+                <a href="{{ route('docentes') }}" style="text-decoration:none;">
+                    <div class="portal-card">
+                        <i class="bi bi-person-vcard-fill"></i>
+                        <h5>Docentes</h5>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-3">
+                <a href="{{ route('equivalencias') }}" style="text-decoration:none;">
+                    <div class="portal-card">
+                        <i class="bi bi-file-earmark-text"></i></i>
+                        <h5>Planes de estudio BTI</h5>
+                    </div>
+                </a>
+            </div>
+
+
+            <div class="col-md-3">
+                <a href="{{ route('equivalencias') }}" style="text-decoration:none;">
+                    <div class="portal-card">
+                        <i class="bi bi-file-earmark-text"></i></i>
+                        <h5>Planes de estudio BGNE</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <br>
+        <div class="row justify-content-center g-4">
+            <div class="col-md-3">
+                <a href="{{ route('equivalencias') }}" style="text-decoration:none;">
+                    <div class="portal-card">
+                        <i class="bi bi-journal-bookmark-fill"></i></i></i>
+                        <h5>Grupos</h5>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ route('equivalencias') }}" style="text-decoration:none;">
+                    <div class="portal-card">
+                        <i class="bi bi-file-earmark-text"></i></i>
+                        <h5>Equivalencias</h5>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ route('equivalencias') }}" style="text-decoration:none;">
+                    <div class="portal-card">
+                        <i class="bi bi-list-check"></i></i>
+                        <h5>Listas de asistencias</h5>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ route('equivalencias') }}" style="text-decoration:none;">
+                    <div class="portal-card">
+                        <i class="bi bi-journal-bookmark-fill"></i></i></i>
+                        <h5>Actas de calificaciones</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 
