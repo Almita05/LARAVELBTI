@@ -91,7 +91,7 @@
         <br>
         <div class="row justify-content-center g-4">
             <div class="col-md-3">
-                <a href="{{ route('equivalencias') }}" style="text-decoration:none;">
+                <a href="{{ route('grupos') }}" style="text-decoration:none;">
                     <div class="portal-card">
                         <i class="bi bi-journal-bookmark-fill"></i></i></i>
                         <h5>Grupos</h5>

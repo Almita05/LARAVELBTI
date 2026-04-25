@@ -33,4 +33,20 @@ class AlumnoController extends Controller
 
     return $response->json();
 }
+
+
+public function modalAlta()
+{
+    $url = config('services.api.base_url') . '/grupos';
+
+    $response = Http::get($url); 
+
+    if ($response->failed()) {
+        $grupos = [];
+    } else {
+        $grupos = $response->json()['data']; 
+    }
+
+    return view('alumnos.modalAlta', compact('grupos'));
+}
 }

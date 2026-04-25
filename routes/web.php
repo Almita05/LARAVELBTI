@@ -12,11 +12,12 @@ Route::get('/', function () {
 
 
 
+
 //MENU alumnos
 Route::get('/alumnos', [AlumnoController::class, 'index']);
 Route::get('/alumnos/lista', [AlumnoController::class, 'lista']);
 Route::post('/alumnos', [AlumnoController::class, 'store']);
-
+Route::get('/alumnos/modalAlta', [AlumnoController::class, 'modalAlta']);
 
 //MENU DOCENTES
 Route::get('/docentes', [DocenteController::class, 'index']);

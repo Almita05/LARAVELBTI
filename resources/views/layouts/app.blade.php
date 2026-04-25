@@ -9,6 +9,17 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
 <style>
+.btn-azul {
+    background-color: #1A338F;
+    border-color: #1A338F;
+    color: white;
+}
+
+.btn-azul:hover {
+    background-color: #162a73;
+    border-color: #162a73;
+    color: white;
+}
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
@@ -110,7 +121,7 @@ body {
 
                 <!-- GRUPOS -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                    <a class="nav-link dropdown-toggle" href="/grupos" data-bs-toggle="dropdown">
                         <i class="bi bi-diagram-3"></i> Grupos
                     </a>
                     <ul class="dropdown-menu">
