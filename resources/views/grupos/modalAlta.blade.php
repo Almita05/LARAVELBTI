@@ -12,18 +12,57 @@
 
                     <div class="col-md-12 mb-3">
                         <label>Clave del grupo<span style="color:red;">*</span></label>
-                        <input type="text" name="clave" class="form-control" required> <br>
+                        <input type="text" name="clave" class="form-control" required>
+
+                        <br>
+
+                        <label>Fecha creación<span style="color:red;">*</span></label>
+                        <input type="date" name="fechaCreacion" class="form-control" required>
+
+                        <br>
+
                         <label>Fecha inicio<span style="color:red;">*</span></label>
-                        <input type="date" name="fechaInicio" class="form-control" required> <br>
+                        <input type="date" name="fechaInicio" class="form-control" required>
+
+                        <br>
 
                         <label>Fecha fin<span style="color:red;">*</span></label>
-                        <input type="date" name="fechaFin" class="form-control" required> <br>
+                        <input type="date" name="fechaFin" class="form-control" required>
+
+                        <br>
+
                         <label>Centro de trabajo<span style="color:red;">*</span></label>
-                        <input type="select" name="fechaFin" class="form-control" required> <br>
+                        <select name="id_centroTrabajo" class="form-control" required>
+                            <option value="">Seleccione un CT</option>
+
+                            @foreach($centros as $ct)
+                            <option value="{{ $ct['id'] }}">
+                                {{ $ct['nombre'] }}
+                            </option>
+                            @endforeach
+                        </select>
+
+                        <br>
+
                         <label>Plan de estudios<span style="color:red;">*</span></label>
-                        <input type="select" name="fechaFin" class="form-control" required><br>
+                        <select name="id_planEstudios" class="form-control" required>
+                            <option value="">Seleccione un CT</option>
+
+                            @foreach($planes as $pe)
+                            <option value="{{ $pe['id'] }}">
+                                {{ $pe['nombrePlan'] }}
+                            </option>
+                            @endforeach
+                        </select>
+
+                        <br>
+
                         <label>Tipo de periodo<span style="color:red;">*</span></label>
-                        <input type="select" name="fechaFin" class="form-control" required><br>
+                        <select name="id_tipoPeriodo" class="form-control" required>
+                            <option value="">Seleccione un periodo</option>
+                            <option value="">Semestral</option>
+                            <option value="">Trimestral</option>
+                        </select>
                     </div>
 
 
@@ -45,9 +84,10 @@ document.addEventListener('submit', function(e) {
         e.preventDefault();
 
         let formData = new FormData(e.target);
+
         let data = Object.fromEntries(formData.entries());
 
-        fetch('/grupos', { // 👈 cambia endpoint
+        fetch('/grupos', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

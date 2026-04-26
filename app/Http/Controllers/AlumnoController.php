@@ -37,7 +37,7 @@ class AlumnoController extends Controller
 
 public function modalAlta()
 {
-    $url = config('services.api.base_url') . '/crealumnos';
+    $url = config('services.api.base_url') . '/grupos';
 
     $response = Http::get($url); 
 

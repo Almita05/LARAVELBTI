@@ -37,16 +37,41 @@ class GrupoController extends Controller
 
 public function modalAlta()
 {
-    $url = config('services.api.base_url') . '/createGrupos';
+    $base = config('services.api.base_url');
 
-    $response = Http::get($url); 
+    // Centros
+    $resCentros = Http::get($base . '/centroTrabajo');
+    $centros = $resCentros->successful() ? $resCentros->json() : [];
+
+    // Planes
+    $resPlanes = Http::get($base . '/getPlanesEstudio');
+    $planes = $resPlanes->successful() ? $resPlanes->json() : [];
+
+    return view('grupos.modalAlta', compact('centros', 'planes'));
+}
+
+public function store(Request $request)
+{
+    $url = config('services.api.base_url') . '/grupos';
+
+    $response = Http::post($url, [
+        'clave' => $request->clave,
+        'fechaCreacion' => $request->fechaCreacion,
+        'fechaInicio' => $request->fechaInicio,
+        'fechaFin' => $request->fechaFin,
+        'id_centroTrabajo' => $request->id_centroTrabajo,
+        'id_planEstudios' => $request->id_planEstudios,
+        'id_tipoPeriodo' => $request->id_tipoPeriodo,
+    ]);
 
     if ($response->failed()) {
-        $grupos = [];
-    } else {
-        $grupos = $response->json()['data']; 
+        return response()->json([
+            'message' => 'Error al guardar'
+        ], 500);
     }
 
-    return view('grupos.modalAlta', compact('grupos'));
+    return response()->json([
+        'message' => 'Guardado correctamente'
+    ]);
 }
 }

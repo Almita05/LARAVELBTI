@@ -36,8 +36,8 @@ Route::post('/materias', [MateriaController::class, 'store']);
 //MENU grupos
 Route::get('/grupos', [GrupoController::class, 'index']);
 Route::get('/grupos/lista', [GrupoController::class, 'lista']);
+Route::post('/grupos', [GrupoController::class, 'store']);
 Route::get('/grupos/modalAlta', [GrupoController::class, 'modalAlta']);
-
 
 
 
