@@ -5,6 +5,7 @@ use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\PlanEstudioController;
+use App\Http\Controllers\GrupoController;
 
 Route::get('/', function () {
     return view('principal.home');
@@ -30,6 +31,14 @@ Route::post('/docentes', [DocenteController::class, 'store']);
 Route::get('/materias', [MateriaController::class, 'index']);
 Route::get('/materias/lista', [MateriaController::class, 'lista']);
 Route::post('/materias', [MateriaController::class, 'store']);
+
+
+//MENU grupos
+Route::get('/grupos', [GrupoController::class, 'index']);
+Route::get('/grupos/lista', [GrupoController::class, 'lista']);
+Route::get('/grupos/modalAlta', [GrupoController::class, 'modalAlta']);
+
+
 
 
 //rutas para cards de header_remove

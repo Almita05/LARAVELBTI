@@ -125,7 +125,8 @@ body {
                         <i class="bi bi-diagram-3"></i> Grupos
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="/grupos/alta">Alta</a></li>
+                        <li><a class="dropdown-item" href="/grupos">Dashboard grupos</a></li>
+                        <li><a class="dropdown-item" href="/grupos/alta">Dar de alta grupo</a></li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">

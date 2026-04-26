@@ -5,16 +5,16 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
-class AlumnoController extends Controller
+class GrupoController extends Controller
 {
      public function index()
     {
-        return view('alumnos.index');
+        return view('grupos.index');
     }
 
    public function lista(Request $request)
 {
-    $url = config('services.api.base_url') . '/alumnos';
+    $url = config('services.api.base_url') . '/grupos';
 
     $response = Http::get($url, [
         'page' => $request->page ?? 1,
@@ -37,7 +37,7 @@ class AlumnoController extends Controller
 
 public function modalAlta()
 {
-    $url = config('services.api.base_url') . '/crealumnos';
+    $url = config('services.api.base_url') . '/createGrupos';
 
     $response = Http::get($url); 
 
@@ -47,6 +47,6 @@ public function modalAlta()
         $grupos = $response->json()['data']; 
     }
 
-    return view('alumnos.modalAlta', compact('grupos'));
+    return view('grupos.modalAlta', compact('grupos'));
 }
 }

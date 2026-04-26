@@ -15,7 +15,6 @@
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Lista de Alumnos</h5>
 
-        <!-- 🔍 BUSCADOR -->
         <input type="text" id="buscadorAlumnos" class="form-control w-25" placeholder="Buscar alumnos...">
     </div>
 
