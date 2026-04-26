@@ -6,6 +6,7 @@ use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\PlanEstudioController;
 use App\Http\Controllers\GrupoController;
+use App\Http\Controllers\EquivalenciaController;
 
 Route::get('/', function () {
     return view('principal.home');
@@ -38,6 +39,14 @@ Route::get('/grupos', [GrupoController::class, 'index']);
 Route::get('/grupos/lista', [GrupoController::class, 'lista']);
 Route::post('/grupos', [GrupoController::class, 'store']);
 Route::get('/grupos/modalAlta', [GrupoController::class, 'modalAlta']);
+
+
+
+//MENU grupos
+Route::get('/equivalencias', [EquivalenciaController::class, 'index']);
+Route::get('/equivalencias/lista', [EquivalenciaController::class, 'lista']);
+Route::post('/equivalencias', [EquivalenciaController::class, 'store']);
+Route::get('/equivalencias/modalAlta', [EquivalenciaController::class, 'modalAlta']);
 
 
 
