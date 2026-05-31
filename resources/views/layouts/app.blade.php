@@ -141,7 +141,7 @@
                         </a>
 
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/">Editar perfil</a></li>
+                            <li><a class="dropdown-item" href="/editarPerfil">Editar perfil</a></li>
                         </ul>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="/grupos/alta">Cerrar sesión</a></li>

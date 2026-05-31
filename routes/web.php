@@ -7,6 +7,8 @@ use App\Http\Controllers\AlumnoController;
 use App\Http\Controllers\PlanEstudioController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\EquivalenciaController;
+use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\ActasCalificacionesController;
 
 Route::get('/', function () {
     return view('principal.home');
@@ -56,5 +58,18 @@ Route::get('/docentes', [DocenteController::class, 'index'])->name('docentes');
 Route::get('/planesBTI', [PlanEstudioController::class, 'bti'])->name('planesBTI');
 Route::get('/planesBGNE', [PlanEstudioController::class, 'bgne'])->name('planesBGNE');
 Route::get('/equivalencias', [EquivalenciaController::class, 'index'])->name('equivalencias');
+
 Route::get('/grupos', [GrupoController::class, 'index'])->name('grupos');
 Route::get('/materias', [MateriaController::class, 'index'])->name('materias');
+
+
+//actas de calificaciones
+Route::get('/actas_calificaciones', [ActasCalificacionesController::class, 'index'])->name('actas_calificaciones');
+Route::get('/actas_calificacionesBTI', [ActasCalificacionesController::class, 'bti'])->name('actas_calificacionesBTI');
+Route::get('/actas_calificacionesBGNES', [ActasCalificacionesController::class, 'bgneS'])->name('actas_calificacionesBGNES');
+Route::get('/actas_calificacionesBGNED', [ActasCalificacionesController::class, 'bgneD'])->name('actas_calificacionesBGNED');
+
+
+
+//perfil
+Route::get('/editarPerfil', [PerfilController::class, 'index']);
