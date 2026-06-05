@@ -21,12 +21,35 @@ body {
     min-height: 100vh;
     padding: 60px 20px;
     color: white;
+    position: relative;
 }
 
 .title {
     text-align: center;
     font-weight: bold;
     margin-bottom: 50px;
+}
+
+/* BOTÓN REGRESAR */
+.btn-back {
+    display: inline-block;
+    background: white;
+    color: #1A338F;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.btn-back:hover {
+    background: #f0f0f0;
+    color: #1A338F;
 }
 
 /* CARDS */
@@ -71,6 +94,10 @@ a {
 </style>
 
 <div class="hero">
+    <!-- BOTÓN REGRESAR -->
+    <a href="{{ url()->previous() }}" class="btn-back">
+        ← Regresar
+    </a>
 
     <div class="container">
 
@@ -82,29 +109,27 @@ a {
 
             <!-- SÁBADO -->
             <div class="col-md-3">
-                <a href="">
-                        <a href="{{ route('listas_asistenciasBGNES') }}" style="text-decoration:none;">
-                            <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path
-                                        d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
-                                </svg>
-                                <h5>Listas de asistencias-Sábados</h5>
-                            </div>
-                        </a>
+                <a href="{{ route('listas_asistenciasBGNES') }}" style="text-decoration:none;">
+                    <div class="portal-card">
+                        <img src="{{ asset('img/SAB.png') }}" alt="Listas de asistencias-Sábados"
+                            style="width: 100%; max-width: 100px; height: auto; color: white">
+                        <br>
+                        <h5>Listas de asistencias-Sábados</h5>
+                    </div>
                 </a>
             </div>
 
             <!-- DOMINGO -->
             <div class="col-md-3">
                 <a href="">
-                        <a href="{{ route('listas_asistenciasBGNED') }}" style="text-decoration:none;">
-                            <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path
-                                        d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
-                                </svg>
-                                <h5>Listas de asistencias-Domingos</h5>
-                            </div>
-                        </a>
+                    <a href="{{ route('listas_asistenciasBGNED') }}" style="text-decoration:none;">
+                        <div class="portal-card">
+                            <img src="{{ asset('img/DOM.png') }}" alt="Listas de asistencias-Domingos"
+                                style="width: 100%; max-width: 100px; height: auto; color: white">
+                            <br>
+                            <h5>Listas de asistencias-Domingos</h5>
+                        </div>
+                    </a>
                 </a>
             </div>
 
@@ -112,14 +137,14 @@ a {
             <!-- ESCOLARIZADO -->
             <div class="col-md-3">
                 <a href="">
-                        <a href="{{ route('listas_asistenciasBTI') }}" style="text-decoration:none;">
-                            <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path
-                                        d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
-                                </svg>
-                                <h5>Listas de asistencias-Escolarizado</h5>
-                            </div>
-                        </a>
+                    <a href="{{ route('listas_asistenciasBTI') }}" style="text-decoration:none;">
+                        <div class="portal-card">
+                            <img src="{{ asset('img/L_V.png') }}" alt="Listas de asistencias-Escolarizado"
+                                style="width: 100%; max-width: 100px; height: auto; color: white">
+                            <br>
+                            <h5>Listas de asistencias-Escolarizado</h5>
+                        </div>
+                    </a>
                 </a>
             </div>
 

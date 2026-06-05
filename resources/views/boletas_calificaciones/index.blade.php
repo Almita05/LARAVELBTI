@@ -21,12 +21,35 @@ body {
     min-height: 100vh;
     padding: 60px 20px;
     color: white;
+    position: relative;
 }
 
 .title {
     text-align: center;
     font-weight: bold;
     margin-bottom: 50px;
+}
+
+/* BOTÓN REGRESAR */
+.btn-back {
+    display: inline-block;
+    background: white;
+    color: #1A338F;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.btn-back:hover {
+    background: #f0f0f0;
+    color: #1A338F;
 }
 
 /* CARDS */
@@ -71,6 +94,10 @@ a {
 </style>
 
 <div class="hero">
+<!-- BOTÓN REGRESAR -->
+        <a href="{{ url()->previous() }}" class="btn-back">
+            ← Regresar
+        </a>
 
     <div class="container">
 
