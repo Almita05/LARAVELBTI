@@ -9,7 +9,6 @@ html, body {
     height: 100%;
 }
 
-/* AZUL EN TODA LA PANTALLA */
 body {
     background: #1A338F;
 }
@@ -123,10 +122,10 @@ body {
             </div>
 
             <div class="col-md-3">
-                <a href="{{ route('equivalencias') }}" style="text-decoration:none;">
+                <a href="{{ route('listas_asistencias') }}" style="text-decoration:none;">
                     <div class="portal-card">
                         <i class="bi bi-list-check"></i>
-                        <h5>Listas de asistencias</h5>
+                        <h5>Imprimir listas de asistencias</h5>
                     </div>
                 </a>
             </div>
@@ -136,6 +135,22 @@ body {
                     <div class="portal-card">
                         <i class="bi bi-journal-bookmark-fill"></i>
                         <h5>Imprimir acta de calificaciones</h5>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ route('boleta_calificaciones_bti') }}" style="text-decoration:none;">
+                    <div class="portal-card">
+                       <i class="bi bi-file-earmark-text"></i>
+                        <h5>Boleta de calificaciones-Escolarizado</h5>
+                    </div>
+                </a>
+            </div>
+             <div class="col-md-3">
+                <a href="{{ route('kardex_no_escolarizado') }}" style="text-decoration:none;">
+                    <div class="portal-card">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <h5>Kardex-No escolarizado</h5>
                     </div>
                 </a>
             </div>

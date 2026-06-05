@@ -9,6 +9,9 @@ use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\EquivalenciaController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\ActasCalificacionesController;
+use App\Http\Controllers\ListasAsistenciasController;
+use App\Http\Controllers\BoletasBtiController;
+use App\Http\Controllers\KardexBgneController;
 
 Route::get('/', function () {
     return view('principal.home');
@@ -68,6 +71,22 @@ Route::get('/actas_calificaciones', [ActasCalificacionesController::class, 'inde
 Route::get('/actas_calificacionesBTI', [ActasCalificacionesController::class, 'bti'])->name('actas_calificacionesBTI');
 Route::get('/actas_calificacionesBGNES', [ActasCalificacionesController::class, 'bgneS'])->name('actas_calificacionesBGNES');
 Route::get('/actas_calificacionesBGNED', [ActasCalificacionesController::class, 'bgneD'])->name('actas_calificacionesBGNED');
+
+//listas de asistencias
+Route::get('/listas_asistencias', [ListasAsistenciasController::class, 'index'])->name('listas_asistencias');
+Route::get('/listas_asistenciasBTI', [ListasAsistenciasController::class, 'bti'])->name('listas_asistenciasBTI');
+Route::get('/listas_asistenciasBGNES', [ListasAsistenciasController::class, 'bgneS'])->name('listas_asistenciasBGNES');
+Route::get('/listas_asistenciasBGNED', [ListasAsistenciasController::class, 'bgneD'])->name('listas_asistenciasBGNED');
+
+
+//boleta de calificaicones
+Route::get('/boleta_calificaciones_bti', [BoletasBtiController::class, 'index'])->name('boleta_calificaciones_bti');
+
+//kardex de no escolarizado
+Route::get('/kardex_no_escolarizado', [KardexBgneController::class, 'index'])->name('kardex_no_escolarizado');
+Route::get('/kardex_bgneS', [KardexBgneController::class, 'bgneS'])->name('kardex_bgneS');
+Route::get('/kardex_bgneD', [KardexBgneController::class, 'bgneD'])->name('kardex_bgneD');
+
 
 
 
