@@ -2,47 +2,279 @@
 
 @section('content')
 
-<div class="d-flex justify-content-between mb-3">
-    <h3></h3>
+<style>
+    .page-container{
+    padding: 30px;
+    min-height: calc(100vh - 80px);
+}
+.page-title {
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+}
 
-    <button class="btn btn-azul" onclick="abrirModalAlumno()">
-        Alta alumno
-    </button>
-</div>
+.glass-card {
+    background: rgba(255, 255, 255, .08);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, .15);
+    border-radius: 20px;
+    overflow: hidden;
+}
 
-<div class="card shadow-sm">
+.glass-header {
+    background: rgba(255, 255, 255, .05);
+    color: white;
+}
 
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Lista de Alumnos</h5>
+.glass-footer {
+    background: rgba(255, 255, 255, .05);
+    color: white;
+}
 
-        <input type="text" id="buscadorAlumnos" class="form-control w-25" placeholder="Buscar alumnos...">
+.glass-table {
+    color: white;
+}
+
+.glass-table thead tr {
+    background: rgba(255, 255, 255, .08);
+}
+
+.glass-table tbody tr:hover {
+    background: rgba(255, 255, 255, .08);
+}
+
+.glass-table td,
+.glass-table th {
+    border-color: rgba(255, 255, 255, .1);
+}
+
+.glass-input {
+    background: rgba(255, 255, 255, .08);
+    border: 1px solid rgba(255, 255, 255, .15);
+    color: white;
+}
+
+.glass-input::placeholder {
+    color: rgba(255, 255, 255, .6);
+}
+
+.glass-input:focus {
+    background: rgba(255, 255, 255, .12);
+    color: white;
+    border-color: #6BC7E8;
+    box-shadow: 0 0 15px rgba(107, 199, 232, .3);
+}
+
+.btn-action {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    margin: 0 2px;
+}
+
+.btn-light.btn-action {
+    background: rgba(255, 255, 255, .15);
+    border: none;
+    color: white;
+}
+
+.btn-light.btn-action:hover {
+    background: rgba(255, 255, 255, .25);
+}
+
+.btn-warning.btn-action {
+    color: white;
+}
+
+/* Fondo transparente para integrarse al layout */
+.page-container {
+    padding: 20px;
+}
+
+/* Card principal */
+.glass-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
+}
+
+/* Header */
+.glass-header {
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+/* Tabla */
+.glass-table {
+    color: white;
+    margin-bottom: 0;
+}
+
+.glass-table thead {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.glass-table thead th {
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.glass-table tbody tr {
+    transition: all .25s ease;
+}
+
+.glass-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.glass-table td,
+.glass-table th {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Buscador */
+.glass-input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.glass-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.glass-input:focus {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border-color: #6BC7E8;
+    box-shadow: 0 0 10px rgba(107, 199, 232, .5);
+}
+
+/* Footer */
+.glass-footer {
+    background: rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+/* Botón principal */
+.btn-azul {
+    background: linear-gradient(135deg, #1E6FA8, #6BC7E8);
+    border: none;
+    color: white;
+    font-weight: 500;
+    transition: .3s;
+}
+
+.btn-azul:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
+    color: white;
+}
+
+/* Acciones */
+.btn-action {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+}
+
+/* Título */
+.page-title {
+    color: white;
+    font-weight: 600;
+}
+.btn-back {
+    display: inline-block;
+    background: white;
+    color: #1A338F;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.btn-back:hover {
+    background: #f0f0f0;
+    color: #1A338F;
+}
+
+</style>
+
+<div class="page-container">
+   
+
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+        <a href="{{ url()->previous() }}" class="btn btn-light">
+            <i class="fa-solid fa-arrow-left me-2"></i>
+            Regresar
+        </a>
+    </div>
+        <h3 class="page-title">
+        </h3>
+
+        <button class="btn btn-azul" onclick="abrirModalAlumno()">
+            <i class="fa-solid fa-plus me-2"></i>
+            Alta alumno
+        </button>
     </div>
 
-    <div class="table-responsive">
-        <div id="loading" class="text-center py-4" style="display:none;">
-            <div class="spinner-border text-primary"></div>
+    <div class="glass-card">
+
+        <div class="glass-header p-3 d-flex justify-content-between align-items-center">
+
+            <h5 class="mb-0">
+                Lista de alumnos
+            </h5>
+
+            <input type="text" id="buscadorAlumnos" class="form-control glass-input w-25"
+                placeholder="Buscar alumnos...">
+
         </div>
-        <table class="table table-hover align-middle mb-0">
 
-            <thead class="table-light">
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Apellido Paterno</th>
-                    <th>Apellido Materno</th>
-                    <th>Generación</th>
-                    <th class="text-center">Acciones</th>
-                </tr>
-            </thead>
+        <div class="table-responsive">
 
-            <tbody id="tablaAlumnos"></tbody>
+            <div id="loading" class="text-center py-4" style="display:none;">
+                <div class="spinner-border text-light"></div>
+            </div>
 
-        </table>
-    </div>
+            <table class="table glass-table align-middle mb-0">
 
-    <div class="card-footer d-flex justify-content-between align-items-center">
-        <small id="infoPaginacionMaterias"></small>
-        <div id="paginacionMaterias"></div>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Apellido Paterno</th>
+                        <th>Apellido Materno</th>
+                        <th>Generación</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tablaAlumnos" ></tbody>
+
+            </table>
+
+        </div>
+
+        <div class="glass-footer p-3 d-flex justify-content-between align-items-center">
+            <small id="infoPaginacionMaterias"></small>
+            <div id="paginacionMaterias"></div>
+        </div>
+
     </div>
 
 </div>
@@ -120,16 +352,15 @@ document.addEventListener("DOMContentLoaded", function() {
             <td>${alumno.apPaterno}</td>
             <td>${alumno.apMaterno}</td>
             <td>Generación ${alumno.nombreGeneracionTexto}</td>
-            <td class="text-center">
-                <button class="btn btn-azul btn-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
-                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
-                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
-                </svg></button>
-                <button class="btn btn-warning btn-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
-                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
-                </svg></button>
-                
-            </td>
+               <td class="text-center">
+    <button class="btn btn-light btn-sm btn-action">
+        <i class="fa-solid fa-eye"></i>
+    </button>
+
+    <button class="btn btn-warning btn-sm btn-action">
+        <i class="fa-solid fa-pen"></i>
+    </button>
+</td>
         </tr>
         `;
         });

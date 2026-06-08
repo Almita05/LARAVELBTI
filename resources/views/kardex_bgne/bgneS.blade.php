@@ -12,7 +12,12 @@ body {
 
 /* FONDO AZUL */
 body {
-    background: #1A338F;
+   background: linear-gradient(
+        135deg,
+        #0F2E6D 0%,
+        #1E6FA8 50%,
+        #6BC7E8 100%
+    );
 }
 
 /* CONTENEDOR PRINCIPAL */

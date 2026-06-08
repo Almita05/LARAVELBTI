@@ -3,44 +3,52 @@
 @section('content')
 
 <style>
+
 html,
 body {
     margin: 0;
     padding: 0;
-    height: 100%;
+    min-height: 100%;
 }
 
-/* FONDO AZUL */
+/* Fondo principal */
 body {
-    background: #1A338F;
+    background: linear-gradient(
+        135deg,
+        #0F2E6D 0%,
+        #1E6FA8 50%,
+        #6BC7E8 100%
+    );
 }
 
-/* CONTENEDOR PRINCIPAL */
+/* Contenedor */
 .hero {
-    background: #1A338F;
+    background: transparent;
     min-height: 100vh;
     padding: 60px 20px;
     color: white;
     position: relative;
 }
 
+/* Título */
 .title {
     text-align: center;
-    font-weight: bold;
+    font-weight: 700;
     margin-bottom: 50px;
+    text-shadow: 0 2px 8px rgba(0,0,0,.2);
 }
 
-/* BOTÓN REGRESAR */
+/* Botón regresar */
 .btn-back {
-    display: inline-block;
-    background: white;
-    color: #1A338F;
+    background: rgba(255,255,255,.12);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,.2);
+    color: white;
     padding: 10px 20px;
-    border-radius: 10px;
+    border-radius: 12px;
     text-decoration: none;
-    font-weight: bold;
-    margin-bottom: 30px;
-    transition: all 0.3s ease;
+    font-weight: 600;
+    transition: all .3s ease;
 
     position: absolute;
     top: 20px;
@@ -48,62 +56,78 @@ body {
 }
 
 .btn-back:hover {
-    background: #f0f0f0;
-    color: #1A338F;
+    background: rgba(255,255,255,.2);
+    color: white;
+    transform: translateY(-2px);
 }
 
-/* CARDS */
+/* Cards */
 .portal-card {
-    background: transparent;
-    border: 2px solid #ffffff;
-    border-radius: 15px;
+    background: rgba(255,255,255,.08);
+    backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 20px;
+
     padding: 30px 20px;
+
     text-align: center;
     color: white;
-    transition: all 0.3s ease;
-    min-height: 220px;
+
+    min-height: 230px;
 
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
+    transition: all .3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,.15);
 }
 
-.portal-card svg {
-    width: 60px;
-    height: 60px;
-    fill: white;
+.portal-card img {
+    max-width: 100px;
     margin-bottom: 20px;
+    transition: .3s;
 }
 
 .portal-card h5 {
     font-weight: 600;
     margin: 0;
+    line-height: 1.4;
 }
 
-/* HOVER */
+/* Hover */
 .portal-card:hover {
-    background: rgba(255, 255, 255, .1);
+    background: rgba(255,255,255,.12);
     transform: translateY(-8px) scale(1.03);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, .2);
+    box-shadow: 0 12px 25px rgba(0,0,0,.25);
 }
 
+.portal-card:hover img {
+    transform: scale(1.08);
+}
+
+/* Links */
 a {
     text-decoration: none;
 }
+
 </style>
 
 <div class="hero">
     <!-- BOTÓN REGRESAR -->
     <a href="{{ url()->previous() }}" class="btn-back">
-        ← Regresar
-    </a>
+    <i class="fa-solid fa-arrow-left me-2"></i>
+    Regresar
+</a>
 
     <div class="container">
 
         <h1 class="title">
-            Listas de asistencias
-        </h1>
+    <i class="fa-solid fa-user-check me-2"></i>
+    Listas de Asistencias
+</h1>
 
         <div class="row justify-content-center g-4">
 
@@ -121,7 +145,7 @@ a {
 
             <!-- DOMINGO -->
             <div class="col-md-3">
-                <a href="">
+              
                     <a href="{{ route('listas_asistenciasBGNED') }}" style="text-decoration:none;">
                         <div class="portal-card">
                             <img src="{{ asset('img/DOM.png') }}" alt="Listas de asistencias-Domingos"
@@ -130,13 +154,12 @@ a {
                             <h5>Listas de asistencias-Domingos</h5>
                         </div>
                     </a>
-                </a>
             </div>
 
 
             <!-- ESCOLARIZADO -->
             <div class="col-md-3">
-                <a href="">
+                
                     <a href="{{ route('listas_asistenciasBTI') }}" style="text-decoration:none;">
                         <div class="portal-card">
                             <img src="{{ asset('img/L_V.png') }}" alt="Listas de asistencias-Escolarizado"
@@ -145,7 +168,6 @@ a {
                             <h5>Listas de asistencias-Escolarizado</h5>
                         </div>
                     </a>
-                </a>
             </div>
 
 

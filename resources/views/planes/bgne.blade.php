@@ -3,10 +3,30 @@
 @section('content')
 
 <style>
-body {
-    background: linear-gradient(135deg, #eef2f7, #f8fafc);
+
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
 }
 
+/* Fondo igual al portal principal */
+body {
+    background: linear-gradient(
+        135deg,
+        #0F2E6D 0%,
+        #1E6FA8 50%,
+        #6BC7E8 100%
+    );
+}
+
+/* Título */
+h3 {
+    color: white;
+    text-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+
+/* Tabs */
 .nav-tabs {
     border-bottom: none;
     justify-content: center;
@@ -14,33 +34,58 @@ body {
 
 .nav-tabs .nav-link {
     border: none;
-    color: #046404;
+    color: white;
     font-weight: 600;
-    padding: 10px 18px;
+    padding: 12px 20px;
     border-radius: 12px;
     margin: 5px;
-    background: #e9f5ec;
-    transition: 0.3s;
+
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.15);
+
+    transition: all .3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    background: rgba(255,255,255,0.15);
+    transform: translateY(-2px);
 }
 
 .nav-tabs .nav-link.active {
-    background: #046404;
+    background: rgba(255,255,255,0.20);
     color: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    box-shadow: 0 5px 15px rgba(0,0,0,.2);
 }
 
+/* Grid */
+.row-materias {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+/* Tarjetas */
 .card-materia {
-    border: none;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+
+    border: 1px solid rgba(255,255,255,0.15);
     border-radius: 18px;
-    padding: 20px;
-    background: white;
-    transition: 0.3s;
-    position: relative;
+
+    padding: 25px;
+    color: white;
+
+    transition: all .3s ease;
+
+    box-shadow: 0 5px 15px rgba(0,0,0,.15);
 }
 
 .card-materia:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-8px);
+    background: rgba(255,255,255,0.12);
+    box-shadow: 0 12px 25px rgba(0,0,0,.25);
 }
 
 .card-materia::before {
@@ -48,37 +93,86 @@ body {
     position: absolute;
     top: 0;
     left: 0;
+
     width: 100%;
-    height: 6px;
+    height: 4px;
+
+    background: linear-gradient(
+        90deg,
+        #6BC7E8,
+        #ffffff
+    );
 }
 
 .card-materia h5 {
-    font-weight: 700;
-    color: #046404;
-}
-
-.btn-temario {
-    background: linear-gradient(135deg, #87CEEB, #00bcd4);
-    border: none;
-    border-radius: 10px;
-    padding: 8px 12px;
+    color: white;
     font-weight: 600;
-    margin-top: 8px;
-    display: inline-block;
+    margin-bottom: 20px;
 }
 
-.row-materias {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+/* Botón */
+.btn-temario {
+    background: linear-gradient(
+        135deg,
+        #6BC7E8,
+        #1E6FA8
+    );
+
+    border: none;
+    color: white;
+    font-weight: 600;
+
+    border-radius: 10px;
+    padding: 10px 16px;
+
+    transition: all .3s ease;
 }
+
+.btn-temario:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(107,199,232,.4);
+}
+
+/* Espaciado general */
+.container {
+    padding-top: 30px;
+    padding-bottom: 40px;
+}
+.btn-regresar {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    font-weight: 600;
+    border-radius: 12px;
+    padding: 10px 18px;
+    text-decoration: none;
+    transition: all .3s ease;
+}
+
+.btn-regresar:hover {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,.2);
+}
+
 </style>
 
 <div class="container py-4">
 
+    <div class="mb-4">
+        <a href="{{ url()->previous() }}" class="btn-regresar">
+            <i class="fa-solid fa-arrow-left me-2"></i>
+            Regresar
+        </a>
+    </div>
 
-    <h3 class="text-center mb-4 fw-bold">Planes de Estudio BGNE</h3>
-
+    <h3 class="text-center mb-5 fw-bold text-white">
+        <i class="fa-solid fa-book-open-reader me-2"></i>
+        Planes de Estudio - BGNE
+    </h3>
     <ul class="nav nav-tabs mb-4">
         <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab1">1ER</button>
         </li>
