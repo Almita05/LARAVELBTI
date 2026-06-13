@@ -48,30 +48,35 @@ class AlumnoController extends Controller
 
 public function modalAlta()
 {
-    $url = config('services.api.base_url') . '/grupos';
+    // Grupos
+    $responseGrupos = Http::get(config('services.api.base_url') . '/grupos');
 
-    $response = Http::get($url); 
-
-    if ($response->failed()) {
+    if ($responseGrupos->failed()) {
         $grupos = [];
     } else {
-        $grupos = $response->json()['data']; 
+        $grupos = $responseGrupos->json()['data'];
     }
 
-    return view('alumnos.modalAlta', compact('grupos'));
-}
+    // Generaciones
+    $responseGeneraciones = Http::get(config('services.api.base_url') . '/generaciones');
 
+    $generaciones = $responseGeneraciones->successful()
+        ? $responseGeneraciones->json()
+        : [];
+
+    return view('alumnos.modalAlta', compact('grupos', 'generaciones'));
+}
 
 
 public function store(Request $request)
 {
-    $url = config('services.api.base_url') . '/alumnos';
+    $url = config('services.api.base_url') . '/crealumnos';
 
     $response = Http::post($url, [
         "nombre" => $request->nombre,
         "apPaterno" => $request->apPaterno,
         "apMaterno" => $request->apMaterno,
-        "fechaNacimiento" => $request->fechaNacimiento,
+        /* "fechaNacimiento" => $request->fechaNacimiento,
         "tutor" => $request->tutor,
         "parentesco" => $request->parentesco,
         "calle" => $request->calle,
@@ -82,9 +87,9 @@ public function store(Request $request)
         "celularAlumno" => $request->celularAlumno,
         "correoAlumno" => $request->correoAlumno,
         "escuelaProcedencia" => $request->escuelaProcedencia,
-        "observaciones" => $request->observaciones,
+        "observaciones" => $request->observaciones, */
         "id_Generacion" => $request->id_Generacion,
-        "id_Grupo" => $request->id_Grupo
+        /*"id_Grupo" => $request->id_Grupo*/
     ]);
 
     if ($response->failed()) {
@@ -96,6 +101,7 @@ public function store(Request $request)
 
     return response()->json([
         'success' => true,
+         'message' => 'Alumno guardado correctamente',
         'data' => $response->json()
     ]);
 }

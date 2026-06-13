@@ -512,5 +512,51 @@ document.addEventListener("DOMContentLoaded", function() {
     // INIT
     cargarAlumnos();
 
+    document.addEventListener('submit', function(e) {
+
+    if (e.target.id !== 'formAlumno') return;
+
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+
+    fetch('/alumnos', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document
+                .querySelector('meta[name="csrf-token"]')
+                .getAttribute('content')
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.success) {
+
+            alert(data.message);
+
+            bootstrap.Modal.getInstance(
+                document.getElementById('modalAlumno')
+            ).hide();
+
+            cargarAlumnos();
+
+        } else {
+
+            alert(data.message || 'Error al guardar');
+
+        }
+
+    })
+    .catch(error => {
+
+        console.error(error);
+        alert('Error al guardar alumno');
+
+    });
+
+});
+
 });
 </script>
