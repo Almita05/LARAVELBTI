@@ -25,6 +25,7 @@ Route::get('/alumnos', [AlumnoController::class, 'index']);
 Route::get('/alumnos/lista', [AlumnoController::class, 'lista']);
 Route::post('/alumnos', [AlumnoController::class, 'store']);
 Route::get('/alumnos/modalAlta', [AlumnoController::class, 'modalAlta']);
+Route::delete('/alumnos/{id}', [AlumnoController::class, 'destroy'])->name('alumnos.destroy');
 
 //MENU DOCENTES
 Route::get('/docentes', [DocenteController::class, 'index']);

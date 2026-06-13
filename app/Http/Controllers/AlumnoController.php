@@ -8,9 +8,19 @@ use Illuminate\Support\Facades\Http;
 class AlumnoController extends Controller
 {
      public function index()
-    {
-        return view('alumnos.index');
+{
+    $url = config('services.api.base_url') . '/generaciones';
+
+    $response = Http::get($url);
+
+    if ($response->failed()) {
+        $generaciones = [];
+    } else {
+        $generaciones = $response->json();
     }
+
+    return view('alumnos.index', compact('generaciones'));
+}
 
    public function lista(Request $request)
 {
@@ -19,7 +29,8 @@ class AlumnoController extends Controller
     $response = Http::get($url, [
         'page' => $request->page ?? 1,
         'limit' => $request->limit ?? 5,
-        'search' => $request->search ?? ''
+        'search' => $request->search ?? '',
+        'generacion' => $request->generacion ?? ''
     ]);
 
     if ($response->failed()) {
@@ -86,6 +97,27 @@ public function store(Request $request)
     return response()->json([
         'success' => true,
         'data' => $response->json()
+    ]);
+}
+
+
+
+public function destroy($id)
+{
+    $url = config('services.api.base_url') . '/deleteAlumno/' . $id;
+
+    $response = Http::delete($url);
+
+    if ($response->failed()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al eliminar alumno'
+        ], 500);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Alumno eliminado correctamente'
     ]);
 }
 }

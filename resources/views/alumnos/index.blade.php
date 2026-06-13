@@ -3,10 +3,11 @@
 @section('content')
 
 <style>
-    .page-container{
+.page-container {
     padding: 30px;
     min-height: calc(100vh - 80px);
 }
+
 .page-title {
     color: white;
     font-size: 2rem;
@@ -189,6 +190,7 @@
     color: white;
     font-weight: 600;
 }
+
 .btn-back {
     display: inline-block;
     background: white;
@@ -210,19 +212,42 @@
     color: #1A338F;
 }
 
+#filtroBGNE {
+    background: rgba(255, 255, 255, 0.10) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+#filtroBGNE:focus {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+    border-color: #6BC7E8;
+    box-shadow: 0 0 10px rgba(107, 199, 232, .5);
+}
+
+#filtroBGNE option {
+    background: #6BC7E8;
+    color: white;
+}
+
+.input-group-text.glass-input {
+    background: rgba(255, 255, 255, 0.10) !important;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
 </style>
 
 <div class="page-container">
-   
+
 
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-        <a href="{{ url()->previous() }}" class="btn btn-light">
-            <i class="fa-solid fa-arrow-left me-2"></i>
-            Regresar
-        </a>
-    </div>
+            <a href="{{ url()->previous() }}" class="btn btn-light">
+                <i class="fa-solid fa-arrow-left me-2"></i>
+                Regresar
+            </a>
+        </div>
         <h3 class="page-title">
         </h3>
 
@@ -240,6 +265,25 @@
                 Lista de alumnos
             </h5>
 
+
+            <div class="input-group w-25">
+
+                <select id="filtroBGNE" class="form-select glass-input">
+                    <option value="">Todas las generaciones</option>
+
+                    @foreach($generaciones as $generacion)
+                    <option value="{{ $generacion['generacion'] }}">
+                        Generación {{ $generacion['generacion'] }} - {{ $generacion['nombreGeneracion'] }}
+                    </option>
+                    @endforeach
+                </select>
+                <span class="input-group-text glass-input">
+                    <i class="fa-solid fa-filter"></i>
+                </span>
+            </div>
+
+
+            <!-- Búsqueda por texto -->
             <input type="text" id="buscadorAlumnos" class="form-control glass-input w-25"
                 placeholder="Buscar alumnos...">
 
@@ -264,7 +308,7 @@
                     </tr>
                 </thead>
 
-                <tbody id="tablaAlumnos" ></tbody>
+                <tbody id="tablaAlumnos"></tbody>
 
             </table>
 
@@ -299,16 +343,25 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let pagina = 1;
     let search = '';
+    let generacion = '';
 
     function cargarAlumnos() {
 
         document.getElementById('loading').style.display = 'block';
 
-        fetch(`/alumnos/lista?page=${pagina}&limit=10&search=${search}`)
+        fetch(`/alumnos/lista?page=${pagina}&limit=10&search=${search}&generacion=${generacion}`)
             .then(res => res.json())
             .then(data => {
 
-                renderTabla(data.data);
+                let alumnos = data.data;
+
+                if (generacion) {
+                    alumnos = alumnos.filter(
+                        alumno => alumno.nombreGeneracionTexto == generacion
+                    );
+                }
+
+                renderTabla(alumnos);
                 renderPaginacion(data);
             })
             .finally(() => {
@@ -326,6 +379,13 @@ document.addEventListener("DOMContentLoaded", function() {
             pagina = 1;
             cargarAlumnos();
         }, 400);
+    });
+    document.getElementById('filtroBGNE').addEventListener('change', (e) => {
+
+        generacion = e.target.value;
+        pagina = 1;
+
+        cargarAlumnos();
     });
 
     function renderTabla(alumnos) {
@@ -353,13 +413,17 @@ document.addEventListener("DOMContentLoaded", function() {
             <td>${alumno.apMaterno}</td>
             <td>Generación ${alumno.nombreGeneracionTexto}</td>
                <td class="text-center">
-    <button class="btn btn-light btn-sm btn-action">
+    <button class="btn btn-secondary btn-sm btn-action">
         <i class="fa-solid fa-eye"></i>
     </button>
 
     <button class="btn btn-warning btn-sm btn-action">
         <i class="fa-solid fa-pen"></i>
     </button>
+    <button class="btn btn-danger btn-sm btn-action btnEliminar"
+        data-id="${alumno.idAlumno}">
+    <i class="fa-solid fa-trash"></i>
+</button>
 </td>
         </tr>
         `;
@@ -367,6 +431,46 @@ document.addEventListener("DOMContentLoaded", function() {
 
         document.getElementById('tablaAlumnos').innerHTML = html;
     }
+
+    document.addEventListener('click', function(e) {
+
+        const boton = e.target.closest('.btnEliminar');
+
+        if (!boton) return;
+
+        const id = boton.dataset.id;
+
+        if (!confirm('¿Deseas eliminar este alumno?')) {
+            return;
+        }
+
+        fetch(`/alumnos/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute('content'),
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.success) {
+
+                    alert(data.message);
+
+                    cargarAlumnos();
+                } else {
+                    alert(data.message || 'Error al eliminar');
+                }
+
+            })
+            .catch(() => {
+                alert('Error al eliminar alumno');
+            });
+
+    });
 
     function renderPaginacion(data) {
 
