@@ -19,8 +19,9 @@
                                 <i class="bi bi-person-badge me-2 text-primary"></i> Datos personales
                             </button>
                         </h2>
-
-                        <div id="datosPersonales" class="accordion-collapse collapse show"
+<!-- 
+                        <div id="datosPersonales" class="accordion-collapse collapse show" -->
+                        <div id="datosPersonales" class="accordion "
                             data-bs-parent="#accordionAlumno">
 
                             <div class="accordion-body">
@@ -144,11 +145,14 @@
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#academicos">
+                                
                                 <i class="bi bi-mortarboard me-2 text-primary"></i> Datos académicos
                             </button>
+                            
                         </h2>
 
-                        <div id="academicos" class="accordion-collapse collapse" data-bs-parent="#accordionAlumno">
+                       <!--  <div id="academicos" class="accordion-collapse collapse" data-bs-parent="#accordionAlumno"> -->
+                             <div id="academicos" class="accordion" data-bs-parent="#accordionAlumno">
 
                             <div class="accordion-body">
                                 <div class="row">
