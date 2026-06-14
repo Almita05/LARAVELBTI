@@ -10,23 +10,14 @@ html, body {
     height: 100%;
 }
 
-body {
-    background: linear-gradient(
-        135deg,
-        #0F2E6D 0%,
-        #1E6FA8 50%,
-        #6BC7E8 100%
-    );
-}
+
 
 .hero {
     background: transparent;
     padding: 60px 20px;
     text-align: center;
     color: white;
-    min-height: 100vh;
 }
-
 .cards-container {
     margin-top: 20px;
 }
