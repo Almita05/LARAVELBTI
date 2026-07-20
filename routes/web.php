@@ -12,6 +12,7 @@ use App\Http\Controllers\ActasCalificacionesController;
 use App\Http\Controllers\ListasAsistenciasController;
 use App\Http\Controllers\BoletasBtiController;
 use App\Http\Controllers\KardexBgneController;
+use App\Http\Controllers\BoletasBGNEExtraController;
 
 Route::get('/', function () {
     return view('principal.home');
@@ -88,6 +89,9 @@ Route::get('/kardex_no_escolarizado', [KardexBgneController::class, 'index'])->n
 Route::get('/kardex_bgneS', [KardexBgneController::class, 'bgneS'])->name('kardex_bgneS');
 Route::get('/kardex_bgneD', [KardexBgneController::class, 'bgneD'])->name('kardex_bgneD');
 
+
+//
+Route::get('/boleta_calificaciones_extraordinarios', [BoletasBGNEExtraController::class, 'index'])->name('boleta_calificaciones_extraordinarios');
 
 
 

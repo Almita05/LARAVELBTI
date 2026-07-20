@@ -173,6 +173,14 @@ html, body {
                     </div>
                 </a>
             </div>
+            <div class="col-md-3">
+                <a href="{{ route('boleta_calificaciones_extraordinarios') }}" style="text-decoration:none;">
+                    <div class="portal-card">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <h5>Imprimir actas extraordinarios</h5>
+                    </div>
+                </a>
+            </div>
 
         </div>
 
