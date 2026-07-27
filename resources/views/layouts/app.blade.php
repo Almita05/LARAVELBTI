@@ -177,18 +177,29 @@
 
 
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-gear"></i> Perfil
-                        </a>
+    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+        <i class="bi bi-person-gear"></i> Perfil
+    </a>
 
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/editarPerfil">Editar perfil</a></li>
-                        </ul>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/grupos/alta">Cerrar sesión</a></li>
-                        </ul>
-                    </li>
+    <ul class="dropdown-menu">
+        <li>
+            <a class="dropdown-item" href="/editarPerfil">
+                <i class="bi bi-pencil-square"></i> Editar perfil
+            </a>
+        </li>
 
+        <li><hr class="dropdown-divider"></li>
+
+        <li>
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="dropdown-item text-danger">
+                    <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                </button>
+            </form>
+        </li>
+    </ul>
+</li>
                 </ul>
 
             </div>
