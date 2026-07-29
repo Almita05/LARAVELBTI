@@ -23,14 +23,16 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::get('/login', [AuthController::class, 'showLogin'])
+    ->name('login');
 
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('login');
+Route::post('/login', [AuthController::class, 'login']);
 
-//Route::get('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->name('logout');
 
+
+    
 Route::middleware('auth.session')->group(function () {
 
     Route::get('/home', function () {

@@ -15,37 +15,40 @@ class AuthController extends Controller
     dd($usuario['Password']);
 }
 
+
+
+public function showLogin()
+{
+    return view('auth.login');
+}
+
+
+
      public function login(Request $request, UserRepository $users)
-    {
-      $usuario = $users->findByUsername($request->usuario);
+{
+    $usuario = $users->findByUsername($request->usuario);
 
+    if (!$usuario) {
+        return back()->with('error','Usuario no encontrado');
+    }
 
-if (!$usuario) {
-    return back()->with('error','Usuario no encontrado');
+    if ($usuario['Estado'] != 'Activo') {
+        return back()->with('error','Usuario inactivo');
+    }
+
+    if (!Hash::check($request->password, $usuario['Password'])) {
+        return back()->with('error','Contraseña incorrecta');
+    }
+
+    session([
+        'usuario_id' => $usuario['ID'],
+        'usuario' => $usuario['Usuario'],
+        'nombre' => $usuario['Nombre'],
+        'rol' => $usuario['Rol']
+    ]);
+
+    return redirect('/home');
 }
-
-
-if ($usuario['Estado'] != 'Activo') {
-    return back()->with('error','Usuario inactivo');
-}
-
-
-if (!Hash::check($request->password, $usuario['Password'])) {
-
-    return back()->with('error','Contraseña incorrecta');
-
-}
-
-
-session([
-    'usuario_id' => $usuario['ID'],
-    'usuario' => $usuario['Usuario'],
-    'nombre' => $usuario['Nombre'],
-    'rol' => $usuario['Rol']
-]);
-
-return redirect('/home');
-    } 
 
    public function logout(Request $request)
 {
