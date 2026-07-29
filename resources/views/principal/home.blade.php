@@ -77,116 +77,138 @@ html, body {
 </style>
 
 <div class="hero">
+    @php
+    $rol = strtoupper(session('rol'));
+@endphp
 
-    <div class="container cards-container">
+<div class="container cards-container">
 
-        <div class="row justify-content-center g-4">
+    {{-- ===================== ADMIN ===================== --}}
+    @if($rol == 'ADMIN')
 
-            <div class="col-md-3">
-                <a href="{{ route('alumnos') }}" style="text-decoration:none;">
-                    <div class="portal-card">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <h5>Buscador de alumnos</h5>
-                    </div>
-                </a>
-            </div>
+    <div class="row justify-content-center g-4">
 
-            <div class="col-md-3">
-                <a href="{{ route('docentes') }}" style="text-decoration:none;">
-                    <div class="portal-card">
-                        <i class="fa-solid fa-chalkboard-user"></i>
-                        <h5>Docentes</h5>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-md-3">
-                <a href="{{ route('planesBTI') }}" style="text-decoration:none;">
-                    <div class="portal-card">
-                        <i class="fa-solid fa-book-open-reader"></i>
-                        <h5>Planes de estudio BTI</h5>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-md-3">
-                <a href="{{ route('planesBGNE') }}" style="text-decoration:none;">
-                    <div class="portal-card">
-                        <i class="fa-solid fa-book-open-reader"></i>
-                        <h5>Planes de estudio BGNE</h5>
-                    </div>
-                </a>
-            </div>
-
+        <div class="col-md-3">
+            <a href="{{ route('alumnos') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <h5>Buscador de alumnos</h5>
+                </div>
+            </a>
         </div>
 
-        <div class="row justify-content-center g-4 mt-2">
+        <div class="col-md-3">
+            <a href="{{ route('docentes') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                    <h5>Docentes</h5>
+                </div>
+            </a>
+        </div>
 
-            <div class="col-md-3">
-                <a href="{{ route('grupos') }}" style="text-decoration:none;">
-                    <div class="portal-card">
-                        <i class="fa-solid fa-users-line"></i>
-                        <h5>Grupos</h5>
-                    </div>
-                </a>
-            </div>
+        <div class="col-md-3">
+            <a href="{{ route('grupos') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                    <i class="fa-solid fa-users-line"></i>
+                    <h5>Grupos</h5>
+                </div>
+            </a>
+        </div>
 
-            <div class="col-md-3">
-                <a href="{{ route('equivalencias') }}" style="text-decoration:none;">
-                    <div class="portal-card">
-                        <i class="fa-solid fa-spinner"></i>
-                        <h5>Equivalencias</h5>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-md-3">
-                <a href="{{ route('listas_asistencias') }}" style="text-decoration:none;">
-                    <div class="portal-card">
-                       <i class="fa-solid fa-user-clock"></i>
-                        <h5>Imprimir listas de asistencias</h5>
-                    </div>
-                </a>
-            </div>
-
-            <div class="col-md-3">
-                <a href="{{ route('actas_calificaciones') }}" style="text-decoration:none;">
-                    <div class="portal-card">
-                        <i class="bi bi-journal-bookmark-fill"></i>
-                        <h5>Imprimir acta de calificaciones</h5>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-3">
-                <a href="{{ route('boleta_calificaciones_bti') }}" style="text-decoration:none;">
-                    <div class="portal-card">
-                       <i class="bi bi-file-earmark-text"></i>
-                        <h5>Boleta de calificaciones-BTI</h5>
-                    </div>
-                </a>
-            </div>
-             <div class="col-md-3">
-                <a href="{{ route('kardex_no_escolarizado') }}" style="text-decoration:none;">
-                    <div class="portal-card">
-                        <i class="bi bi-file-earmark-text"></i>
-                        <h5>Kardex-BGNE</h5>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-3">
-                <a href="{{ route('boleta_calificaciones_extraordinarios') }}" style="text-decoration:none;">
-                    <div class="portal-card">
-                        <i class="bi bi-file-earmark-text"></i>
-                        <h5>Imprimir actas extraordinarios</h5>
-                    </div>
-                </a>
-            </div>
-
+        <div class="col-md-3">
+            <a href="{{ route('equivalencias') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                    <i class="fa-solid fa-spinner"></i>
+                    <h5>Equivalencias</h5>
+                </div>
+            </a>
         </div>
 
     </div>
 
+    @endif
+
+
+    {{-- ===================== ADMIN Y DOCENTE ===================== --}}
+
+    @if(in_array($rol, ['ADMIN', 'DOCENTE']))
+
+    <div class="row justify-content-center g-4 mt-2">
+
+        <div class="col-md-3">
+            <a href="{{ route('planesBTI') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                    <i class="fa-solid fa-book-open-reader"></i>
+                    <h5>Planes de estudio BTI</h5>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="{{ route('planesBGNE') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                    <i class="fa-solid fa-book-open-reader"></i>
+                    <h5>Planes de estudio BGNE</h5>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="{{ route('listas_asistencias') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                    <i class="fa-solid fa-user-clock"></i>
+                    <h5>Imprimir listas de asistencias</h5>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="{{ route('actas_calificaciones') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                    <h5>Imprimir acta de calificaciones</h5>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+    <div class="row justify-content-center g-4 mt-2">
+
+        @if($rol == 'ADMIN')
+
+        <div class="col-md-3">
+            <a href="{{ route('boleta_calificaciones_bti') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <h5>Boleta de calificaciones BTI</h5>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="{{ route('kardex_no_escolarizado') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <h5>Kardex BGNE</h5>
+                </div>
+            </a>
+        </div>
+
+        @endif
+
+        <div class="col-md-3">
+            <a href="{{ route('boleta_calificaciones_extraordinarios') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <h5>Imprimir actas extraordinarios</h5>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+    @endif
+
 </div>
-
-
-@endsection
+</div>

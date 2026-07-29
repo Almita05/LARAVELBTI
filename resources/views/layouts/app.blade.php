@@ -12,75 +12,118 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <style>
-    .btn-azul {
-        background-color: #1A338F;
-        border-color: #1A338F;
-        color: white;
-    }
+   .btn-azul {
+    background: rgb(49, 125, 146);
+    border-color: rgb(49, 125, 146);
+    color: #fff;
+}
 
-    .btn-azul:hover {
-        background-color: #162a73;
-        border-color: #162a73;
-        color: white;
-    }
+.btn-azul:hover {
+    background: rgb(38, 104, 123);
+    border-color: rgb(38, 104, 123);
+    color: #fff;
+}
 
-    body {
-        margin: 0;
-        font-family: 'Segoe UI', sans-serif;
-        min-height: 100vh;
+/* =========================
+   FONDO GENERAL
+========================= */
 
-        background: linear-gradient(
-        135deg,
-        #0F2E6D 0%,
-        #1E6FA8 50%,
-        #6BC7E8 100%
-    );
+html,
+body{
+    margin:0;
+    padding:0;
+    min-height:100%;
+}
 
-        background-attachment: fixed;
-    }
+body{
+    font-family:'Segoe UI',sans-serif;
+    background: rgb(49, 125, 146);
+    background-attachment: fixed;
+}
 
-    .navbar {
-        background: rgba(15, 46, 109, .95);
-        backdrop-filter: blur(10px);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, .15);
-        padding: 12px 25px;
-        transition: .3s;
-    }
+/* =========================
+   NAVBAR
+========================= */
 
-    .navbar-brand img {
-        border-radius: 50%;
-        padding: 2px;
-        background: white;
-    }
+.navbar{
+    background: rgba(38,104,123,.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow:0 4px 15px rgba(0,0,0,.25);
+    padding:12px 25px;
+}
 
-    /* TEXTO NAV */
-    .navbar .nav-link {
-        color: #ffffff !important;
-        font-weight: 500;
-        margin-right: 10px;
-    }
+.navbar-brand img{
+    border-radius:50%;
+    padding:2px;
+    background:#fff;
+}
 
-    .navbar .nav-link:hover {
-        color: #8ACFDE !important;
-    }
+.navbar .nav-link{
+    color:#fff !important;
+    font-weight:500;
+    margin-right:10px;
+    transition:.2s;
+}
 
-    /* DROPDOWN */
-    .dropdown-menu {
-        border-radius: 10px;
-        border: none;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    }
+.navbar .nav-link:hover{
+    color:#d9f4fb !important;
+}
 
-    .dropdown-item:hover {
-        background: #1A338F;
-        color: #fff;
-    }
+/* =========================
+   DROPDOWN
+========================= */
 
-    /* CONTENIDO */
-    .content {
-        padding: 20px;
-        
-    }
+.dropdown-menu{
+    border:none;
+    border-radius:14px;
+    box-shadow:0 10px 25px rgba(0,0,0,.20);
+}
+
+.dropdown-item:hover{
+    background:rgb(49,125,146);
+    color:#fff;
+}
+
+/* =========================
+   CONTENIDO
+========================= */
+
+.content{
+    margin-top:85px;
+    padding:25px;
+}
+
+/* Tarjetas generales */
+
+.card{
+    background:rgba(98,191,214,.80);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border:none;
+    border-radius:22px;
+    box-shadow:0 15px 35px rgba(0,0,0,.25);
+}
+
+/* Botones Bootstrap */
+
+.btn-primary{
+    background:rgb(49,125,146);
+    border-color:rgb(49,125,146);
+}
+
+.btn-primary:hover{
+    background:rgb(38,104,123);
+    border-color:rgb(38,104,123);
+}
+
+/* Tablas */
+
+.table{
+    background:white;
+    border-radius:15px;
+    overflow:hidden;
+}
     </style>
 
 </head>
@@ -206,10 +249,9 @@
         </div>
     </nav>
 
-    <!-- CONTENIDO -->
-    <div class="content" style="margin-top:70px;">
-        @yield('content')
-    </div>
+    <div class="container-fluid content">
+    @yield('content')
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
