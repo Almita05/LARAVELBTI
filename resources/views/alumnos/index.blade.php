@@ -163,9 +163,8 @@
     color: white;
 }
 
-/* Botón principal */
 .btn-azul {
-    background: linear-gradient(135deg, #1E6FA8, #6BC7E8);
+    background: rgb(73, 164, 190) !important;
     border: none;
     color: white;
     font-weight: 500;
@@ -173,8 +172,9 @@
 }
 
 .btn-azul:hover {
+    background: rgb(39, 105, 123) !important;
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
+    box-shadow: 0 5px 15px rgba(49, 125, 146, .4);
     color: white;
 }
 
@@ -235,6 +235,34 @@
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.15);
 }
+
+
+/* Quitar fondo blanco de Bootstrap */
+.glass-table,
+.glass-table thead,
+.glass-table tbody,
+.glass-table tr,
+.glass-table td,
+.glass-table th {
+    background-color: transparent !important;
+}
+
+/* Color tipo glass para las filas */
+.glass-table tbody tr {
+    background: rgba(255, 255, 255, 0.03);
+    transition: all .25s ease;
+}
+
+/* Hover */
+.glass-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Texto */
+.glass-table td,
+.glass-table th {
+    color: white !important;
+}
 </style>
 
 <div class="page-container">
@@ -243,7 +271,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <a href="{{ url()->previous() }}" class="btn btn-light">
+            <a href="{{ url()->previous() }}" class="btn btn-azul">
                 <i class="fa-solid fa-arrow-left me-2"></i>
                 Regresar
             </a>
@@ -295,7 +323,7 @@
                 <div class="spinner-border text-light"></div>
             </div>
 
-            <table class="table glass-table align-middle mb-0">
+            <table class="table table-borderless glass-table align-middle mb-0">
 
                 <thead>
                     <tr>
