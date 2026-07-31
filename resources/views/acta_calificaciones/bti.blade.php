@@ -3,26 +3,15 @@
 @section('content')
 
 <style>
-html,
-body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-}
-
-/* FONDO AZUL */
-body {
-    background: #1A338F;
-}
 
 /* CONTENEDOR PRINCIPAL */
 .hero {
-    background: #1A338F;
+    background: transparent;
     min-height: 100vh;
     padding: 60px 20px;
     color: white;
+    position: relative;
 }
-
 .title {
     text-align: center;
     font-weight: bold;
@@ -65,12 +54,43 @@ body {
     box-shadow: 0 10px 25px rgba(0, 0, 0, .2);
 }
 
+
+/* BOTÓN REGRESAR */
+.btn-back {
+    background: rgba(255, 255, 255, .12);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, .2);
+    color: white;
+
+    padding: 10px 20px;
+    border-radius: 12px;
+
+    text-decoration: none;
+    font-weight: 600;
+
+    transition: all .3s ease;
+
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.btn-back:hover {
+    background: rgba(255, 255, 255, .2);
+    color: white;
+    transform: translateY(-2px);
+}
+
 a {
     text-decoration: none;
 }
 </style>
-
 <div class="hero">
+    <!-- BOTÓN REGRESAR -->
+    <a href="{{ url()->previous() }}" class="btn-back">
+        <i class="fa-solid fa-arrow-left me-2"></i>
+        Regresar
+    </a>
 
     <div class="container">
 
@@ -82,84 +102,87 @@ a {
 
             <div class="col-md-4">
                 <a href="">
-                        <a href="" style="text-decoration:none;" target="_blank">
-                            <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path
-                                        d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
-                                </svg>
-                                <h5>1ER SEMESTRE</h5>
-                                <h6>Referencia: </h6>
-                            </div>
-                        </a>
+                    <a href="" style="text-decoration:none;" target="_blank">
+                        <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                                <path
+                                    d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
+                            </svg>
+                            <h5>1ER SEMESTRE</h5>
+                            <h6>Referencia: </h6>
+                        </div>
+                    </a>
                 </a>
             </div>
 
             <div class="col-md-4">
                 <a href="">
-                        <a href="https://docs.google.com/spreadsheets/d/1XVCEWVL3hNCcnHjWprnyWKRYNVKY8dgG/edit?gid=835296084#gid=835296084" style="text-decoration:none;" target="_blank">
-                            <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path
-                                        d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
-                                </svg>
-                                <h5>2DO SEMESTRE</h5>
-                                <h6>Referencia: Mora Herrera Victoria Kiran </h6>
-                            </div>
-                        </a>
+                    <a href="https://docs.google.com/spreadsheets/d/1XVCEWVL3hNCcnHjWprnyWKRYNVKY8dgG/edit?gid=835296084#gid=835296084"
+                        style="text-decoration:none;" target="_blank">
+                        <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                                <path
+                                    d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
+                            </svg>
+                            <h5>2DO SEMESTRE</h5>
+                            <h6>Referencia: Mora Herrera Victoria Kiran </h6>
+                        </div>
+                    </a>
                 </a>
             </div>
             <div class="col-md-4">
                 <a href="">
-                        <a href="" style="text-decoration:none;" target="_blank">
-                            <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path
-                                        d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
-                                </svg>
-                                <h5>3ER SEMESTRE</h5>
-                                <h6>Referencia: </h6>
-                            </div>
-                        </a>
+                    <a href="" style="text-decoration:none;" target="_blank">
+                        <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                                <path
+                                    d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
+                            </svg>
+                            <h5>3ER SEMESTRE</h5>
+                            <h6>Referencia: </h6>
+                        </div>
+                    </a>
                 </a>
             </div>
             <div class="col-md-4">
                 <a href="">
-                        <a href="https://docs.google.com/spreadsheets/d/1XVCEWVL3hNCcnHjWprnyWKRYNVKY8dgG/edit?gid=46799992#gid=46799992" style="text-decoration:none;" target="_blank">
-                            <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path
-                                        d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
-                                </svg>
-                                <h5>4TO SEMESTRE</h5>
-                                <h6>Referencia: Leal Hernandez Yael</h6>
-                            </div>
-                        </a>
+                    <a href="https://docs.google.com/spreadsheets/d/1XVCEWVL3hNCcnHjWprnyWKRYNVKY8dgG/edit?gid=46799992#gid=46799992"
+                        style="text-decoration:none;" target="_blank">
+                        <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                                <path
+                                    d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
+                            </svg>
+                            <h5>4TO SEMESTRE</h5>
+                            <h6>Referencia: Leal Hernandez Yael</h6>
+                        </div>
+                    </a>
                 </a>
             </div>
             <div class="col-md-4">
                 <a href="">
-                        <a href="" style="text-decoration:none;"  target="_blank">
-                            <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path
-                                        d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
-                                </svg>
-                                <h5>5TO SEMESTRE</h5>
-                                <h6>Referencia: </h6>
-                            </div>
-                        </a>
+                    <a href="" style="text-decoration:none;" target="_blank">
+                        <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                                <path
+                                    d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
+                            </svg>
+                            <h5>5TO SEMESTRE</h5>
+                            <h6>Referencia: </h6>
+                        </div>
+                    </a>
                 </a>
             </div>
             <div class="col-md-4">
                 <a href="">
-                        <a href="https://docs.google.com/spreadsheets/d/1XVCEWVL3hNCcnHjWprnyWKRYNVKY8dgG/edit?gid=432138676#gid=432138676" style="text-decoration:none;" target="_blank">
-                            <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path
-                                        d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
-                                </svg>
-                                <h5>6TO SEMESTRE</h5>
-                                <h6>Referencia: Gomez Trujillo Zaratustra Netzahualcóyotl</h6>
-                            </div>
-                        </a>
+                    <a href="https://docs.google.com/spreadsheets/d/1XVCEWVL3hNCcnHjWprnyWKRYNVKY8dgG/edit?gid=432138676#gid=432138676"
+                        style="text-decoration:none;" target="_blank">
+                        <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                                <path
+                                    d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
+                            </svg>
+                            <h5>6TO SEMESTRE</h5>
+                            <h6>Referencia: Gomez Trujillo Zaratustra Netzahualcóyotl</h6>
+                        </div>
+                    </a>
                 </a>
             </div>
-          
+
 
 
 

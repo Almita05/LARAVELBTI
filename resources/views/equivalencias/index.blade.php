@@ -1,116 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
-<style>
-.page-container {
-    padding: 30px;
-    min-height: 100vh;
-}
 
-body {
-    background: linear-gradient(135deg,
-            #0F2E6D 0%,
-            #1E6FA8 50%,
-            #6BC7E8 100%);
-}
+<head>
+    <link rel="stylesheet" href="{{ asset('css/estilosEquivalencias.css') }}">
+</head>
 
-.page-title {
-    color: white;
-    font-weight: 700;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, .2);
-}
 
-.glass-card {
-    background: rgba(255, 255, 255, .08);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
-}
-
-.glass-header {
-    background: rgba(255, 255, 255, .05);
-    border-bottom: 1px solid rgba(255, 255, 255, .15);
-    color: white;
-}
-
-.glass-input {
-    background: rgba(255, 255, 255, .08);
-    border: 1px solid rgba(255, 255, 255, .15);
-    color: white;
-}
-
-.glass-input::placeholder {
-    color: rgba(255, 255, 255, .7);
-}
-
-.glass-input:focus {
-    background: rgba(255, 255, 255, .12);
-    color: white;
-    border-color: #6BC7E8;
-    box-shadow: 0 0 12px rgba(107, 199, 232, .4);
-}
-
-.btn-regresar {
-    background: rgba(255, 255, 255, .12);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, .2);
-    color: white;
-    font-weight: 600;
-}
-
-.btn-regresar:hover {
-    background: rgba(255, 255, 255, .2);
-    color: white;
-}
-
-/* Cards de alumnos */
-.equivalencia-card {
-    background: rgba(255, 255, 255, .08);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 18px;
-    color: white;
-    transition: .3s;
-    overflow: hidden;
-    height: 100%;
-}
-
-.equivalencia-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 25px rgba(0, 0, 0, .2);
-    background: rgba(255, 255, 255, .12);
-}
-
-.equivalencia-card .card-body {
-    padding: 25px;
-}
-
-.equivalencia-card .card-title {
-    font-weight: 700;
-    margin-bottom: 15px;
-}
-
-.badge-equivalencia {
-    font-size: .85rem;
-    padding: 8px 12px;
-    border-radius: 20px;
-}
-
-.estado-finalizada {
-    background: #28a745;
-}
-
-.estado-tramite {
-    background: #ffc107;
-    color: #000;
-}
-
-.estado-no {
-    background: #6c757d;
-}
-</style>
 
 <div class="page-container">
 

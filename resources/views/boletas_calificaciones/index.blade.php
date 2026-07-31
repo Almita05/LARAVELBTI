@@ -3,20 +3,6 @@
 @section('content')
 
 <style>
-html,
-body {
-    margin: 0;
-    padding: 0;
-    min-height: 100%;
-}
-
-/* FONDO */
-body {
-    background: linear-gradient(135deg,
-            #0F2E6D 0%,
-            #1E6FA8 50%,
-            #6BC7E8 100%);
-}
 
 /* CONTENEDOR */
 .hero {

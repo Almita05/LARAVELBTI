@@ -2,51 +2,75 @@
 
 @section('content')
 
-<div class="d-flex justify-content-between mb-3">
-    <h3>LISTA DE MATERIAS</h3>
+<link rel="stylesheet" href="{{ asset('css/estilosMaterias.css') }}">
 
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalMateria">
-        Alta materia
-    </button>
+
+<div class="page-container">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h3 class="page-title">
+            Lista de Materias
+        </h3>
+
+        <button class="btn btn-azul" data-bs-toggle="modal" data-bs-target="#modalMateria">
+            <i class="fa-solid fa-plus me-2"></i>
+            Alta materia
+        </button>
+
+    </div>
+
+    <div class="glass-card">
+
+        <div class="glass-header p-3 d-flex justify-content-between align-items-center">
+
+            <h5 class="mb-0">
+                Lista de Materias
+            </h5>
+
+            <input
+                type="text"
+                id="buscadorMateria"
+                class="form-control glass-input w-25"
+                placeholder="Buscar materia..."
+            >
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table table-borderless glass-table align-middle mb-0">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Estatus</th>
+                        <th>Docentes</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tablaMaterias"></tbody>
+
+            </table>
+
+        </div>
+
+        <div class="glass-footer p-3 d-flex justify-content-between align-items-center">
+
+            <small id="infoPaginacionMaterias"></small>
+
+            <div id="paginacionMaterias"></div>
+
+        </div>
+
+    </div>
+
 </div>
 
-<div class="card shadow-sm">
-
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Lista de Materias</h5>
-
-        <!-- 🔍 BUSCADOR -->
-        <input type="text" id="buscadorMateria" class="form-control w-25" placeholder="Buscar materia...">
-    </div>
-
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-
-            <thead class="table-light">
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Estatus</th>
-                    <th>Docentes</th>
-                    <th class="text-center">Acciones</th>
-                </tr>
-            </thead>
-
-            <tbody id="tablaMaterias"></tbody>
-
-        </table>
-    </div>
-
-    <!-- PAGINACIÓN -->
-    <div class="card-footer d-flex justify-content-between align-items-center">
-        <small id="infoPaginacionMaterias"></small>
-        <div id="paginacionMaterias"></div>
-    </div>
-
-</div>
-
-<!-- MODAL -->
+<!-- Modal -->
 <div class="modal fade" id="modalMateria" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <form id="formMateria" class="modal-content">
@@ -72,10 +96,8 @@
                     <div class="col-md-12 mb-2">
                         <label>Docentes</label>
 
-                        <!-- 🔥 CHECKBOXES -->
                         <div id="contenedorDocentes"></div>
 
-                        <!-- 👇 seleccionados -->
                         <div id="docentesSeleccionados" class="mt-2"></div>
                     </div>
 
@@ -323,7 +345,6 @@ function cambiarPaginaMateria(p) {
 
     });
 
-    // 🔥 INIT
     cargarDocentes();
 
 });

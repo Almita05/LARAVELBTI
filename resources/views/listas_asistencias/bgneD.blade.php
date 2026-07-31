@@ -10,14 +10,9 @@ body {
     height: 100%;
 }
 
-/* FONDO AZUL */
-body {
-    background: #1A338F;
-}
 
 /* CONTENEDOR PRINCIPAL */
 .hero {
-    background: #1A338F;
     min-height: 100vh;
     padding: 60px 20px;
     color: white;
@@ -68,93 +63,133 @@ body {
 a {
     text-decoration: none;
 }
+
+.btn-regresar {
+    background: rgba(255, 255, 255, .12);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, .2);
+    color: #fff;
+    font-weight: 600;
+    padding: .375rem .75rem;
+    border-radius: .375rem;
+}
+
+.btn-regresar:hover {
+    background: rgba(255, 255, 255, .2);
+    color: #fff;
+}
+
+
+.page-container {
+    padding: 30px;
+    min-height: 100vh;
+}
+
+.page-title {
+    color: #fff;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+}
 </style>
+<div class="page-container">
 
-<div class="hero">
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-    <div class="container">
+        <a href="{{ url()->previous() }}" class="btn btn-regresar">
+            <i class="fa-solid fa-arrow-left me-2"></i>
+            Regresar
+        </a>
 
-        <h1 class="title">
+
+        <h3 class="page-title mb-0">
             BGNE-DOMINGOS
-        </h1>
+        </h3>
 
-        <div class="row justify-content-center g-4">
+        <div></div>
 
-            <div class="col-md-3">
-                <a href="">
-                        <a href="https://docs.google.com/spreadsheets/d/1B9KT9K-kPUK4NF_k7HJVuOaSZEpTeRcx2sEkEQdFKDs/edit?gid=1660984288#gid=1660984288" style="text-decoration:none;" target="_blank">
-                            <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path
-                                        d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
-                                </svg>
-                                <h5>BGNE271024</h5>
-                                <H6>Domingo 9:00 am a 3:00 pm</H6>
-                                <h6>Referencia: Pablo Casiano Andrea Yolanda</h6>
-                            </div>
-                        </a>
-                </a>
-            </div>
+    </div>
+    <div class="row justify-content-center g-4">
 
-            <div class="col-md-3">
-                <a href="">
-                        <a href="https://docs.google.com/spreadsheets/d/1B9KT9K-kPUK4NF_k7HJVuOaSZEpTeRcx2sEkEQdFKDs/edit?gid=294531896#gid=294531896" style="text-decoration:none;" target="_blank">
-                            <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path
-                                        d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
-                                </svg>
-                                <h5>BGNE160325</h5>
-                                <H6>Domingo 9:00 am a 3:00 pm</H6>
-                                <h6>Referencia: Amaro Rosas Magher</h6>
-                            </div>
-                        </a>
+        <div class="col-md-3">
+            <a href="">
+                <a href="https://docs.google.com/spreadsheets/d/1B9KT9K-kPUK4NF_k7HJVuOaSZEpTeRcx2sEkEQdFKDs/edit?gid=1660984288#gid=1660984288"
+                    style="text-decoration:none;" target="_blank">
+                    <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                            <path
+                                d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
+                        </svg>
+                        <h5>BGNE271024</h5>
+                        <H6>Domingo 9:00 am a 3:00 pm</H6>
+                        <h6>Referencia: Pablo Casiano Andrea Yolanda</h6>
+                    </div>
                 </a>
-            </div>
-            <div class="col-md-3">
-                <a href="">
-                        <a href="https://docs.google.com/spreadsheets/d/1B9KT9K-kPUK4NF_k7HJVuOaSZEpTeRcx2sEkEQdFKDs/edit?gid=1203355198#gid=1203355198" style="text-decoration:none;" target="_blank">
-                            <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path
-                                        d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
-                                </svg>
-                                <h5>BGNE200725D</h5>
-                                <H6>Domingo 9:00 am a 3:00 pm</H6>
-                                <h6>Referencia: Garcia Garcilazo Daniel Alberto</h6>
-                            </div>
-                        </a>
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <a href="">
+                <a href="https://docs.google.com/spreadsheets/d/1B9KT9K-kPUK4NF_k7HJVuOaSZEpTeRcx2sEkEQdFKDs/edit?gid=294531896#gid=294531896"
+                    style="text-decoration:none;" target="_blank">
+                    <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                            <path
+                                d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
+                        </svg>
+                        <h5>BGNE160325</h5>
+                        <H6>Domingo 9:00 am a 3:00 pm</H6>
+                        <h6>Referencia: Amaro Rosas Magher</h6>
+                    </div>
                 </a>
-            </div>
-            <div class="col-md-3">
-                <a href="">
-                        <a href="https://docs.google.com/spreadsheets/d/1B9KT9K-kPUK4NF_k7HJVuOaSZEpTeRcx2sEkEQdFKDs/edit?gid=769197174#gid=769197174" style="text-decoration:none;" target="_blank">
-                            <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path
-                                        d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
-                                </svg>
-                                <h5>BGNE080226D</h5>
-                                <H6>Domingo 9:00 am a 3:00 pm</H6>
-                                <h6>Referencia: Chavez Luna Alejandra</h6>
-                            </div>
-                        </a>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="">
+                <a href="https://docs.google.com/spreadsheets/d/1B9KT9K-kPUK4NF_k7HJVuOaSZEpTeRcx2sEkEQdFKDs/edit?gid=1203355198#gid=1203355198"
+                    style="text-decoration:none;" target="_blank">
+                    <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                            <path
+                                d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
+                        </svg>
+                        <h5>BGNE200725D</h5>
+                        <H6>Domingo 9:00 am a 3:00 pm</H6>
+                        <h6>Referencia: Garcia Garcilazo Daniel Alberto</h6>
+                    </div>
                 </a>
-            </div>
-            <div class="col-md-3">
-                <a href="">
-                        <a href="https://docs.google.com/spreadsheets/d/1B9KT9K-kPUK4NF_k7HJVuOaSZEpTeRcx2sEkEQdFKDs/edit?gid=1867645650#gid=1867645650" style="text-decoration:none;"  target="_blank">
-                            <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                                    <path
-                                        d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
-                                </svg>
-                                <h5>BGNE190726D</h5>
-                                <H6>Domingo 09:00 am a 3:00 pm</H6>
-                                <h6>Referencia: Perez Hernández Israel</h6>
-                            </div>
-                        </a>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="">
+                <a href="https://docs.google.com/spreadsheets/d/1B9KT9K-kPUK4NF_k7HJVuOaSZEpTeRcx2sEkEQdFKDs/edit?gid=769197174#gid=769197174"
+                    style="text-decoration:none;" target="_blank">
+                    <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                            <path
+                                d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
+                        </svg>
+                        <h5>BGNE080226D</h5>
+                        <H6>Domingo 9:00 am a 3:00 pm</H6>
+                        <h6>Referencia: Chavez Luna Alejandra</h6>
+                    </div>
                 </a>
-            </div>
-            
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="">
+                <a href="https://docs.google.com/spreadsheets/d/1B9KT9K-kPUK4NF_k7HJVuOaSZEpTeRcx2sEkEQdFKDs/edit?gid=1867645650#gid=1867645650"
+                    style="text-decoration:none;" target="_blank">
+                    <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                            <path
+                                d="M129.5 464L179.5 304L558.9 304L508.9 464L129.5 464zM320.2 512L509 512C530 512 548.6 498.4 554.8 478.3L604.8 318.3C614.5 287.4 591.4 256 559 256L179.6 256C158.6 256 140 269.6 133.8 289.7L112.2 358.4L112.2 160C112.2 151.2 119.4 144 128.2 144L266.9 144C270.4 144 273.7 145.1 276.5 147.2L314.9 176C328.7 186.4 345.6 192 362.9 192L480.2 192C489 192 496.2 199.2 496.2 208L544.2 208C544.2 172.7 515.5 144 480.2 144L362.9 144C356 144 349.2 141.8 343.7 137.6L305.3 108.8C294.2 100.5 280.8 96 266.9 96L128.2 96C92.9 96 64.2 124.7 64.2 160L64.2 448C64.2 483.3 92.9 512 128.2 512L320.2 512z" />
+                        </svg>
+                        <h5>BGNE190726D</h5>
+                        <H6>Domingo 09:00 am a 3:00 pm</H6>
+                        <h6>Referencia: Perez Hernández Israel</h6>
+                    </div>
+                </a>
+            </a>
         </div>
 
     </div>
+
+</div>
 
 </div>
 

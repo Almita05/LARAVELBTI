@@ -3,31 +3,14 @@
 @section('content')
 
 <style>
-html,
-body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-}
-
-/* FONDO AZUL */
-body {
-   background: linear-gradient(
-        135deg,
-        #0F2E6D 0%,
-        #1E6FA8 50%,
-        #6BC7E8 100%
-    );
-}
-
-/* CONTENEDOR PRINCIPAL */
 .hero {
-    background: #1A338F;
+    background: transparent;
     min-height: 100vh;
     padding: 60px 20px;
     color: white;
     position: relative;
 }
+
 
 .title {
     text-align: center;
@@ -93,16 +76,46 @@ body {
     box-shadow: 0 10px 25px rgba(0, 0, 0, .2);
 }
 
+
+/* BOTÓN REGRESAR */
+.btn-back {
+    background: rgba(255, 255, 255, .12);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, .2);
+    color: white;
+
+    padding: 10px 20px;
+    border-radius: 12px;
+
+    text-decoration: none;
+    font-weight: 600;
+
+    transition: all .3s ease;
+
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.btn-back:hover {
+    background: rgba(255, 255, 255, .2);
+    color: white;
+    transform: translateY(-2px);
+}
+
+
+
 a {
     text-decoration: none;
 }
 </style>
-
 <div class="hero">
-<!-- BOTÓN REGRESAR -->
-        <a href="{{ url()->previous() }}" class="btn-back">
-            ← Regresar
-        </a>
+    <!-- BOTÓN REGRESAR -->
+    <a href="{{ url()->previous() }}" class="btn-back">
+        <i class="fa-solid fa-arrow-left me-2"></i>
+        Regresar
+    </a>
+
 
     <div class="container">
 

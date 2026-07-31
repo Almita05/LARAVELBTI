@@ -2,268 +2,11 @@
 
 @section('content')
 
-<style>
-.page-container {
-    padding: 30px;
-    min-height: calc(100vh - 80px);
-}
-
-.page-title {
-    color: white;
-    font-size: 2rem;
-    font-weight: 700;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, .2);
-}
-
-.glass-card {
-    background: rgba(255, 255, 255, .08);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
-    overflow: hidden;
-}
-
-.glass-header {
-    background: rgba(255, 255, 255, .05);
-    color: white;
-}
-
-.glass-footer {
-    background: rgba(255, 255, 255, .05);
-    color: white;
-}
-
-.glass-table {
-    color: white;
-}
-
-.glass-table thead tr {
-    background: rgba(255, 255, 255, .08);
-}
-
-.glass-table tbody tr:hover {
-    background: rgba(255, 255, 255, .08);
-}
-
-.glass-table td,
-.glass-table th {
-    border-color: rgba(255, 255, 255, .1);
-}
-
-.glass-input {
-    background: rgba(255, 255, 255, .08);
-    border: 1px solid rgba(255, 255, 255, .15);
-    color: white;
-}
-
-.glass-input::placeholder {
-    color: rgba(255, 255, 255, .6);
-}
-
-.glass-input:focus {
-    background: rgba(255, 255, 255, .12);
-    color: white;
-    border-color: #6BC7E8;
-    box-shadow: 0 0 15px rgba(107, 199, 232, .3);
-}
-
-.btn-action {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    margin: 0 2px;
-}
-
-.btn-light.btn-action {
-    background: rgba(255, 255, 255, .15);
-    border: none;
-    color: white;
-}
-
-.btn-light.btn-action:hover {
-    background: rgba(255, 255, 255, .25);
-}
-
-.btn-warning.btn-action {
-    color: white;
-}
-
-/* Fondo transparente para integrarse al layout */
-.page-container {
-    padding: 20px;
-}
-
-/* Card principal */
-.glass-card {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
-}
-
-/* Header */
-.glass-header {
-    background: rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    color: white;
-}
-
-/* Tabla */
-.glass-table {
-    color: white;
-    margin-bottom: 0;
-}
-
-.glass-table thead {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.glass-table thead th {
-    color: white;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.glass-table tbody tr {
-    transition: all .25s ease;
-}
-
-.glass-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.glass-table td,
-.glass-table th {
-    border-color: rgba(255, 255, 255, 0.08);
-}
-
-/* Buscador */
-.glass-input {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-}
-
-.glass-input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.glass-input:focus {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border-color: #6BC7E8;
-    box-shadow: 0 0 10px rgba(107, 199, 232, .5);
-}
-
-/* Footer */
-.glass-footer {
-    background: rgba(255, 255, 255, 0.05);
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-    color: white;
-}
-
-.btn-azul {
-    background: rgb(73, 164, 190) !important;
-    border: none;
-    color: white;
-    font-weight: 500;
-    transition: .3s;
-}
-
-.btn-azul:hover {
-    background: rgb(39, 105, 123) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(49, 125, 146, .4);
-    color: white;
-}
-
-/* Acciones */
-.btn-action {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-}
-
-/* Título */
-.page-title {
-    color: white;
-    font-weight: 600;
-}
-
-.btn-back {
-    display: inline-block;
-    background: white;
-    color: #1A338F;
-    padding: 10px 20px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: bold;
-    margin-bottom: 30px;
-    transition: all 0.3s ease;
-
-    position: absolute;
-    top: 20px;
-    left: 20px;
-}
-
-.btn-back:hover {
-    background: #f0f0f0;
-    color: #1A338F;
-}
-
-#filtroBGNE {
-    background: rgba(255, 255, 255, 0.10) !important;
-    color: white !important;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-#filtroBGNE:focus {
-    background: rgba(255, 255, 255, 0.15) !important;
-    color: white !important;
-    border-color: #6BC7E8;
-    box-shadow: 0 0 10px rgba(107, 199, 232, .5);
-}
-
-#filtroBGNE option {
-    background: #6BC7E8;
-    color: white;
-}
-
-.input-group-text.glass-input {
-    background: rgba(255, 255, 255, 0.10) !important;
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-}
 
 
-/* Quitar fondo blanco de Bootstrap */
-.glass-table,
-.glass-table thead,
-.glass-table tbody,
-.glass-table tr,
-.glass-table td,
-.glass-table th {
-    background-color: transparent !important;
-}
-
-/* Color tipo glass para las filas */
-.glass-table tbody tr {
-    background: rgba(255, 255, 255, 0.03);
-    transition: all .25s ease;
-}
-
-/* Hover */
-.glass-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.12) !important;
-}
-
-/* Texto */
-.glass-table td,
-.glass-table th {
-    color: white !important;
-}
-</style>
+<head>
+    <link rel="stylesheet" href="{{ asset('css/estilos.css') }}">
+</head>
 
 <div class="page-container">
 
@@ -297,19 +40,20 @@
             <div class="input-group w-25">
 
                 <select id="filtroBGNE" class="form-select glass-input">
-                    <option value="">Todas las generaciones</option>
+                    <option value="" class="valueGeneraciones">Todas las generaciones</option>
 
                     @foreach($generaciones as $generacion)
-                    <option value="{{ $generacion['generacion'] }}">
+                    <option value="{{ $generacion['generacion'] }}" class="valueGeneraciones">
                         Generación {{ $generacion['generacion'] }} - {{ $generacion['nombreGeneracion'] }}
                     </option>
                     @endforeach
                 </select>
-                <span class="input-group-text glass-input">
-                    <i class="fa-solid fa-filter"></i>
-                </span>
-            </div>
 
+                <button class="btn filtro-btn" type="button">
+                    <i class="fa-solid fa-filter"></i>
+                </button>
+
+            </div>
 
             <!-- Búsqueda por texto -->
             <input type="text" id="buscadorAlumnos" class="form-control glass-input w-25"
@@ -542,49 +286,49 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.addEventListener('submit', function(e) {
 
-    if (e.target.id !== 'formAlumno') return;
+        if (e.target.id !== 'formAlumno') return;
 
-    e.preventDefault();
+        e.preventDefault();
 
-    const formData = new FormData(e.target);
+        const formData = new FormData(e.target);
 
-    fetch('/alumnos', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document
-                .querySelector('meta[name="csrf-token"]')
-                .getAttribute('content')
-        },
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
+        fetch('/alumnos', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute('content')
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
 
-        if (data.success) {
+                if (data.success) {
 
-            alert(data.message);
+                    alert(data.message);
 
-            bootstrap.Modal.getInstance(
-                document.getElementById('modalAlumno')
-            ).hide();
+                    bootstrap.Modal.getInstance(
+                        document.getElementById('modalAlumno')
+                    ).hide();
 
-            cargarAlumnos();
+                    cargarAlumnos();
 
-        } else {
+                } else {
 
-            alert(data.message || 'Error al guardar');
+                    alert(data.message || 'Error al guardar');
 
-        }
+                }
 
-    })
-    .catch(error => {
+            })
+            .catch(error => {
 
-        console.error(error);
-        alert('Error al guardar alumno');
+                console.error(error);
+                alert('Error al guardar alumno');
+
+            });
 
     });
-
-});
 
 });
 </script>

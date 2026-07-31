@@ -1,0 +1,130 @@
+.page-container{
+    padding:30px;
+    min-height:100vh;
+}
+
+.page-title{
+    color:white;
+    font-weight:700;
+    text-shadow:0 2px 8px rgba(0,0,0,.2);
+}
+
+.glass-card{
+    background:rgba(255,255,255,.08);
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 8px 25px rgba(0,0,0,.15);
+}
+
+.glass-header{
+    background:rgba(255,255,255,.05);
+    border-bottom:1px solid rgba(255,255,255,.15);
+    color:white;
+}
+
+.glass-footer{
+    background:rgba(255,255,255,.05);
+    border-top:1px solid rgba(255,255,255,.15);
+    color:white;
+}
+
+/* ===========================
+   TABLA
+=========================== */
+
+.glass-table{
+    background:transparent !important;
+    color:white;
+}
+
+.glass-table thead,
+.glass-table tbody,
+.glass-table tr,
+.glass-table th,
+.glass-table td{
+    background:transparent !important;
+}
+
+.glass-table thead th{
+    color:white;
+    font-weight:600;
+    border-bottom:1px solid rgba(255,255,255,.15);
+}
+
+.glass-table tbody td{
+    color:white;
+    border-color:rgba(255,255,255,.12);
+}
+
+.glass-table tbody tr{
+    transition:.25s;
+}
+
+.glass-table tbody tr:hover{
+    background:rgba(255,255,255,.08) !important;
+}
+
+/* ===========================
+   INPUT
+=========================== */
+
+.glass-input{
+    background:rgba(255,255,255,.08);
+    color:white;
+    border:1px solid rgba(255,255,255,.15);
+}
+
+.glass-input::placeholder{
+    color:rgba(255,255,255,.7);
+}
+
+.glass-input:focus{
+    background:rgba(255,255,255,.12);
+    color:white;
+    border-color:rgba(255,255,255,.3);
+    box-shadow:none;
+}
+
+.glass-input option{
+    color:black;
+}
+
+/* ===========================
+   BOTONES
+=========================== */
+
+.btn-azul{
+    background:linear-gradient(135deg,#1E6FA8,#6BC7E8);
+    color:white;
+    border:none;
+}
+
+.btn-ver{
+    background:#00BCD4;
+    color:white;
+    border:none;
+}
+
+.btn-editar{
+    background:#FF9800;
+    color:white;
+    border:none;
+}
+
+.btn-eliminar{
+    background:#E53935;
+    color:white;
+    border:none;
+}
+
+#paginacionMaterias .btn-primary{
+    background:linear-gradient(135deg,#1E6FA8,#6BC7E8);
+    border:none;
+}
+
+#paginacionMaterias .btn-outline-primary{
+    color:white;
+    border-color:rgba(255,255,255,.3);
+}

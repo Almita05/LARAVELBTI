@@ -120,7 +120,6 @@ body{
 /* Tablas */
 
 .table{
-    background:white;
     border-radius:15px;
     overflow:hidden;
 }
@@ -136,7 +135,7 @@ body{
 
             <div class="d-flex align-items-center">
                 <img src="{{ asset('img/logo.png') }}" alt="logo" width="45" height="45" class="me-3">
-                <a class="navbar-brand text-white fw-bold mb-0" href="/">
+                <a class="navbar-brand text-white fw-bold mb-0" href="/home">
                     Bachillerato Tecnológico Interamericano
                 </a>
             </div>

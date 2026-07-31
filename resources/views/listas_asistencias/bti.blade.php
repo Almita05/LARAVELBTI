@@ -3,26 +3,60 @@
 @section('content')
 
 <style>
-html,
-body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
+
+
+.page-container{
+    padding:30px;
+    min-height:100vh;
 }
 
-/* FONDO AZUL */
-body {
-    background: #1A338F;
+.page-title{
+    color:#fff;
+    font-weight:700;
+    text-shadow:0 2px 8px rgba(0,0,0,.2);
 }
 
-/* CONTENEDOR PRINCIPAL */
-.hero {
-    background: #1A338F;
-    min-height: 100vh;
-    padding: 60px 20px;
-    color: white;
+.portal-card{
+    background:rgba(255,255,255,.08);
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:20px;
+    color:#fff;
+    transition:.3s;
+    min-height:220px;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
 }
 
+.portal-card:hover{
+    background:rgba(255,255,255,.12);
+    transform:translateY(-6px);
+    box-shadow:0 12px 25px rgba(0,0,0,.2);
+}
+
+.portal-card svg{
+    width:60px;
+    height:60px;
+    fill:#fff;
+    margin-bottom:20px;
+}
+
+.portal-card h5{
+    font-weight:700;
+    margin-bottom:10px;
+}
+
+.portal-card h6{
+    color:rgba(255,255,255,.8);
+    text-align:center;
+}
+
+a{
+    text-decoration:none;
+}
 .title {
     text-align: center;
     font-weight: bold;
@@ -68,19 +102,43 @@ body {
 a {
     text-decoration: none;
 }
+
+.btn-regresar {
+    background: rgba(255, 255, 255, .12);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, .2);
+    color: #fff;
+    font-weight: 600;
+    padding: .375rem .75rem;
+    border-radius: .375rem;
+}
+
+.btn-regresar:hover {
+    background: rgba(255, 255, 255, .2);
+    color: #fff;
+}
 </style>
 
-<div class="hero">
+<div class="page-container">
 
-    <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-        <h1 class="title">
-            BTI-ESCOLARIZADO
-        </h1>
+        <a href="{{ url()->previous() }}" class="btn btn-regresar">
+            <i class="fa-solid fa-arrow-left me-2"></i>
+            Regresar
+        </a>
 
-        <div class="row justify-content-center g-3">
 
-            <div class="col-md-4">
+        <h3 class="page-title mb-0">
+           BTI-ESCOLARIZADO
+        </h3>
+
+        <div></div>
+
+    </div>
+    <div class="row justify-content-center g-4">
+
+        <div class="col-md-4">
                 <a href="">
                         <a href="" style="text-decoration:none;" target="_blank">
                             <div class="portal-card"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
