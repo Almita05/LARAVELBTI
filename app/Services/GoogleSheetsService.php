@@ -85,4 +85,167 @@ public function getSchoolRows(string $sheet): array
 
     return $data;
 }
+
+public function guardarCalificaciones($lista, $usuario)
+{
+
+    $sheet = "CALIFICACIONES";
+
+
+    $data = $this->getSchoolRows($sheet);
+
+
+    $usuarios = $this->getSchoolRows("USUARIOS");
+
+
+    $esAdmin = false;
+
+
+    foreach($usuarios as $user){
+
+        if(
+            strtolower(trim($user['USUARIO'])) ==
+            strtolower(trim($usuario))
+            &&
+            strtoupper(trim($user['ROL'])) == "ADMIN"
+        ){
+
+            $esAdmin = true;
+            break;
+
+        }
+
+    }
+
+
+
+    foreach($lista as $dato){
+
+
+        $fila = null;
+
+
+        foreach($data as $index=>$registro){
+
+
+            if(
+    $registro['ID_ALUMNO'] == $dato['alumno_id']
+    &&
+    $registro['ID_MATERIA'] == $dato['materiaId']
+){
+
+                $fila = $index + 2;
+                break;
+
+            }
+
+        }
+
+
+
+        if(!$fila){
+            continue;
+        }
+
+
+
+        $columna = [
+
+            "P1"=>3,
+            "P2"=>4,
+            "P3"=>5,
+            "SEMESTRAL"=>6,
+            "EXTRA"=>8
+
+        ];
+
+
+
+        $campo = $dato['parcial'];
+
+
+
+        if(!isset($columna[$campo])){
+            continue;
+        }
+
+
+
+        $col = $columna[$campo];
+
+
+
+        // valor actual en Sheet
+        $actual = $this->service
+            ->spreadsheets_values
+            ->get(
+                $this->schoolSpreadsheetId,
+                $sheet."!".$this->numeroColumna($col).$fila
+            )
+            ->getValues();
+
+
+
+        $valorActual = $actual[0][0] ?? "";
+
+
+
+        // Docente no puede modificar
+        if(
+            !$esAdmin
+            &&
+            $valorActual !== ""
+        ){
+
+            continue;
+
+        }
+
+
+
+        $this->service
+            ->spreadsheets_values
+            ->update(
+                $this->schoolSpreadsheetId,
+                $sheet."!".$this->numeroColumna($col).$fila,
+                new \Google\Service\Sheets\ValueRange([
+                    'values'=>[
+                        [
+                            $dato['calificacion']
+                        ]
+                    ]
+                ]),
+                [
+                    'valueInputOption'=>'USER_ENTERED'
+                ]
+            );
+
+
+
+    }
+
+
+    return "Calificaciones guardadas correctamente";
+
+}
+
+private function numeroColumna($numero)
+{
+
+    $letras = [
+        1=>'A',
+        2=>'B',
+        3=>'C',
+        4=>'D',
+        5=>'E',
+        6=>'F',
+        7=>'G',
+        8=>'H',
+        9=>'I'
+    ];
+
+
+    return $letras[$numero];
+
+}
 }

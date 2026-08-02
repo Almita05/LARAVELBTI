@@ -122,4 +122,8 @@ Route::get(
     [CalificacionesController::class,'materias']
 );
 
+Route::post('/calificaciones/guardar', 
+[CalificacionesController::class,'guardar'])
+->name('calificaciones.guardar');
+
 });

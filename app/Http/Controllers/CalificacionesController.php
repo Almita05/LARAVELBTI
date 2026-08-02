@@ -62,4 +62,39 @@ public function materias($grado)
 
     return response()->json($resultado);
 }
+
+
+public function guardar(Request $request)
+{
+
+    try {
+
+        $resultado = app(\App\Services\GoogleSheetsService::class)
+            ->guardarCalificaciones(
+                $request->datos,
+                session('usuario')
+            );
+
+
+        return response()->json([
+            'ok'=>true,
+            'mensaje'=>$resultado
+        ]);
+
+
+    } catch(\Exception $e) {
+
+
+        return response()->json([
+
+            'error'=>$e->getMessage(),
+            'linea'=>$e->getLine(),
+            'archivo'=>$e->getFile()
+
+        ],500);
+
+
+    }
+
+}
 }

@@ -144,3 +144,26 @@
     color:white;
 }
 
+
+.nota-roja{
+    color:red !important;
+    font-weight:bold;
+}
+
+
+.nota-verde{
+    color:green !important;
+    font-weight:bold;
+}
+
+
+.calificacion:read-only{
+    background:#e9ecef;
+    cursor:not-allowed;
+}
+
+
+.is-invalid{
+    border:2px solid red !important;
+}
+
