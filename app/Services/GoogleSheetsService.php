@@ -61,7 +61,6 @@ protected $schoolSpreadsheetId;
 }
 
 public function getSchoolRows(string $sheet): array
-
 {
     $response = $this->service
         ->spreadsheets_values
