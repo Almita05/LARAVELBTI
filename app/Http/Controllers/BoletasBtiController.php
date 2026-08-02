@@ -12,4 +12,16 @@ class BoletasBtiController extends Controller
     }
 
 
+    public function boletasBTI()
+{
+   return view('boletasBTI.index');
+}
+
+
+public function modalAlta()
+{
+   
+    return view('boletasBTI.modalAlta');
+}
+
 }

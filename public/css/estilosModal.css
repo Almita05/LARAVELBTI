@@ -1,0 +1,146 @@
+/* ===========================
+   MODAL
+=========================== */
+
+.glass-modal{
+    background: rgba(255,255,255,.08);
+    backdrop-filter: blur(18px);
+    border-radius:20px;
+    overflow:hidden;
+    border:none;
+}
+
+.modal-header-system{
+
+    background:rgb(49,125,146);
+
+    color:white;
+}
+
+.modal-title{
+
+    font-weight:700;
+    font-size:1.3rem;
+}
+
+.modal-body{
+
+    background:#f7fbff;
+}
+
+.modal-footer{
+
+    background:#eef5fb;
+}
+
+
+/* ===========================
+   MATERIA
+=========================== */
+
+.materia-info{
+
+    padding:15px;
+    border-radius:15px;
+    background:rgb(49,125,146);
+}
+
+#tituloMateria{
+
+    color:#fafafa;
+    font-size:1.4rem;
+}
+
+
+/* ===========================
+   TABLA
+=========================== */
+
+.tabla-calificaciones{
+
+    border-radius:15px;
+    overflow:hidden;
+}
+
+.tabla-calificaciones thead{
+
+    background:#0F2E6D;
+    color:white;
+}
+
+.tabla-calificaciones th{
+
+    border:none;
+    padding:15px;
+}
+
+.tabla-calificaciones td{
+
+    vertical-align:middle;
+}
+
+.tabla-calificaciones tbody tr:nth-child(even){
+
+    background:#f5fbff;
+}
+
+.tabla-calificaciones tbody tr:hover{
+
+    background:#dff3ff;
+}
+
+
+/* ===========================
+   INPUTS
+=========================== */
+
+.tabla-calificaciones input{
+
+    border-radius:10px;
+    text-align:center;
+    border:1px solid #cfd8dc;
+    transition:.2s;
+}
+
+.tabla-calificaciones input:focus{
+
+    border-color:#1E6FA8;
+    box-shadow:0 0 0 .2rem rgba(30,111,168,.20);
+}
+
+
+/* ===========================
+   BOTONES
+=========================== */
+
+.btn-guardar{
+
+    background:#1E6FA8;
+    color:white;
+    border:none;
+    padding:10px 24px;
+    border-radius:10px;
+    font-weight:600;
+}
+
+.btn-guardar:hover{
+
+    background:#154f78;
+    color:white;
+}
+
+.btn-cancelar{
+
+    background:#6c757d;
+    color:white;
+    border:none;
+    padding:10px 24px;
+    border-radius:10px;
+}
+
+.btn-cancelar:hover{
+
+    background:#5b636a;
+    color:white;
+}
+

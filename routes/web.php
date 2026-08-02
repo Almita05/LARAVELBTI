@@ -16,6 +16,7 @@ use App\Http\Controllers\KardexBgneController;
 use App\Http\Controllers\BoletasBGNEExtraController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CalificacionesController;
 
 
 
@@ -30,6 +31,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('/logout', [AuthController::class, 'logout'])
     ->name('logout');
+Route::get('/materias-usuario', [CalificacionesController::class, 'materiasUsuario']);
 
 
     
@@ -60,6 +62,8 @@ Route::middleware('auth.session')->group(function () {
     // Extraordinarios
     Route::get('/boleta_calificaciones_extraordinarios', [BoletasBGNEExtraController::class, 'index'])
         ->name('boleta_calificaciones_extraordinarios');
+    Route::get('/boletas_bti', [BoletasBtiController::class, 'boletasBTI'])
+        ->name('boletas_bti');
 
 });
 
@@ -107,5 +111,15 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
 
     Route::get('/kardex_bgneD', [KardexBgneController::class, 'bgneD'])
         ->name('kardex_bgneD');
+
+        Route::get(
+    '/calificaciones/alumnos/{grado}/{grupo}/{materia}',
+    [CalificacionesController::class, 'alumnos']
+);
+
+Route::get(
+    '/calificaciones/materias/{grado}',
+    [CalificacionesController::class,'materias']
+);
 
 });

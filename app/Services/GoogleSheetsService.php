@@ -8,24 +8,29 @@ use Google\Service\Sheets;
 class GoogleSheetsService
 {
     protected $service;
-    protected $spreadsheetId;
+protected $spreadsheetId;
+protected $schoolSpreadsheetId;
 
-    public function __construct()
-    {
-        $client = new Client();
+   public function __construct()
+{
+    $client = new Client();
 
-        $client->setApplicationName('Sistema Escolar');
+    $client->setApplicationName('Sistema Escolar');
 
-        $client->setScopes([
-            Sheets::SPREADSHEETS
-        ]);
+    $client->setScopes([
+        Sheets::SPREADSHEETS
+    ]);
 
-        $client->setAuthConfig(base_path(env('GOOGLE_CREDENTIALS')));
+    $client->setAuthConfig(base_path(env('GOOGLE_CREDENTIALS')));
 
-        $this->service = new Sheets($client);
+    $this->service = new Sheets($client);
 
-        $this->spreadsheetId = env('GOOGLE_SHEET_ID');
-    }
+    // Hoja de accesos
+    $this->spreadsheetId = env('GOOGLE_SHEET_ID');
+
+    // Hoja escolar (alumnos, materias, calificaciones y boletas)
+    $this->schoolSpreadsheetId = env('GOOGLE_SCHOOL_SHEET_ID');
+}
 
     public function getRows(string $sheet): array
 {
@@ -47,6 +52,32 @@ class GoogleSheetsService
     foreach ($rows as $row) {
 
         // Si faltan columnas las rellenamos con null
+        $row = array_pad($row, count($headers), null);
+
+        $data[] = array_combine($headers, $row);
+    }
+
+    return $data;
+}
+
+public function getSchoolRows(string $sheet): array
+{
+    $response = $this->service
+        ->spreadsheets_values
+        ->get($this->schoolSpreadsheetId, $sheet);
+
+    $rows = $response->getValues();
+
+    if (empty($rows)) {
+        return [];
+    }
+
+    $headers = array_shift($rows);
+
+    $data = [];
+
+    foreach ($rows as $row) {
+
         $row = array_pad($row, count($headers), null);
 
         $data[] = array_combine($headers, $row);

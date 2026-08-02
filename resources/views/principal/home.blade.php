@@ -205,6 +205,14 @@ html, body {
                 </div>
             </a>
         </div>
+        <div class="col-md-3">
+            <a href="{{ route('boletas_bti') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                  <i class="bi bi-ui-checks"></i>
+                    <h5>Capturar calificaciones-Sistema Escolarizado</h5>
+                </div>
+            </a>
+        </div>
 
     </div>
 

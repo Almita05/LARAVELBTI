@@ -12,117 +12,117 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <style>
-   .btn-azul {
-    background: rgb(49, 125, 146);
-    border-color: rgb(49, 125, 146);
-    color: #fff;
-}
+    .btn-azul {
+        background: rgb(49, 125, 146);
+        border-color: rgb(49, 125, 146);
+        color: #fff;
+    }
 
-.btn-azul:hover {
-    background: rgb(38, 104, 123);
-    border-color: rgb(38, 104, 123);
-    color: #fff;
-}
+    .btn-azul:hover {
+        background: rgb(38, 104, 123);
+        border-color: rgb(38, 104, 123);
+        color: #fff;
+    }
 
-/* =========================
+    /* =========================
    FONDO GENERAL
 ========================= */
 
-html,
-body{
-    margin:0;
-    padding:0;
-    min-height:100%;
-}
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+    }
 
-body{
-    font-family:'Segoe UI',sans-serif;
-    background: rgb(49, 125, 146);
-    background-attachment: fixed;
-}
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background: rgb(49, 125, 146);
+        background-attachment: fixed;
+    }
 
-/* =========================
+    /* =========================
    NAVBAR
 ========================= */
 
-.navbar{
-    background: rgba(38,104,123,.95);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow:0 4px 15px rgba(0,0,0,.25);
-    padding:12px 25px;
-}
+    .navbar {
+        background: rgba(38, 104, 123, .95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, .25);
+        padding: 12px 25px;
+    }
 
-.navbar-brand img{
-    border-radius:50%;
-    padding:2px;
-    background:#fff;
-}
+    .navbar-brand img {
+        border-radius: 50%;
+        padding: 2px;
+        background: #fff;
+    }
 
-.navbar .nav-link{
-    color:#fff !important;
-    font-weight:500;
-    margin-right:10px;
-    transition:.2s;
-}
+    .navbar .nav-link {
+        color: #fff !important;
+        font-weight: 500;
+        margin-right: 10px;
+        transition: .2s;
+    }
 
-.navbar .nav-link:hover{
-    color:#d9f4fb !important;
-}
+    .navbar .nav-link:hover {
+        color: #d9f4fb !important;
+    }
 
-/* =========================
+    /* =========================
    DROPDOWN
 ========================= */
 
-.dropdown-menu{
-    border:none;
-    border-radius:14px;
-    box-shadow:0 10px 25px rgba(0,0,0,.20);
-}
+    .dropdown-menu {
+        border: none;
+        border-radius: 14px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, .20);
+    }
 
-.dropdown-item:hover{
-    background:rgb(49,125,146);
-    color:#fff;
-}
+    .dropdown-item:hover {
+        background: rgb(49, 125, 146);
+        color: #fff;
+    }
 
-/* =========================
+    /* =========================
    CONTENIDO
 ========================= */
 
-.content{
-    margin-top:85px;
-    padding:25px;
-}
+    .content {
+        margin-top: 85px;
+        padding: 25px;
+    }
 
-/* Tarjetas generales */
+    /* Tarjetas generales */
 
-.card{
-    background:rgba(98,191,214,.80);
-    backdrop-filter:blur(16px);
-    -webkit-backdrop-filter:blur(16px);
-    border:none;
-    border-radius:22px;
-    box-shadow:0 15px 35px rgba(0,0,0,.25);
-}
+    .card {
+        background: rgba(98, 191, 214, .80);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: none;
+        border-radius: 22px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, .25);
+    }
 
-/* Botones Bootstrap */
+    /* Botones Bootstrap */
 
-.btn-primary{
-    background:rgb(49,125,146);
-    border-color:rgb(49,125,146);
-}
+    .btn-primary {
+        background: rgb(49, 125, 146);
+        border-color: rgb(49, 125, 146);
+    }
 
-.btn-primary:hover{
-    background:rgb(38,104,123);
-    border-color:rgb(38,104,123);
-}
+    .btn-primary:hover {
+        background: rgb(38, 104, 123);
+        border-color: rgb(38, 104, 123);
+    }
 
-/* Tablas */
+    /* Tablas */
 
-.table{
-    border-radius:15px;
-    overflow:hidden;
-}
+    .table {
+        border-radius: 15px;
+        overflow: hidden;
+    }
     </style>
 
 </head>
@@ -150,6 +150,13 @@ body{
 
                 <ul class="navbar-nav ms-auto">
 
+
+                    <li class="nav-item d-flex align-items-center me-3">
+                        <span class="text-white fw-semibold">
+                            ¡Bienvenido, {{ session('nombre') }}!
+                        </span>
+                    </li>
+
                     <!-- INICIO -->
                     <li class="nav-item">
                         <a class="nav-link" href="/home">
@@ -157,7 +164,7 @@ body{
                         </a>
                     </li>
 
-                    <!-- ALUMNOS -->
+                    <!-- ALUMNOS 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
                             <i class="bi bi-person"></i> Alumnos
@@ -165,30 +172,30 @@ body{
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="/alumnos"><i class="fa-solid fa-magnifying-glass"></i> Buscador</a></li>
                         </ul>
-                    </li>
+                    </li>-->
 
-                    <!-- DOCENTES -->
+                    <!-- DOCENTES 
                     <li class="nav-item">
                         <a class="nav-link" href="/docentes">
                             <i class="bi bi-people"></i> Docentes
                         </a>
                     </li>
-
-                    <!-- MATERIAS -->
+-->
+                    <!-- MATERIAS 
                     <li class="nav-item">
                         <a class="nav-link" href="/materias">
                             <i class="bi bi-book"></i> Materias
                         </a>
                     </li>
-
-                    <!-- EQUIVALENCIAS -->
+-->
+                    <!-- EQUIVALENCIAS
                     <li class="nav-item">
                         <a class="nav-link" href="/equivalencias">
                             <i class="bi bi-file-earmark-text"></i> Equivalencias
                         </a>
                     </li>
-
-                    <!-- GRUPOS -->
+ -->
+                    <!-- GRUPOS 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="/grupos" data-bs-toggle="dropdown">
                             <i class="bi bi-diagram-3"></i> Grupos
@@ -198,9 +205,9 @@ body{
                             <li><a class="dropdown-item" href="/grupos/alta">Dar de alta grupo</a></li>
                         </ul>
                     </li>
+-->
 
-
-                    <!-- imprimir diferentes cosas -->
+                    <!-- imprimir diferentes cosas 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="/grupos" data-bs-toggle="dropdown">
                             <i class="fa-solid fa-print"></i> Imprimir
@@ -214,34 +221,37 @@ body{
                         </ul>
                     </li>
 
-
+-->
 
 
 
                     <li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-        <i class="bi bi-person-gear"></i> Perfil
-    </a>
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-gear"></i> Perfil
+                        </a>
 
-    <ul class="dropdown-menu">
-        <li>
-            <a class="dropdown-item" href="/editarPerfil">
-                <i class="bi bi-pencil-square"></i> Editar perfil
-            </a>
-        </li>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="/editarPerfil">
+                                    <i class="bi bi-pencil-square"></i> Editar perfil
+                                </a>
+                            </li>
 
-        <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
 
-        <li>
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="dropdown-item text-danger">
-                    <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-                </button>
-            </form>
-        </li>
-    </ul>
-</li>
+                            <li>
+                                <form action="{{ route('logout') }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+
                 </ul>
 
             </div>
@@ -249,8 +259,8 @@ body{
     </nav>
 
     <div class="container-fluid content">
-    @yield('content')
-</div>
+        @yield('content')
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
