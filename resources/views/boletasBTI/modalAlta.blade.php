@@ -174,6 +174,7 @@ function cargarMateria() {
 
 <td>
 <input 
+type="number"
 class="form-control calificacion parcial1"
 value="${alumno.p1 ?? ''}"
 ${alumno.p1 ? 'readonly' : ''}
@@ -182,6 +183,7 @@ ${alumno.p1 ? 'readonly' : ''}
 
 <td>
 <input 
+type="number"
 class="form-control calificacion parcial2"
 value="${alumno.p2 ?? ''}"
 ${alumno.p2 ? 'readonly' : ''}
@@ -191,6 +193,7 @@ disabled
 
 <td>
 <input 
+type="number"
 class="form-control calificacion parcial3"
 value="${alumno.p3 ?? ''}"
 ${alumno.p3 ? 'readonly' : ''}
@@ -200,6 +203,7 @@ disabled
 
 <td>
 <input 
+type="number"
 class="form-control calificacion semestral"
 value="${alumno.semestral ?? ''}"
 ${alumno.semestral ? 'readonly' : ''}
@@ -209,6 +213,7 @@ disabled
 
 <td>
 <input 
+type="number"
 class="form-control calificacion extra"
 value="${alumno.extra ?? ''}"
 ${alumno.extra ? 'readonly' : ''}
@@ -297,48 +302,47 @@ document
 
 
         let datos = [];
+        let hayVacios = false;
 
 
-        document.querySelectorAll('#tablaAlumnos tr')
-            .forEach(fila => {
+        document.querySelectorAll('#tablaAlumnos tr').forEach(fila => {
 
+            let alumno = fila.dataset.alumno;
 
-                let alumno = fila.dataset.alumno;
+            let claseInput = {
 
+                P1: 'parcial1',
+                P2: 'parcial2',
+                P3: 'parcial3',
+                SEMESTRAL: 'semestral',
+                EXTRA: 'extra'
 
-                let claseInput = {
+            } [parcial];
 
-                    P1: 'parcial1',
-                    P2: 'parcial2',
-                    P3: 'parcial3',
-                    SEMESTRAL: 'semestral',
-                    EXTRA: 'extra'
+            let input = fila.querySelector('.' + claseInput);
 
-                } [parcial];
+            if (!input) return;
 
+            // Validar que el campo habilitado no esté vacío
+            if (!input.disabled && !input.readOnly && input.value.trim() === '') {
+                hayVacios = true;
+                input.focus();
+                input.classList.add('is-invalid');
+                return;
+            }
 
-                let input = fila.querySelector(
-                    '.' + claseInput
-                );
+            input.classList.remove('is-invalid');
 
+            datos.push({
 
-
-                if (input) {
-
-                    datos.push({
-
-                        alumno_id: alumno,
-
-                        materiaId: materiaSeleccionada,
-
-                        parcial: parcial,
-
-                        calificacion: input.value
-
-                    });
-                }
+                alumno_id: alumno,
+                materiaId: materiaSeleccionada,
+                parcial: parcial,
+                calificacion: input.value
 
             });
+
+        });
 
 
 
@@ -352,6 +356,17 @@ document
 
             return;
 
+        }
+
+        if (hayVacios) {
+
+            Swal.fire(
+                "Campos incompletos",
+                "Debe capturar la calificación de todos los alumnos antes de guardar.",
+                "warning"
+            );
+
+            return;
         }
 
 
@@ -383,14 +398,36 @@ document
             .then(resp => {
 
 
-                Swal.fire(
-                    "Guardado",
-                    "Calificaciones guardadas correctamente",
-                    "success"
-                );
+                Swal.fire({
+                    icon: "success",
+                    title: "Guardado",
+                    text: "Calificaciones guardadas correctamente",
+                    timer: 1200,
+                    showConfirmButton: false
+                }).then(() => {
 
+                    if (materiaActual < materiasActuales.length - 1) {
 
-                cargarMateria();
+                        // Ir automáticamente a la siguiente materia
+                        materiaActual++;
+                        cargarMateria();
+
+                    } else {
+
+                        // Ya no hay más materias
+                        bootstrap.Modal.getInstance(
+                            document.getElementById('modalCalificaciones')
+                        ).hide();
+
+                        Swal.fire(
+                            "Proceso terminado",
+                            "Se capturaron las calificaciones de todas las materias.",
+                            "success"
+                        );
+
+                    }
+
+                });
 
 
             })
