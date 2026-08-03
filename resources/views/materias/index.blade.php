@@ -294,9 +294,7 @@ window.verMateria = function(id) {
                     icon: 'error',
                     title: 'Error',
                     text: 'Error al cargar detalles de la materia.',
-                    confirmButtonColor: 'rgb(38, 104, 123)',
-                    background: '#111e25',
-                    color: '#fff'
+                    confirmButtonColor: 'rgb(38, 104, 123)'
                 });
             }
         })
@@ -305,9 +303,7 @@ window.verMateria = function(id) {
                 icon: 'error',
                 title: 'Error',
                 text: 'Error al cargar detalles de la materia.',
-                confirmButtonColor: 'rgb(38, 104, 123)',
-                background: '#111e25',
-                color: '#fff'
+                confirmButtonColor: 'rgb(38, 104, 123)'
             });
         });
 }
@@ -348,9 +344,7 @@ window.editarMateria = function(id) {
                     icon: 'error',
                     title: 'Error',
                     text: 'Error al cargar detalles de la materia.',
-                    confirmButtonColor: 'rgb(38, 104, 123)',
-                    background: '#111e25',
-                    color: '#fff'
+                    confirmButtonColor: 'rgb(38, 104, 123)'
                 });
             }
         })
@@ -359,9 +353,7 @@ window.editarMateria = function(id) {
                 icon: 'error',
                 title: 'Error',
                 text: 'Error al cargar detalles de la materia.',
-                confirmButtonColor: 'rgb(38, 104, 123)',
-                background: '#111e25',
-                color: '#fff'
+                confirmButtonColor: 'rgb(38, 104, 123)'
             });
         });
 }
@@ -375,9 +367,7 @@ window.eliminarMateria = function(id) {
         confirmButtonColor: '#d33',
         cancelButtonColor: 'rgb(38, 104, 123)',
         confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar',
-        background: '#111e25',
-        color: '#fff'
+        cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
             fetch(`/materias/${id}`, {
@@ -394,9 +384,7 @@ window.eliminarMateria = function(id) {
                         icon: 'success',
                         title: '¡Eliminado!',
                         text: data.message || 'Materia eliminada correctamente.',
-                        confirmButtonColor: 'rgb(38, 104, 123)',
-                        background: '#111e25',
-                        color: '#fff'
+                        confirmButtonColor: 'rgb(38, 104, 123)'
                     });
                     cargarMaterias();
                 } else {
@@ -404,9 +392,7 @@ window.eliminarMateria = function(id) {
                         icon: 'error',
                         title: 'Error',
                         text: data.message || 'Error al eliminar.',
-                        confirmButtonColor: 'rgb(38, 104, 123)',
-                        background: '#111e25',
-                        color: '#fff'
+                        confirmButtonColor: 'rgb(38, 104, 123)'
                     });
                 }
             })
@@ -415,9 +401,7 @@ window.eliminarMateria = function(id) {
                     icon: 'error',
                     title: 'Error',
                     text: 'Error al eliminar materia.',
-                    confirmButtonColor: 'rgb(38, 104, 123)',
-                    background: '#111e25',
-                    color: '#fff'
+                    confirmButtonColor: 'rgb(38, 104, 123)'
                 });
             });
         }
@@ -540,9 +524,7 @@ window.cambiarPaginaMateria = function(p) {
                     icon: 'success',
                     title: '¡Éxito!',
                     text: modoMateria === 'editar' ? "Materia actualizada correctamente." : "Materia guardada correctamente.",
-                    confirmButtonColor: 'rgb(38, 104, 123)',
-                    background: '#111e25',
-                    color: '#fff'
+                    confirmButtonColor: 'rgb(38, 104, 123)'
                 });
 
                 bootstrap.Modal.getInstance(document.getElementById('modalMateria')).hide();
@@ -556,9 +538,7 @@ window.cambiarPaginaMateria = function(p) {
                     icon: 'error',
                     title: 'Error',
                     text: 'Error al guardar materia.',
-                    confirmButtonColor: 'rgb(38, 104, 123)',
-                    background: '#111e25',
-                    color: '#fff'
+                    confirmButtonColor: 'rgb(38, 104, 123)'
                 });
             }
         });

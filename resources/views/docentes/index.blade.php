@@ -270,9 +270,7 @@
                             icon: 'error',
                             title: 'Error',
                             text: 'Error al cargar detalles del docente.',
-                            confirmButtonColor: 'rgb(38, 104, 123)',
-                            background: '#111e25',
-                            color: '#fff'
+                            confirmButtonColor: 'rgb(38, 104, 123)'
                         });
                     }
                 })
@@ -281,9 +279,7 @@
                         icon: 'error',
                         title: 'Error',
                         text: 'Error al cargar detalles del docente.',
-                        confirmButtonColor: 'rgb(38, 104, 123)',
-                        background: '#111e25',
-                        color: '#fff'
+                        confirmButtonColor: 'rgb(38, 104, 123)'
                     });
                 });
         }
@@ -322,9 +318,7 @@
                             icon: 'error',
                             title: 'Error',
                             text: 'Error al cargar detalles del docente.',
-                            confirmButtonColor: 'rgb(38, 104, 123)',
-                            background: '#111e25',
-                            color: '#fff'
+                            confirmButtonColor: 'rgb(38, 104, 123)'
                         });
                     }
                 })
@@ -333,9 +327,7 @@
                         icon: 'error',
                         title: 'Error',
                         text: 'Error al cargar detalles del docente.',
-                        confirmButtonColor: 'rgb(38, 104, 123)',
-                        background: '#111e25',
-                        color: '#fff'
+                        confirmButtonColor: 'rgb(38, 104, 123)'
                     });
                 });
         }
@@ -349,9 +341,7 @@
                 confirmButtonColor: '#d33',
                 cancelButtonColor: 'rgb(38, 104, 123)',
                 confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar',
-                background: '#111e25',
-                color: '#fff'
+                cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
                     fetch(`/docentes/${id}`, {
@@ -368,9 +358,7 @@
                                 icon: 'success',
                                 title: '¡Eliminado!',
                                 text: data.message || 'Docente eliminado correctamente.',
-                                confirmButtonColor: 'rgb(38, 104, 123)',
-                                background: '#111e25',
-                                color: '#fff'
+                                confirmButtonColor: 'rgb(38, 104, 123)'
                             });
                             cargarDocentes();
                         } else {
@@ -378,9 +366,7 @@
                                 icon: 'error',
                                 title: 'Error',
                                 text: data.message || 'Error al eliminar.',
-                                confirmButtonColor: 'rgb(38, 104, 123)',
-                                background: '#111e25',
-                                color: '#fff'
+                                confirmButtonColor: 'rgb(38, 104, 123)'
                             });
                         }
                     })
@@ -389,9 +375,7 @@
                             icon: 'error',
                             title: 'Error',
                             text: 'Error al eliminar docente.',
-                            confirmButtonColor: 'rgb(38, 104, 123)',
-                            background: '#111e25',
-                            color: '#fff'
+                            confirmButtonColor: 'rgb(38, 104, 123)'
                         });
                     });
                 }
@@ -436,9 +420,7 @@
                             icon: 'success',
                             title: '¡Éxito!',
                             text: modoDocente === 'editar' ? "Docente actualizado correctamente." : "Docente guardado correctamente.",
-                            confirmButtonColor: 'rgb(38, 104, 123)',
-                            background: '#111e25',
-                            color: '#fff'
+                            confirmButtonColor: 'rgb(38, 104, 123)'
                         });
 
                         // cerrar modal
@@ -455,9 +437,7 @@
                             icon: 'error',
                             title: 'Error',
                             text: 'Error al guardar docente.',
-                            confirmButtonColor: 'rgb(38, 104, 123)',
-                            background: '#111e25',
-                            color: '#fff'
+                            confirmButtonColor: 'rgb(38, 104, 123)'
                         });
                     }
                 })
@@ -467,9 +447,7 @@
                         icon: 'error',
                         title: 'Error',
                         text: 'Ocurrió un error inesperado al procesar la solicitud.',
-                        confirmButtonColor: 'rgb(38, 104, 123)',
-                        background: '#111e25',
-                        color: '#fff'
+                        confirmButtonColor: 'rgb(38, 104, 123)'
                     });
                 });
         });
