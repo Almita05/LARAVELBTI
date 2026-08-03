@@ -17,8 +17,6 @@ use App\Http\Controllers\BoletasBGNEExtraController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CalificacionesController;
-use App\Http\Controllers\HorariosController;
-
 
 
 
@@ -67,12 +65,6 @@ Route::middleware('auth.session')->group(function () {
     Route::get('/boletas_bti', [BoletasBtiController::class, 'boletasBTI'])
         ->name('boletas_bti');
 
-    // Horarios
-    Route::get('/horarios', [HorariosController::class, 'index'])->name('horarios');
-    Route::get('/horarios/escolarizado', [HorariosController::class, 'escolarizado'])->name('horarios.escolarizado');
-    Route::get('/horarios/sabado', [HorariosController::class, 'sabado'])->name('horarios.sabado');
-    Route::get('/horarios/domingo', [HorariosController::class, 'domingo'])->name('horarios.domingo');
-
 });
 
 Route::middleware(['auth.session', 'docente.admin'])->group(function () {
@@ -88,17 +80,11 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::get('/docentes', [DocenteController::class, 'index'])->name('docentes');
     Route::get('/docentes/lista', [DocenteController::class, 'lista']);
     Route::post('/docentes', [DocenteController::class, 'store']);
-    Route::get('/docentes/{id}', [DocenteController::class, 'show']);
-    Route::put('/docentes/{id}', [DocenteController::class, 'update']);
-    Route::delete('/docentes/{id}', [DocenteController::class, 'destroy']);
 
     // Materias
     Route::get('/materias', [MateriaController::class, 'index'])->name('materias');
     Route::get('/materias/lista', [MateriaController::class, 'lista']);
     Route::post('/materias', [MateriaController::class, 'store']);
-    Route::get('/materias/{id}', [MateriaController::class, 'show']);
-    Route::put('/materias/{id}', [MateriaController::class, 'update']);
-    Route::delete('/materias/{id}', [MateriaController::class, 'destroy']);
 
     // Grupos
     Route::get('/grupos', [GrupoController::class, 'index'])->name('grupos');
@@ -135,10 +121,5 @@ Route::get(
     '/calificaciones/materias/{grado}',
     [CalificacionesController::class,'materias']
 );
-
-    // API de Horarios
-    Route::get('/horarios/grupo/{id_grupo}', [HorariosController::class, 'getHorariosGrupo']);
-    Route::post('/horarios', [HorariosController::class, 'store']);
-    Route::delete('/horarios/{id_horario}', [HorariosController::class, 'destroy']);
 
 });

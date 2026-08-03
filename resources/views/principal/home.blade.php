@@ -216,6 +216,30 @@ html, body {
 
     </div>
 
+    <div class="row justify-content-center g-4 mt-2">
+
+        @if($rol == 'ADMIN')
+        <div class="col-md-3">
+            <a href="{{ route('materias') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                    <i class="fa-solid fa-book"></i>
+                    <h5>Materias</h5>
+                </div>
+            </a>
+        </div>
+        @endif
+
+        <div class="col-md-3">
+            <a href="{{ route('horarios') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <h5>Horarios</h5>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
     @endif
 
 </div>

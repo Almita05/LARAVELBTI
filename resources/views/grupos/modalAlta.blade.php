@@ -55,13 +55,14 @@
                             @endforeach
                         </select>
 
-                        <br>
-
                         <label>Tipo de periodo<span style="color:red;">*</span></label>
                         <select name="id_tipoPeriodo" class="form-control" required>
                             <option value="">Seleccione un periodo</option>
-                            <option value="">Semestral</option>
-                            <option value="">Trimestral</option>
+                            @foreach($periodos as $periodo)
+                            <option value="{{ $periodo['id'] }}">
+                                {{ $periodo['nombrePeriodo'] }}
+                            </option>
+                            @endforeach
                         </select>
                     </div>
 
@@ -76,36 +77,3 @@
         </form>
     </div>
 </div>
-<script>
-document.addEventListener('submit', function(e) {
-
-    if (e.target.id === 'formGrupo') {
-
-        e.preventDefault();
-
-        let formData = new FormData(e.target);
-
-        let data = Object.fromEntries(formData.entries());
-
-        fetch('/grupos', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify(data)
-            })
-            .then(res => res.json())
-            .then(res => {
-                alert('Grupo guardado');
-
-                let modal = bootstrap.Modal.getInstance(document.getElementById('modalGrupo'));
-                modal.hide();
-
-                location.reload();
-            });
-
-    }
-
-});
-</script>
