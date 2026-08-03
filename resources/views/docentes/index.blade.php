@@ -158,51 +158,100 @@
         // =========================
         // LISTAR DOCENTES
         // =========================
-        function cargarDocentes() {
+        let listaDocentes = [];
+        let paginaDocente = 1;
+        const filasDocente = 5;
 
+        function cargarDocentes() {
             fetch('/docentes/lista')
                 .then(res => res.json())
                 .then(data => {
-
-                    let html = '';
-
-                    data.data.forEach(docente => {
-
-                        const nombreCompleto =
-                            `${docente.nombreDocente} ${docente.apPaternoDocente ?? ''} ${docente.apMaternoDocente ?? ''}`;
-
-                        html += `
-                        <tr>
-                            <td>${docente.idDocente}</td>
-                            <td>${nombreCompleto}</td>
-                            <td>${docente.correoDocente}</td>
-                            <td>${docente.telefonoDocente ?? ''}</td>
-                            <td>
-                                <span class="badge ${docente.statusDocente === 'ACTIVO' ? 'bg-success' : 'bg-danger'}">
-                                    ${docente.statusDocente}
-                                </span>
-                            </td>
-                            <td>${docente.nivelEstudios ?? 'N/A'}</td>
-                            <td>${docente.fechaNacimiento ?? 'N/A'}</td>
-
-                            <td>
-                                <button class="btn btn-secondary btn-sm btn-action me-1" onclick="verDocente(${docente.idDocente})">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                                <button class="btn btn-warning btn-sm btn-action me-1" onclick="editarDocente(${docente.idDocente})">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                <button class="btn btn-danger btn-sm btn-action" onclick="eliminarDocente(${docente.idDocente})">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                    });
-
-                    document.getElementById('tablaDocentes').innerHTML = html;
+                    listaDocentes = Array.isArray(data.data) ? data.data : [];
+                    renderDocentes();
                 })
                 .catch(err => console.log(err));
+        }
+
+        // 🔍 BUSCADOR
+        document.getElementById('buscador')?.addEventListener('input', () => {
+            paginaDocente = 1;
+            renderDocentes();
+        });
+
+        function renderDocentes() {
+            const filtro = document.getElementById('buscador').value.toLowerCase();
+
+            const filtradas = listaDocentes.filter(d =>
+                d.nombreDocente.toLowerCase().includes(filtro) ||
+                (d.apPaternoDocente && d.apPaternoDocente.toLowerCase().includes(filtro)) ||
+                (d.apMaternoDocente && d.apMaternoDocente.toLowerCase().includes(filtro)) ||
+                (d.correoDocente && d.correoDocente.toLowerCase().includes(filtro)) ||
+                (d.telefonoDocente && d.telefonoDocente.toLowerCase().includes(filtro)) ||
+                (d.nivelEstudios && d.nivelEstudios.toLowerCase().includes(filtro))
+            );
+
+            const inicio = (paginaDocente - 1) * filasDocente;
+            const fin = inicio + filasDocente;
+            const datos = filtradas.slice(inicio, fin);
+
+            let html = '';
+
+            datos.forEach(docente => {
+                const nombreCompleto =
+                    `${docente.nombreDocente} ${docente.apPaternoDocente ?? ''} ${docente.apMaternoDocente ?? ''}`;
+
+                html += `
+                <tr>
+                    <td>${docente.idDocente}</td>
+                    <td>${nombreCompleto}</td>
+                    <td>${docente.correoDocente}</td>
+                    <td>${docente.telefonoDocente ?? ''}</td>
+                    <td>
+                        <span class="badge ${docente.statusDocente === 'ACTIVO' ? 'bg-success' : 'bg-danger'}">
+                            ${docente.statusDocente}
+                        </span>
+                    </td>
+                    <td>${docente.nivelEstudios ?? 'N/A'}</td>
+                    <td>${docente.fechaNacimiento ?? 'N/A'}</td>
+
+                    <td>
+                        <button class="btn btn-secondary btn-sm btn-action me-1" onclick="verDocente(${docente.idDocente})">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                        <button class="btn btn-warning btn-sm btn-action me-1" onclick="editarDocente(${docente.idDocente})">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm btn-action" onclick="eliminarDocente(${docente.idDocente})">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                `;
+            });
+
+            document.getElementById('tablaDocentes').innerHTML = html;
+            renderPaginacionDocentes(filtradas.length);
+        }
+
+        function renderPaginacionDocentes(total) {
+            const totalPaginas = Math.ceil(total / filasDocente);
+            let html = '';
+
+            for (let i = 1; i <= totalPaginas; i++) {
+                html += `
+                <button class="btn btn-sm ${i === paginaDocente ? 'btn-primary' : 'btn-outline-primary'} me-1"
+                    onclick="cambiarPaginaDocente(${i})">
+                    ${i}
+                </button>`;
+            }
+
+            document.getElementById('paginacion').innerHTML = html;
+            document.getElementById('infoPaginacion').innerText = `Mostrando ${total} registros`;
+        }
+
+        window.cambiarPaginaDocente = function(p) {
+            paginaDocente = p;
+            renderDocentes();
         }
 
         let modoDocente = 'crear'; // 'crear', 'editar', 'ver'
