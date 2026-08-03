@@ -86,16 +86,18 @@ document.addEventListener("DOMContentLoaded", function() {
 
     let grupos = [];
     let search = '';
+    let pagina = 1;
 
     function cargarGrupos() {
 
         document.getElementById('loading').style.display = 'block';
 
-        fetch(`/grupos/lista`)
+        fetch(`/grupos/lista?page=${pagina}&search=${search}`)
             .then(res => res.json())
             .then(res => {
                 grupos = res.data;
                 renderTabla();
+                renderPaginacion(res);
             })
             .finally(() => {
                 document.getElementById('loading').style.display = 'none';
@@ -104,7 +106,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.getElementById('buscadorGrupos').addEventListener('input', (e) => {
         search = e.target.value.toLowerCase();
-        renderTabla();
+        pagina = 1;
+        cargarGrupos();
     });
 
     function formatearFecha(fecha) {
@@ -113,14 +116,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function renderTabla() {
 
-        let filtrados = grupos.filter(g =>
-            g.clave.toLowerCase().includes(search)
-        );
-
-        if (!filtrados.length) {
+        if (!grupos.length) {
             document.getElementById('tablaGrupos').innerHTML = `
                 <tr>
-                    <td colspan="5" class="text-center text-muted">
+                    <td colspan="4" class="text-center text-muted">
                         No se encontraron grupos
                     </td>
                 </tr>
@@ -130,28 +129,108 @@ document.addEventListener("DOMContentLoaded", function() {
 
         let html = '';
 
-        filtrados.forEach(grupo => {
+        grupos.forEach(grupo => {
             html += `
                 <tr>
-                    
                     <td>${grupo.clave}</td>
                     <td>${formatearFecha(grupo.fechaInicio)}</td>
                     <td>${formatearFecha(grupo.fechaFin)}</td>
-                   <td class="text-center">
-    <button class="btn btn-ver btn-sm">
-        <i class="fa-solid fa-eye"></i>
-    </button>
-
-    <button class="btn btn-editar btn-sm">
-        <i class="fa-solid fa-pen"></i>
-    </button>
-</td>
+                    <td class="text-center">
+                        <button class="btn btn-ver btn-sm">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                        <button class="btn btn-editar btn-sm">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
                 </tr>
             `;
         });
 
         document.getElementById('tablaGrupos').innerHTML = html;
     }
+
+    function renderPaginacion(data) {
+        let html = '';
+
+        html += `
+            <button class="btn btn-sm btn-azul me-2"
+                ${data.page === 1 ? 'disabled' : ''}
+                onclick="cambiarPagina(${data.page - 1})">
+                ⬅ Anterior
+            </button>
+        `;
+
+        html += `
+            <span class="mx-2 text-white">
+                Página ${data.page} de ${data.total_pages}
+            </span>
+        `;
+
+        html += `
+            <button class="btn btn-sm btn-azul ms-2"
+                ${data.page === data.total_pages ? 'disabled' : ''}
+                onclick="cambiarPagina(${data.page + 1})">
+                Siguiente ➡
+            </button>
+        `;
+
+        document.getElementById('paginacionGrupos').innerHTML = html;
+        document.getElementById('infoGrupos').innerText = `Total grupos: ${data.total}`;
+    }
+
+    window.cambiarPagina = function(p) {
+        pagina = p;
+        cargarGrupos();
+    }
+
+    // Form submission for creating new group (delegated to index page since AJAX HTML script doesn't auto-evaluate)
+    document.addEventListener('submit', function(e) {
+        if (e.target.id === 'formGrupo') {
+            e.preventDefault();
+
+            let formData = new FormData(e.target);
+            let data = Object.fromEntries(formData.entries());
+
+            fetch('/grupos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify(data)
+            })
+            .then(async res => {
+                const isJson = res.headers.get('content-type')?.includes('application/json');
+                const resData = isJson ? await res.json() : null;
+
+                if (!res.ok) {
+                    throw new Error(resData?.message || 'Error al guardar el grupo en el servidor backend');
+                }
+                return resData;
+            })
+            .then(res => {
+                alert('¡Éxito: Grupo guardado correctamente!');
+                
+                let modalEl = document.getElementById('modalGrupo');
+                let modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) {
+                    modal.hide();
+                }
+
+                // Remove modal backdrop if any remains
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+
+                cargarGrupos();
+            })
+            .catch(err => {
+                alert('Advertencia / Error: ' + err.message);
+            });
+        }
+    });
 
     // INIT
     cargarGrupos();

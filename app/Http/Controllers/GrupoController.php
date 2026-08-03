@@ -35,43 +35,47 @@ class GrupoController extends Controller
 }
 
 
-public function modalAlta()
-{
-    $base = config('services.api.base_url');
+    public function modalAlta()
+    {
+        $base = config('services.api.base_url');
 
-    // Centros
-    $resCentros = Http::get($base . '/centroTrabajo');
-    $centros = $resCentros->successful() ? $resCentros->json() : [];
+        // Centros
+        $resCentros = Http::get($base . '/centroTrabajo');
+        $centros = $resCentros->successful() ? $resCentros->json() : [];
 
-    // Planes
-    $resPlanes = Http::get($base . '/getPlanesEstudio');
-    $planes = $resPlanes->successful() ? $resPlanes->json() : [];
+        // Planes
+        $resPlanes = Http::get($base . '/getPlanesEstudio');
+        $planes = $resPlanes->successful() ? $resPlanes->json() : [];
 
-    return view('grupos.modalAlta', compact('centros', 'planes'));
-}
+        // Periodos
+        $resPeriodos = Http::get($base . '/tipoPeriodo');
+        $periodos = $resPeriodos->successful() ? $resPeriodos->json() : [];
 
-public function store(Request $request)
-{
-    $url = config('services.api.base_url') . '/grupos';
-
-    $response = Http::post($url, [
-        'clave' => $request->clave,
-        'fechaCreacion' => $request->fechaCreacion,
-        'fechaInicio' => $request->fechaInicio,
-        'fechaFin' => $request->fechaFin,
-        'id_centroTrabajo' => $request->id_centroTrabajo,
-        'id_planEstudios' => $request->id_planEstudios,
-        'id_tipoPeriodo' => $request->id_tipoPeriodo,
-    ]);
-
-    if ($response->failed()) {
-        return response()->json([
-            'message' => 'Error al guardar'
-        ], 500);
+        return view('grupos.modalAlta', compact('centros', 'planes', 'periodos'));
     }
 
-    return response()->json([
-        'message' => 'Guardado correctamente'
-    ]);
-}
+    public function store(Request $request)
+    {
+        $url = config('services.api.base_url') . '/createGrupos';
+
+        $response = Http::post($url, [
+            'clave' => $request->clave,
+            'fechaCreacion' => $request->fechaCreacion,
+            'fechaInicio' => $request->fechaInicio,
+            'fechaFin' => $request->fechaFin,
+            'id_centroTrabajo' => $request->id_centroTrabajo,
+            'id_planEstudios' => $request->id_planEstudios,
+            'id_tipoPeriodo' => $request->id_tipoPeriodo,
+        ]);
+
+        if ($response->failed()) {
+            return response()->json([
+                'message' => 'Error al guardar el grupo en el servidor backend'
+            ], 500);
+        }
+
+        return response()->json([
+            'message' => 'Guardado correctamente'
+        ]);
+    }
 }

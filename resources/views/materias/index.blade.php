@@ -3,6 +3,7 @@
 @section('content')
 
 <link rel="stylesheet" href="{{ asset('css/estilosMaterias.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 <div class="page-container">
@@ -44,10 +45,12 @@
                 <thead>
                     <tr>
                         <th>ID</th>
+                     
                         <th>Nombre</th>
                         <th>Descripción</th>
-                        <th>Estatus</th>
+                        <th>Estatus</th>  
                         <th>Docentes</th>
+                       
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -96,9 +99,14 @@
                     <div class="col-md-12 mb-2">
                         <label>Docentes</label>
 
-                        <div id="contenedorDocentes"></div>
+                        <div id="contenedorDocentes" style="max-height: 200px; overflow-y: auto; padding: 10px; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: rgba(255,255,255,0.05);"></div>
 
                         <div id="docentesSeleccionados" class="mt-2"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-2">
+                        <label>Clave</label>
+                        <input type="text" class="form-control" name="clave" placeholder="Ej. MAT-201" required>
                     </div>
 
                     <div class="col-md-6 mb-2">
@@ -210,7 +218,7 @@ function cargarMaterias() {
         .then(res => res.json())
         .then(data => {
 
-            listaMaterias = Array.isArray(data) ? data : [];
+            listaMaterias = Array.isArray(data.data) ? data.data : [];
             renderMaterias();
         });
 }
@@ -221,13 +229,209 @@ document.getElementById('buscadorMateria')?.addEventListener('input', () => {
     renderMaterias();
 });
 
+let modoMateria = 'crear'; // 'crear', 'editar', 'ver'
+let idMateriaActual = null;
+
+function setFormDisabled(disabled) {
+    const form = document.getElementById('formMateria');
+    form.nombreMateria.disabled = disabled;
+    form.descripcionMateria.disabled = disabled;
+    if (form.clave) form.clave.disabled = disabled;
+    form.estatusMateria.disabled = disabled;
+    document.querySelectorAll('.docenteCheck').forEach(cb => cb.disabled = disabled);
+}
+
+// Reset modal to create mode when Alta button is clicked
+const btnAlta = document.querySelector('[data-bs-target="#modalMateria"]');
+if (btnAlta) {
+    btnAlta.addEventListener('click', function() {
+        modoMateria = 'crear';
+        idMateriaActual = null;
+        const form = document.getElementById('formMateria');
+        form.reset();
+        document.getElementById('contenedorSeleccionados').innerHTML = '';
+        setFormDisabled(false);
+        document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
+        document.querySelector('.modal-title').textContent = 'Alta Materia';
+        const submitBtn = document.querySelector('#formMateria button[type="submit"]');
+        submitBtn.style.display = 'block';
+        submitBtn.textContent = 'Guardar';
+    });
+}
+
+window.verMateria = function(id) {
+    modoMateria = 'ver';
+    idMateriaActual = id;
+
+    fetch(`/materias/${id}`)
+        .then(res => res.json())
+        .then(resp => {
+            if (resp.success && resp.data) {
+                const m = resp.data;
+                const form = document.getElementById('formMateria');
+                form.nombreMateria.value = m.nombreMateria || '';
+                form.descripcionMateria.value = m.descripcionMateria || '';
+                if (form.clave) form.clave.value = m.clave || '';
+                form.estatusMateria.value = m.estatusMateria || 'ACTIVA';
+
+                document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
+                const checkIds = m.docentes ? m.docentes.map(d => d.idDocente) : [];
+                checkIds.forEach(docId => {
+                    const cb = document.getElementById(`doc_${docId}`);
+                    if (cb) cb.checked = true;
+                });
+                mostrarSeleccionados();
+                setFormDisabled(true);
+
+                document.querySelector('.modal-title').textContent = 'Detalles de Materia';
+                const submitBtn = document.querySelector('#formMateria button[type="submit"]');
+                submitBtn.style.display = 'none';
+
+                const modal = new bootstrap.Modal(document.getElementById('modalMateria'));
+                modal.show();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al cargar detalles de la materia.',
+                    confirmButtonColor: 'rgb(38, 104, 123)',
+                    background: '#111e25',
+                    color: '#fff'
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al cargar detalles de la materia.',
+                confirmButtonColor: 'rgb(38, 104, 123)',
+                background: '#111e25',
+                color: '#fff'
+            });
+        });
+}
+
+window.editarMateria = function(id) {
+    modoMateria = 'editar';
+    idMateriaActual = id;
+
+    fetch(`/materias/${id}`)
+        .then(res => res.json())
+        .then(resp => {
+            if (resp.success && resp.data) {
+                const m = resp.data;
+                const form = document.getElementById('formMateria');
+                form.nombreMateria.value = m.nombreMateria || '';
+                form.descripcionMateria.value = m.descripcionMateria || '';
+                if (form.clave) form.clave.value = m.clave || '';
+                form.estatusMateria.value = m.estatusMateria || 'ACTIVA';
+
+                document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
+                const checkIds = m.docentes ? m.docentes.map(d => d.idDocente) : [];
+                checkIds.forEach(docId => {
+                    const cb = document.getElementById(`doc_${docId}`);
+                    if (cb) cb.checked = true;
+                });
+                mostrarSeleccionados();
+                setFormDisabled(false);
+
+                document.querySelector('.modal-title').textContent = 'Editar Materia';
+                const submitBtn = document.querySelector('#formMateria button[type="submit"]');
+                submitBtn.style.display = 'block';
+                submitBtn.textContent = 'Actualizar';
+
+                const modal = new bootstrap.Modal(document.getElementById('modalMateria'));
+                modal.show();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al cargar detalles de la materia.',
+                    confirmButtonColor: 'rgb(38, 104, 123)',
+                    background: '#111e25',
+                    color: '#fff'
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al cargar detalles de la materia.',
+                confirmButtonColor: 'rgb(38, 104, 123)',
+                background: '#111e25',
+                color: '#fff'
+            });
+        });
+}
+
+window.eliminarMateria = function(id) {
+    Swal.fire({
+        title: '¿Deseas eliminar esta materia?',
+        text: 'Esta acción no se puede deshacer.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: 'rgb(38, 104, 123)',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        background: '#111e25',
+        color: '#fff'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/materias/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: data.message || 'Materia eliminada correctamente.',
+                        confirmButtonColor: 'rgb(38, 104, 123)',
+                        background: '#111e25',
+                        color: '#fff'
+                    });
+                    cargarMaterias();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Error al eliminar.',
+                        confirmButtonColor: 'rgb(38, 104, 123)',
+                        background: '#111e25',
+                        color: '#fff'
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al eliminar materia.',
+                    confirmButtonColor: 'rgb(38, 104, 123)',
+                    background: '#111e25',
+                    color: '#fff'
+                });
+            });
+        }
+    });
+}
+
 function renderMaterias() {
 
     const filtro = document.getElementById('buscadorMateria').value.toLowerCase();
 
     const filtradas = listaMaterias.filter(m =>
         m.nombreMateria.toLowerCase().includes(filtro) ||
-        m.descripcionMateria.toLowerCase().includes(filtro)
+        m.descripcionMateria.toLowerCase().includes(filtro) ||
+        (m.clave && m.clave.toLowerCase().includes(filtro))
     );
 
     const inicio = (paginaMateria - 1) * filasMateria;
@@ -241,6 +445,7 @@ function renderMaterias() {
         html += `
         <tr>
             <td>${materia.id}</td>
+          
             <td>${materia.nombreMateria}</td>
             <td>${materia.descripcionMateria}</td>
 
@@ -257,16 +462,15 @@ function renderMaterias() {
             </td>
 
             <td class="text-center">
-                <button class="btn btn-info btn-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
-  <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
-  <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
-</svg></button>
-                <button class="btn btn-warning btn-sm"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
-  <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
-</svg></button>
-                <button class="btn btn-danger btn-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
-  <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
-</svg></button>
+                <button class="btn btn-secondary btn-sm me-1" onclick="verMateria(${materia.id})">
+                    <i class="fa-solid fa-eye"></i>
+                </button>
+                <button class="btn btn-warning btn-sm me-1" onclick="editarMateria(${materia.id})">
+                    <i class="fa-solid fa-pen"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="eliminarMateria(${materia.id})">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
             </td>
         </tr>
         `;
@@ -296,7 +500,7 @@ function renderPaginacionMaterias(total) {
         `Mostrando ${total} registros`;
 }
 
-function cambiarPaginaMateria(p) {
+window.cambiarPaginaMateria = function(p) {
     paginaMateria = p;
     renderMaterias();
 }
@@ -308,18 +512,20 @@ function cambiarPaginaMateria(p) {
         e.preventDefault();
 
         const docentes = Array.from(document.querySelectorAll('.docenteCheck:checked'))
-    .map(check => ({
-        idDocente: Number(check.value)
-    }));
+            .map(check => Number(check.value));
         const data = {
             nombreMateria: this.nombreMateria.value,
             descripcionMateria: this.descripcionMateria.value,
             estatusMateria: this.estatusMateria.value,
+            clave: this.clave.value,
             docentes: docentes
         };
 
-        fetch('/materias', {
-            method: 'POST',
+        const url = modoMateria === 'editar' ? `/materias/${idMateriaActual}` : '/materias';
+        const method = modoMateria === 'editar' ? 'PUT' : 'POST';
+
+        fetch(url, {
+            method: method,
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -330,7 +536,14 @@ function cambiarPaginaMateria(p) {
         .then(resp => {
 
             if (resp.success) {
-                alert("Materia guardada correctamente");
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: modoMateria === 'editar' ? "Materia actualizada correctamente." : "Materia guardada correctamente.",
+                    confirmButtonColor: 'rgb(38, 104, 123)',
+                    background: '#111e25',
+                    color: '#fff'
+                });
 
                 bootstrap.Modal.getInstance(document.getElementById('modalMateria')).hide();
 
@@ -339,7 +552,14 @@ function cambiarPaginaMateria(p) {
 
                 cargarMaterias();
             } else {
-                alert("Error al guardar materia");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al guardar materia.',
+                    confirmButtonColor: 'rgb(38, 104, 123)',
+                    background: '#111e25',
+                    color: '#fff'
+                });
             }
         });
 
