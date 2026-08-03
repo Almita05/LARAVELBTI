@@ -3,13 +3,13 @@
 @section('content')
 
 <style>
-/* CONTENEDOR */
-.hero {
-    background: transparent;
-    min-height: 100vh;
-    padding: 60px 20px;
-    color: white;
+.navbar{
+    z-index: 99999 !important;
+}
+
+.hero{
     position: relative;
+    z-index: 1;
 }
 
 /* TÍTULO */

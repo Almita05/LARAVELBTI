@@ -24,10 +24,6 @@
         color: #fff;
     }
 
-    /* =========================
-   FONDO GENERAL
-========================= */
-
     html,
     body {
         margin: 0;
@@ -40,10 +36,6 @@
         background: rgb(49, 125, 146);
         background-attachment: fixed;
     }
-
-    /* =========================
-   NAVBAR
-========================= */
 
     .navbar {
         background: rgba(38, 104, 123, .95);
@@ -70,10 +62,6 @@
         color: #d9f4fb !important;
     }
 
-    /* =========================
-   DROPDOWN
-========================= */
-
     .dropdown-menu {
         border: none;
         border-radius: 14px;
@@ -85,16 +73,10 @@
         color: #fff;
     }
 
-    /* =========================
-   CONTENIDO
-========================= */
-
     .content {
         margin-top: 85px;
         padding: 25px;
     }
-
-    /* Tarjetas generales */
 
     .card {
         background: rgba(98, 191, 214, .80);
@@ -104,8 +86,6 @@
         border-radius: 22px;
         box-shadow: 0 15px 35px rgba(0, 0, 0, .25);
     }
-
-    /* Botones Bootstrap */
 
     .btn-primary {
         background: rgb(49, 125, 146);
@@ -117,8 +97,6 @@
         border-color: rgb(38, 104, 123);
     }
 
-    /* Tablas */
-
     .table {
         border-radius: 15px;
         overflow: hidden;
@@ -129,7 +107,6 @@
 
 <body>
 
-    <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container-fluid">
 
@@ -140,12 +117,10 @@
                 </a>
             </div>
 
-            <!-- BOTÓN RESPONSIVE -->
             <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#menuNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <!-- MENÚ -->
             <div class="collapse navbar-collapse" id="menuNav">
 
                 <ul class="navbar-nav ms-auto">
@@ -157,76 +132,14 @@
                         </span>
                     </li>
 
-                    <!-- INICIO -->
                     <li class="nav-item">
                         <a class="nav-link" href="/home">
                             <i class="bi bi-house"></i> Inicio
                         </a>
                     </li>
-
-                    <!-- ALUMNOS 
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                            <i class="bi bi-person"></i> Alumnos
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/alumnos"><i class="fa-solid fa-magnifying-glass"></i> Buscador</a></li>
-                        </ul>
-                    </li>-->
-
-                    <!-- DOCENTES 
-                    <li class="nav-item">
-                        <a class="nav-link" href="/docentes">
-                            <i class="bi bi-people"></i> Docentes
-                        </a>
-                    </li>
--->
-                    <!-- MATERIAS 
-                    <li class="nav-item">
-                        <a class="nav-link" href="/materias">
-                            <i class="bi bi-book"></i> Materias
-                        </a>
-                    </li>
--->
-                    <!-- EQUIVALENCIAS
-                    <li class="nav-item">
-                        <a class="nav-link" href="/equivalencias">
-                            <i class="bi bi-file-earmark-text"></i> Equivalencias
-                        </a>
-                    </li>
- -->
-                    <!-- GRUPOS 
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="/grupos" data-bs-toggle="dropdown">
-                            <i class="bi bi-diagram-3"></i> Grupos
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/grupos">Dashboard grupos</a></li>
-                            <li><a class="dropdown-item" href="/grupos/alta">Dar de alta grupo</a></li>
-                        </ul>
-                    </li>
--->
-
-                    <!-- imprimir diferentes cosas 
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="/grupos" data-bs-toggle="dropdown">
-                            <i class="fa-solid fa-print"></i> Imprimir
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/grupos"> <i class="bi bi-journal-bookmark-fill"></i> Actas de calificaciones para docentes</a></li>
-                            <li><a class="dropdown-item" href="/grupos/alta"> <i class="fa-solid fa-user-clock"></i> Listas de asistencias para docentes</a>
-                            </li>
-                            <li><a class="dropdown-item" href="/grupos/alta"><i class="bi bi-file-earmark-text"></i> Kardex BGNE</a></li>
-                            <li><a class="dropdown-item" href="/grupos/alta"><i class="bi bi-file-earmark-text"></i> Boleta de calificaciones BTI </a></li>
-                        </ul>
-                    </li>
-
--->
-
-
-
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
                             <i class="bi bi-person-gear"></i> Perfil
                         </a>
 

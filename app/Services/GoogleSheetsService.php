@@ -149,79 +149,85 @@ public function guardarCalificaciones($lista, $usuario)
 
 
 
-        $columna = [
+        $columnas = [
+    'p1' => 3,
+    'p2' => 4,
+    'p3' => 5,
+    'semestral' => 6,
+    'extra' => 8,
+];
 
-            "P1"=>3,
-            "P2"=>4,
-            "P3"=>5,
-            "SEMESTRAL"=>6,
-            "EXTRA"=>8
+if ($esAdmin) {
 
-        ];
+    foreach ($columnas as $campo => $col) {
 
-
-
-        $campo = $dato['parcial'];
-
-
-
-        if(!isset($columna[$campo])){
+        if (!array_key_exists($campo, $dato)) {
             continue;
         }
 
-
-
-        $col = $columna[$campo];
-
-
-
-        // valor actual en Sheet
-        $actual = $this->service
-            ->spreadsheets_values
-            ->get(
-                $this->schoolSpreadsheetId,
-                $sheet."!".$this->numeroColumna($col).$fila
-            )
-            ->getValues();
-
-
-
-        $valorActual = $actual[0][0] ?? "";
-
-
-
-        // Docente no puede modificar
-        if(
-            !$esAdmin
-            &&
-            $valorActual !== ""
-        ){
-
-            continue;
-
-        }
-
-
-
-        $this->service
-            ->spreadsheets_values
-            ->update(
-                $this->schoolSpreadsheetId,
-                $sheet."!".$this->numeroColumna($col).$fila,
-                new \Google\Service\Sheets\ValueRange([
-                    'values'=>[
-                        [
-                            $dato['calificacion']
-                        ]
+        $this->service->spreadsheets_values->update(
+            $this->schoolSpreadsheetId,
+            $sheet . "!" . $this->numeroColumna($col) . $fila,
+            new \Google\Service\Sheets\ValueRange([
+                'values' => [
+                    [
+                        $dato[$campo]
                     ]
-                ]),
-                [
-                    'valueInputOption'=>'USER_ENTERED'
                 ]
-            );
+            ]),
+            [
+                'valueInputOption' => 'USER_ENTERED'
+            ]
+        );
+    }
 
+} else {
 
+    $columna = [
+        "P1" => 3,
+        "P2" => 4,
+        "P3" => 5,
+        "SEMESTRAL" => 6,
+        "EXTRA" => 8
+    ];
 
+    $campo = $dato['parcial'];
+
+    if (!isset($columna[$campo])) {
+        continue;
+    }
+
+    $col = $columna[$campo];
+
+    $actual = $this->service
+        ->spreadsheets_values
+        ->get(
+            $this->schoolSpreadsheetId,
+            $sheet . "!" . $this->numeroColumna($col) . $fila
+        )
+        ->getValues();
+
+    $valorActual = $actual[0][0] ?? "";
+
+    if ($valorActual !== "") {
+        continue;
+    }
+
+    $this->service->spreadsheets_values->update(
+        $this->schoolSpreadsheetId,
+        $sheet . "!" . $this->numeroColumna($col) . $fila,
+        new \Google\Service\Sheets\ValueRange([
+            'values' => [
+                [
+                    $dato['calificacion']
+                ]
+            ]
+        ]),
+        [
+            'valueInputOption' => 'USER_ENTERED'
+        ]
+    );
+}
     }
 
 
