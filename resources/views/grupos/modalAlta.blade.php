@@ -130,6 +130,14 @@
                     <div class="col-md-6">
                         <label class="form-label">Fecha fin <span class="text-danger">*</span></label>
                         <input type="date" name="fechaFin" class="form-control form-control-premium" required>
+                        <div id="divCalcularSemanas" style="display: none; margin-top: 8px;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="chkCalcularSemanas">
+                                <label class="form-check-label" for="chkCalcularSemanas" style="font-weight: 600; font-size: 0.85rem; color: #475569;">
+                                    Calcular 78 semanas automáticamente (BGNE)
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Centro de Trabajo -->
@@ -187,17 +195,7 @@
                         </select>
                     </div>
 
-                    <!-- Calcular Semanas (BGNE) -->
-                    <div class="col-md-6 d-flex align-items-end">
-                        <div id="divCalcularSemanas" style="display: none; margin-bottom: 10px; width: 100%;">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="chkCalcularSemanas">
-                                <label class="form-check-label" for="chkCalcularSemanas" style="font-weight: 600; font-size: 0.9rem; color: #2b3a4a;">
-                                    Calcular 78 semanas automáticamente (BGNE)
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
 

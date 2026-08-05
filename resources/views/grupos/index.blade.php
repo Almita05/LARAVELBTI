@@ -197,6 +197,7 @@ function initializeModalEvents() {
 
     chk.addEventListener('change', calculateEndDate);
     inputInicio.addEventListener('change', calculateEndDate);
+    inputInicio.addEventListener('input', calculateEndDate);
 
     // Inicializar para cuando los valores ya estén pre-cargados (sin alerta)
     checkCt(false);
