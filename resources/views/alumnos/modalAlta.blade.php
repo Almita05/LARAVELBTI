@@ -1,10 +1,95 @@
-<div class="modal fade" id="modalAlumno" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <form id="formAlumno" class="modal-content" novalidate>
+<style>
+.glass-modal {
+    background: rgb(73, 164, 190) !important;
+    border: 1px solid rgba(255, 255, 255, .15);
+    border-radius: 20px;
+    overflow: hidden;
+    color: white;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
+}
 
-            <div class="modal-header">
-                <h5 class="modal-title">Alta Alumno</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+.glass-modal .modal-header {
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
+    color: #fff;
+}
+
+.glass-modal .modal-body {
+    background: white;
+}
+
+.glass-modal .modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    background: rgba(255, 255, 255, .03);
+}
+
+.accordion-item {
+    background: rgba(255, 255, 255, .06);
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.accordion-button,
+.accordion-button.collapsed,
+.accordion-button:not(.collapsed) {
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
+    color: #fff !important;
+    font-weight: 600;
+    box-shadow: none !important;
+    border: none;
+}
+
+.accordion-button:focus {
+    box-shadow: none !important;
+}
+
+.accordion-button::after {
+    filter: brightness(0) invert(1);
+}
+
+.accordion-body {
+    background: white;
+}
+
+.form-label {
+    font-weight: 600;
+}
+
+.form-control-premium,
+.form-select-premium {
+    background: #fff;
+    border: 2px solid #9BDFFF;
+    border-radius: 15px;
+    color: #212529;
+    min-height: 48px;
+}
+
+.form-control-premium:hover,
+.form-select-premium:hover {
+    border-color: #7FD3FF;
+}
+
+.form-control-premium:focus,
+.form-select-premium:focus {
+    border-color: #66C9FF;
+    box-shadow:
+        0 0 0 3px rgba(102, 201, 255, .20),
+        inset 0 1px 2px rgba(0, 0, 0, .04);
+}
+</style>
+<div class="modal fade" id="modalAlumno" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <form id="formAlumno" class="modal-content glass-modal" novalidate>
+
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-person-plus-fill me-2"></i>
+                    Alta de Alumno
+                </h5>
+
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal">
+                </button>
             </div>
 
             <div class="modal-body p-4">
@@ -16,12 +101,12 @@
                         <h2 class="accordion-header">
                             <button class="accordion-button rounded" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#datosPersonales">
-                                <i class="bi bi-person-badge me-2 text-primary"></i> Datos personales
+                                <i class="bi bi-person-badge-fill me-2 text-info"></i> Datos personales
                             </button>
                         </h2>
-<!-- 
+                        
                         <div id="datosPersonales" class="accordion-collapse collapse show" -->
-                        <div id="datosPersonales" class="accordion "
+                        <div id="datosPersonales" class="accordion-collapse collapse show"
                             data-bs-parent="#accordionAlumno">
 
                             <div class="accordion-body">
@@ -45,7 +130,7 @@
                                         <input type="text" name="apMaterno" class="form-control form-control-premium">
                                     </div>
 
-                                    <!-- <div class="col-md-4 mb-3">
+                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">Fecha nacimiento <span
                                                 class="text-danger">*</span></label>
                                         <input type="date" name="fechaNacimiento"
@@ -63,14 +148,14 @@
                                         <input type="email" name="correoAlumno"
                                             class="form-control form-control-premium">
                                     </div>
- -->
+ 
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- TUTOR -->
-                    <!-- <div class="accordion-item mb-3 border-0 shadow-sm rounded">
+                     <div class="accordion-item mb-3 border-0 shadow-sm rounded">
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#datosTutor">
@@ -106,7 +191,6 @@
                         </div>
                     </div>
 
-                     DIRECCIÓN 
                     <div class="accordion-item mb-3 border-0 shadow-sm rounded">
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse"
@@ -138,32 +222,31 @@
                                 </div>
                             </div>
                         </div>
-                    </div -->
+</div >
 
-                    <!-- DATOS ACADÉMICOS -->
                     <div class="accordion-item mb-3 border-0 shadow-sm rounded">
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#academicos">
-                                
+
                                 <i class="bi bi-mortarboard me-2 text-primary"></i> Datos académicos
                             </button>
-                            
+
                         </h2>
 
-                       <!--  <div id="academicos" class="accordion-collapse collapse" data-bs-parent="#accordionAlumno"> -->
-                             <div id="academicos" class="accordion" data-bs-parent="#accordionAlumno">
+                          <div id="academicos" class="accordion-collapse collapse" data-bs-parent="#accordionAlumno"> 
+                        <div id="academicos" class="accordion-collapse collapse" data-bs-parent="#accordionAlumno">
 
                             <div class="accordion-body">
                                 <div class="row">
 
-                                    <!-- <div class="col-md-4 mb-3">
+                                 <div class="col-md-4 mb-3">
                                         <label class="form-label">Escuela procedencia</label>
                                         <input type="text" name="escuelaProcedencia"
                                             class="form-control form-control-premium">
-                                    </div> -->
+                                    </div> 
 
-                                   <!--  <div class="col-md-4 mb-3">
+                                      <div class="col-md-4 mb-3">
                                         <label class="form-label">Grupo <span class="text-danger">*</span></label>
                                         <select name="id_Grupo" class="form-select form-select-premium">
                                             <option value="">Seleccione</option>
@@ -173,10 +256,11 @@
                                             </option>
                                             @endforeach
                                         </select>
-                                    </div> -->
+                                    </div> 
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">Generación <span class="text-danger">*</span></label>
-                                        <select name="id_Generacion" id="id_Generacion" class="form-select form-select-premium" required>
+                                        <select name="id_Generacion" id="id_Generacion"
+                                            class="form-select form-select-premium" required>
                                             <option value="">Seleccione una generación</option>
                                             @foreach($generaciones as $generacion)
                                             <option value="{{ $generacion['id'] }}">
@@ -191,7 +275,6 @@
                         </div>
                     </div>
 
-                    <!-- CURSOS 
                     <div class="accordion-item mb-3 border-0 shadow-sm rounded">
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse"
@@ -227,17 +310,26 @@
                             </div>
                         </div>
                     </div>
-                    -->
 
                 </div>
 
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
 
-                <button class="btn btn-premium btn-primary" type="submit"> Guardar
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
+
+                    Cancelar
+
                 </button>
+
+                <button class= "btn btn-outline-light" type="submit">
+
+                    <i class="bi bi-floppy-fill"></i>
+                    Guardar Alumno
+
+                </button>
+
             </div>
 
         </form>

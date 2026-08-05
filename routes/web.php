@@ -18,7 +18,7 @@ use App\Http\Controllers\TestController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CalificacionesController;
 use App\Http\Controllers\HorariosController;
-
+use App\Http\Controllers\KardexCBgneController;
 
 
 
@@ -49,7 +49,14 @@ Route::middleware('auth.session')->group(function () {
     Route::get('/planesBTI', [PlanEstudioController::class, 'bti'])->name('planesBTI');
     Route::get('/planesBGNE', [PlanEstudioController::class, 'bgne'])->name('planesBGNE');
 
-    // Actas
+   
+
+});
+
+Route::middleware(['auth.session', 'docente.admin'])->group(function () {
+
+
+ // Actas
     Route::get('/actas_calificaciones', [ActasCalificacionesController::class, 'index'])->name('actas_calificaciones');
     Route::get('/actas_calificacionesBTI', [ActasCalificacionesController::class, 'bti'])->name('actas_calificacionesBTI');
     Route::get('/actas_calificacionesBGNES', [ActasCalificacionesController::class, 'bgneS'])->name('actas_calificacionesBGNES');
@@ -75,7 +82,6 @@ Route::middleware('auth.session')->group(function () {
 
 });
 
-Route::middleware(['auth.session', 'docente.admin'])->group(function () {
 
     // Alumnos
     Route::get('/alumnos', [AlumnoController::class, 'index'])->name('alumnos');
@@ -144,4 +150,3 @@ Route::post('/calificaciones/guardar',
     Route::post('/horarios', [HorariosController::class, 'store']);
     Route::delete('/horarios/{id_horario}', [HorariosController::class, 'destroy']);
 
-});

@@ -2,6 +2,88 @@
 
 @section('content')
 
+<style>
+.glass-modal {
+    background: rgb(73, 164, 190) !important;
+    border: 1px solid rgba(255, 255, 255, .15);
+    border-radius: 20px;
+    overflow: hidden;
+    color: white;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
+}
+
+.glass-modal .modal-header {
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
+    color: #fff;
+}
+
+.glass-modal .modal-body {
+    background: white;
+}
+
+.glass-modal .modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    background: rgba(255, 255, 255, .03);
+}
+
+.accordion-item {
+    background: rgba(255, 255, 255, .06);
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.accordion-button,
+.accordion-button.collapsed,
+.accordion-button:not(.collapsed) {
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
+    color: #fff !important;
+    font-weight: 600;
+    box-shadow: none !important;
+    border: none;
+}
+
+.accordion-button:focus {
+    box-shadow: none !important;
+}
+
+.accordion-button::after {
+    filter: brightness(0) invert(1);
+}
+
+.accordion-body {
+    background: white;
+}
+
+.form-label {
+    font-weight: 600;
+    color: black;
+}
+
+.form-control-premium,
+.form-select-premium {
+    background: #fff;
+    border: 2px solid #9BDFFF;
+    border-radius: 15px;
+    color: #212529;
+    min-height: 48px;
+}
+
+.form-control-premium:hover,
+.form-select-premium:hover {
+    border-color: #7FD3FF;
+}
+
+.form-control-premium:focus,
+.form-select-premium:focus {
+    border-color: #66C9FF;
+    box-shadow:
+        0 0 0 3px rgba(102, 201, 255, .20),
+        inset 0 1px 2px rgba(0, 0, 0, .04);
+}
+</style>
+
 <head>
     <link rel="stylesheet" href="{{ asset('css/estilosDocentes.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -75,63 +157,67 @@
     <!-- MODAL -->
     <div class="modal fade" id="modalDocente" tabindex="-1">
         <div class="modal-dialog modal-lg">
-            <form id="formDocente" class="modal-content">
+            <form id="formDocente" class="modal-content glass-modal">
 
                 <div class="modal-header">
-                    <h5 class="modal-title">Alta Docente</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>Alta Docente
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
 
                 <div class="modal-body">
 
-                    <div class="row">
+                    <div class="row g-3">
 
-                        <div class="col-md-6 mb-2">
-                            <label>Nombre</label>
-                            <input type="text" class="form-control" name="nombreDocente" required>
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control form-control-premium" name="nombreDocente" required>
                         </div>
 
-                        <div class="col-md-6 mb-2">
-                            <label>Apellido Paterno</label>
-                            <input type="text" class="form-control" name="apPaternoDocente" required>
+                        <div class="col-md-6">
+                            <label class="form-label">Apellido Paterno</label>
+                            <input type="text" class="form-control form-control-premium" name="apPaternoDocente"
+                                required>
                         </div>
 
-                        <div class="col-md-6 mb-2">
-                            <label>Apellido Materno</label>
-                            <input type="text" class="form-control" name="apMaternoDocente">
+                        <div class="col-md-6">
+                            <label class="form-label">Apellido Materno</label>
+                            <input type="text" class="form-control form-control-premium" name="apMaternoDocente">
                         </div>
 
-                        <div class="col-md-6 mb-2">
-                            <label>Correo</label>
-                            <input type="email" class="form-control" name="correoDocente" required>
+                        <div class="col-md-6">
+                            <label class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control form-control-premium" name="correoDocente" required>
                         </div>
 
-                        <div class="col-md-6 mb-2">
-                            <label>Teléfono</label>
-                            <input type="text" class="form-control" name="telefonoDocente">
+                        <div class="col-md-6">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" class="form-control form-control-premium" name="telefonoDocente">
                         </div>
 
-                        <div class="col-md-6 mb-2">
-                            <label>Status</label>
-                            <select class="form-control" name="statusDocente">
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select form-select-premium" name="statusDocente">
                                 <option value="ACTIVO">ACTIVO</option>
                                 <option value="INACTIVO">INACTIVO</option>
                             </select>
                         </div>
 
-                        <div class="col-md-6 mb-2">
-                            <label>Nivel de Estudios</label>
-                            <input type="text" class="form-control" name="nivelEstudios">
+                        <div class="col-md-6">
+                            <label class="form-label">Nivel de Estudios</label>
+                            <input type="text" class="form-control form-control-premium" name="nivelEstudios">
                         </div>
 
-                        <div class="col-md-6 mb-2">
-                            <label>Fecha de Nacimiento</label>
-                            <input type="date" class="form-control" name="fechaNacimiento">
+                        <div class="col-md-6">
+                            <label class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control form-control-premium" name="fechaNacimiento">
                         </div>
 
-                        <div class="col-12 mb-2">
-                            <label>Observaciones</label>
-                            <textarea class="form-control" name="observacionesDocente"></textarea>
+                        <div class="col-12">
+                            <label class="form-label">Observaciones</label>
+                            <textarea class="form-control form-control-premium" name="observacionesDocente"
+                                rows="4"></textarea>
                         </div>
 
                     </div>
@@ -139,7 +225,20 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button class="btn btn-success" type="submit">Guardar</button>
+
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                    <button class="btn btn-outline-light" type="submit">
+
+                        <i class="bi bi-floppy-fill"></i>
+                        Guardar Alumno
+
+                    </button>
+
                 </div>
 
             </form>
