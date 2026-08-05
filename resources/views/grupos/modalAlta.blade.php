@@ -116,63 +116,18 @@
 
             <div class="modal-body">
 
-                <div class="row g-3">
+                    <div class="col-md-12 mb-3">
+                        <label>Clave del grupo<span style="color:red;">*</span></label>
+                        <input type="text" name="clave" class="form-control" required>
+                        <br>
 
-                    <div class="col-md-6">
-                        <label class="form-label">
-                            Clave del grupo <span class="text-warning">*</span>
-                        </label>
-                        <input type="text" name="clave" class="form-control glass-input" placeholder="Ej. 1A-2026"
-                            required>
-                    </div>
+                        <label>Fecha creación</label>
+                        <input type="date" name="fechaCreacion" class="form-control" readonly required>
 
-                    <div class="col-md-6">
-                        <label class="form-label">
-                            Fecha creación <span class="text-warning">*</span>
-                        </label>
-                        <input type="date" name="fechaCreacion" class="form-control glass-input" required>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">
-                            Fecha inicio <span class="text-warning">*</span>
-                        </label>
-                        <input type="date" name="fechaInicio" class="form-control glass-input" required>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">
-                            Fecha fin <span class="text-warning">*</span>
-                        </label>
-                        <input type="date" name="fechaFin" class="form-control glass-input" required>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">
-                            Centro de trabajo <span class="text-warning">*</span>
-                        </label>
-
-                        <select name="id_centroTrabajo" class="form-select glass-input" required>
-
-                            <option value="">Seleccione un centro de trabajo</option>
-
-                            @foreach($centros as $ct)
-                            <option value="{{ $ct['id'] }}">
-                                {{ $ct['nombre'] }}
-                            </option>
-                            @endforeach
-
-                        </select>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">
-                            Plan de estudios <span class="text-warning">*</span>
-                        </label>
-
-                        <select name="id_planEstudios" class="form-select glass-input" required>
-
-                            <option value="">Seleccione un plan</option>
+                        <br> 
+                        <label>Plan de estudios<span style="color:red;">*</span></label>
+                        <select name="id_planEstudios" class="form-control" required>
+                            <option value="">Seleccione un CT</option>
 
                             @foreach($planes as $pe)
                             <option value="{{ $pe['id'] }}">
@@ -181,6 +136,45 @@
                             @endforeach
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+                        <br>    
+                        
+                        <label>Centro de trabajo<span style="color:red;">*</span></label>
+                        <select name="id_centroTrabajo" class="form-control" required>
+                            <option value="">Seleccione un CT</option>
+
+                            @foreach($centros as $ct)
+                            <option value="{{ $ct['id'] }}">
+                                {{ $ct['nombre'] }}
+                            </option>
+                            @endforeach
+                        </select>
+                        <br>
+                        
+
+                        <label>Fecha inicio<span style="color:red;">*</span></label>
+                        <input type="date" name="fechaInicio" class="form-control" required>
+
+                        <br>
+
+                        <label>Fecha fin<span style="color:red;">*</span></label>
+                        <input type="date" name="fechaFin" class="form-control" required>
+
+                        <div id="divCalcularSemanas" style="display: none; margin-top: 10px; margin-bottom: 10px;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="chkCalcularSemanas">
+                                <label class="form-check-label" for="chkCalcularSemanas" style="font-weight: 500; font-size: 0.9rem;">
+                                    Calcular 78 semanas automáticamente (BGNE)
+                                </label>
+                            </div>
+                        </div>
+
+                        <br>
+
+                        
+
+>>>>>>> feature/integracion-api
                         <label>Tipo de periodo<span style="color:red;">*</span></label>
                         <select name="id_tipoPeriodo" class="form-control" required>
                             <option value="">Seleccione un periodo</option>
@@ -191,6 +185,28 @@
                             @endforeach
 =======
 >>>>>>> bde174c (vista de alumno)
+                        </select>
+
+                        <br>
+
+                        <label>Nivel académico<span style="color:red;">*</span></label>
+                        <select name="id_nivel_academico" class="form-control" required>
+                            <option value="">Seleccione un nivel</option>
+                            @foreach($niveles as $nivel)
+                            <option value="{{ $nivel['id'] }}">
+                                {{ $nivel['nombre'] }}
+                            </option>
+                            @endforeach
+                        </select>
+
+                        <br>
+
+                        <label>Modalidad de Horario<span style="color:red;">*</span></label>
+                        <select name="modalidadHorario" class="form-control" required>
+                            <option value="">Seleccione una modalidad</option>
+                            <option value="MATUTINO">MATUTINO</option>
+                            <option value="VESPERTINO">VESPERTINO</option>
+                            <option value="LIBRE">LIBRE</option>
                         </select>
                     </div>
 
