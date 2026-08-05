@@ -180,7 +180,42 @@
                             </option>
                             @endforeach
 
-<<<<<<< HEAD
+                        <br>    
+                        
+                        <label>Centro de trabajo<span style="color:red;">*</span></label>
+                        <select name="id_centroTrabajo" class="form-control" required>
+                            <option value="">Seleccione un CT</option>
+
+                            @foreach($centros as $ct)
+                            <option value="{{ $ct['id'] }}">
+                                {{ $ct['nombre'] }}
+                            </option>
+                            @endforeach
+                        </select>
+                        <br>
+                        
+
+                        <label>Fecha inicio<span style="color:red;">*</span></label>
+                        <input type="date" name="fechaInicio" class="form-control" required>
+
+                        <br>
+
+                        <label>Fecha fin<span style="color:red;">*</span></label>
+                        <input type="date" name="fechaFin" class="form-control" required>
+
+                        <div id="divCalcularSemanas" style="display: none; margin-top: 10px; margin-bottom: 10px;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="chkCalcularSemanas">
+                                <label class="form-check-label" for="chkCalcularSemanas" style="font-weight: 500; font-size: 0.9rem;">
+                                    Calcular 78 semanas automáticamente (BGNE)
+                                </label>
+                            </div>
+                        </div>
+
+                        <br>
+
+                        
+
                         <label>Tipo de periodo<span style="color:red;">*</span></label>
                         <select name="id_tipoPeriodo" class="form-control" required>
                             <option value="">Seleccione un periodo</option>
@@ -189,8 +224,28 @@
                                 {{ $periodo['nombrePeriodo'] }}
                             </option>
                             @endforeach
-=======
->>>>>>> bde174c (vista de alumno)
+                        </select>
+
+                        <br>
+
+                        <label>Nivel académico<span style="color:red;">*</span></label>
+                        <select name="id_nivel_academico" class="form-control" required>
+                            <option value="">Seleccione un nivel</option>
+                            @foreach($niveles as $nivel)
+                            <option value="{{ $nivel['id'] }}">
+                                {{ $nivel['nombre'] }}
+                            </option>
+                            @endforeach
+                        </select>
+
+                        <br>
+
+                        <label>Modalidad de Horario<span style="color:red;">*</span></label>
+                        <select name="modalidadHorario" class="form-control" required>
+                            <option value="">Seleccione una modalidad</option>
+                            <option value="MATUTINO">MATUTINO</option>
+                            <option value="VESPERTINO">VESPERTINO</option>
+                            <option value="LIBRE">LIBRE</option>
                         </select>
                     </div>
 

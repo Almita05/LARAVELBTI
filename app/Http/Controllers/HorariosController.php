@@ -27,9 +27,10 @@ class HorariosController extends Controller
         return view('horarios.domingo');
     }
 
-    public function getHorariosGrupo($id_grupo)
+    public function getHorariosGrupo(Request $request, $id_grupo)
     {
-        $url = config('services.api.base_url') . '/getHorariosGrupo/' . $id_grupo;
+        $agrupado = $request->query('agrupado', 'false');
+        $url = config('services.api.base_url') . '/getHorariosGrupo/' . $id_grupo . '?agrupado=' . $agrupado;
         $response = Http::get($url);
 
         if ($response->failed()) {
@@ -48,14 +49,7 @@ class HorariosController extends Controller
         $response = Http::withHeaders([
             'Accept' => 'application/json',
             'Content-Type' => 'application/json'
-        ])->post($url, [
-            'id_grupo' => $request->input('id_grupo'),
-            'id_materia' => $request->input('id_materia'),
-            'id_docente' => $request->input('id_docente'),
-            'diaSemana' => $request->input('diaSemana'),
-            'horaInicio' => $request->input('horaInicio'),
-            'horaFin' => $request->input('horaFin'),
-        ]);
+        ])->post($url, $request->all());
 
         if ($response->failed()) {
             return response()->json([
@@ -88,5 +82,34 @@ class HorariosController extends Controller
             'success' => true,
             'data' => $response->json()
         ]);
+    }
+
+    public function validar(Request $request)
+    {
+        $request->merge(json_decode($request->getContent(), true));
+
+        $url = config('services.api.base_url') . '/validacionHorario';
+
+        $response = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json'
+        ])->post($url, [
+            'id_grupo' => $request->input('id_grupo'),
+            'id_materia' => $request->input('id_materia'),
+            'id_docente' => $request->input('id_docente'),
+            'diaSemana' => $request->input('diaSemana'),
+            'horaInicio' => $request->input('horaInicio'),
+            'horaFin' => $request->input('horaFin'),
+        ]);
+
+        if ($response->failed()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al validar el horario en el backend',
+                'error' => $response->body()
+            ], $response->status());
+        }
+
+        return response()->json($response->json());
     }
 }
