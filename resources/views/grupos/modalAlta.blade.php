@@ -79,6 +79,14 @@
     color: black;
 }
 
+.glass-modal label {
+    color: #2b3a4a !important;
+    font-weight: 600;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    display: inline-block;
+}
+
 .form-control-premium,
 .form-select-premium {
     background: #fff;
@@ -115,7 +123,7 @@
             </div>
 
             <div class="modal-body">
-
+                <div class="row">
                     <div class="col-md-12 mb-3">
                         <label>Clave del grupo<span style="color:red;">*</span></label>
                         <input type="text" name="clave" class="form-control" required>
@@ -127,17 +135,15 @@
                         <br> 
                         <label>Plan de estudios<span style="color:red;">*</span></label>
                         <select name="id_planEstudios" class="form-control" required>
-                            <option value="">Seleccione un CT</option>
+                            <option value="">Seleccione un Plan</option>
 
                             @foreach($planes as $pe)
                             <option value="{{ $pe['id'] }}">
                                 {{ $pe['nombrePlan'] }}
                             </option>
                             @endforeach
+                        </select>
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
                         <br>    
                         
                         <label>Centro de trabajo<span style="color:red;">*</span></label>
@@ -174,7 +180,6 @@
 
                         
 
->>>>>>> feature/integracion-api
                         <label>Tipo de periodo<span style="color:red;">*</span></label>
                         <select name="id_tipoPeriodo" class="form-control" required>
                             <option value="">Seleccione un periodo</option>
@@ -183,8 +188,6 @@
                                 {{ $periodo['nombrePeriodo'] }}
                             </option>
                             @endforeach
-=======
->>>>>>> bde174c (vista de alumno)
                         </select>
 
                         <br>
@@ -209,23 +212,7 @@
                             <option value="LIBRE">LIBRE</option>
                         </select>
                     </div>
-
-                    <div class="col-md-12">
-                        <label class="form-label">
-                            Tipo de periodo <span class="text-warning">*</span>
-                        </label>
-
-                        <select name="id_tipoPeriodo" class="form-select glass-input" required>
-
-                            <option value="">Seleccione un periodo</option>
-                            <option value="Semestral">Semestral</option>
-                            <option value="Trimestral">Trimestral</option>
-
-                        </select>
-                    </div>
-
                 </div>
-
             </div>
 
             <div class="modal-footer glass-footer">
