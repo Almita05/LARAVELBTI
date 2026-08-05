@@ -298,12 +298,15 @@ document.addEventListener("DOMContentLoaded", function() {
                     <td>${formatearFecha(grupo.fechaInicio)}</td>
                     <td>${formatearFecha(grupo.fechaFin)}</td>
                     <td class="text-center">
-                        <button class="btn btn-ver btn-sm" onclick="verGrupo(${grupo.id})">
+                        <button class="btn btn-ver btn-sm" onclick="verGrupo(${grupo.id})" title="Detalles del grupo">
                             <i class="fa-solid fa-eye"></i>
                         </button>
-                        <button class="btn btn-editar btn-sm" onclick="editarGrupo(${grupo.id})">
+                        <button class="btn btn-editar btn-sm" onclick="editarGrupo(${grupo.id})" title="Editar grupo">
                             <i class="fa-solid fa-pen"></i>
                         </button>
+                        <a href="/grupos/${grupo.id}/alumnos" class="btn btn-sm text-white" style="background: #0ea5e9; border: none; border-radius: 6px; padding: 4px 8px;" title="Ver alumnos del grupo">
+                            <i class="fa-solid fa-users"></i>
+                        </a>
                     </td>
                 </tr>
             `;

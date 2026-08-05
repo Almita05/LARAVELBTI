@@ -70,39 +70,55 @@ public function modalAlta()
 
 public function store(Request $request)
 {
+    $request->merge(json_decode($request->getContent(), true));
+
     $url = config('services.api.base_url') . '/crealumnos';
 
-    $response = Http::post($url, [
+    $response = Http::withHeaders([
+        'Accept' => 'application/json',
+        'Content-Type' => 'application/json'
+    ])->post($url, [
         "nombre" => $request->nombre,
         "apPaterno" => $request->apPaterno,
-        "apMaterno" => $request->apMaterno,
-        /* "fechaNacimiento" => $request->fechaNacimiento,
-        "tutor" => $request->tutor,
-        "parentesco" => $request->parentesco,
-        "calle" => $request->calle,
-        "colonia" => $request->colonia,
-        "localidad" => $request->localidad,
-        "municipio" => $request->municipio,
-        "telefonoTutor" => $request->telefonoTutor,
-        "celularAlumno" => $request->celularAlumno,
-        "correoAlumno" => $request->correoAlumno,
-        "escuelaProcedencia" => $request->escuelaProcedencia,
-        "observaciones" => $request->observaciones, */
-        "id_Generacion" => $request->id_Generacion,
-        /*"id_Grupo" => $request->id_Grupo*/
+        "apMaterno" => $request->apMaterno ?: null,
+        "fechaNacimiento" => $request->fechaNacimiento ?: null,
+        "tutor" => $request->tutor ?: null,
+        "parentesco" => $request->parentesco ?: null,
+        "calle" => $request->calle ?: null,
+        "colonia" => $request->colonia ?: null,
+        "localidad" => $request->localidad ?: null,
+        "municipio" => $request->municipio ?: null,
+        "telefonoTutor" => $request->telefonoTutor ?: null,
+        "celularAlumno" => $request->celularAlumno ?: null,
+        "correoAlumno" => $request->correoAlumno ?: null,
+        "escuelaProcedencia" => $request->escuelaProcedencia ?: null,
+        "observaciones" => $request->observaciones ?: null,
+        "id_Generacion" => $request->id_Generacion ? (int)$request->id_Generacion : null,
+        "id_Grupo" => $request->id_Grupo ? (int)$request->id_Grupo : null,
+        "equivalencia" => ($request->equivalencia === 'SI' || $request->equivalencia === 'NO') ? $request->equivalencia : null,
+        "numeroControl" => $request->numeroControl ?: null
     ]);
 
     if ($response->failed()) {
         return response()->json([
             'success' => false,
-            'message' => 'Error al guardar alumno'
+            'message' => 'Error al guardar alumno',
+            'error' => $response->body()
         ], 500);
+    }
+
+    $resData = $response->json();
+    if (isset($resData['error'])) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error en la base de datos: ' . $resData['error']
+        ], 400);
     }
 
     return response()->json([
         'success' => true,
-         'message' => 'Alumno guardado correctamente',
-        'data' => $response->json()
+        'message' => 'Alumno guardado correctamente',
+        'data' => $resData
     ]);
 }
 
@@ -126,4 +142,113 @@ public function destroy($id)
         'message' => 'Alumno eliminado correctamente'
     ]);
 }
+
+public function show($id)
+{
+    $url = config('services.api.base_url') . '/alumno/' . $id;
+    $response = Http::get($url);
+
+    if ($response->failed()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener los detalles del alumno.'
+        ], $response->status());
+    }
+
+    return response()->json([
+        'success' => true,
+        'data' => $response->json()['data'] ?? null
+    ]);
 }
+
+public function update(Request $request, $id)
+{
+    $request->merge(json_decode($request->getContent(), true));
+    
+    $url = config('services.api.base_url') . '/updateAlumno/' . $id;
+    
+    $response = Http::withHeaders([
+        'Accept' => 'application/json',
+        'Content-Type' => 'application/json'
+    ])->put($url, [
+        "nombre" => $request->nombre,
+        "apPaterno" => $request->apPaterno,
+        "apMaterno" => $request->apMaterno ?: null,
+        "fechaNacimiento" => $request->fechaNacimiento ?: null,
+        "tutor" => $request->tutor ?: null,
+        "parentesco" => $request->parentesco ?: null,
+        "calle" => $request->calle ?: null,
+        "colonia" => $request->colonia ?: null,
+        "localidad" => $request->localidad ?: null,
+        "municipio" => $request->municipio ?: null,
+        "telefonoTutor" => $request->telefonoTutor ?: null,
+        "celularAlumno" => $request->celularAlumno ?: null,
+        "correoAlumno" => $request->correoAlumno ?: null,
+        "escuelaProcedencia" => $request->escuelaProcedencia ?: null,
+        "observaciones" => $request->observaciones ?: null,
+        "idGeneracion" => $request->id_Generacion ? (int)$request->id_Generacion : null,
+        "idGrupo" => $request->id_Grupo ? (int)$request->id_Grupo : null,
+        "equivalencia" => ($request->equivalencia === 'SI' || $request->equivalencia === 'NO') ? $request->equivalencia : null,
+        "numeroControl" => $request->numeroControl ?: null
+    ]);
+
+    if ($response->failed()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al actualizar alumno',
+            'error' => $response->body()
+        ], 500);
+    }
+
+    $resData = $response->json();
+    if (isset($resData['error'])) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error en la base de datos: ' . $resData['error']
+        ], 400);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Alumno actualizado correctamente',
+        'data' => $resData
+    ]);
+}
+
+public function alumnosGrupo($id_grupo)
+{
+    // Fetch group details to get its clave/name
+    $urlGrupo = config('services.api.base_url') . '/getGrupo/' . $id_grupo;
+    $responseGrupo = Http::get($urlGrupo);
+    $grupoClave = $responseGrupo->successful() ? ($responseGrupo->json()['data']['clave'] ?? '') : '';
+
+    // Fetch generations (needed by the view select elements)
+    $responseGeneraciones = Http::get(config('services.api.base_url') . '/generaciones');
+    $generaciones = $responseGeneraciones->successful() ? $responseGeneraciones->json() : [];
+
+    return view('alumnos.index', [
+        'generaciones' => $generaciones,
+        'grupoId' => $id_grupo,
+        'grupoClave' => $grupoClave
+    ]);
+}
+
+public function alumnosPorGrupo($id_grupo)
+{
+    $url = config('services.api.base_url') . '/alumnos_by_grupo/' . $id_grupo;
+    $response = Http::get($url);
+
+    if ($response->failed()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener alumnos del grupo',
+            'data' => []
+        ]);
+    }
+
+    return response()->json([
+        'success' => true,
+        'data' => $response->json()['data'] ?? []
+    ]);
+}
+}   

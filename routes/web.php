@@ -89,6 +89,10 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::post('/alumnos', [AlumnoController::class, 'store']);
     Route::get('/alumnos/modalAlta', [AlumnoController::class, 'modalAlta']);
     Route::delete('/alumnos/{id}', [AlumnoController::class, 'destroy'])->name('alumnos.destroy');
+    Route::get('/alumnos/{id}', [AlumnoController::class, 'show'])->where('id', '[0-9]+');
+    Route::put('/alumnos/{id}', [AlumnoController::class, 'update'])->where('id', '[0-9]+');
+    Route::get('/grupos/{id_grupo}/alumnos', [AlumnoController::class, 'alumnosGrupo'])->where('id_grupo', '[0-9]+');
+    Route::get('/alumnos/grupo/{id_grupo}', [AlumnoController::class, 'alumnosPorGrupo'])->where('id_grupo', '[0-9]+');
 
     // Docentes
     Route::get('/docentes', [DocenteController::class, 'index'])->name('docentes');

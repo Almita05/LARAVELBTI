@@ -6,6 +6,7 @@
 
 <head>
     <link rel="stylesheet" href="{{ asset('css/estilos.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <div class="page-container">
@@ -32,8 +33,12 @@
 
         <div class="glass-header p-3 d-flex justify-content-between align-items-center">
 
-            <h5 class="mb-0">
-                Lista de alumnos
+            <h5 class="mb-0" id="tituloListaAlumnos">
+                @if(isset($grupoId))
+                    Alumnos del Grupo: <strong>{{ $grupoClave }}</strong>
+                @else
+                    Lista de alumnos
+                @endif
             </h5>
 
 
@@ -99,13 +104,156 @@
 @endsection
 
 <script>
-function abrirModalAlumno() {
+let modoAlumno = 'crear';
+let idAlumnoActual = null;
+let grupoId = @json($grupoId ?? null);
+
+function setFormDisabled(disabled) {
+    const form = document.getElementById('formAlumno');
+    if (!form) return;
+    Array.from(form.querySelectorAll('input, select, textarea')).forEach(el => {
+        el.disabled = disabled;
+    });
+}
+
+function formatDateForInput(dateStr) {
+    if (!dateStr) return '';
+    try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return '';
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    } catch(e) {
+        return '';
+    }
+}
+
+window.verAlumno = function(id) {
+    modoAlumno = 'ver';
+    idAlumnoActual = id;
 
     fetch('/alumnos/modalAlta')
         .then(res => res.text())
         .then(html => {
-
             document.getElementById('contenedorModal').innerHTML = html;
+            setFormDisabled(true);
+
+            fetch(`/alumnos/${id}`)
+                .then(res => res.json())
+                .then(resp => {
+                    if (resp.success && resp.data) {
+                        const al = resp.data;
+                        const form = document.getElementById('formAlumno');
+                        
+                        form.nombre.value = al.nombre || '';
+                        form.apPaterno.value = al.apPaterno || '';
+                        form.apMaterno.value = al.apMaterno || '';
+                        form.fechaNacimiento.value = formatDateForInput(al.fechaNacimiento);
+                        form.celularAlumno.value = al.celularAlumno || '';
+                        form.correoAlumno.value = al.correoAlumno || '';
+                        form.tutor.value = al.tutor || '';
+                        form.parentesco.value = al.parentesco || '';
+                        form.telefonoTutor.value = al.telefonoTutor || '';
+                        form.calle.value = al.calle || '';
+                        form.colonia.value = al.colonia || '';
+                        form.localidad.value = al.localidad || '';
+                        form.escuelaProcedencia.value = al.escuelaProcedencia || '';
+                        form.id_Grupo.value = al.idGrupo || '';
+                        form.id_Generacion.value = al.idGeneracion || '';
+                        form.observaciones.value = al.observaciones || '';
+                        
+                        document.querySelector('.modal-title').innerHTML = '<i class="bi bi-person-fill me-2"></i> Detalles del Alumno';
+                        const submitBtn = document.querySelector('#formAlumno button[type="submit"]');
+                        if (submitBtn) {
+                            submitBtn.style.display = 'none';
+                        }
+
+                        let modal = new bootstrap.Modal(document.getElementById('modalAlumno'));
+                        modal.show();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al cargar datos del alumno.',
+                            confirmButtonColor: 'rgb(38, 104, 123)'
+                        });
+                    }
+                });
+        });
+}
+
+window.editarAlumno = function(id) {
+    modoAlumno = 'editar';
+    idAlumnoActual = id;
+
+    fetch('/alumnos/modalAlta')
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('contenedorModal').innerHTML = html;
+            setFormDisabled(false);
+
+            fetch(`/alumnos/${id}`)
+                .then(res => res.json())
+                .then(resp => {
+                    if (resp.success && resp.data) {
+                        const al = resp.data;
+                        const form = document.getElementById('formAlumno');
+                        
+                        form.nombre.value = al.nombre || '';
+                        form.apPaterno.value = al.apPaterno || '';
+                        form.apMaterno.value = al.apMaterno || '';
+                        form.fechaNacimiento.value = formatDateForInput(al.fechaNacimiento);
+                        form.celularAlumno.value = al.celularAlumno || '';
+                        form.correoAlumno.value = al.correoAlumno || '';
+                        form.tutor.value = al.tutor || '';
+                        form.parentesco.value = al.parentesco || '';
+                        form.telefonoTutor.value = al.telefonoTutor || '';
+                        form.calle.value = al.calle || '';
+                        form.colonia.value = al.colonia || '';
+                        form.localidad.value = al.localidad || '';
+                        form.escuelaProcedencia.value = al.escuelaProcedencia || '';
+                        form.id_Grupo.value = al.idGrupo || '';
+                        form.id_Generacion.value = al.idGeneracion || '';
+                        form.observaciones.value = al.observaciones || '';
+                        
+                        document.querySelector('.modal-title').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Alumno';
+                        const submitBtn = document.querySelector('#formAlumno button[type="submit"]');
+                        if (submitBtn) {
+                            submitBtn.innerHTML = '<i class="bi bi-floppy-fill"></i> Actualizar Alumno';
+                        }
+
+                        let modal = new bootstrap.Modal(document.getElementById('modalAlumno'));
+                        modal.show();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al cargar datos del alumno.',
+                            confirmButtonColor: 'rgb(38, 104, 123)'
+                        });
+                    }
+                });
+        });
+}
+
+function abrirModalAlumno() {
+    modoAlumno = 'crear';
+    idAlumnoActual = null;
+
+    fetch('/alumnos/modalAlta')
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('contenedorModal').innerHTML = html;
+            setFormDisabled(false);
+
+            if (grupoId) {
+                const groupSelect = document.querySelector('#formAlumno select[name="id_Grupo"]');
+                if (groupSelect) {
+                    groupSelect.value = grupoId;
+                }
+            }
 
             let modal = new bootstrap.Modal(document.getElementById('modalAlumno'));
             modal.show();
@@ -121,20 +269,31 @@ document.addEventListener("DOMContentLoaded", function() {
 
         document.getElementById('loading').style.display = 'block';
 
-        fetch(`/alumnos/lista?page=${pagina}&limit=10&search=${search}&generacion=${generacion}`)
+        let fetchUrl = grupoId 
+            ? `/alumnos/grupo/${grupoId}`
+            : `/alumnos/lista?page=${pagina}&limit=10&search=${search}&generacion=${generacion}`;
+
+        fetch(fetchUrl)
             .then(res => res.json())
             .then(data => {
 
-                let alumnos = data.data;
+                let alumnos = data.data || [];
 
-                if (generacion) {
+                if (!grupoId && generacion) {
                     alumnos = alumnos.filter(
                         alumno => alumno.nombreGeneracionTexto == generacion
                     );
                 }
 
                 renderTabla(alumnos);
-                renderPaginacion(data);
+                
+                if (grupoId) {
+                    document.getElementById('paginacionMaterias').innerHTML = '';
+                    document.getElementById('infoPaginacionMaterias').innerText =
+                        `Total alumnos en grupo: ${alumnos.length}`;
+                } else {
+                    renderPaginacion(data);
+                }
             })
             .finally(() => {
                 document.getElementById('loading').style.display = 'none';
@@ -185,11 +344,11 @@ document.addEventListener("DOMContentLoaded", function() {
             <td>${alumno.apMaterno}</td>
             <td>Generación ${alumno.nombreGeneracionTexto}</td>
                <td class="text-center">
-    <button class="btn btn-secondary btn-sm btn-action">
+    <button class="btn btn-secondary btn-sm btn-action" onclick="verAlumno(${alumno.idAlumno})">
         <i class="fa-solid fa-eye"></i>
     </button>
 
-    <button class="btn btn-warning btn-sm btn-action">
+    <button class="btn btn-warning btn-sm btn-action" onclick="editarAlumno(${alumno.idAlumno})">
         <i class="fa-solid fa-pen"></i>
     </button>
     <button class="btn btn-danger btn-sm btn-action btnEliminar"
@@ -204,7 +363,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('tablaAlumnos').innerHTML = html;
     }
 
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', async function(e) {
 
         const boton = e.target.closest('.btnEliminar');
 
@@ -212,9 +371,18 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const id = boton.dataset.id;
 
-        if (!confirm('¿Deseas eliminar este alumno?')) {
-            return;
-        }
+        const confirmResult = await Swal.fire({
+            title: '¿Deseas eliminar este alumno?',
+            text: 'Esta acción no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#cbd5e1',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (!confirmResult.isConfirmed) return;
 
         fetch(`/alumnos/${id}`, {
                 method: 'DELETE',
@@ -229,17 +397,30 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(data => {
 
                 if (data.success) {
-
-                    alert(data.message);
-
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Eliminado',
+                        text: data.message,
+                        confirmButtonColor: 'rgb(38, 104, 123)'
+                    });
                     cargarAlumnos();
                 } else {
-                    alert(data.message || 'Error al eliminar');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Error al eliminar',
+                        confirmButtonColor: 'rgb(38, 104, 123)'
+                    });
                 }
 
             })
             .catch(() => {
-                alert('Error al eliminar alumno');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al eliminar alumno',
+                    confirmButtonColor: 'rgb(38, 104, 123)'
+                });
             });
 
     });
@@ -291,22 +472,31 @@ document.addEventListener("DOMContentLoaded", function() {
         e.preventDefault();
 
         const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
 
-        fetch('/alumnos', {
-                method: 'POST',
+        const url = modoAlumno === 'editar' ? `/alumnos/${idAlumnoActual}` : '/alumnos';
+        const method = modoAlumno === 'editar' ? 'PUT' : 'POST';
+
+        fetch(url, {
+                method: method,
                 headers: {
+                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document
                         .querySelector('meta[name="csrf-token"]')
                         .getAttribute('content')
                 },
-                body: formData
+                body: JSON.stringify(data)
             })
             .then(res => res.json())
             .then(data => {
 
                 if (data.success) {
-
-                    alert(data.message);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Completado',
+                        text: data.message,
+                        confirmButtonColor: 'rgb(38, 104, 123)'
+                    });
 
                     bootstrap.Modal.getInstance(
                         document.getElementById('modalAlumno')
@@ -315,17 +505,23 @@ document.addEventListener("DOMContentLoaded", function() {
                     cargarAlumnos();
 
                 } else {
-
-                    alert(data.message || 'Error al guardar');
-
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Error al guardar',
+                        confirmButtonColor: 'rgb(38, 104, 123)'
+                    });
                 }
 
             })
             .catch(error => {
-
                 console.error(error);
-                alert('Error al guardar alumno');
-
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al guardar alumno',
+                    confirmButtonColor: 'rgb(38, 104, 123)'
+                });
             });
 
     });

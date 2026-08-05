@@ -271,8 +271,7 @@
 
 .calendar-table td {
     border: 1px solid #e2e8f0 !important;
-    padding: 0;
-    height: 80px;
+    padding: 4px !important;
     vertical-align: middle;
     position: relative;
     background: #ffffff !important;
@@ -292,6 +291,7 @@
 /* Calendar Cell Slots */
 .cell-slot {
     width: 100%;
+    min-height: 80px;
     height: 100%;
     display: flex;
     align-items: center;
@@ -310,6 +310,7 @@
 .cell-slot.selected {
     background: rgba(38, 104, 123, 0.05) !important;
     border: 2px dashed rgb(38, 104, 123);
+    border-radius: 6px;
 }
 
 .cell-slot .add-btn-icon {
@@ -328,30 +329,30 @@
 
 /* Assigned Class Cards (Light theme style matching the mock colors) */
 .class-card {
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    right: 4px;
-    bottom: 4px;
+    width: 100%;
+    height: 100%;
     border-radius: 6px;
-    padding: 6px 10px;
+    padding: 8px 12px;
     text-align: left;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
     background: #f1f5f9; /* Light gray-blue */
     border: 1px solid #cbd5e1;
     border-left: 4px solid rgb(38, 104, 123); /* System Color indicator */
+    box-sizing: border-box;
+    position: relative;
 }
 
 .class-subject {
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: rgb(38, 104, 123); /* System color text */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.25;
 }
 
 .class-detail {
@@ -359,11 +360,11 @@
     color: #475569;
     display: flex;
     align-items: center;
-    gap: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-top: 1px;
+    gap: 6px;
+    margin-top: 2px;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.2;
 }
 
 .class-detail i {
@@ -1250,6 +1251,16 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!selectedCell || !activeGroup) return;
 
         const aula = formAulaSelect.value;
+        if (!aula) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campos requeridos',
+                text: 'El aula es obligatoria.',
+                confirmButtonColor: 'rgb(38, 104, 123)'
+            });
+            return;
+        }
+
         const timeSlot = timeBlocks[selectedCell.timeIdx];
         const [startStr, endStr] = timeSlot.split(" - ");
         const horaInicio = startStr + ":00";
@@ -1547,6 +1558,8 @@ document.addEventListener("DOMContentLoaded", function() {
                         horaInicio: item.horaInicio,
                         horaFin: item.horaFin,
                         aula: item.aula || "",
+                        id_docente: item.id_docente,
+                        docente_nombre: item.docente_nombre || "",
                         clases: item.clases || []
                     };
 
@@ -1574,9 +1587,10 @@ document.addEventListener("DOMContentLoaded", function() {
             if (idx > 0) {
                 html += '<hr style="margin: 4px 0; opacity: 0.15; border-color: rgb(38, 104, 123);">';
             }
+            const teacherName = data.docente_nombre || clase.docente_nombre || '';
             html += `
                 <div class="class-subject" style="font-size: 0.85rem; font-weight: 700; line-height: 1.2;">${clase.materia_nombre}</div>
-                <div class="class-detail" style="font-size: 0.72rem; color: #475569; line-height: 1.2;"><i class="fa-solid fa-user-tie"></i> ${clase.docente_nombre}</div>
+                <div class="class-detail" style="font-size: 0.72rem; color: #475569; line-height: 1.2;"><i class="fa-solid fa-user-tie"></i> ${teacherName}</div>
             `;
         });
         html += aulaText;
