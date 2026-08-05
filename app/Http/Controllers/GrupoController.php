@@ -51,7 +51,11 @@ class GrupoController extends Controller
         $resPeriodos = Http::get($base . '/tipoPeriodo');
         $periodos = $resPeriodos->successful() ? $resPeriodos->json() : [];
 
-        return view('grupos.modalAlta', compact('centros', 'planes', 'periodos'));
+        // Niveles Académicos
+        $resNiveles = Http::get($base . '/getNivelAcademico');
+        $niveles = $resNiveles->successful() ? $resNiveles->json() : [];
+
+        return view('grupos.modalAlta', compact('centros', 'planes', 'periodos', 'niveles'));
     }
 
     public function store(Request $request)
@@ -66,6 +70,8 @@ class GrupoController extends Controller
             'id_centroTrabajo' => $request->id_centroTrabajo,
             'id_planEstudios' => $request->id_planEstudios,
             'id_tipoPeriodo' => $request->id_tipoPeriodo,
+            'modalidadHorario' => $request->modalidadHorario,
+            'id_nivel_academico' => $request->id_nivel_academico,
         ]);
 
         if ($response->failed()) {
@@ -76,6 +82,54 @@ class GrupoController extends Controller
 
         return response()->json([
             'message' => 'Guardado correctamente'
+        ]);
+    }
+
+    public function show($id)
+    {
+        $url = config('services.api.base_url') . '/getGrupo/' . $id;
+
+        $response = Http::get($url);
+
+        if ($response->failed()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los detalles del grupo'
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $response->json()
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $url = config('services.api.base_url') . '/updateGrupo/' . $id;
+
+        $response = Http::put($url, [
+            'clave' => $request->clave,
+            'fechaCreacion' => $request->fechaCreacion,
+            'fechaInicio' => $request->fechaInicio,
+            'fechaFin' => $request->fechaFin,
+            'id_centroTrabajo' => $request->id_centroTrabajo,
+            'id_planEstudios' => $request->id_planEstudios,
+            'id_tipoPeriodo' => $request->id_tipoPeriodo,
+            'modalidadHorario' => $request->modalidadHorario,
+            'id_nivel_academico' => $request->id_nivel_academico,
+        ]);
+
+        if ($response->failed()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar el grupo en el servidor backend'
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Grupo actualizado correctamente'
         ]);
     }
 }

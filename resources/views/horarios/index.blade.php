@@ -45,6 +45,18 @@
     color: #64748b;
 }
 
+.badge-nivel {
+    background-color: rgba(38, 104, 123, 0.1);
+    color: rgb(38, 104, 123);
+    border: 1px solid rgba(38, 104, 123, 0.2);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 4px 10.5px;
+    border-radius: 20px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
 /* User Badge */
 .user-badge {
     display: flex;
@@ -546,6 +558,7 @@
                     <div class="calendar-header-actions">
                         <h3 class="calendar-group-title" id="calendarGroupTitle">
                             Horario del Grupo: <span id="selectedGroupName">Ninguno</span>
+                            <span id="selectedGroupNivel" class="badge-nivel ms-2" style="display:none;"></span>
                         </h3>
                         <div class="d-flex gap-2">
                             <button class="btn-regresar-light py-1" style="font-size: 0.85rem;">
@@ -554,6 +567,18 @@
                             <button class="btn btn-action-system py-1" id="btnSaveChanges">
                                 <i class="fa-solid fa-arrows-rotate me-2"></i>Refrescar
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar for Academic Level -->
+                    <div id="progressContainer" style="display:none; margin-top: 5px; margin-bottom: 20px; padding: 0 10px;">
+                        <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.75rem; color: #64748b;">
+                            <span>Inicio Periodo: <strong id="progressStartDate">—</strong></span>
+                            <span id="progressPercent" style="font-weight: 600; color: rgb(38, 104, 123);">0%</span>
+                            <span>Fin Periodo: <strong id="progressEndDate">—</strong></span>
+                        </div>
+                        <div class="progress" style="height: 6px; background-color: #e2e8f0; border-radius: 3px; overflow: hidden;">
+                            <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%; background-color: rgb(38, 104, 123); transition: width 0.4s ease;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
 
@@ -609,13 +634,31 @@
                             <input type="text" id="formTimeSlot" class="form-control form-input-custom" readonly>
                         </div>
 
-                        <div class="form-group-custom">
+                        <!-- Materia Single Selection Container -->
+                        <div id="singleMateriaContainer" class="form-group-custom">
                             <label>Materia *</label>
                             <select id="formMateriaSelect" class="form-select form-input-custom form-select-custom-style" required>
                                 <option value="">Seleccione Materia</option>
                             </select>
                         </div>
 
+                        <!-- Materia Multiple Selection Container -->
+                        <div id="multipleMateriaContainer" class="form-group-custom" style="display: none;">
+                            <label>Materias *</label>
+                            <select id="formMateriaSelectMultiple" class="form-select form-input-custom form-select-custom-style" multiple>
+                                <!-- options populated dynamically -->
+                            </select>
+                        </div>
+
+                        <!-- Checkbox for multiple classes -->
+                        <div class="form-check mb-3 mt-3">
+                            <input class="form-check-input" type="checkbox" id="chkMultipleClasses">
+                            <label class="form-check-label" for="chkMultipleClasses" style="font-size: 0.85rem; font-weight: 600; color: rgb(38, 104, 123);">
+                                Impartir más de una materia en esta hora
+                            </label>
+                        </div>
+
+                        <!-- Docente Selection (Always Single) -->
                         <div class="form-group-custom">
                             <label>Docente *</label>
                             <select id="formDocenteSelect" class="form-select form-input-custom form-select-custom-style" required>
@@ -627,14 +670,13 @@
                             <label>Aula</label>
                             <select id="formAulaSelect" class="form-select form-input-custom form-select-custom-style">
                                 <option value="">Seleccione Aula</option>
-                                <option value="A-1">Aula A-1</option>
                                 <option value="A-2">Aula A-2</option>
                                 <option value="A-3">Aula A-3</option>
-                                <option value="B-1">Aula B-1</option>
-                                <option value="B-2">Aula B-2</option>
-                                <option value="Lab. 1">Laboratorio 1</option>
-                                <option value="Lab. 2">Laboratorio 2</option>
-                                <option value="Auditorio">Auditorio</option>
+                                <option value="A-4">Aula A-4</option>
+                                <option value="A-5">Aula A-5</option>
+                                <option value="Lab. 1">Laboratorio Quimica</option>
+                                <option value="Lab. 2">Audiovisual</option>
+                                <option value="CentroComputo">Centro de Computo</option>
                             </select>
                         </div>
 
@@ -670,6 +712,7 @@ document.addEventListener("DOMContentLoaded", function() {
     let activeGroup = null;
     let selectedCell = null; // { day, timeIdx, element }
     let materiaSelectInstance = null;
+    let materiaSelectMultipleInstance = null;
     let docenteSelectInstance = null;
 
     const dayNumbers = {
@@ -701,7 +744,7 @@ document.addEventListener("DOMContentLoaded", function() {
         return `${doc.nombreDocente} ${doc.apPaternoDocente || ''} ${doc.apMaternoDocente || ''}`.trim();
     }
 
-    const timeBlocks = [
+    let timeBlocks = [
         "07:00 - 08:00",
         "08:00 - 09:00",
         "09:00 - 10:00",
@@ -719,6 +762,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const groupListSpinner = document.getElementById("groupListSpinner");
     const groupSearchInput = document.getElementById("groupSearchInput");
     const selectedGroupName = document.getElementById("selectedGroupName");
+    const selectedGroupNivel = document.getElementById("selectedGroupNivel");
     const calendarEmptyState = document.getElementById("calendarEmptyState");
     const calendarTable = document.getElementById("calendarTable");
     const calendarHeader = document.getElementById("calendarHeader");
@@ -731,8 +775,11 @@ document.addEventListener("DOMContentLoaded", function() {
     const formDayName = document.getElementById("formDayName");
     const formTimeSlot = document.getElementById("formTimeSlot");
     const formMateriaSelect = document.getElementById("formMateriaSelect");
+    const formMateriaSelectMultiple = document.getElementById("formMateriaSelectMultiple");
     const formDocenteSelect = document.getElementById("formDocenteSelect");
-    const formAulaSelect = document.getElementById("formAulaSelect");
+    const chkMultipleClasses = document.getElementById("chkMultipleClasses");
+    const singleMateriaContainer = document.getElementById("singleMateriaContainer");
+    const multipleMateriaContainer = document.getElementById("multipleMateriaContainer");
 
     // Action buttons
     const btnSaveClass = document.getElementById("btnSaveClass");
@@ -769,16 +816,25 @@ document.addEventListener("DOMContentLoaded", function() {
         if (materiaSelectInstance) {
             materiaSelectInstance.destroy();
         }
+        if (materiaSelectMultipleInstance) {
+            materiaSelectMultipleInstance.destroy();
+        }
         if (docenteSelectInstance) {
             docenteSelectInstance.destroy();
         }
 
         formMateriaSelect.innerHTML = '<option value="">Seleccione Materia</option>';
+        formMateriaSelectMultiple.innerHTML = '';
         materias.forEach(mat => {
-            const opt = document.createElement("option");
-            opt.value = mat.id_materia || mat.id || mat.nombreMateria;
-            opt.textContent = mat.nombreMateria;
-            formMateriaSelect.appendChild(opt);
+            const opt1 = document.createElement("option");
+            opt1.value = mat.id_materia || mat.id || mat.nombreMateria;
+            opt1.textContent = mat.nombreMateria;
+            formMateriaSelect.appendChild(opt1);
+
+            const opt2 = document.createElement("option");
+            opt2.value = mat.id_materia || mat.id || mat.nombreMateria;
+            opt2.textContent = mat.nombreMateria;
+            formMateriaSelectMultiple.appendChild(opt2);
         });
 
         formDocenteSelect.innerHTML = '<option value="">Seleccione Docente</option>';
@@ -796,12 +852,32 @@ document.addEventListener("DOMContentLoaded", function() {
             allowEmptyOption: true
         });
 
+        materiaSelectMultipleInstance = new TomSelect("#formMateriaSelectMultiple", {
+            create: false,
+            placeholder: "Buscar materias...",
+            plugins: ['remove_button']
+        });
+
         docenteSelectInstance = new TomSelect("#formDocenteSelect", {
             create: false,
             placeholder: "Buscar docente...",
             allowEmptyOption: true
         });
     }
+
+    chkMultipleClasses.addEventListener("change", function() {
+        if (chkMultipleClasses.checked) {
+            singleMateriaContainer.style.display = "none";
+            multipleMateriaContainer.style.display = "block";
+            formMateriaSelect.removeAttribute("required");
+            formMateriaSelectMultiple.setAttribute("required", "required");
+        } else {
+            singleMateriaContainer.style.display = "block";
+            multipleMateriaContainer.style.display = "none";
+            formMateriaSelect.setAttribute("required", "required");
+            formMateriaSelectMultiple.removeAttribute("required");
+        }
+    });
 
     function renderGroupsList(list) {
         groupListSpinner.style.display = 'none';
@@ -850,6 +926,10 @@ document.addEventListener("DOMContentLoaded", function() {
         activeGroup = group;
         selectedGroupName.textContent = group.clave;
         
+        // Ocultar elementos temporalmente hasta que se carguen los detalles extendidos
+        document.getElementById("progressContainer").style.display = "none";
+        selectedGroupNivel.style.display = "none";
+        
         const items = groupListContainer.getElementsByClassName("group-item");
         Array.from(items).forEach(item => {
             if (item.textContent === group.clave) {
@@ -863,6 +943,32 @@ document.addEventListener("DOMContentLoaded", function() {
         const isBgne = group.clave.toUpperCase().startsWith("BGNE");
         dayNames = isBgne ? ["Sábado", "Domingo"] : ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
+        // Configurar bloques de horario basados en si es BGNE o no
+        if (isBgne) {
+            timeBlocks = [
+                "09:00 - 10:00",
+                "10:00 - 11:00",
+                "11:00 - 12:00",
+                "12:00 - 13:00",
+                "13:00 - 14:00",
+                "14:00 - 15:00",
+                "15:00 - 16:00",
+                "16:00 - 17:00",
+                "17:00 - 18:00",
+                "18:00 - 19:00"
+            ];
+        } else {
+            timeBlocks = [
+                "07:00 - 08:00",
+                "08:00 - 09:00",
+                "09:00 - 10:00",
+                "10:00 - 11:00",
+                "11:00 - 12:00",
+                "12:00 - 13:00",
+                "13:00 - 14:00"
+            ];
+        }
+
         // Generar cabecera y grilla dinámicamente
         generateTableHeader(dayNames);
         generateCalendarGridHTML(dayNames);
@@ -872,6 +978,158 @@ document.addEventListener("DOMContentLoaded", function() {
 
         clearForm();
         renderActiveGroupClasses();
+
+        // Cargar detalles extendidos para el Trimestre y Barra de Progreso
+        fetch(`/grupos/${group.id}`)
+            .then(res => res.json())
+            .then(resp => {
+                if (resp.success && resp.data) {
+                    const g = resp.data;
+                    
+                    // Mostrar nivel académico
+                    if (g.nombre_nivel) {
+                        selectedGroupNivel.textContent = g.nombre_nivel;
+                        selectedGroupNivel.style.display = "inline-block";
+                    }
+                    
+                    // Calcular y mostrar barra de progreso
+                    let fechaInicioNivel = g.fechaInicioNivel;
+                    let fechaFinNivel = g.fechaFinNivel;
+                    
+                    if (!fechaInicioNivel || !fechaFinNivel) {
+                        const calculated = calcularPeriodoNivel(g);
+                        if (calculated) {
+                            fechaInicioNivel = calculated.fechaInicioNivel;
+                            fechaFinNivel = calculated.fechaFinNivel;
+                        }
+                    }
+                    
+                    if (fechaInicioNivel && fechaFinNivel) {
+                        const progressContainer = document.getElementById("progressContainer");
+                        const progressStartDate = document.getElementById("progressStartDate");
+                        const progressEndDate = document.getElementById("progressEndDate");
+                        const progressPercent = document.getElementById("progressPercent");
+                        const progressBar = document.getElementById("progressBar");
+                        
+                        const formatDateDMY = (dateStr) => {
+                            if (!dateStr) return '—';
+                            const parts = dateStr.split('-');
+                            return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dateStr;
+                        };
+                        
+                        progressStartDate.textContent = formatDateDMY(fechaInicioNivel);
+                        progressEndDate.textContent = formatDateDMY(fechaFinNivel);
+                        
+                        const parseDateUTC = (dateStr) => {
+                            const parts = dateStr.split('-');
+                            return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+                        };
+                        
+                        const start = parseDateUTC(fechaInicioNivel);
+                        const end = parseDateUTC(fechaFinNivel);
+                        const now = new Date();
+                        const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+                        
+                        const total = end.getTime() - start.getTime();
+                        const elapsed = today.getTime() - start.getTime();
+                        
+                        let percent = 0;
+                        if (total > 0) {
+                            percent = Math.round((elapsed / total) * 100);
+                            percent = Math.max(0, Math.min(100, percent));
+                        }
+                        
+                        progressPercent.textContent = `${percent}%`;
+                        progressBar.style.width = `${percent}%`;
+                        progressBar.setAttribute("aria-valuenow", percent);
+                        progressContainer.style.display = "block";
+                    }
+                }
+            })
+            .catch(err => {
+                console.error("Error al obtener progreso de nivel:", err);
+            });
+    }
+
+    function calcularPeriodoNivel(g) {
+        if (!g.fechaInicio) return null;
+        
+        // Parsear fechaInicio de forma segura
+        let fechaInicioAbs = new Date(g.fechaInicio);
+        if (isNaN(fechaInicioAbs.getTime())) return null;
+        
+        // Convertir a fecha UTC pura para evitar desfases de zona horaria del cliente
+        let fechaInicioNivel = new Date(Date.UTC(
+            fechaInicioAbs.getUTCFullYear(),
+            fechaInicioAbs.getUTCMonth(),
+            fechaInicioAbs.getUTCDate()
+        ));
+        
+        let idTipoPeriodo = g.id_tipoPeriodo;
+        let idNivelActualDb = g.id_nivel_academico;
+        
+        if (idTipoPeriodo === null || idTipoPeriodo === undefined) {
+            if (idNivelActualDb !== null && idNivelActualDb >= 11) {
+                idTipoPeriodo = 1; // SEMESTRAL
+            } else {
+                idTipoPeriodo = 2; // TRIMESTRAL (default)
+            }
+        }
+        
+        let idNivel = 1;
+        if (idTipoPeriodo === 2) {
+            idNivel = 1; // 1er Trimestre
+        } else if (idTipoPeriodo === 1) {
+            idNivel = 11; // 1er Semestre
+        }
+        
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+        
+        let fechaFinNivel = new Date(fechaInicioNivel.getTime());
+        
+        const getDuracionSemanas = (levelId) => {
+            if (levelId >= 1 && levelId <= 10) return 13;
+            if (levelId >= 11 && levelId <= 18) return 26;
+            return 13;
+        };
+        
+        const hasNextNivel = (levelId) => {
+            if (idTipoPeriodo === 2) return levelId < 10;
+            if (idTipoPeriodo === 1) return levelId < 18;
+            return false;
+        };
+        
+        while (true) {
+            const duracionSemanas = getDuracionSemanas(idNivel);
+            
+            // Todos los periodos duran exactamente (weeks - 1) * 7 días inclusive
+            fechaFinNivel = new Date(fechaInicioNivel.getTime() + ((duracionSemanas - 1) * 7 * 24 * 60 * 60 * 1000));
+            
+            if (today.getTime() <= fechaFinNivel.getTime()) {
+                break;
+            }
+            
+            if (!hasNextNivel(idNivel)) {
+                break;
+            }
+            
+            // El siguiente periodo empieza una semana (7 días) después del fin del actual
+            fechaInicioNivel = new Date(fechaFinNivel.getTime() + (7 * 24 * 60 * 60 * 1000));
+            idNivel = idNivel + 1;
+        }
+        
+        const toISODate = (d) => {
+            const yyyy = d.getUTCFullYear();
+            const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+            const dd = String(d.getUTCDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        };
+        
+        return {
+            fechaInicioNivel: toISODate(fechaInicioNivel),
+            fechaFinNivel: toISODate(fechaFinNivel)
+        };
     }
 
     function generateCalendarGridHTML(days) {
@@ -930,12 +1188,58 @@ document.addEventListener("DOMContentLoaded", function() {
         const existingClass = groupData[cellKey];
 
         if (existingClass) {
-            if (materiaSelectInstance) materiaSelectInstance.setValue(existingClass.materiaId);
-            if (docenteSelectInstance) docenteSelectInstance.setValue(existingClass.docenteId);
+            // Normalizar a formato agrupado si no lo tiene
+            if (!existingClass.clases) {
+                existingClass.clases = [{
+                    id_horario: existingClass.id,
+                    id_materia: existingClass.materiaId,
+                    materia_nombre: existingClass.subjectName,
+                    id_docente: existingClass.docenteId,
+                    docente_nombre: existingClass.teacherName
+                }];
+            }
+
+            if (existingClass.clases.length > 1) {
+                chkMultipleClasses.checked = true;
+                singleMateriaContainer.style.display = "none";
+                multipleMateriaContainer.style.display = "block";
+                formMateriaSelect.removeAttribute("required");
+                formMateriaSelectMultiple.setAttribute("required", "required");
+
+                // Set multiple materia values
+                const matIds = existingClass.clases.map(c => String(c.id_materia));
+                if (materiaSelectMultipleInstance) materiaSelectMultipleInstance.setValue(matIds);
+                if (materiaSelectInstance) materiaSelectInstance.setValue("");
+            } else {
+                chkMultipleClasses.checked = false;
+                singleMateriaContainer.style.display = "block";
+                multipleMateriaContainer.style.display = "none";
+                formMateriaSelect.setAttribute("required", "required");
+                formMateriaSelectMultiple.removeAttribute("required");
+
+                const singleClase = existingClass.clases[0];
+                if (singleClase) {
+                    if (materiaSelectInstance) materiaSelectInstance.setValue(singleClase.id_materia);
+                } else {
+                    if (materiaSelectInstance) materiaSelectInstance.setValue("");
+                }
+                if (materiaSelectMultipleInstance) materiaSelectMultipleInstance.setValue([]);
+            }
+            
+            // Popolar docente (compartido) y aula
+            const firstClassDocente = existingClass.id_docente || (existingClass.clases[0] ? existingClass.clases[0].id_docente : "");
+            if (docenteSelectInstance) docenteSelectInstance.setValue(firstClassDocente);
             formAulaSelect.value = existingClass.aula || "";
             btnDeleteClass.style.display = "block";
         } else {
+            chkMultipleClasses.checked = false;
+            singleMateriaContainer.style.display = "block";
+            multipleMateriaContainer.style.display = "none";
+            formMateriaSelect.setAttribute("required", "required");
+            formMateriaSelectMultiple.removeAttribute("required");
+            
             if (materiaSelectInstance) materiaSelectInstance.setValue("");
+            if (materiaSelectMultipleInstance) materiaSelectMultipleInstance.setValue([]);
             if (docenteSelectInstance) docenteSelectInstance.setValue("");
             formAulaSelect.value = "";
             btnDeleteClass.style.display = "none";
@@ -945,29 +1249,127 @@ document.addEventListener("DOMContentLoaded", function() {
     btnSaveClass.addEventListener("click", async function() {
         if (!selectedCell || !activeGroup) return;
 
-        const materiaId = formMateriaSelect.value;
-        const docenteId = formDocenteSelect.value;
         const aula = formAulaSelect.value;
+        const timeSlot = timeBlocks[selectedCell.timeIdx];
+        const [startStr, endStr] = timeSlot.split(" - ");
+        const horaInicio = startStr + ":00";
+        const horaFin = endStr + ":00";
 
-        if (!materiaId || !docenteId) {
+        let payload = {
+            id_grupo: activeGroup.id || activeGroup.id_grupo,
+            diaSemana: dayNumbers[selectedCell.day],
+            horaInicio: horaInicio,
+            horaFin: horaFin,
+            aula: aula
+        };
+
+        const docenteId = formDocenteSelect.value;
+        if (!docenteId) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Campos requeridos',
-                text: 'Materia y Docente son obligatorios.',
+                text: 'El docente es obligatorio.',
                 confirmButtonColor: 'rgb(38, 104, 123)'
             });
             return;
+        }
+        payload.id_docente = parseInt(docenteId);
+
+        let materiasList = [];
+
+        if (chkMultipleClasses.checked) {
+            const selectedValues = materiaSelectMultipleInstance ? materiaSelectMultipleInstance.getValue() : [];
+            if (!selectedValues || selectedValues.length === 0 || (selectedValues.length === 1 && selectedValues[0] === "")) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Faltan Materias',
+                    text: 'Debes seleccionar al menos una materia.',
+                    confirmButtonColor: 'rgb(38, 104, 123)'
+                });
+                return;
+            }
+            materiasList = selectedValues.filter(v => v !== "").map(v => parseInt(v));
+            payload.materias = materiasList;
+        } else {
+            const materiaId = formMateriaSelect.value;
+            if (!materiaId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campos requeridos',
+                    text: 'La materia es obligatoria.',
+                    confirmButtonColor: 'rgb(38, 104, 123)'
+                });
+                return;
+            }
+            payload.id_materia = parseInt(materiaId);
+            materiasList = [parseInt(materiaId)];
         }
 
         btnSaveClass.disabled = true;
 
         try {
+            // Validar disponibilidad del docente para cada materia en el backend
+            for (let matId of materiasList) {
+                const valRes = await fetch('/horarios/validar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        id_grupo: activeGroup.id || activeGroup.id_grupo,
+                        id_materia: matId,
+                        id_docente: parseInt(docenteId),
+                        diaSemana: dayNumbers[selectedCell.day],
+                        horaInicio: horaInicio,
+                        horaFin: horaFin
+                    })
+                });
+
+                if (valRes.ok) {
+                    const valData = await valRes.json();
+                    if (valData.success === false) {
+                        const matObj = materias.find(m => (m.id_materia || m.id) == matId);
+                        const docObj = docentes.find(d => (d.idDocente || d.id_docente || d.id) == parseInt(docenteId));
+                        const matName = matObj ? matObj.nombreMateria : "Materia";
+                        const docName = docObj ? getTeacherFullName(docObj) : "Docente";
+
+                        const confirmResult = await Swal.fire({
+                            icon: 'warning',
+                            title: 'Conflicto de Horario',
+                            html: `El docente <strong>${docName}</strong> ya tiene clases en este horario en otro grupo para la materia <strong>${matName}</strong>.<br><br>¿Deseas asignarlo de todas formas?`,
+                            showCancelButton: true,
+                            confirmButtonColor: 'rgb(38, 104, 123)',
+                            cancelButtonColor: '#cbd5e1',
+                            confirmButtonText: 'Sí, asignar',
+                            cancelButtonText: 'Cancelar'
+                        });
+
+                        if (!confirmResult.isConfirmed) {
+                            btnSaveClass.disabled = false;
+                            return;
+                        }
+                    }
+                }
+            }
+
             const groupData = schedulesData[activeGroup.clave] || {};
             const cellKey = `${selectedCell.day}-${selectedCell.timeIdx}`;
             const existingClass = groupData[cellKey];
 
-            // If it exists in backend, delete it first
-            if (existingClass && existingClass.id) {
+            // If it exists in backend, delete all previous classes first
+            if (existingClass && existingClass.clases && existingClass.clases.length > 0) {
+                for (let clase of existingClass.clases) {
+                    const delRes = await fetch(`/horarios/${clase.id_horario}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    });
+                    if (!delRes.ok) throw new Error("Error al remover horario previo.");
+                }
+            } else if (existingClass && existingClass.id) {
+                // Fallback for single class delete
                 const delRes = await fetch(`/horarios/${existingClass.id}`, {
                     method: 'DELETE',
                     headers: {
@@ -976,21 +1378,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
                 if (!delRes.ok) throw new Error("Error al remover horario previo.");
             }
-
-            // Create new schedule slot
-            const timeSlot = timeBlocks[selectedCell.timeIdx];
-            const [startStr, endStr] = timeSlot.split(" - ");
-            const horaInicio = startStr + ":00";
-            const horaFin = endStr + ":00";
-
-            const payload = {
-                id_grupo: activeGroup.id || activeGroup.id_grupo,
-                id_materia: parseInt(materiaId),
-                id_docente: parseInt(docenteId),
-                diaSemana: dayNumbers[selectedCell.day],
-                horaInicio: horaInicio,
-                horaFin: horaFin
-            };
 
             const saveRes = await fetch('/horarios', {
                 method: 'POST',
@@ -1041,10 +1428,10 @@ document.addEventListener("DOMContentLoaded", function() {
         const cellKey = `${selectedCell.day}-${selectedCell.timeIdx}`;
         const existingClass = schedulesData[activeGroup.clave] ? schedulesData[activeGroup.clave][cellKey] : null;
 
-        if (existingClass && existingClass.id) {
+        if (existingClass) {
             Swal.fire({
                 title: '¿Estás seguro?',
-                text: "Esta clase se eliminará del horario permanentemente.",
+                text: "Esta clase y todas sus materias asociadas se eliminarán del horario permanentemente.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: 'rgb(38, 104, 123)',
@@ -1055,21 +1442,26 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (result.isConfirmed) {
                     btnDeleteClass.disabled = true;
                     try {
-                        const response = await fetch(`/horarios/${existingClass.id}`, {
-                            method: 'DELETE',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            }
-                        });
+                        const listToDelete = existingClass.clases || [{ id_horario: existingClass.id }];
+                        for (let clase of listToDelete) {
+                            if (clase.id_horario) {
+                                const response = await fetch(`/horarios/${clase.id_horario}`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                    }
+                                });
 
-                        if (!response.ok) {
-                            let errMsg = "Error al eliminar la clase del servidor backend.";
-                            try {
-                                const errData = await response.json();
-                                if (errData.error) errMsg += " Detalles: " + errData.error;
-                                else if (errData.message) errMsg += " Detalles: " + errData.message;
-                            } catch(e) {}
-                            throw new Error(errMsg);
+                                if (!response.ok) {
+                                    let errMsg = "Error al eliminar la clase del servidor backend.";
+                                    try {
+                                        const errData = await response.json();
+                                        if (errData.error) errMsg += " Detalles: " + errData.error;
+                                        else if (errData.message) errMsg += " Detalles: " + errData.message;
+                                    } catch(e) {}
+                                    throw new Error(errMsg);
+                                }
+                            }
                         }
 
                         delete schedulesData[activeGroup.clave][cellKey];
@@ -1136,7 +1528,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!groupId) return;
 
         try {
-            const response = await fetch(`/horarios/grupo/${groupId}`);
+            const response = await fetch(`/horarios/grupo/${groupId}?agrupado=true`);
             if (!response.ok) throw new Error("Error al obtener los horarios");
             const data = await response.json();
 
@@ -1150,16 +1542,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (dayName && timeIdx !== -1) {
                     const cellKey = `${dayName}-${timeIdx}`;
                     
-                    const matObj = materias.find(m => (m.id_materia || m.id) == item.id_materia);
-                    const docObj = docentes.find(d => (d.idDocente || d.id_docente || d.id) == item.id_docente);
-                    
                     schedulesData[activeGroup.clave][cellKey] = {
-                        id: item.id, // backend ID
-                        materiaId: item.id_materia,
-                        docenteId: item.id_docente,
+                        diaSemana: item.diaSemana,
+                        horaInicio: item.horaInicio,
+                        horaFin: item.horaFin,
                         aula: item.aula || "",
-                        subjectName: matObj ? matObj.nombreMateria : "Materia",
-                        teacherName: docObj ? getTeacherFullName(docObj) : "Docente"
+                        clases: item.clases || []
                     };
 
                     const cellElement = Array.from(cells).find(c => c.dataset.day === dayName && c.dataset.timeIdx == timeIdx);
@@ -1180,16 +1568,20 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function renderClassCardInCell(cellElement, data) {
-        const aulaText = data.aula ? `<i class="fa-solid fa-door-open"></i> ${data.aula}` : '';
-        cellElement.innerHTML = `
-            <div class="class-card">
-                <div class="class-subject">${data.subjectName}</div>
-                <div>
-                    <div class="class-detail"><i class="fa-solid fa-user-tie"></i> ${data.teacherName}</div>
-                    <div class="class-detail">${aulaText}</div>
-                </div>
-            </div>
-        `;
+        const aulaText = data.aula ? `<div style="font-size: 0.7rem; font-weight: 500; margin-top: 4px; color: #475569; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-door-open"></i> ${data.aula}</div>` : '';
+        let html = '<div class="class-card">';
+        data.clases.forEach((clase, idx) => {
+            if (idx > 0) {
+                html += '<hr style="margin: 4px 0; opacity: 0.15; border-color: rgb(38, 104, 123);">';
+            }
+            html += `
+                <div class="class-subject" style="font-size: 0.85rem; font-weight: 700; line-height: 1.2;">${clase.materia_nombre}</div>
+                <div class="class-detail" style="font-size: 0.72rem; color: #475569; line-height: 1.2;"><i class="fa-solid fa-user-tie"></i> ${clase.docente_nombre}</div>
+            `;
+        });
+        html += aulaText;
+        html += '</div>';
+        cellElement.innerHTML = html;
     }
 
     function clearForm() {
@@ -1205,6 +1597,14 @@ document.addEventListener("DOMContentLoaded", function() {
         if (docenteSelectInstance) docenteSelectInstance.setValue("");
         formAulaSelect.value = "";
         btnDeleteClass.style.display = "none";
+
+        // Limpiar controles y estados de múltiples clases
+        chkMultipleClasses.checked = false;
+        singleMateriaContainer.style.display = "block";
+        multipleMateriaContainer.style.display = "none";
+        formMateriaSelect.setAttribute("required", "required");
+        formMateriaSelectMultiple.removeAttribute("required");
+        if (materiaSelectMultipleInstance) materiaSelectMultipleInstance.setValue([]);
     }
 });
 </script>

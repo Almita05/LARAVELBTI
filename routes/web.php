@@ -105,6 +105,8 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::get('/grupos/lista', [GrupoController::class, 'lista']);
     Route::post('/grupos', [GrupoController::class, 'store']);
     Route::get('/grupos/modalAlta', [GrupoController::class, 'modalAlta']);
+    Route::get('/grupos/{id}', [GrupoController::class, 'show'])->where('id', '[0-9]+');
+    Route::put('/grupos/{id}', [GrupoController::class, 'update'])->where('id', '[0-9]+');
 
     // Equivalencias
     Route::get('/equivalencias', [EquivalenciaController::class, 'index'])->name('equivalencias');
@@ -139,6 +141,7 @@ Route::get(
     // API de Horarios
     Route::get('/horarios/grupo/{id_grupo}', [HorariosController::class, 'getHorariosGrupo']);
     Route::post('/horarios', [HorariosController::class, 'store']);
+    Route::post('/horarios/validar', [HorariosController::class, 'validar']);
     Route::delete('/horarios/{id_horario}', [HorariosController::class, 'destroy']);
 
 });
