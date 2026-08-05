@@ -79,6 +79,14 @@
     color: black;
 }
 
+.glass-modal label {
+    color: #2b3a4a !important;
+    font-weight: 600;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    display: inline-block;
+}
+
 .form-control-premium,
 .form-select-premium {
     background: #fff;
@@ -179,6 +187,7 @@
                                 {{ $pe['nombrePlan'] }}
                             </option>
                             @endforeach
+                        </select>
 
                         <br>    
                         
@@ -248,23 +257,7 @@
                             <option value="LIBRE">LIBRE</option>
                         </select>
                     </div>
-
-                    <div class="col-md-12">
-                        <label class="form-label">
-                            Tipo de periodo <span class="text-warning">*</span>
-                        </label>
-
-                        <select name="id_tipoPeriodo" class="form-select glass-input" required>
-
-                            <option value="">Seleccione un periodo</option>
-                            <option value="Semestral">Semestral</option>
-                            <option value="Trimestral">Trimestral</option>
-
-                        </select>
-                    </div>
-
                 </div>
-
             </div>
 
             <div class="modal-footer glass-footer">
