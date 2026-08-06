@@ -811,6 +811,14 @@ document.addEventListener("DOMContentLoaded", function() {
         renderPeriod();
     }
 
+    function formatDecimalHours(decimalHours) {
+        if (!decimalHours || isNaN(decimalHours)) return '0:00';
+        const totalMinutes = Math.round(decimalHours * 60);
+        const hrs = Math.floor(totalMinutes / 60);
+        const mins = totalMinutes % 60;
+        return hrs + ":" + String(mins).padStart(2, '0');
+    }
+
     // Function to calculate and render headers and cells using real API
     async function renderPeriod(skipFetch = false) {
         // 1. Calculate dates
@@ -969,7 +977,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     if (hasBiometricData) {
                         if (bioRecord) {
                             const hrsWorked = parseFloat(bioRecord.horas_trabajadas || 0);
-                            realHoursText = hrsWorked.toFixed(2);
+                            realHoursText = formatDecimalHours(hrsWorked);
                             observations = bioRecord.observaciones || '';
 
                             const estado = bioRecord.estado ? bioRecord.estado.toLowerCase() : '';
