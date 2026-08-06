@@ -89,4 +89,19 @@ class AsistenciaDocenteController extends Controller
 
         return response()->json($response->json());
     }
+
+    public function clearAsistencias()
+    {
+        $url = config('services.api.base_url') . '/clear_asistencias';
+        $response = Http::delete($url);
+
+        if ($response->failed()) {
+            return response()->json(
+                $response->json() ?? ['error' => 'Error al limpiar las asistencias en el backend'],
+                $response->status()
+            );
+        }
+
+        return response()->json($response->json());
+    }
 }

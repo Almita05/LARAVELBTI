@@ -580,6 +580,11 @@
                     <i class="fa-solid fa-file-excel"></i>
                     Importar Biométrico
                 </button>
+
+                <button class="btn-action-light" id="btnClearBiometric" title="Limpiar datos del Excel (Biométrico)">
+                    <i class="fa-solid fa-trash-can"></i>
+                    Limpiar Asistencias
+                </button>
                 
                 <button class="btn-action-light" id="btnGenerateReport">
                     <i class="fa-solid fa-file-lines"></i>
@@ -797,6 +802,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const btnGenerateReport = document.getElementById("btnGenerateReport");
     const btnDownloadReport = document.getElementById("btnDownloadReport");
     const btnRefresh = document.getElementById("btnRefresh");
+    const btnClearBiometric = document.getElementById("btnClearBiometric");
 
     // Initialize module
     initAttendanceModule();
@@ -1325,6 +1331,82 @@ document.addEventListener("DOMContentLoaded", function() {
             showConfirmButton: false
         });
     });
+
+    if (btnClearBiometric) {
+        btnClearBiometric.addEventListener("click", function() {
+            clearBiometricData(true);
+        });
+    }
+
+    // Limpieza automática al salir de la pestaña / cerrar navegador / cambiar de vista
+    window.addEventListener("unload", function() {
+        fetch('/asistencias/clear', {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            keepalive: true
+        });
+    });
+
+    async function clearBiometricData(showConfirm = true) {
+        if (showConfirm) {
+            const confirmResult = await Swal.fire({
+                title: '¿Deseas limpiar las asistencias?',
+                text: 'Esta acción borrará todas las horas reales importadas del Excel y restablecerá la grilla.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#cbd5e1',
+                confirmButtonText: 'Sí, limpiar',
+                cancelButtonText: 'Cancelar'
+            });
+            if (!confirmResult.isConfirmed) return;
+        }
+
+        try {
+            const response = await fetch('/asistencias/clear', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                }
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+                if (showConfirm) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Limpieza Completada',
+                        text: data.message || 'Se han limpiado los registros correctamente.',
+                        confirmButtonColor: 'rgb(38, 104, 123)'
+                    });
+                }
+                renderPeriod();
+            } else {
+                if (showConfirm) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.error || 'Error al limpiar asistencias.',
+                        confirmButtonColor: 'rgb(38, 104, 123)'
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Error clearing biometric:", e);
+            if (showConfirm) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Ocurrió un error inesperado al conectar con el servidor.',
+                    confirmButtonColor: 'rgb(38, 104, 123)'
+                });
+            }
+        }
+    }
 
     // Search input listener
     const txtSearchTeacher = document.getElementById("txtSearchTeacher");

@@ -87,6 +87,7 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::get('/asistencias_docentes/detalle', [AsistenciaDocenteController::class, 'getDetalleHorasDocente']);
     Route::post('/asistencias/upload', [AsistenciaDocenteController::class, 'uploadBiometrico']);
     Route::get('/asistencias', [AsistenciaDocenteController::class, 'getAsistencias']);
+    Route::delete('/asistencias/clear', [AsistenciaDocenteController::class, 'clearAsistencias']);
 });
 
 
