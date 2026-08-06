@@ -96,12 +96,8 @@ public function store(Request $request)
         "id_Generacion" => $request->id_Generacion ? (int)$request->id_Generacion : null,
         "id_Grupo" => $request->id_Grupo ? (int)$request->id_Grupo : null,
         "equivalencia" => ($request->equivalencia === 'SI' || $request->equivalencia === 'NO') ? $request->equivalencia : null,
-<<<<<<< HEAD
         "numeroControl" => $request->numeroControl ?: null,
         "statusAlumno" => $request->statusAlumno ?: 'ACTIVO'
-=======
-        "numeroControl" => $request->numeroControl ?: null
->>>>>>> origin/main
     ]);
 
     if ($response->failed()) {
@@ -255,8 +251,4 @@ public function alumnosPorGrupo($id_grupo)
         'data' => $response->json()['data'] ?? []
     ]);
 }
-<<<<<<< HEAD
 }
-=======
-}   
->>>>>>> origin/main
