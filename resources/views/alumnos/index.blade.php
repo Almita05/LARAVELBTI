@@ -139,7 +139,7 @@ window.verAlumno = function(id) {
     modoAlumno = 'ver';
     idAlumnoActual = id;
 
-    fetch('/alumnos/modalAlta')
+    fetch('/alumnos/modalAlta?_t=' + Date.now())
         .then(res => res.text())
         .then(html => {
             document.getElementById('contenedorModal').innerHTML = html;
@@ -204,7 +204,7 @@ window.editarAlumno = function(id) {
     modoAlumno = 'editar';
     idAlumnoActual = id;
 
-    fetch('/alumnos/modalAlta')
+    fetch('/alumnos/modalAlta?_t=' + Date.now())
         .then(res => res.text())
         .then(html => {
             document.getElementById('contenedorModal').innerHTML = html;
@@ -269,7 +269,7 @@ function abrirModalAlumno() {
     modoAlumno = 'crear';
     idAlumnoActual = null;
 
-    fetch('/alumnos/modalAlta')
+    fetch('/alumnos/modalAlta?_t=' + Date.now())
         .then(res => res.text())
         .then(html => {
             document.getElementById('contenedorModal').innerHTML = html;
