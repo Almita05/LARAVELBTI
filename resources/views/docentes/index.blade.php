@@ -214,6 +214,11 @@
                             <input type="date" class="form-control form-control-premium" name="fechaNacimiento">
                         </div>
 
+                        <div class="col-md-6">
+                            <label class="form-label">ID Biométrico</label>
+                            <input type="text" class="form-control form-control-premium" name="idBiometrico">
+                        </div>
+
                         <div class="col-12">
                             <label class="form-label">Observaciones</label>
                             <textarea class="form-control form-control-premium" name="observacionesDocente"
@@ -367,6 +372,7 @@
             form.observacionesDocente.disabled = disabled;
             form.nivelEstudios.disabled = disabled;
             form.fechaNacimiento.disabled = disabled;
+            form.idBiometrico.disabled = disabled;
         }
 
         // Reset modal to create mode when Alta button is clicked
@@ -404,6 +410,7 @@
                         form.observacionesDocente.value = d.observacionesDocente || '';
                         form.nivelEstudios.value = d.nivelEstudios || '';
                         form.fechaNacimiento.value = d.fechaNacimiento || '';
+                        form.idBiometrico.value = d.idBiometrico || '';
 
                         setFormDisabled(true);
 
@@ -451,6 +458,7 @@
                         form.observacionesDocente.value = d.observacionesDocente || '';
                         form.nivelEstudios.value = d.nivelEstudios || '';
                         form.fechaNacimiento.value = d.fechaNacimiento || '';
+                        form.idBiometrico.value = d.idBiometrico || '';
 
                         setFormDisabled(false);
 
@@ -545,7 +553,8 @@
                 statusDocente: this.statusDocente.value,
                 observacionesDocente: this.observacionesDocente.value,
                 nivelEstudios: this.nivelEstudios.value,
-                fechaNacimiento: this.fechaNacimiento.value
+                fechaNacimiento: this.fechaNacimiento.value,
+                idBiometrico: this.idBiometrico.value
             };
 
             const url = modoDocente === 'editar' ? `/docentes/${idDocenteActual}` : '/docentes';

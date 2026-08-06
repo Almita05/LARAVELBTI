@@ -328,11 +328,11 @@
 
 /* Assigned Class Cards (Light theme style matching the mock colors) */
 .class-card {
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    right: 4px;
-    bottom: 4px;
+    position: relative;
+    width: calc(100% - 8px);
+    min-height: 72px;
+    height: auto;
+    margin: 4px;
     border-radius: 6px;
     padding: 6px 10px;
     text-align: left;
@@ -343,6 +343,12 @@
     background: #f1f5f9; /* Light gray-blue */
     border: 1px solid #cbd5e1;
     border-left: 4px solid rgb(38, 104, 123); /* System Color indicator */
+    box-sizing: border-box;
+    align-self: center;
+}
+
+.class-subject, .class-detail, .class-card hr {
+    flex-shrink: 0;
 }
 
 .class-subject {
@@ -369,6 +375,26 @@
 .class-detail i {
     color: #64748b;
     font-size: 0.65rem;
+}
+
+/* Drag and Drop visual feedback */
+.class-card {
+    cursor: grab;
+    user-select: none;
+}
+.class-card:active {
+    cursor: grabbing;
+}
+.class-card.dragging {
+    opacity: 0.45;
+    transform: scale(0.96);
+    border: 2px dashed rgb(38, 104, 123) !important;
+}
+
+.cell-slot.drag-over {
+    background: rgba(38, 104, 123, 0.12) !important;
+    border: 2px dashed rgb(38, 104, 123) !important;
+    box-shadow: inset 0 0 8px rgba(38, 104, 123, 0.15);
 }
 
 /* Form Fields */
@@ -540,7 +566,7 @@
                     <!-- Search Input -->
                     <div class="search-container">
                         <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        <input type="text" id="groupSearchInput" class="form-control search-input-custom" placeholder="Buscar grupo...">
+                        <input type="text" id="groupSearchInput" class="form-control search-input-custom" placeholder="Buscar grupo o alumno...">
                     </div>
 
                     <!-- Groups List -->
@@ -611,9 +637,25 @@
                         </button>
                     </div>
 
-                    <div id="editEmptyState" class="empty-state-message">
-                        <i class="fa-solid fa-edit"></i>
-                        <div>Selecciona una celda de horario vacía o asignada para editar sus detalles.</div>
+                    <div id="editEmptyState" class="empty-state-message w-100" style="display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; text-align: left; height: 100%; overflow-y: auto; padding: 10px 0;">
+                        <!-- Default placeholder, shown when no group is selected -->
+                        <div id="noGroupSelectedMessage" class="text-center py-5">
+                            <i class="fa-solid fa-calendar-days" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 15px;"></i>
+                            <div class="text-secondary" style="font-size: 0.9rem;">Selecciona un grupo para ver el calendario de periodos.</div>
+                        </div>
+
+                        <!-- Group Calendar periods list, shown when a group is active -->
+                        <div id="groupCalendarInfo" style="display: none; width: 100%;">
+                            <h5 style="font-size: 0.95rem; font-weight: 700; color: rgb(38, 104, 123); margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-calendar-days"></i> Calendario de Periodos
+                            </h5>
+                            <div id="groupPeriodsList" style="display: flex; flex-direction: column; gap: 10px; width: 100%;"></div>
+                            
+                            <hr style="margin: 15px 0; opacity: 0.15;">
+                            <div class="text-center text-secondary" style="font-size: 0.8rem; padding: 10px 15px; background: rgba(38,104,123,0.03); border-radius: 8px; border: 1px dashed rgba(38,104,123,0.2);">
+                                <i class="fa-solid fa-circle-info me-1"></i> Selecciona una celda de horario para agregar o editar una clase.
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Edit Form -->
@@ -879,6 +921,85 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
+    function getCurrentPeriodText(g) {
+        if (!g.fechaInicio) return '';
+
+        let fechaInicioAbs = new Date(g.fechaInicio);
+        if (isNaN(fechaInicioAbs.getTime())) return '';
+
+        let currentDate = new Date(Date.UTC(
+            fechaInicioAbs.getUTCFullYear(),
+            fechaInicioAbs.getUTCMonth(),
+            fechaInicioAbs.getUTCDate()
+        ));
+
+        let groupEndDate = null;
+        if (g.fechaFin) {
+            let fechaFinAbs = new Date(g.fechaFin);
+            if (!isNaN(fechaFinAbs.getTime())) {
+                groupEndDate = new Date(Date.UTC(
+                    fechaFinAbs.getUTCFullYear(),
+                    fechaFinAbs.getUTCMonth(),
+                    fechaFinAbs.getUTCDate()
+                ));
+            }
+        }
+
+        let idTipoPeriodo = g.id_tipoPeriodo;
+        let idNivelActualDb = g.id_nivel_academico;
+
+        if (idTipoPeriodo === null || idTipoPeriodo === undefined) {
+            if (idNivelActualDb !== null && idNivelActualDb >= 11) {
+                idTipoPeriodo = 1; // SEMESTRAL
+            } else {
+                idTipoPeriodo = 2; // TRIMESTRAL (default)
+            }
+        }
+
+        const isTrimestral = idTipoPeriodo === 2;
+        const weeksPerPeriod = isTrimestral ? 13 : 26;
+        const periodLabel = isTrimestral ? "Trim." : "Sem.";
+
+        const today = new Date();
+        const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+
+        if (todayUTC.getTime() < currentDate.getTime()) {
+            return `1° ${periodLabel}`;
+        }
+
+        let periodNumber = 1;
+
+        while (true) {
+            let periodEndDate = new Date(currentDate.getTime() + (weeksPerPeriod * 7 * 24 * 60 * 60 * 1000) - (24 * 60 * 60 * 1000));
+
+            if (todayUTC.getTime() >= currentDate.getTime() && todayUTC.getTime() <= periodEndDate.getTime()) {
+                return `${periodNumber}° ${periodLabel}`;
+            }
+
+            if (groupEndDate && currentDate.getTime() > groupEndDate.getTime()) {
+                break;
+            }
+            if (isTrimestral && periodNumber > 10) break;
+            if (!isTrimestral && periodNumber > 8) break;
+
+            if (groupEndDate && periodEndDate.getTime() >= groupEndDate.getTime()) {
+                if (todayUTC.getTime() > groupEndDate.getTime()) {
+                    return `${periodNumber}° ${periodLabel} (Fin)`;
+                }
+                break;
+            }
+
+            currentDate = new Date(periodEndDate.getTime() + (24 * 60 * 60 * 1000));
+            periodNumber++;
+        }
+
+        if (groupEndDate && todayUTC.getTime() > groupEndDate.getTime()) {
+            return `Fin`;
+        }
+
+        return '';
+    }
+
     function renderGroupsList(list) {
         groupListSpinner.style.display = 'none';
         
@@ -891,16 +1012,105 @@ document.addEventListener("DOMContentLoaded", function() {
         list.forEach(group => {
             const btn = document.createElement("button");
             btn.className = "group-item";
-            btn.textContent = group.clave;
+            btn.style.display = "flex";
+            btn.style.justifyContent = "space-between";
+            btn.style.alignItems = "center";
+            
+            let periodText = "";
+            if (group.nombre_nivel) {
+                periodText = group.nombre_nivel
+                    .replace("er", "°")
+                    .replace("o", "°")
+                    .replace("Trimestre", "Trim.")
+                    .replace("Semestre", "Sem.");
+            } else {
+                periodText = getCurrentPeriodText(group);
+            }
+            const badgeHtml = periodText 
+                ? `<span class="group-period-badge" style="font-size: 0.68rem; font-weight: 700; background: rgba(38, 104, 123, 0.08); color: rgb(38, 104, 123); padding: 2px 7px; border-radius: 8px; border: 1.2px solid rgba(38, 104, 123, 0.15);">${periodText}</span>` 
+                : '';
+                
+            btn.innerHTML = `<span>${group.clave}</span>${badgeHtml}`;
             btn.addEventListener("click", () => selectGroup(group));
             groupListContainer.appendChild(btn);
         });
     }
 
+    let searchDebounceTimeout = null;
+
+    function renderGroupsAndStudentsList(filteredGroups, students) {
+        renderGroupsList(filteredGroups);
+
+        if (students.length === 0) return;
+
+        const divider = document.createElement("div");
+        divider.style.padding = "8px 12px 4px 12px";
+        divider.style.fontSize = "0.7rem";
+        divider.style.fontWeight = "800";
+        divider.style.color = "#64748b";
+        divider.style.textTransform = "uppercase";
+        divider.style.borderTop = "1px dashed rgba(0,0,0,0.08)";
+        divider.style.marginTop = "10px";
+        divider.style.letterSpacing = "0.5px";
+        divider.innerHTML = `<i class="fa-solid fa-graduation-cap me-1" style="color: #10b981;"></i> Alumnos Encontrados`;
+        groupListContainer.appendChild(divider);
+
+        students.forEach(student => {
+            const studentGroupId = student.idGrupo || student.id_Grupo;
+            const matchedGroup = groups.find(g => g.id === studentGroupId);
+            if (!matchedGroup) return;
+
+            const btn = document.createElement("button");
+            btn.className = "group-item";
+            btn.style.display = "flex";
+            btn.style.justifyContent = "space-between";
+            btn.style.alignItems = "center";
+            btn.style.borderLeft = "3.5px solid #10b981";
+            btn.style.padding = "8px 12px";
+            btn.style.marginTop = "5px";
+            btn.style.background = "rgba(16, 185, 129, 0.02)";
+
+            btn.innerHTML = `
+                <div style="text-align: left;">
+                    <div style="font-weight: 700; font-size: 0.8rem; color: #334155; display: flex; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-user" style="color: #10b981; font-size: 0.72rem;"></i>
+                        ${student.nombre} ${student.apPaterno}
+                    </div>
+                    <div style="font-size: 0.65rem; color: #64748b; margin-top: 2px;">Grupo: <strong>${matchedGroup.clave}</strong></div>
+                </div>
+                <span class="badge" style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.1); color: #0f766e; padding: 2px 6px; border-radius: 8px; font-weight: 600;">Ir al grupo</span>
+            `;
+
+            btn.addEventListener("click", () => {
+                selectGroup(matchedGroup);
+            });
+
+            groupListContainer.appendChild(btn);
+        });
+    }
+
     groupSearchInput.addEventListener("input", function(e) {
-        const query = e.target.value.toLowerCase();
-        const filtered = groups.filter(g => g.clave.toLowerCase().includes(query));
-        renderGroupsList(filtered);
+        const query = e.target.value.toLowerCase().trim();
+        clearTimeout(searchDebounceTimeout);
+
+        // 1. Filtrar grupos locales de inmediato
+        const filteredGroups = groups.filter(g => g.clave.toLowerCase().includes(query));
+        renderGroupsList(filteredGroups);
+
+        // 2. Si tiene 3 o más caracteres, buscar alumnos con debounce
+        if (query.length >= 3) {
+            searchDebounceTimeout = setTimeout(() => {
+                fetch(`/alumnos/lista?limit=5&search=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(resp => {
+                        const students = resp.data || [];
+                        if (students.length > 0) {
+                            renderGroupsAndStudentsList(filteredGroups, students);
+                        }
+                    })
+                    .catch(err => console.error("Error al buscar alumnos en horarios:", err));
+            }, 300);
+        }
     });
 
     function generateTableHeader(days) {
@@ -1044,6 +1254,8 @@ document.addEventListener("DOMContentLoaded", function() {
                         progressBar.setAttribute("aria-valuenow", percent);
                         progressContainer.style.display = "block";
                     }
+                    // Render dynamically calculated group calendar in right panel empty state
+                    renderGroupCalendar(g);
                 }
             })
             .catch(err => {
@@ -1103,8 +1315,8 @@ document.addEventListener("DOMContentLoaded", function() {
         while (true) {
             const duracionSemanas = getDuracionSemanas(idNivel);
             
-            // Todos los periodos duran exactamente (weeks - 1) * 7 días inclusive
-            fechaFinNivel = new Date(fechaInicioNivel.getTime() + ((duracionSemanas - 1) * 7 * 24 * 60 * 60 * 1000));
+            // Todos los periodos duran exactamente weeks * 7 días (menos 1 día)
+            fechaFinNivel = new Date(fechaInicioNivel.getTime() + (duracionSemanas * 7 * 24 * 60 * 60 * 1000) - (24 * 60 * 60 * 1000));
             
             if (today.getTime() <= fechaFinNivel.getTime()) {
                 break;
@@ -1114,8 +1326,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 break;
             }
             
-            // El siguiente periodo empieza una semana (7 días) después del fin del actual
-            fechaInicioNivel = new Date(fechaFinNivel.getTime() + (7 * 24 * 60 * 60 * 1000));
+            // El siguiente periodo empieza exactamente 1 día después del fin del actual
+            fechaInicioNivel = new Date(fechaFinNivel.getTime() + (24 * 60 * 60 * 1000));
             idNivel = idNivel + 1;
         }
         
@@ -1130,6 +1342,160 @@ document.addEventListener("DOMContentLoaded", function() {
             fechaInicioNivel: toISODate(fechaInicioNivel),
             fechaFinNivel: toISODate(fechaFinNivel)
         };
+    }
+
+    function renderGroupCalendar(g) {
+        const calendarInfo = document.getElementById("groupCalendarInfo");
+        const noGroupMsg = document.getElementById("noGroupSelectedMessage");
+        const periodsList = document.getElementById("groupPeriodsList");
+
+        if (!g || !g.fechaInicio) {
+            if (calendarInfo) calendarInfo.style.display = "none";
+            if (noGroupMsg) noGroupMsg.style.display = "block";
+            return;
+        }
+
+        if (noGroupMsg) noGroupMsg.style.display = "none";
+        if (calendarInfo) calendarInfo.style.display = "block";
+        if (!periodsList) return;
+        
+        periodsList.innerHTML = "";
+
+        // Parse start and end dates
+        let fechaInicioAbs = new Date(g.fechaInicio);
+        if (isNaN(fechaInicioAbs.getTime())) {
+            periodsList.innerHTML = '<div class="text-danger">Fecha de inicio inválida.</div>';
+            return;
+        }
+
+        // Pure UTC date
+        let currentDate = new Date(Date.UTC(
+            fechaInicioAbs.getUTCFullYear(),
+            fechaInicioAbs.getUTCMonth(),
+            fechaInicioAbs.getUTCDate()
+        ));
+
+        let groupEndDate = null;
+        if (g.fechaFin) {
+            let fechaFinAbs = new Date(g.fechaFin);
+            if (!isNaN(fechaFinAbs.getTime())) {
+                groupEndDate = new Date(Date.UTC(
+                    fechaFinAbs.getUTCFullYear(),
+                    fechaFinAbs.getUTCMonth(),
+                    fechaFinAbs.getUTCDate()
+                ));
+            }
+        }
+
+        let idTipoPeriodo = g.id_tipoPeriodo;
+        let idNivelActualDb = g.id_nivel_academico;
+
+        // If not defined, fallback based on academic level
+        if (idTipoPeriodo === null || idTipoPeriodo === undefined) {
+            if (idNivelActualDb !== null && idNivelActualDb >= 11) {
+                idTipoPeriodo = 1; // SEMESTRAL
+            } else {
+                idTipoPeriodo = 2; // TRIMESTRAL (default)
+            }
+        }
+
+        const isTrimestral = idTipoPeriodo === 2;
+        const weeksPerPeriod = isTrimestral ? 13 : 26;
+        const periodNameSingular = isTrimestral ? "Trimestre" : "Semestre";
+        const startLevel = isTrimestral ? 1 : 11;
+
+        let periodNumber = 1;
+        let idNivel = startLevel;
+
+        const formatDateDMY = (dateObj) => {
+            const dd = String(dateObj.getUTCDate()).padStart(2, '0');
+            const mm = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+            const yyyy = dateObj.getUTCFullYear();
+            return `${dd}/${mm}/${yyyy}`;
+        };
+
+        const today = new Date();
+        const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+
+        while (true) {
+            // El periodo termina weeksPerPeriod * 7 días después de su fecha de inicio (menos 1 día)
+            let periodEndDate = new Date(currentDate.getTime() + (weeksPerPeriod * 7 * 24 * 60 * 60 * 1000) - (24 * 60 * 60 * 1000));
+
+            // Si definimos un fin de grupo y el inicio de este periodo ya excede la fecha fin, paramos
+            if (groupEndDate && currentDate.getTime() > groupEndDate.getTime()) {
+                break;
+            }
+
+            // Si el periodo excede el límite académico
+            if (isTrimestral && periodNumber > 10) break;
+            if (!isTrimestral && periodNumber > 8) break;
+
+            const isCurrent = todayUTC.getTime() >= currentDate.getTime() && todayUTC.getTime() <= periodEndDate.getTime();
+            const isPast = todayUTC.getTime() > periodEndDate.getTime();
+
+            const periodItem = document.createElement("div");
+            periodItem.style.padding = "10px 12px";
+            periodItem.style.borderRadius = "10px";
+            periodItem.style.transition = "all 0.2s ease";
+
+            if (isCurrent) {
+                // Periodo activo: borde institucional azul marino y fondo sutil
+                periodItem.style.border = "1.5px solid rgb(38, 104, 123)";
+                periodItem.style.background = "rgba(38, 104, 123, 0.08)";
+                periodItem.style.color = "#1e293b";
+                periodItem.style.opacity = "1";
+            } else if (isPast) {
+                // Periodo finalizado: borde discontinuo y ligeramente opaco
+                periodItem.style.border = "1px dashed #cbd5e1";
+                periodItem.style.background = "rgba(241, 245, 249, 0.4)";
+                periodItem.style.color = "#64748b";
+                periodItem.style.opacity = "0.65";
+            } else {
+                // Periodo futuro: borde estándar
+                periodItem.style.border = "1px solid #e2e8f0";
+                periodItem.style.background = "#ffffff";
+                periodItem.style.color = "#334155";
+                periodItem.style.opacity = "1";
+            }
+
+            let badgeHtml = "";
+            if (isCurrent) {
+                badgeHtml = '<span style="font-size: 0.65rem; font-weight: 700; color: white; background: rgb(38, 104, 123); padding: 2px 6px; border-radius: 8px; text-transform: uppercase;">Activo</span>';
+            } else if (isPast) {
+                badgeHtml = '<span style="font-size: 0.65rem; font-weight: 600; color: #475569; background: #e2e8f0; padding: 2px 6px; border-radius: 8px;">Finalizado</span>';
+            }
+
+            const titleColor = isCurrent ? "rgb(38, 104, 123)" : (isPast ? "#64748b" : "#1e293b");
+            const dateColor = isCurrent ? "#334155" : (isPast ? "#8c9ba5" : "#475569");
+            const iconColor = isCurrent ? "rgb(38, 104, 123)" : (isPast ? "#94a3b8" : "rgb(56, 189, 248)");
+
+            periodItem.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-weight: 700; font-size: 0.85rem; color: ${titleColor};">
+                        ${periodNumber}° ${periodNameSingular} (Nivel ${idNivel})
+                    </span>
+                    ${badgeHtml}
+                </div>
+                <div style="font-size: 0.75rem; color: ${dateColor}; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-regular fa-calendar-check" style="color: ${iconColor};"></i>
+                    <span>${formatDateDMY(currentDate)}</span>
+                    <span style="color: #cbd5e1;">&rarr;</span>
+                    <span>${formatDateDMY(periodEndDate)}</span>
+                </div>
+            `;
+
+            periodsList.appendChild(periodItem);
+
+            // Si el periodo sobrepasa la fechaFin del grupo (o coincide con ella), paramos
+            if (groupEndDate && periodEndDate.getTime() >= groupEndDate.getTime()) {
+                break;
+            }
+
+            // Siguiente periodo empieza exactamente 1 día después de que finaliza el actual
+            currentDate = new Date(periodEndDate.getTime() + (24 * 60 * 60 * 1000));
+            periodNumber++;
+            idNivel++;
+        }
     }
 
     function generateCalendarGridHTML(days) {
@@ -1569,7 +1935,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function renderClassCardInCell(cellElement, data) {
         const aulaText = data.aula ? `<div style="font-size: 0.7rem; font-weight: 500; margin-top: 4px; color: #475569; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-door-open"></i> ${data.aula}</div>` : '';
-        let html = '<div class="class-card">';
+        let html = '<div class="class-card" draggable="true">';
         data.clases.forEach((clase, idx) => {
             if (idx > 0) {
                 html += '<hr style="margin: 4px 0; opacity: 0.15; border-color: rgb(38, 104, 123);">';
@@ -1592,6 +1958,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         editClassForm.style.display = "none";
         editEmptyState.style.display = "flex";
+        renderGroupCalendar(activeGroup);
         
         if (materiaSelectInstance) materiaSelectInstance.setValue("");
         if (docenteSelectInstance) docenteSelectInstance.setValue("");
@@ -1605,6 +1972,276 @@ document.addEventListener("DOMContentLoaded", function() {
         formMateriaSelect.setAttribute("required", "required");
         formMateriaSelectMultiple.removeAttribute("required");
         if (materiaSelectMultipleInstance) materiaSelectMultipleInstance.setValue([]);
+    }
+
+    // ==========================================
+    // Drag & Drop Event Handlers (Event Delegation)
+    // ==========================================
+    calendarTable.addEventListener("dragstart", function(e) {
+        const card = e.target.closest(".class-card");
+        if (!card) return;
+        
+        const cell = card.closest(".cell-slot");
+        if (!cell) return;
+        
+        card.classList.add("dragging");
+        
+        e.dataTransfer.setData("text/plain", JSON.stringify({
+            day: cell.dataset.day,
+            timeIdx: parseInt(cell.dataset.timeIdx)
+        }));
+        e.dataTransfer.effectAllowed = "move";
+    });
+
+    calendarTable.addEventListener("dragend", function(e) {
+        const card = e.target.closest(".class-card");
+        if (card) {
+            card.classList.remove("dragging");
+        }
+        const cells = calendarBody.querySelectorAll(".cell-slot.drag-over");
+        cells.forEach(c => c.classList.remove("drag-over"));
+    });
+
+    calendarTable.addEventListener("dragover", function(e) {
+        const cell = e.target.closest(".cell-slot");
+        if (!cell) return;
+        
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+    });
+
+    calendarTable.addEventListener("dragenter", function(e) {
+        const cell = e.target.closest(".cell-slot");
+        if (!cell) return;
+        
+        cell.classList.add("drag-over");
+    });
+
+    calendarTable.addEventListener("dragleave", function(e) {
+        const cell = e.target.closest(".cell-slot");
+        if (cell && !cell.contains(e.relatedTarget)) {
+            cell.classList.remove("drag-over");
+        }
+    });
+
+    calendarTable.addEventListener("drop", async function(e) {
+        const cell = e.target.closest(".cell-slot");
+        if (!cell) return;
+        
+        cell.classList.remove("drag-over");
+        
+        try {
+            const dragDataStr = e.dataTransfer.getData("text/plain");
+            if (!dragDataStr) return;
+            const dragData = JSON.parse(dragDataStr);
+            
+            const sourceDay = dragData.day;
+            const sourceTimeIdx = dragData.timeIdx;
+            
+            const targetDay = cell.dataset.day;
+            const targetTimeIdx = parseInt(cell.dataset.timeIdx);
+            
+            if (sourceDay === targetDay && sourceTimeIdx === targetTimeIdx) {
+                return;
+            }
+            
+            await moveClass(sourceDay, sourceTimeIdx, targetDay, targetTimeIdx);
+        } catch(err) {
+            console.error("Error al procesar el drop:", err);
+        }
+    });
+
+    async function moveClass(sourceDay, sourceTimeIdx, targetDay, targetTimeIdx) {
+        if (!activeGroup) return;
+
+        const groupData = schedulesData[activeGroup.clave] || {};
+        const sourceCellKey = `${sourceDay}-${sourceTimeIdx}`;
+        const sourceData = groupData[sourceCellKey];
+        
+        if (!sourceData || !sourceData.clases || sourceData.clases.length === 0) {
+            return;
+        }
+
+        const timeSlot = timeBlocks[targetTimeIdx];
+        const [startStr, endStr] = timeSlot.split(" - ");
+        const horaInicio = startStr + ":00";
+        const horaFin = endStr + ":00";
+        
+        const targetCellKey = `${targetDay}-${targetTimeIdx}`;
+        const targetExistingClass = groupData[targetCellKey];
+        
+        // 1. Si la celda de destino ya tiene clases, confirmar reemplazo
+        if (targetExistingClass && targetExistingClass.clases && targetExistingClass.clases.length > 0) {
+            const replaceConfirm = await Swal.fire({
+                title: 'Horario ocupado',
+                text: 'La celda de destino ya tiene clases asignadas. ¿Deseas reemplazarlas?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: 'rgb(38, 104, 123)',
+                cancelButtonColor: '#cbd5e1',
+                confirmButtonText: 'Sí, reemplazar',
+                cancelButtonText: 'Cancelar'
+            });
+            if (!replaceConfirm.isConfirmed) {
+                return;
+            }
+        }
+        
+        // 2. Validar disponibilidad del docente en el nuevo horario
+        const materiasList = sourceData.clases.map(c => parseInt(c.id_materia));
+        const docenteId = sourceData.id_docente || (sourceData.clases[0] ? sourceData.clases[0].id_docente : null);
+        
+        if (!docenteId) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo identificar el docente de la clase origen.',
+                confirmButtonColor: 'rgb(38, 104, 123)'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Moviendo clase...',
+            html: 'Validando disponibilidad y actualizando horario.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+            // Validar cada materia asignada
+            for (let matId of materiasList) {
+                const valRes = await fetch('/horarios/validar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        id_grupo: activeGroup.id || activeGroup.id_grupo,
+                        id_materia: matId,
+                        id_docente: parseInt(docenteId),
+                        diaSemana: dayNumbers[targetDay],
+                        horaInicio: horaInicio,
+                        horaFin: horaFin
+                    })
+                });
+
+                if (valRes.ok) {
+                    const valData = await valRes.json();
+                    if (valData.success === false) {
+                        Swal.close();
+                        
+                        const matObj = materias.find(m => (m.id_materia || m.id) == matId);
+                        const docObj = docentes.find(d => (d.idDocente || d.id_docente || d.id) == parseInt(docenteId));
+                        const matName = matObj ? matObj.nombreMateria : "Materia";
+                        const docName = docObj ? getTeacherFullName(docObj) : "Docente";
+
+                        const confirmResult = await Swal.fire({
+                            icon: 'warning',
+                            title: 'Conflicto de Horario',
+                            html: `El docente <strong>${docName}</strong> ya tiene clases en este horario en otro grupo para la materia <strong>${matName}</strong>.<br><br>¿Deseas asignarlo de todas formas?`,
+                            showCancelButton: true,
+                            confirmButtonColor: 'rgb(38, 104, 123)',
+                            cancelButtonColor: '#cbd5e1',
+                            confirmButtonText: 'Sí, asignar',
+                            cancelButtonText: 'Cancelar'
+                        });
+
+                        if (!confirmResult.isConfirmed) {
+                            return;
+                        }
+                        
+                        Swal.fire({
+                            title: 'Moviendo clase...',
+                            html: 'Actualizando horario.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                    }
+                }
+            }
+
+            // 3. Eliminar clases existentes en destino si corresponde
+            if (targetExistingClass && targetExistingClass.clases && targetExistingClass.clases.length > 0) {
+                for (let clase of targetExistingClass.clases) {
+                    if (clase.id_horario) {
+                        await fetch(`/horarios/${clase.id_horario}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        });
+                    }
+                }
+            }
+
+            // 4. Eliminar clases en el origen
+            for (let clase of sourceData.clases) {
+                if (clase.id_horario) {
+                    await fetch(`/horarios/${clase.id_horario}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    });
+                }
+            }
+
+            // 5. Crear clase en celda de destino
+            let payload = {
+                id_grupo: activeGroup.id || activeGroup.id_grupo,
+                diaSemana: dayNumbers[targetDay],
+                horaInicio: horaInicio,
+                horaFin: horaFin,
+                aula: sourceData.aula || "",
+                id_docente: parseInt(docenteId)
+            };
+
+            if (sourceData.clases.length > 1) {
+                payload.materias = materiasList;
+            } else {
+                payload.id_materia = materiasList[0];
+            }
+
+            const saveRes = await fetch('/horarios', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!saveRes.ok) {
+                throw new Error("No se pudo guardar la clase en el nuevo horario.");
+            }
+
+            await renderActiveGroupClasses();
+            clearForm();
+            
+            Swal.fire({
+                icon: 'success',
+                title: '¡Movido!',
+                text: 'La clase ha sido movida correctamente.',
+                confirmButtonColor: 'rgb(38, 104, 123)',
+                timer: 1500
+            });
+
+        } catch (error) {
+            console.error("Error al mover clase:", error);
+            await renderActiveGroupClasses();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || "Error al mover la clase.",
+                confirmButtonColor: 'rgb(38, 104, 123)'
+            });
+        }
     }
 });
 </script>

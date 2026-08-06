@@ -234,19 +234,18 @@
 
                         </h2>
 
-                          <div id="academicos" class="accordion-collapse collapse" data-bs-parent="#accordionAlumno"> 
                         <div id="academicos" class="accordion-collapse collapse" data-bs-parent="#accordionAlumno">
 
                             <div class="accordion-body">
                                 <div class="row">
 
-                                 <div class="col-md-4 mb-3">
+                                    <div class="col-md-3 mb-3">
                                         <label class="form-label">Escuela procedencia</label>
                                         <input type="text" name="escuelaProcedencia"
                                             class="form-control form-control-premium">
                                     </div> 
 
-                                      <div class="col-md-4 mb-3">
+                                    <div class="col-md-3 mb-3">
                                         <label class="form-label">Grupo <span class="text-danger">*</span></label>
                                         <select name="id_Grupo" class="form-select form-select-premium">
                                             <option value="">Seleccione</option>
@@ -257,7 +256,8 @@
                                             @endforeach
                                         </select>
                                     </div> 
-                                    <div class="col-md-4 mb-3">
+
+                                    <div class="col-md-3 mb-3">
                                         <label class="form-label">Generación <span class="text-danger">*</span></label>
                                         <select name="id_Generacion" id="id_Generacion"
                                             class="form-select form-select-premium" required>
@@ -270,6 +270,16 @@
                                         </select>
                                     </div>
 
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Estado del Alumno <span class="text-danger">*</span></label>
+                                        <select name="statusAlumno" class="form-select form-select-premium" required>
+                                            <option value="ACTIVO">ACTIVO</option>
+                                            <option value="INACTIVO">INACTIVO</option>
+                                            <option value="BAJA_TEMPORAL">BAJA TEMPORAL</option>
+                                            <option value="CERTIFICADO">CERTIFICADO</option>
+                                            <option value="REINSCRIPCION">REINSCRIPCIÓN</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>

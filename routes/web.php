@@ -19,6 +19,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CalificacionesController;
 use App\Http\Controllers\HorariosController;
 use App\Http\Controllers\KardexCBgneController;
+use App\Http\Controllers\AsistenciaDocenteController;
 
 
 
@@ -80,6 +81,12 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::get('/horarios/sabado', [HorariosController::class, 'sabado'])->name('horarios.sabado');
     Route::get('/horarios/domingo', [HorariosController::class, 'domingo'])->name('horarios.domingo');
 
+    // Asistencias Docentes
+    Route::get('/asistencias_docentes', [AsistenciaDocenteController::class, 'index'])->name('asistencias_docentes');
+    Route::get('/asistencias_docentes/datos', [AsistenciaDocenteController::class, 'getHorasDocentes']);
+    Route::get('/asistencias_docentes/detalle', [AsistenciaDocenteController::class, 'getDetalleHorasDocente']);
+    Route::post('/asistencias/upload', [AsistenciaDocenteController::class, 'uploadBiometrico']);
+    Route::get('/asistencias', [AsistenciaDocenteController::class, 'getAsistencias']);
 });
 
 
@@ -89,6 +96,10 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::post('/alumnos', [AlumnoController::class, 'store']);
     Route::get('/alumnos/modalAlta', [AlumnoController::class, 'modalAlta']);
     Route::delete('/alumnos/{id}', [AlumnoController::class, 'destroy'])->name('alumnos.destroy');
+    Route::get('/alumnos/{id}', [AlumnoController::class, 'show'])->where('id', '[0-9]+');
+    Route::put('/alumnos/{id}', [AlumnoController::class, 'update'])->where('id', '[0-9]+');
+    Route::get('/grupos/{id_grupo}/alumnos', [AlumnoController::class, 'alumnosGrupo'])->where('id_grupo', '[0-9]+');
+    Route::get('/alumnos/grupo/{id_grupo}', [AlumnoController::class, 'alumnosPorGrupo'])->where('id_grupo', '[0-9]+');
 
     // Docentes
     Route::get('/docentes', [DocenteController::class, 'index'])->name('docentes');

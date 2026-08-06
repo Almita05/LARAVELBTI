@@ -40,7 +40,8 @@ class DocenteController extends Controller
         "statusDocente" => $request->statusDocente,
         "observacionesDocente" => $request->observacionesDocente,
         "nivelEstudios" => $request->nivelEstudios,
-        "fechaNacimiento" => $request->fechaNacimiento
+        "fechaNacimiento" => $request->fechaNacimiento,
+        "idBiometrico" => $request->idBiometrico
     ];
 
     $response = Http::withHeaders([
@@ -106,7 +107,8 @@ public function update(Request $request, $id)
         "statusDocente" => $request->statusDocente,
         "observacionesDocente" => $request->observacionesDocente,
         "nivelEstudios" => $request->nivelEstudios,
-        "fechaNacimiento" => $request->fechaNacimiento
+        "fechaNacimiento" => $request->fechaNacimiento,
+        "idBiometrico" => $request->idBiometrico
     ];
 
     $response = Http::withHeaders([

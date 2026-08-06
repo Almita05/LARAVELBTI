@@ -247,6 +247,15 @@ body {
             </a>
         </div>
 
+        <div class="col-md-3">
+            <a href="{{ route('asistencias_docentes') }}" style="text-decoration:none;">
+                <div class="portal-card">
+                    <i class="fa-solid fa-user-check"></i>
+                    <h5>Asistencias Docentes</h5>
+                </div>
+            </a>
+        </div>
+
     </div>
 
 </div>
