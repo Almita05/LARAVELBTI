@@ -309,7 +309,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
 
                 renderTabla(alumnos);
-
+                
                 if (grupoId) {
                     document.getElementById('paginacionMaterias').innerHTML = '';
                     document.getElementById('infoPaginacionMaterias').innerText =

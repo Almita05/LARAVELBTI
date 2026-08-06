@@ -74,7 +74,10 @@ public function store(Request $request)
 
     $url = config('services.api.base_url') . '/crealumnos';
 
-    $response = Http::post($url, [
+    $response = Http::withHeaders([
+        'Accept' => 'application/json',
+        'Content-Type' => 'application/json'
+    ])->post($url, [
         "nombre" => $request->nombre,
         "apPaterno" => $request->apPaterno,
         "apMaterno" => $request->apMaterno ?: null,
@@ -93,8 +96,12 @@ public function store(Request $request)
         "id_Generacion" => $request->id_Generacion ? (int)$request->id_Generacion : null,
         "id_Grupo" => $request->id_Grupo ? (int)$request->id_Grupo : null,
         "equivalencia" => ($request->equivalencia === 'SI' || $request->equivalencia === 'NO') ? $request->equivalencia : null,
+<<<<<<< HEAD
         "numeroControl" => $request->numeroControl ?: null,
         "statusAlumno" => $request->statusAlumno ?: 'ACTIVO'
+=======
+        "numeroControl" => $request->numeroControl ?: null
+>>>>>>> origin/main
     ]);
 
     if ($response->failed()) {
@@ -160,10 +167,13 @@ public function show($id)
 public function update(Request $request, $id)
 {
     $request->merge(json_decode($request->getContent(), true));
-
+    
     $url = config('services.api.base_url') . '/updateAlumno/' . $id;
-
-    $response = Http::put($url, [
+    
+    $response = Http::withHeaders([
+        'Accept' => 'application/json',
+        'Content-Type' => 'application/json'
+    ])->put($url, [
         "nombre" => $request->nombre,
         "apPaterno" => $request->apPaterno,
         "apMaterno" => $request->apMaterno ?: null,
@@ -245,4 +255,8 @@ public function alumnosPorGrupo($id_grupo)
         'data' => $response->json()['data'] ?? []
     ]);
 }
+<<<<<<< HEAD
 }
+=======
+}   
+>>>>>>> origin/main
