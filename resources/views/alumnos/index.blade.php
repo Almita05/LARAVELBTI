@@ -95,6 +95,42 @@ let modoAlumno = 'crear';
 let idAlumnoActual = null;
 let grupoId = @json($grupoId ?? null);
 
+// Lógica para mostrar/ocultar campos del Certificado según el Estado del Alumno
+window.actualizarVistaCertificado = function() {
+    const form = document.getElementById('formAlumno');
+    if (!form) return;
+    const statusSelect = form.querySelector('[name="statusAlumno"]');
+    const seccionCertificado = document.getElementById('seccionCertificado');
+    if (statusSelect && seccionCertificado) {
+        if (statusSelect.value === 'CERTIFICADO') {
+            seccionCertificado.style.setProperty('display', 'flex', 'important');
+        } else {
+            seccionCertificado.style.setProperty('display', 'none', 'important');
+        }
+    }
+};
+
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.name === 'statusAlumno') {
+        const seccionCertificado = document.getElementById('seccionCertificado');
+        if (seccionCertificado) {
+            if (e.target.value === 'CERTIFICADO') {
+                seccionCertificado.style.setProperty('display', 'flex', 'important');
+            } else {
+                seccionCertificado.style.setProperty('display', 'none', 'important');
+                const inputs = seccionCertificado.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    if (input.name === 'recogioCertificado') {
+                        input.value = 'NO';
+                    } else {
+                        input.value = '';
+                    }
+                });
+            }
+        }
+    }
+});
+
 function setFormDisabled(disabled) {
     const form = document.getElementById('formAlumno');
     if (!form) return;
@@ -284,6 +320,11 @@ function abrirModalAlumno() {
 
             let modal = new bootstrap.Modal(document.getElementById('modalAlumno'));
             modal.show();
+            
+            // Ocultar sección de certificado al inicio
+            if (typeof window.actualizarVistaCertificado === 'function') {
+                window.actualizarVistaCertificado();
+            }
         });
 }
 
