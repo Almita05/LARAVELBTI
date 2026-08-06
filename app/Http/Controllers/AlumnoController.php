@@ -71,6 +71,7 @@ public function modalAlta()
 public function store(Request $request)
 {
     $request->merge(json_decode($request->getContent(), true));
+    \Log::info('Store request payload:', $request->all());
 
     $url = config('services.api.base_url') . '/crealumnos';
 
@@ -167,6 +168,7 @@ public function show($id)
 public function update(Request $request, $id)
 {
     $request->merge(json_decode($request->getContent(), true));
+    \Log::info('Update request payload ID ' . $id . ':', $request->all());
     
     $url = config('services.api.base_url') . '/updateAlumno/' . $id;
     
