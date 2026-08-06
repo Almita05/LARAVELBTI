@@ -1018,16 +1018,9 @@ document.addEventListener("DOMContentLoaded", function() {
             btn.style.justifyContent = "space-between";
             btn.style.alignItems = "center";
             
-            let periodText = "";
-            if (group.nombre_nivel) {
-                periodText = group.nombre_nivel
-                    .replace("er", "°")
-                    .replace("o", "°")
-                    .replace("Trimestre", "Trim.")
-                    .replace("Semestre", "Sem.");
-            } else {
-                periodText = getCurrentPeriodText(group);
-            }
+            let periodText = getCurrentPeriodText(group)
+                .replace("Trimestre", "Trim.")
+                .replace("Semestre", "Sem.");
             const badgeHtml = periodText 
                 ? `<span class="group-period-badge" style="font-size: 0.68rem; font-weight: 700; background: rgba(38, 104, 123, 0.08); color: rgb(38, 104, 123); padding: 2px 7px; border-radius: 8px; border: 1.2px solid rgba(38, 104, 123, 0.15);">${periodText}</span>` 
                 : '';
@@ -1198,10 +1191,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (resp.success && resp.data) {
                     const g = resp.data;
                     
-                    // Mostrar nivel académico
-                    if (g.nombre_nivel) {
-                        selectedGroupNivel.textContent = g.nombre_nivel;
+                    // Mostrar nivel académico dinámico según calendario de fechas
+                    const activePeriodText = getCurrentPeriodText(g);
+                    if (activePeriodText) {
+                        selectedGroupNivel.textContent = activePeriodText;
                         selectedGroupNivel.style.display = "inline-block";
+                    } else {
+                        selectedGroupNivel.style.display = "none";
                     }
                     
                     // Calcular y mostrar barra de progreso
