@@ -156,12 +156,13 @@ window.verAlumno = function(id) {
                             'nombre', 'apPaterno', 'apMaterno', 'fechaNacimiento', 'celularAlumno',
                             'correoAlumno', 'tutor', 'parentesco', 'telefonoTutor', 'calle',
                             'colonia', 'localidad', 'municipio', 'escuelaProcedencia', 'observaciones',
-                            'equivalencia', 'numeroControl', 'statusAlumno'
+                            'equivalencia', 'numeroControl', 'statusAlumno',
+                            'curp', 'folioCertificado', 'fechaRecogioCertificado', 'recogioCertificado'
                         ];
                         fields.forEach(field => {
                             const input = form.querySelector(`[name="${field}"]`);
                             if (input) {
-                                if (field === 'fechaNacimiento') {
+                                if (field === 'fechaNacimiento' || field === 'fechaRecogioCertificado') {
                                     input.value = formatDateForInput(al[field]);
                                 } else {
                                     input.value = al[field] || '';
@@ -174,6 +175,10 @@ window.verAlumno = function(id) {
 
                         const idGenInput = form.querySelector('[name="id_Generacion"]');
                         if (idGenInput) idGenInput.value = al.idGeneracion || '';
+
+                        if (typeof window.actualizarVistaCertificado === 'function') {
+                            window.actualizarVistaCertificado();
+                        }
                         
                         document.querySelector('.modal-title').innerHTML = '<i class="bi bi-person-fill me-2"></i> Detalles del Alumno';
                         const submitBtn = document.querySelector('#formAlumno button[type="submit"]');
@@ -216,12 +221,13 @@ window.editarAlumno = function(id) {
                             'nombre', 'apPaterno', 'apMaterno', 'fechaNacimiento', 'celularAlumno',
                             'correoAlumno', 'tutor', 'parentesco', 'telefonoTutor', 'calle',
                             'colonia', 'localidad', 'municipio', 'escuelaProcedencia', 'observaciones',
-                            'equivalencia', 'numeroControl', 'statusAlumno'
+                            'equivalencia', 'numeroControl', 'statusAlumno',
+                            'curp', 'folioCertificado', 'fechaRecogioCertificado', 'recogioCertificado'
                         ];
                         fields.forEach(field => {
                             const input = form.querySelector(`[name="${field}"]`);
                             if (input) {
-                                if (field === 'fechaNacimiento') {
+                                if (field === 'fechaNacimiento' || field === 'fechaRecogioCertificado') {
                                     input.value = formatDateForInput(al[field]);
                                 } else {
                                     input.value = al[field] || '';
@@ -234,6 +240,10 @@ window.editarAlumno = function(id) {
 
                         const idGenInput = form.querySelector('[name="id_Generacion"]');
                         if (idGenInput) idGenInput.value = al.idGeneracion || '';
+
+                        if (typeof window.actualizarVistaCertificado === 'function') {
+                            window.actualizarVistaCertificado();
+                        }
                         
                         document.querySelector('.modal-title').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Alumno';
                         const submitBtn = document.querySelector('#formAlumno button[type="submit"]');

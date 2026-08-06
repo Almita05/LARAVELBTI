@@ -97,7 +97,11 @@ public function store(Request $request)
         "id_Grupo" => $request->id_Grupo ? (int)$request->id_Grupo : null,
         "equivalencia" => ($request->equivalencia === 'SI' || $request->equivalencia === 'NO') ? $request->equivalencia : null,
         "numeroControl" => $request->numeroControl ?: null,
-        "statusAlumno" => $request->statusAlumno ?: 'ACTIVO'
+        "statusAlumno" => $request->statusAlumno ?: 'ACTIVO',
+        "folioCertificado" => $request->folioCertificado ?: null,
+        "curp" => $request->curp ?: null,
+        "fechaRecogioCertificado" => $request->fechaRecogioCertificado ?: null,
+        "recogioCertificado" => $request->recogioCertificado ?: null
     ]);
 
     if ($response->failed()) {
@@ -189,7 +193,11 @@ public function update(Request $request, $id)
         "idGrupo" => $request->id_Grupo ? (int)$request->id_Grupo : null,
         "equivalencia" => ($request->equivalencia === 'SI' || $request->equivalencia === 'NO') ? $request->equivalencia : null,
         "numeroControl" => $request->numeroControl ?: null,
-        "statusAlumno" => $request->statusAlumno ?: 'ACTIVO'
+        "statusAlumno" => $request->statusAlumno ?: 'ACTIVO',
+        "folioCertificado" => $request->folioCertificado ?: null,
+        "curp" => $request->curp ?: null,
+        "fechaRecogioCertificado" => $request->fechaRecogioCertificado ?: null,
+        "recogioCertificado" => $request->recogioCertificado ?: null
     ]);
 
     if ($response->failed()) {

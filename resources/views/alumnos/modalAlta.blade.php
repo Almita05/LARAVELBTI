@@ -198,11 +198,17 @@ textarea.form-control-premium {
                                             class="form-control form-control-premium" required>
                                     </div>
 
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label">Correo</label>
-                                        <input type="email" name="correoAlumno"
-                                            class="form-control form-control-premium">
-                                    </div>
+                                     <div class="col-md-4 mb-3">
+                                         <label class="form-label">Correo</label>
+                                         <input type="email" name="correoAlumno"
+                                             class="form-control form-control-premium">
+                                     </div>
+
+                                     <div class="col-md-4 mb-3">
+                                         <label class="form-label">CURP</label>
+                                         <input type="text" name="curp"
+                                             class="form-control form-control-premium" maxlength="18">
+                                     </div>
  
                                 </div>
                             </div>
@@ -277,7 +283,7 @@ textarea.form-control-premium {
                                 </div>
                             </div>
                         </div>
-</div >
+</div>
 
                     <div class="accordion-item mb-3 border-0 shadow-sm rounded">
                         <h2 class="accordion-header">
@@ -335,6 +341,25 @@ textarea.form-control-premium {
                                             <option value="REINSCRIPCION">REINSCRIPCIÓN</option>
                                         </select>
                                     </div>
+
+                                     <!-- Campos de Certificado (Se muestran solo si el estado es CERTIFICADO) -->
+                                     <div id="seccionCertificado" class="row mt-2" style="display: none; padding-right: 0; margin-left: 0; margin-right: 0; width: 100%;">
+                                         <div class="col-md-4 mb-3 ps-0">
+                                             <label class="form-label">Folio del Certificado</label>
+                                             <input type="text" name="folioCertificado" class="form-control form-control-premium">
+                                         </div>
+                                         <div class="col-md-4 mb-3">
+                                             <label class="form-label">¿Recogió Certificado?</label>
+                                             <select name="recogioCertificado" class="form-select form-select-premium">
+                                                 <option value="NO">NO</option>
+                                                 <option value="SI">SI</option>
+                                             </select>
+                                         </div>
+                                         <div class="col-md-4 mb-3 pe-0">
+                                             <label class="form-label">Fecha de Entrega de Certificado</label>
+                                             <input type="date" name="fechaRecogioCertificado" class="form-control form-control-premium">
+                                         </div>
+                                     </div>
                                 </div>
                             </div>
                         </div>
@@ -393,3 +418,40 @@ textarea.form-control-premium {
         </form>
     </div>
 </div>
+
+<script>
+(function() {
+    const form = document.getElementById('formAlumno');
+    if (!form) return;
+    
+    const statusSelect = form.querySelector('[name="statusAlumno"]');
+    const seccionCertificado = document.getElementById('seccionCertificado');
+    
+    function toggleCertificado() {
+        if (statusSelect && seccionCertificado) {
+            if (statusSelect.value === 'CERTIFICADO') {
+                seccionCertificado.style.setProperty('display', 'flex', 'important');
+            } else {
+                seccionCertificado.style.setProperty('display', 'none', 'important');
+                
+                // Limpiar valores si se cambia de estado a uno que no es certificado
+                const inputs = seccionCertificado.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    if (input.name === 'recogioCertificado') {
+                        input.value = 'NO';
+                    } else {
+                        input.value = '';
+                    }
+                });
+            }
+        }
+    }
+    
+    if (statusSelect) {
+        statusSelect.addEventListener('change', toggleCertificado);
+        toggleCertificado(); // Ejecutar al cargar la primera vez
+    }
+    
+    window.actualizarVistaCertificado = toggleCertificado;
+})();
+</script>
