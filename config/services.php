@@ -36,6 +36,8 @@ return [
     // 👇 Agrega esto
     'google' => [
         'credentials' => env('GOOGLE_CREDENTIALS'),
+        'sheet_id'        => env('GOOGLE_SHEET_ID'),
+    'school_sheet_id' => env('GOOGLE_SCHOOL_SHEET_ID'),
     ],
 
 ];
