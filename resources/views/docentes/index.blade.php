@@ -442,7 +442,6 @@ document.addEventListener("DOMContentLoaded", function() {
         modoDocente = 'editar';
         idDocenteActual = id;
 
-<<<<<<< HEAD
         fetch(`/docentes/${id}`)
             .then(res => res.json())
             .then(resp => {
@@ -458,24 +457,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     form.observacionesDocente.value = d.observacionesDocente || '';
                     form.nivelEstudios.value = d.nivelEstudios || '';
                     form.fechaNacimiento.value = d.fechaNacimiento || '';
-=======
-            fetch(`/docentes/${id}`)
-                .then(res => res.json())
-                .then(resp => {
-                    if (resp.success && resp.data) {
-                        const d = resp.data;
-                        const form = document.getElementById('formDocente');
-                        form.nombreDocente.value = d.nombreDocente || '';
-                        form.apPaternoDocente.value = d.apPaternoDocente || '';
-                        form.apMaternoDocente.value = d.apMaternoDocente || '';
-                        form.correoDocente.value = d.correoDocente || '';
-                        form.telefonoDocente.value = d.telefonoDocente || '';
-                        form.statusDocente.value = d.statusDocente || 'ACTIVO';
-                        form.observacionesDocente.value = d.observacionesDocente || '';
-                        form.nivelEstudios.value = d.nivelEstudios || '';
-                        form.fechaNacimiento.value = d.fechaNacimiento || '';
-                        form.idBiometrico.value = d.idBiometrico || '';
->>>>>>> main
 
                     setFormDisabled(false);
 
