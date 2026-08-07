@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <style>
@@ -43,6 +44,7 @@
         -webkit-backdrop-filter: blur(10px);
         box-shadow: 0 4px 15px rgba(0, 0, 0, .25);
         padding: 12px 25px;
+        z-index: 1100;
     }
 
     .navbar-brand img {
@@ -73,11 +75,7 @@
         color: #fff;
     }
 
-    .content {
-        margin-top: 85px;
-        padding: 25px;
-    }
-
+  
     .card {
         background: rgba(98, 191, 214, .80);
         backdrop-filter: blur(16px);
@@ -101,6 +99,15 @@
         border-radius: 15px;
         overflow: hidden;
     }
+
+   .main-content {
+    margin-left: 270px;
+    margin-top: 85px;
+    padding: 30px;
+    min-height: calc(100vh - 85px);
+    width: calc(100% - 270px);
+    transition: all .3s ease;
+}
     </style>
 
 </head>
@@ -171,7 +178,9 @@
         </div>
     </nav>
 
-    <div class="container-fluid content">
+    @include('components.sidebar')
+
+    <div class="main-content">
         @yield('content')
     </div>
 
