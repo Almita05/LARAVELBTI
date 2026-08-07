@@ -21,8 +21,9 @@ protected $schoolSpreadsheetId;
         Sheets::SPREADSHEETS
     ]);
 
-    $client->setAuthConfig(base_path(env('GOOGLE_CREDENTIALS')));
-
+$client->setAuthConfig(
+    base_path(config('services.google.credentials'))
+);
     $this->service = new Sheets($client);
 
     // Hoja de accesos
