@@ -1,85 +1,141 @@
 <style>
 .glass-modal {
-    background: rgb(73, 164, 190) !important;
-    border: 1px solid rgba(255, 255, 255, .15);
+    background: #ffffff !important;
+    border: none;
     border-radius: 20px;
     overflow: hidden;
-    color: white;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
+    color: #1e293b;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, .15);
 }
 
 .glass-modal .modal-header {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
     color: #fff;
+    border-bottom: none;
+    padding: 1.2rem 1.5rem;
 }
 
 .glass-modal .modal-body {
-    background: white;
-}
-
-.glass-modal .modal-footer {
-    border-top: 1px solid rgba(255, 255, 255, .08);
-    background: rgba(255, 255, 255, .03);
+    background: #f8fafc;
+    padding: 1.5rem;
 }
 
 .accordion-item {
-    background: rgba(255, 255, 255, .06);
-    border: none;
-    border-radius: 14px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px !important;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     overflow: hidden;
+    transition: all 0.3s ease;
 }
 
-.accordion-button,
-.accordion-button.collapsed,
-.accordion-button:not(.collapsed) {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
-    color: #fff !important;
+.accordion-item:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    border-color: #cbd5e1;
+}
+
+.accordion-button {
+    background: #f8fafc !important;
+    color: #1e293b !important;
     font-weight: 600;
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid transparent;
+}
+
+.accordion-button:not(.collapsed) {
+    background: linear-gradient(135deg, rgba(73, 164, 190, 0.08) 0%, rgba(30, 111, 168, 0.08) 100%) !important;
+    color: #1E6FA8 !important;
+    border-bottom: 1px solid #e2e8f0;
     box-shadow: none !important;
-    border: none;
 }
 
 .accordion-button:focus {
     box-shadow: none !important;
 }
 
-.accordion-button::after {
-    filter: brightness(0) invert(1);
-}
-
 .accordion-body {
     background: white;
+    padding: 1.5rem;
 }
 
 .form-label {
     font-weight: 600;
+    color: #334155;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    display: inline-block;
 }
 
 .form-control-premium,
-.form-select-premium {
-    background: #fff;
-    border: 2px solid #9BDFFF;
-    border-radius: 15px;
-    color: #212529;
-    min-height: 48px;
+.form-select-premium,
+textarea.form-control-premium {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    color: #1e293b;
+    font-size: 0.9rem;
+    padding: 0.65rem 1rem;
+    min-height: 44px;
+    transition: all 0.2s ease-in-out;
 }
 
 .form-control-premium:hover,
 .form-select-premium:hover {
-    border-color: #7FD3FF;
+    border-color: #94a3b8;
 }
 
 .form-control-premium:focus,
 .form-select-premium:focus {
-    border-color: #66C9FF;
-    box-shadow:
-        0 0 0 3px rgba(102, 201, 255, .20),
-        inset 0 1px 2px rgba(0, 0, 0, .04);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+    outline: none;
+}
+
+.glass-modal .modal-footer {
+    background: #f8fafc !important;
+    border-top: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-premium-cancel {
+    background: #f1f5f9;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+.btn-premium-cancel:hover {
+    background: #e2e8f0;
+    color: #1e293b !important;
+    transform: translateY(-1px);
+}
+
+.btn-premium-save {
+    background: linear-gradient(135deg, rgb(73, 164, 190) 0%, #1E6FA8 100%);
+    color: white !important;
+    border: none;
+    border-radius: 12px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(30, 111, 168, 0.25);
+    transition: all 0.25s ease;
+}
+
+.btn-premium-save:hover {
+    background: linear-gradient(135deg, #1E6FA8 0%, #154c75 100%);
+    box-shadow: 0 6px 16px rgba(30, 111, 168, 0.35);
+    transform: translateY(-1px);
 }
 </style>
 <div class="modal fade" id="modalAlumno" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <form id="formAlumno" class="modal-content glass-modal" novalidate>
 
             <div class="modal-header border-0">
@@ -105,7 +161,6 @@
                             </button>
                         </h2>
                         
-                        <div id="datosPersonales" class="accordion-collapse collapse show" -->
                         <div id="datosPersonales" class="accordion-collapse collapse show"
                             data-bs-parent="#accordionAlumno">
 
@@ -143,11 +198,17 @@
                                             class="form-control form-control-premium" required>
                                     </div>
 
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label">Correo</label>
-                                        <input type="email" name="correoAlumno"
-                                            class="form-control form-control-premium">
-                                    </div>
+                                     <div class="col-md-4 mb-3">
+                                         <label class="form-label">Correo</label>
+                                         <input type="email" name="correoAlumno"
+                                             class="form-control form-control-premium">
+                                     </div>
+
+                                     <div class="col-md-4 mb-3">
+                                         <label class="form-label">CURP</label>
+                                         <input type="text" name="curp"
+                                             class="form-control form-control-premium" maxlength="18">
+                                     </div>
  
                                 </div>
                             </div>
@@ -222,7 +283,7 @@
                                 </div>
                             </div>
                         </div>
-</div >
+</div>
 
                     <div class="accordion-item mb-3 border-0 shadow-sm rounded">
                         <h2 class="accordion-header">
@@ -234,19 +295,18 @@
 
                         </h2>
 
-                          <div id="academicos" class="accordion-collapse collapse" data-bs-parent="#accordionAlumno"> 
                         <div id="academicos" class="accordion-collapse collapse" data-bs-parent="#accordionAlumno">
 
                             <div class="accordion-body">
                                 <div class="row">
 
-                                 <div class="col-md-4 mb-3">
+                                    <div class="col-md-3 mb-3">
                                         <label class="form-label">Escuela procedencia</label>
                                         <input type="text" name="escuelaProcedencia"
                                             class="form-control form-control-premium">
                                     </div> 
 
-                                      <div class="col-md-4 mb-3">
+                                    <div class="col-md-3 mb-3">
                                         <label class="form-label">Grupo <span class="text-danger">*</span></label>
                                         <select name="id_Grupo" class="form-select form-select-premium">
                                             <option value="">Seleccione</option>
@@ -257,7 +317,8 @@
                                             @endforeach
                                         </select>
                                     </div> 
-                                    <div class="col-md-4 mb-3">
+
+                                    <div class="col-md-3 mb-3">
                                         <label class="form-label">Generación <span class="text-danger">*</span></label>
                                         <select name="id_Generacion" id="id_Generacion"
                                             class="form-select form-select-premium" required>
@@ -270,6 +331,35 @@
                                         </select>
                                     </div>
 
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Estado del Alumno <span class="text-danger">*</span></label>
+                                        <select name="statusAlumno" class="form-select form-select-premium" required>
+                                            <option value="ACTIVO">ACTIVO</option>
+                                            <option value="INACTIVO">INACTIVO</option>
+                                            <option value="BAJA_TEMPORAL">BAJA TEMPORAL</option>
+                                            <option value="CERTIFICADO">CERTIFICADO</option>
+                                            <option value="REINSCRIPCION">REINSCRIPCIÓN</option>
+                                        </select>
+                                    </div>
+
+                                     <!-- Campos de Certificado (Se muestran solo si el estado es CERTIFICADO) -->
+                                     <div id="seccionCertificado" class="row mt-2" style="display: none; padding-right: 0; margin-left: 0; margin-right: 0; width: 100%;">
+                                         <div class="col-md-4 mb-3 ps-0">
+                                             <label class="form-label">Folio del Certificado</label>
+                                             <input type="text" name="folioCertificado" class="form-control form-control-premium">
+                                         </div>
+                                         <div class="col-md-4 mb-3">
+                                             <label class="form-label">¿Recogió Certificado?</label>
+                                             <select name="recogioCertificado" class="form-select form-select-premium">
+                                                 <option value="NO">NO</option>
+                                                 <option value="SI">SI</option>
+                                             </select>
+                                         </div>
+                                         <div class="col-md-4 mb-3 pe-0">
+                                             <label class="form-label">Fecha de Entrega de Certificado</label>
+                                             <input type="date" name="fechaRecogioCertificado" class="form-control form-control-premium">
+                                         </div>
+                                     </div>
                                 </div>
                             </div>
                         </div>
@@ -316,20 +406,13 @@
             </div>
 
             <div class="modal-footer">
-
-                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
-
+                <button type="button" class="btn-premium-cancel" data-bs-dismiss="modal">
                     Cancelar
-
                 </button>
-
-                <button class= "btn btn-outline-light" type="submit">
-
-                    <i class="bi bi-floppy-fill"></i>
+                <button class="btn-premium-save" type="submit">
+                    <i class="bi bi-floppy-fill me-2"></i>
                     Guardar Alumno
-
                 </button>
-
             </div>
 
         </form>

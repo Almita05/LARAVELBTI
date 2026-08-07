@@ -2,6 +2,8 @@
 $rol = strtoupper(session('rol'));
 @endphp
 
+ <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
+
 <div class="sidebar">
 
     <div class="logo">
@@ -39,6 +41,12 @@ $rol = strtoupper(session('rol'));
             <a href="{{ route('docentes') }}">
                 <i class="fa-solid fa-chalkboard-user"></i>
                 Inicio Docentes
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('asistencias_docentes') }}">
+                <i class="fa-solid fa-user-check"></i>
+                Asistencias Docentes
             </a>
         </li>
         <div class="menu-title">Grupos</div>

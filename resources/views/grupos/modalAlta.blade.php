@@ -1,112 +1,97 @@
 <style>
-
-.glass-input {
-    background: #fff;
-    border: 2px solid #9BDFFF !important;
-    border-radius: 15px !important;
-    color: #212529;
-    min-height: 48px;
-    padding: .75rem 1rem;
-    transition: .25s;
-}
-
-.glass-input:hover {
-    border-color: #7FD3FF !important;
-}
-
-.glass-input:focus {
-    border-color: #66C9FF !important;
-    box-shadow:
-        0 0 0 3px rgba(102, 201, 255, .20),
-        inset 0 1px 2px rgba(0, 0, 0, .04);
-}
-
 .glass-modal {
-    background: rgb(73, 164, 190) !important;
-    border: 1px solid rgba(255, 255, 255, .15);
+    background: #ffffff !important;
+    border: none;
     border-radius: 20px;
     overflow: hidden;
-    color: white;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
+    color: #1e293b;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, .15);
 }
 
 .glass-modal .modal-header {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
     color: #fff;
+    border-bottom: none;
+    padding: 1.2rem 1.5rem;
 }
 
 .glass-modal .modal-body {
-    background: white;
-}
-
-.glass-modal .modal-footer {
-    border-top: 1px solid rgba(255, 255, 255, .08);
-    background: rgba(255, 255, 255, .03);
-}
-
-.accordion-item {
-    background: rgba(255, 255, 255, .06);
-    border: none;
-    border-radius: 14px;
-    overflow: hidden;
-}
-
-.accordion-button,
-.accordion-button.collapsed,
-.accordion-button:not(.collapsed) {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
-    color: #fff !important;
-    font-weight: 600;
-    box-shadow: none !important;
-    border: none;
-}
-
-.accordion-button:focus {
-    box-shadow: none !important;
-}
-
-.accordion-button::after {
-    filter: brightness(0) invert(1);
-}
-
-.accordion-body {
-    background: white;
+    background: #f8fafc;
+    padding: 1.5rem;
 }
 
 .form-label {
     font-weight: 600;
-    color: black;
-}
-
-.glass-modal label {
-    color: #2b3a4a !important;
-    font-weight: 600;
-    margin-top: 8px;
-    margin-bottom: 4px;
+    color: #334155;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
     display: inline-block;
 }
 
 .form-control-premium,
 .form-select-premium {
-    background: #fff;
-    border: 2px solid #9BDFFF;
-    border-radius: 15px;
-    color: #212529;
-    min-height: 48px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    color: #1e293b;
+    font-size: 0.9rem;
+    padding: 0.65rem 1rem;
+    min-height: 44px;
+    transition: all 0.2s ease-in-out;
 }
 
 .form-control-premium:hover,
 .form-select-premium:hover {
-    border-color: #7FD3FF;
+    border-color: #94a3b8;
 }
 
 .form-control-premium:focus,
 .form-select-premium:focus {
-    border-color: #66C9FF;
-    box-shadow:
-        0 0 0 3px rgba(102, 201, 255, .20),
-        inset 0 1px 2px rgba(0, 0, 0, .04);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+    outline: none;
+}
+
+.glass-modal .modal-footer {
+    background: #f8fafc !important;
+    border-top: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-premium-cancel {
+    background: #f1f5f9;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+.btn-premium-cancel:hover {
+    background: #e2e8f0;
+    color: #1e293b !important;
+    transform: translateY(-1px);
+}
+
+.btn-premium-save {
+    background: linear-gradient(135deg, rgb(73, 164, 190) 0%, #1E6FA8 100%);
+    color: white !important;
+    border: none;
+    border-radius: 12px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(30, 111, 168, 0.25);
+    transition: all 0.25s ease;
+}
+
+.btn-premium-save:hover {
+    background: linear-gradient(135deg, #1E6FA8 0%, #154c75 100%);
+    box-shadow: 0 6px 16px rgba(30, 111, 168, 0.35);
+    transform: translateY(-1px);
 }
 </style>
 <div class="modal fade" id="modalGrupo" tabindex="-1">
@@ -118,159 +103,110 @@
                     <i class="fas fa-users me-2"></i>
                     Nuevo Grupo
                 </h5>
-
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
 
             <div class="modal-body">
-
                 <div class="row g-3">
-
+                    <!-- Clave -->
                     <div class="col-md-6">
-                        <label class="form-label">
-                            Clave del grupo <span class="text-warning">*</span>
-                        </label>
-                        <input type="text" name="clave" class="form-control glass-input" placeholder="Ej. 1A-2026"
-                            required>
+                        <label class="form-label">Clave del grupo <span class="text-danger">*</span></label>
+                        <input type="text" name="clave" class="form-control form-control-premium" placeholder="Ej. 1A-2026" required>
                     </div>
 
+                    <!-- Fecha Creación -->
                     <div class="col-md-6">
-                        <label class="form-label">
-                            Fecha creación <span class="text-warning">*</span>
-                        </label>
-                        <input type="date" name="fechaCreacion" class="form-control glass-input" required>
+                        <label class="form-label">Fecha creación <span class="text-danger">*</span></label>
+                        <input type="date" name="fechaCreacion" class="form-control form-control-premium" required>
                     </div>
 
+                    <!-- Fecha Inicio -->
                     <div class="col-md-6">
-                        <label class="form-label">
-                            Fecha inicio <span class="text-warning">*</span>
-                        </label>
-                        <input type="date" name="fechaInicio" class="form-control glass-input" required>
+                        <label class="form-label">Fecha inicio <span class="text-danger">*</span></label>
+                        <input type="date" name="fechaInicio" class="form-control form-control-premium" required>
                     </div>
 
+                    <!-- Fecha Fin -->
                     <div class="col-md-6">
-                        <label class="form-label">
-                            Fecha fin <span class="text-warning">*</span>
-                        </label>
-                        <input type="date" name="fechaFin" class="form-control glass-input" required>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">
-                            Centro de trabajo <span class="text-warning">*</span>
-                        </label>
-
-                        <select name="id_centroTrabajo" class="form-select glass-input" required>
-
-                            <option value="">Seleccione un centro de trabajo</option>
-
-                            @foreach($centros as $ct)
-                            <option value="{{ $ct['id'] }}">
-                                {{ $ct['nombre'] }}
-                            </option>
-                            @endforeach
-
-                        </select>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">
-                            Plan de estudios <span class="text-warning">*</span>
-                        </label>
-
-                        <select name="id_planEstudios" class="form-select glass-input" required>
-
-                            <option value="">Seleccione un plan</option>
-
-                            @foreach($planes as $pe)
-                            <option value="{{ $pe['id'] }}">
-                                {{ $pe['nombrePlan'] }}
-                            </option>
-                            @endforeach
-                        </select>
-
-                        <br>    
-                        
-                        <label>Centro de trabajo<span style="color:red;">*</span></label>
-                        <select name="id_centroTrabajo" class="form-control" required>
-                            <option value="">Seleccione un CT</option>
-
-                            @foreach($centros as $ct)
-                            <option value="{{ $ct['id'] }}">
-                                {{ $ct['nombre'] }}
-                            </option>
-                            @endforeach
-                        </select>
-                        <br>
-                        
-
-                        <label>Fecha inicio<span style="color:red;">*</span></label>
-                        <input type="date" name="fechaInicio" class="form-control" required>
-
-                        <br>
-
-                        <label>Fecha fin<span style="color:red;">*</span></label>
-                        <input type="date" name="fechaFin" class="form-control" required>
-
-                        <div id="divCalcularSemanas" style="display: none; margin-top: 10px; margin-bottom: 10px;">
+                        <label class="form-label">Fecha fin <span class="text-danger">*</span></label>
+                        <input type="date" name="fechaFin" class="form-control form-control-premium" required>
+                        <div id="divCalcularSemanas" style="display: none; margin-top: 8px;">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="chkCalcularSemanas">
-                                <label class="form-check-label" for="chkCalcularSemanas" style="font-weight: 500; font-size: 0.9rem;">
+                                <label class="form-check-label" for="chkCalcularSemanas" style="font-weight: 600; font-size: 0.85rem; color: #475569;">
                                     Calcular 78 semanas automáticamente (BGNE)
                                 </label>
                             </div>
                         </div>
+                    </div>
 
-                        <br>
+                    <!-- Centro de Trabajo -->
+                    <div class="col-md-6">
+                        <label class="form-label">Centro de trabajo <span class="text-danger">*</span></label>
+                        <select name="id_centroTrabajo" class="form-select form-select-premium" required>
+                            <option value="">Seleccione un centro de trabajo</option>
+                            @foreach($centros as $ct)
+                            <option value="{{ $ct['id'] }}">{{ $ct['nombre'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                        
+                    <!-- Plan de Estudios -->
+                    <div class="col-md-6">
+                        <label class="form-label">Plan de estudios <span class="text-danger">*</span></label>
+                        <select name="id_planEstudios" class="form-select form-select-premium" required>
+                            <option value="">Seleccione un plan</option>
+                            @foreach($planes as $pe)
+                            <option value="{{ $pe['id'] }}">{{ $pe['nombrePlan'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                        <label>Tipo de periodo<span style="color:red;">*</span></label>
-                        <select name="id_tipoPeriodo" class="form-control" required>
+                    <!-- Tipo de Periodo -->
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de periodo <span class="text-danger">*</span></label>
+                        <select name="id_tipoPeriodo" class="form-select form-select-premium" required>
                             <option value="">Seleccione un periodo</option>
                             @foreach($periodos as $periodo)
-                            <option value="{{ $periodo['id'] }}">
-                                {{ $periodo['nombrePeriodo'] }}
-                            </option>
+                            <option value="{{ $periodo['id'] }}">{{ $periodo['nombrePeriodo'] }}</option>
                             @endforeach
                         </select>
+                    </div>
 
-                        <br>
-
-                        <label>Nivel académico<span style="color:red;">*</span></label>
-                        <select name="id_nivel_academico" class="form-control" required>
+                    <!-- Nivel Académico -->
+                    <div class="col-md-6">
+                        <label class="form-label">Nivel académico <span class="text-danger">*</span></label>
+                        <select name="id_nivel_academico" class="form-select form-select-premium" required>
                             <option value="">Seleccione un nivel</option>
                             @foreach($niveles as $nivel)
-                            <option value="{{ $nivel['id'] }}">
-                                {{ $nivel['nombre'] }}
-                            </option>
+                            <option value="{{ $nivel['id'] }}">{{ $nivel['nombre'] }}</option>
                             @endforeach
                         </select>
+                    </div>
 
-                        <br>
-
-                        <label>Modalidad de Horario<span style="color:red;">*</span></label>
-                        <select name="modalidadHorario" class="form-control" required>
+                    <!-- Modalidad de Horario -->
+                    <div class="col-md-6">
+                        <label class="form-label">Modalidad de Horario <span class="text-danger">*</span></label>
+                        <select name="modalidadHorario" class="form-select form-select-premium" required>
                             <option value="">Seleccione una modalidad</option>
                             <option value="MATUTINO">MATUTINO</option>
                             <option value="VESPERTINO">VESPERTINO</option>
                             <option value="LIBRE">LIBRE</option>
                         </select>
                     </div>
+
+
                 </div>
             </div>
 
-            <div class="modal-footer glass-footer">
-
-                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
+            <div class="modal-footer">
+                <button type="button" class="btn-premium-cancel" data-bs-dismiss="modal">
                     Cancelar
                 </button>
-
-                <button class="btn btn-azul px-4" type="submit">
+                <button class="btn-premium-save" type="submit">
                     <i class="fas fa-save me-2"></i>
                     Guardar
                 </button>
-
             </div>
 
         </form>

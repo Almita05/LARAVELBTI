@@ -48,8 +48,6 @@
         </div>
 
     </div>
-
-    <div id="contenedorModal"></div>
     @endsection
 
     <script>

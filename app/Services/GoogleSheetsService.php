@@ -21,15 +21,17 @@ protected $schoolSpreadsheetId;
         Sheets::SPREADSHEETS
     ]);
 
-    $client->setAuthConfig(base_path(env('GOOGLE_CREDENTIALS')));
-
+$client->setAuthConfig(
+    base_path(config('services.google.credentials'))
+);
     $this->service = new Sheets($client);
 
     // Hoja de accesos
-    $this->spreadsheetId = env('GOOGLE_SHEET_ID');
+
+    $this->spreadsheetId = config('services.google.sheet_id');
 
     // Hoja escolar (alumnos, materias, calificaciones y boletas)
-    $this->schoolSpreadsheetId = env('GOOGLE_SCHOOL_SHEET_ID');
+    $this->schoolSpreadsheetId = config('services.google.school_sheet_id');
 }
 
     public function getRows(string $sheet): array
