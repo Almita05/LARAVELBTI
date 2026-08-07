@@ -84,7 +84,7 @@
     $rol = strtoupper(session('rol'));
     @endphp
 
-    <div class="container cards-container">
+    <!-- <div class="container cards-container">
 
         {{-- ===================== ADMIN ===================== --}}
         @if($rol == 'ADMIN')
@@ -226,9 +226,9 @@
 
         @endif
 
-    </div>
+    </div> -->
 
-    <div class="row justify-content-center g-4 mt-2">
+    <!-- <div class="row justify-content-center g-4 mt-2">
 
         @if($rol == 'ADMIN')
         <div class="col-md-3">
@@ -259,6 +259,6 @@
             </a>
         </div>
 
-    </div>
+    </div> -->
 
 </div>
