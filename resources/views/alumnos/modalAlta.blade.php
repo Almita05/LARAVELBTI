@@ -135,7 +135,7 @@ textarea.form-control-premium {
 }
 </style>
 <div class="modal fade" id="modalAlumno" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <form id="formAlumno" class="modal-content glass-modal" novalidate>
 
             <div class="modal-header border-0">

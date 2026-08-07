@@ -43,6 +43,12 @@ $rol = strtoupper(session('rol'));
                 Inicio Docentes
             </a>
         </li>
+        <li>
+            <a href="{{ route('asistencias_docentes') }}">
+                <i class="fa-solid fa-user-check"></i>
+                Asistencias Docentes
+            </a>
+        </li>
         <div class="menu-title">Grupos</div>
         <li>
             <a href="{{ route('grupos') }}">
