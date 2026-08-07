@@ -2,6 +2,8 @@
 $rol = strtoupper(session('rol'));
 @endphp
 
+ <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
+
 <div class="sidebar">
 
     <div class="logo">
