@@ -972,9 +972,10 @@ document.addEventListener("DOMContentLoaded", function() {
         let periodNumber = 1;
 
         while (true) {
-            let periodEndDate = new Date(currentDate.getTime() + (weeksPerPeriod * 7 * 24 * 60 * 60 * 1000) - (24 * 60 * 60 * 1000));
+            // Todos los periodos duran exactamente (weeks - 1) * 7 días inclusive
+            let periodEndDate = new Date(currentDate.getTime() + ((weeksPerPeriod - 1) * 7 * 24 * 60 * 60 * 1000));
 
-            if (todayUTC.getTime() >= currentDate.getTime() && todayUTC.getTime() <= periodEndDate.getTime()) {
+            if (todayUTC.getTime() <= periodEndDate.getTime()) {
                 return `${periodNumber}° ${periodLabel}`;
             }
 
@@ -991,7 +992,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 break;
             }
 
-            currentDate = new Date(periodEndDate.getTime() + (24 * 60 * 60 * 1000));
+            currentDate = new Date(periodEndDate.getTime() + (7 * 24 * 60 * 60 * 1000));
             periodNumber++;
         }
 
@@ -1313,8 +1314,8 @@ document.addEventListener("DOMContentLoaded", function() {
         while (true) {
             const duracionSemanas = getDuracionSemanas(idNivel);
             
-            // Todos los periodos duran exactamente weeks * 7 días (menos 1 día)
-            fechaFinNivel = new Date(fechaInicioNivel.getTime() + (duracionSemanas * 7 * 24 * 60 * 60 * 1000) - (24 * 60 * 60 * 1000));
+            // Todos los periodos duran exactamente (weeks - 1) * 7 días inclusive
+            fechaFinNivel = new Date(fechaInicioNivel.getTime() + ((duracionSemanas - 1) * 7 * 24 * 60 * 60 * 1000));
             
             if (today.getTime() <= fechaFinNivel.getTime()) {
                 break;
@@ -1324,8 +1325,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 break;
             }
             
-            // El siguiente periodo empieza exactamente 1 día después del fin del actual
-            fechaInicioNivel = new Date(fechaFinNivel.getTime() + (24 * 60 * 60 * 1000));
+            // El siguiente periodo empieza una semana después del fin del actual
+            fechaInicioNivel = new Date(fechaFinNivel.getTime() + (7 * 24 * 60 * 60 * 1000));
             idNivel = idNivel + 1;
         }
         
@@ -1338,7 +1339,8 @@ document.addEventListener("DOMContentLoaded", function() {
         
         return {
             fechaInicioNivel: toISODate(fechaInicioNivel),
-            fechaFinNivel: toISODate(fechaFinNivel)
+            fechaFinNivel: toISODate(fechaFinNivel),
+            idNivel: idNivel
         };
     }
 
@@ -1415,9 +1417,13 @@ document.addEventListener("DOMContentLoaded", function() {
         const today = new Date();
         const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
 
+        // Calcular el nivel activo usando el helper
+        const calculated = calcularPeriodoNivel(g);
+        const activeNivel = calculated ? calculated.idNivel : null;
+
         while (true) {
-            // El periodo termina weeksPerPeriod * 7 días después de su fecha de inicio (menos 1 día)
-            let periodEndDate = new Date(currentDate.getTime() + (weeksPerPeriod * 7 * 24 * 60 * 60 * 1000) - (24 * 60 * 60 * 1000));
+            // El periodo termina (weeksPerPeriod - 1) * 7 días después de su fecha de inicio
+            let periodEndDate = new Date(currentDate.getTime() + ((weeksPerPeriod - 1) * 7 * 24 * 60 * 60 * 1000));
 
             // Si definimos un fin de grupo y el inicio de este periodo ya excede la fecha fin, paramos
             if (groupEndDate && currentDate.getTime() > groupEndDate.getTime()) {
@@ -1428,8 +1434,8 @@ document.addEventListener("DOMContentLoaded", function() {
             if (isTrimestral && periodNumber > 10) break;
             if (!isTrimestral && periodNumber > 8) break;
 
-            const isCurrent = todayUTC.getTime() >= currentDate.getTime() && todayUTC.getTime() <= periodEndDate.getTime();
-            const isPast = todayUTC.getTime() > periodEndDate.getTime();
+            const isCurrent = idNivel === activeNivel;
+            const isPast = activeNivel !== null && idNivel < activeNivel;
 
             const periodItem = document.createElement("div");
             periodItem.style.padding = "10px 12px";
@@ -1489,8 +1495,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 break;
             }
 
-            // Siguiente periodo empieza exactamente 1 día después de que finaliza el actual
-            currentDate = new Date(periodEndDate.getTime() + (24 * 60 * 60 * 1000));
+            // Siguiente periodo empieza exactamente 1 semana después de que finaliza el actual
+            currentDate = new Date(periodEndDate.getTime() + (7 * 24 * 60 * 60 * 1000));
             periodNumber++;
             idNivel++;
         }
