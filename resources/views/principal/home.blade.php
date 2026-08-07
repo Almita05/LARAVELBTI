@@ -2,22 +2,24 @@
 
 @section('content')
 
-<style>
-html,
-body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-}
+<div class="container text-center text-white py-5">
+
+    <h1 class="display-4 fw-bold">
+        Control Escolarrrrrr
+    </h1>
+
+    <h3 class="mt-4">
+        Bienvenido,
+        {{ session('nombre') }}
+    </h3>
+
+    <p class="fs-5">
+        {{ session('rol') }}
+    </p>
 
 
 
-.hero {
-    background: transparent;
-    padding: 60px 20px;
-    text-align: center;
-    color: white;
-}
+</div>
 
 .cards-container {
     margin-top: 20px;

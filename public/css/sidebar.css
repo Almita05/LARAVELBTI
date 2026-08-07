@@ -1,0 +1,102 @@
+.sidebar{
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 270px;
+    height: 100vh;
+    z-index: 1000;
+
+    background: rgba(255,255,255,.08);
+    backdrop-filter: blur(18px);
+    border-right: 1px solid rgba(255,255,255,.15);
+
+    overflow-y: auto;
+
+    /* Ocultar barra */
+    scrollbar-width: none;      /* Firefox */
+    -ms-overflow-style: none;   /* IE y Edge antiguo */
+
+    padding: 25px 0;
+}
+
+/* Chrome, Edge y Safari */
+.sidebar::-webkit-scrollbar{
+    display: none;
+}
+
+.sidebar .logo{
+
+    color:white;
+
+    font-size:24px;
+
+    font-weight:bold;
+
+    text-align:center;
+
+    margin-bottom:30px;
+}
+
+.sidebar ul{
+
+    list-style:none;
+
+    padding:0;
+}
+
+.sidebar li{
+
+    margin:6px 15px;
+}
+
+.sidebar a{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+    color:white;
+
+    text-decoration:none;
+
+    padding:13px 20px;
+
+    border-radius:12px;
+
+    transition:.3s;
+}
+
+.sidebar a:hover{
+
+    background:rgba(255,255,255,.12);
+
+    color:#6BC7E8;
+
+    transform:translateX(8px);
+}
+
+.sidebar i{
+
+    width:24px;
+
+    color:#6BC7E8;
+}
+
+.menu-title{
+
+    color:#6BC7E8;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+    text-transform:uppercase;
+
+    margin:25px 25px 10px;
+}
+.main-content{
+    position: relative;
+    z-index: 1;
+}

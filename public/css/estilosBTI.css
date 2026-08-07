@@ -1,0 +1,132 @@
+.page-container {
+    padding: 30px;
+    min-height: 100vh;
+}
+
+
+.page-title {
+    color:white;
+    font-weight:700;
+    text-shadow:0 2px 8px rgba(0,0,0,.2);
+}
+
+
+/* CONTENEDOR */
+.glass-card {
+
+    background:rgba(255,255,255,.08);
+
+    backdrop-filter:blur(15px);
+
+    border:1px solid rgba(255,255,255,.15);
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+    box-shadow:
+    0 8px 25px rgba(0,0,0,.15);
+}
+
+
+
+.glass-header {
+
+    background:rgba(255,255,255,.05);
+
+    border-bottom:
+    1px solid rgba(255,255,255,.15);
+
+}
+
+.bti-card {
+
+    background: rgba(255,255,255,.08);
+
+    backdrop-filter: blur(12px);
+
+    border:1px solid rgba(255,255,255,.15);
+
+    border-radius:20px;
+
+    color:white;
+
+    padding:30px 20px;
+
+    min-height:260px;
+
+    text-align:center;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    transition:.3s;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.15);
+
+}
+
+
+.bti-card:hover {
+
+    transform:translateY(-6px);
+
+    background:rgba(255,255,255,.12);
+
+    box-shadow:0 12px 25px rgba(0,0,0,.25);
+
+}
+
+
+.bti-card svg {
+
+    width:70px;
+
+    height:70px;
+
+    fill:#6BC7E8;
+
+    margin-bottom:20px;
+
+}
+
+
+.bti-card h5 {
+
+    font-weight:700;
+
+}
+
+
+.bti-card h6 {
+
+    color:rgba(255,255,255,.8);
+
+}
+
+
+.btn-azul {
+
+    background:linear-gradient(135deg,#1E6FA8,#6BC7E8);
+
+    color:white;
+
+    border:none;
+
+}
+
+
+.btn-azul:hover {
+
+    color:white;
+
+    transform:translateY(-2px);
+
+    box-shadow:0 5px 15px rgba(107,199,232,.4);
+
+}
