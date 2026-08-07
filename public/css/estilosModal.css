@@ -1,160 +1,211 @@
-/* ===========================
-   MODAL
-=========================== */
 
-.glass-modal{
-    background: rgba(255,255,255,.08);
+/* El modal queda por encima del backdrop de Bootstrap */
+#modalCalificaciones {
+    z-index: 1055;
+}
+
+/* Contenedor del modal */
+#modalCalificaciones .modal-dialog {
+    z-index: auto;
+}
+
+/* Contenido */
+#modalCalificaciones .modal-content {
+    background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(18px);
-    border-radius:20px;
-    overflow:hidden;
-    border:none;
-}
+    -webkit-backdrop-filter: blur(18px);
 
-.modal-header-system{
+    border-radius: 20px;
+    overflow: hidden;
 
-    background:rgb(49,125,146);
+    border: none;
 
-    color:white;
-}
-
-.modal-title{
-
-    font-weight:700;
-    font-size:1.3rem;
-}
-
-.modal-body{
-
-    background:#f7fbff;
-}
-
-.modal-footer{
-
-    background:#eef5fb;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.30);
 }
 
 
 /* ===========================
-   MATERIA
+   FONDO OSCURO
 =========================== */
 
-.materia-info{
-
-    padding:15px;
-    border-radius:15px;
-    background:rgb(49,125,146);
+.modal-backdrop {
+    z-index: 1050;
 }
 
-#tituloMateria{
-
-    color:#fafafa;
-    font-size:1.4rem;
+.modal-backdrop.show {
+    opacity: 0.55;
 }
 
 
+/* ===========================
+   HEADER
+=========================== */
 
-.tabla-calificaciones{
-
-    border-radius:15px;
-    overflow:hidden;
+.modal-header-system {
+    background: rgb(49, 125, 146);
+    color: white;
+    border: none;
 }
 
-.tabla-calificaciones thead{
-
-    background:#0F2E6D;
-    color:white;
-}
-
-.tabla-calificaciones th{
-
-    border:none;
-    padding:15px;
-}
-
-.tabla-calificaciones td{
-
-    vertical-align:middle;
-}
-
-.tabla-calificaciones tbody tr:nth-child(even){
-
-    background:#f5fbff;
-}
-
-.tabla-calificaciones tbody tr:hover{
-
-    background:#dff3ff;
+.modal-title {
+    font-weight: 700;
+    font-size: 1.3rem;
 }
 
 
+/* ===========================
+   BODY
+=========================== */
 
-.tabla-calificaciones input{
-
-    border-radius:10px;
-    text-align:center;
-    border:1px solid #cfd8dc;
-    transition:.2s;
-}
-
-.tabla-calificaciones input:focus{
-
-    border-color:#1E6FA8;
-    box-shadow:0 0 0 .2rem rgba(30,111,168,.20);
+#modalCalificaciones .modal-body {
+    background: #f7fbff;
 }
 
 
+/* ===========================
+   FOOTER
+=========================== */
 
-.btn-guardar{
-
-    background:#1E6FA8;
-    color:white;
-    border:none;
-    padding:10px 24px;
-    border-radius:10px;
-    font-weight:600;
-}
-
-.btn-guardar:hover{
-
-    background:#154f78;
-    color:white;
-}
-
-.btn-cancelar{
-
-    background:#6c757d;
-    color:white;
-    border:none;
-    padding:10px 24px;
-    border-radius:10px;
-}
-
-.btn-cancelar:hover{
-
-    background:#5b636a;
-    color:white;
+#modalCalificaciones .modal-footer {
+    background: #eef5fb;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 
-.nota-roja{
-    color:red !important;
-    font-weight:bold;
+/* ===========================
+   INFORMACIÓN DE MATERIA
+=========================== */
+
+.materia-info {
+    padding: 15px;
+    border-radius: 15px;
+    background: rgb(49, 125, 146);
+}
+
+#tituloMateria {
+    color: #fafafa;
+    font-size: 1.4rem;
 }
 
 
-.nota-verde{
-    color:green !important;
-    font-weight:bold;
+/* ===========================
+   TABLA
+=========================== */
+
+.tabla-calificaciones {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.tabla-calificaciones thead {
+    background: #0F2E6D;
+    color: white;
+}
+
+.tabla-calificaciones th {
+    border: none;
+    padding: 15px;
+}
+
+.tabla-calificaciones td {
+    vertical-align: middle;
+}
+
+.tabla-calificaciones tbody tr:nth-child(even) {
+    background: #f5fbff;
+}
+
+.tabla-calificaciones tbody tr:hover {
+    background: #dff3ff;
 }
 
 
-.calificacion:read-only{
-    background:#e9ecef;
-    cursor:not-allowed;
+/* ===========================
+   INPUTS
+=========================== */
+
+.tabla-calificaciones input {
+    border-radius: 10px;
+    text-align: center;
+
+    border: 1px solid #cfd8dc;
+
+    transition: 0.2s;
+}
+
+.tabla-calificaciones input:focus {
+    border-color: #1E6FA8;
+
+    box-shadow:
+        0 0 0 0.2rem rgba(30, 111, 168, 0.20);
 }
 
 
-.is-invalid{
-    border:2px solid red !important;
+/* ===========================
+   BOTONES
+=========================== */
+
+.btn-guardar {
+    background: #1E6FA8;
+    color: white;
+
+    border: none;
+
+    padding: 10px 24px;
+
+    border-radius: 10px;
+
+    font-weight: 600;
 }
 
+.btn-guardar:hover {
+    background: #154f78;
+    color: white;
+}
+
+
+.btn-cancelar {
+    background: #6c757d;
+    color: white;
+
+    border: none;
+
+    padding: 10px 24px;
+
+    border-radius: 10px;
+}
+
+.btn-cancelar:hover {
+    background: #5b636a;
+    color: white;
+}
+
+
+/* ===========================
+   CALIFICACIONES
+=========================== */
+
+.nota-roja {
+    color: red !important;
+    font-weight: bold;
+}
+
+.nota-verde {
+    color: green !important;
+    font-weight: bold;
+}
+
+
+.calificacion:read-only {
+    background: #e9ecef;
+    cursor: not-allowed;
+}
+
+.calificacion:disabled {
+    background: #e9ecef;
+    cursor: not-allowed;
+}
+
+.is-invalid {
+    border: 2px solid red !important;
+}

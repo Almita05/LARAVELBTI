@@ -2,10 +2,7 @@
 
 @section('content')
 
-
-<head>
     <link rel="stylesheet" href="{{ asset('css/estilosModal.css') }}">
-</head>
 <div class="modal fade" id="modalCalificaciones" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content glass-modal">
@@ -30,8 +27,8 @@
                 <div class="table-responsive">
 
                     <table class="table table-hover align-middle text-center tabla-calificaciones">
-                        <thead>
-                            <tr data-alumno="${alumno.id}">
+                       <thead>
+    <tr>
                                 <th>#</th>
                                 <th>Alumno</th>
                                 <th>P1</th>
@@ -65,47 +62,99 @@ let materiaActual = 0;
 let materiaSeleccionada = null;
 
 function abrirSemestre(grado) {
-    fetch(`/calificaciones/materias/${grado}`)
-        .then(res => res.json())
-        .then(materias => {
-            if (!materias || materias.length === 0) {
-                Swal.fire(
-                    "Sin materias",
-                    "No se encontraron materias para este semestre",
-                    "warning"
-                );
-                return;
-            }
-            materiasActuales = materias;
-            if (esAdmin) {
 
-                let select = document.getElementById("selectorMateria");
+    const modalElement = document.getElementById('modalCalificaciones');
 
-                select.innerHTML = "";
+    // Limpiar cualquier backdrop que haya quedado anteriormente
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+        backdrop.remove();
+    });
 
-                materias.forEach((m, i) => {
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('padding-right');
 
-                    select.innerHTML += `
-            <option value="${i}">
-                ${m.MATERIA}
-            </option>
-        `;
+    const tbody = document.getElementById('tablaAlumnos');
 
-                });
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="7" class="text-center py-4">
+                <div class="spinner-border text-primary"></div>
+                <div class="mt-2">
+                    Cargando materias...
+                </div>
+            </td>
+        </tr>
+    `;
 
-            }
-            materiaActual = 0;
-            cargarMateria();
-        })
-        .catch(error => {
-            console.error(error);
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+
+    modal.show();
+
+    fetch(`/calificaciones/materias/${grado}`, {
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(async response => {
+
+        const texto = await response.text();
+
+        console.log('Respuesta materias:', texto);
+
+        if (!response.ok) {
+            throw new Error(texto);
+        }
+
+        return JSON.parse(texto);
+    })
+    .then(materias => {
+
+        if (!materias || materias.length === 0) {
+
             Swal.fire(
-                "Error",
-                "No se pudieron cargar las materias",
-                "error"
+                'Sin materias',
+                'No se encontraron materias para este semestre.',
+                'warning'
             );
-        });
 
+            return;
+        }
+
+        materiasActuales = materias;
+        materiaActual = 0;
+
+        if (esAdmin) {
+
+            const select = document.getElementById('selectorMateria');
+
+            select.innerHTML = '';
+
+            materias.forEach((m, i) => {
+
+                select.innerHTML += `
+                    <option value="${i}">
+                        ${m.MATERIA}
+                    </option>
+                `;
+
+            });
+        }
+
+        cargarMateria();
+
+    })
+    .catch(error => {
+
+        console.error('ERROR:', error);
+
+        Swal.fire(
+            'Error',
+            'No se pudieron cargar las materias.',
+            'error'
+        );
+
+    });
 }
 
 
@@ -184,14 +233,7 @@ function cargarMateria() {
             if (!esAdmin) {
                 controlarParciales();
             }
-            const modal = bootstrap.Modal.getInstance(
-                document.getElementById('modalCalificaciones')
-            );
-            if (!modal) {
-                new bootstrap.Modal(
-                    document.getElementById('modalCalificaciones')
-                ).show();
-            }
+            
         });
 
 }
@@ -426,6 +468,18 @@ if (esAdmin) {
     });
 
 }
+
+document.getElementById('modalCalificaciones')
+    .addEventListener('hidden.bs.modal', function () {
+
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+            backdrop.remove();
+        });
+
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('padding-right');
+        document.body.style.removeProperty('overflow');
+    });
 
 
 </script>

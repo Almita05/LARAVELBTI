@@ -244,62 +244,63 @@
             </form>
         </div>
     </div>
+</div>
 
-    @endsection
+@endsection
 
 
-    {{-- ========================= JS ========================= --}}
-    <script>
-    document.addEventListener("DOMContentLoaded", function() {
+{{-- ========================= JS ========================= --}}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
 
-        cargarDocentes();
+    cargarDocentes();
 
-        // =========================
-        // LISTAR DOCENTES
-        // =========================
-        let listaDocentes = [];
-        let paginaDocente = 1;
-        const filasDocente = 5;
+    // =========================
+    // LISTAR DOCENTES
+    // =========================
+    let listaDocentes = [];
+    let paginaDocente = 1;
+    const filasDocente = 5;
 
-        function cargarDocentes() {
-            fetch('/docentes/lista')
-                .then(res => res.json())
-                .then(data => {
-                    listaDocentes = Array.isArray(data.data) ? data.data : [];
-                    renderDocentes();
-                })
-                .catch(err => console.log(err));
-        }
+    function cargarDocentes() {
+        fetch('/docentes/lista')
+            .then(res => res.json())
+            .then(data => {
+                listaDocentes = Array.isArray(data.data) ? data.data : [];
+                renderDocentes();
+            })
+            .catch(err => console.log(err));
+    }
 
-        // 🔍 BUSCADOR
-        document.getElementById('buscador')?.addEventListener('input', () => {
-            paginaDocente = 1;
-            renderDocentes();
-        });
+    // 🔍 BUSCADOR
+    document.getElementById('buscador')?.addEventListener('input', () => {
+        paginaDocente = 1;
+        renderDocentes();
+    });
 
-        function renderDocentes() {
-            const filtro = document.getElementById('buscador').value.toLowerCase();
+    function renderDocentes() {
+        const filtro = document.getElementById('buscador').value.toLowerCase();
 
-            const filtradas = listaDocentes.filter(d =>
-                d.nombreDocente.toLowerCase().includes(filtro) ||
-                (d.apPaternoDocente && d.apPaternoDocente.toLowerCase().includes(filtro)) ||
-                (d.apMaternoDocente && d.apMaternoDocente.toLowerCase().includes(filtro)) ||
-                (d.correoDocente && d.correoDocente.toLowerCase().includes(filtro)) ||
-                (d.telefonoDocente && d.telefonoDocente.toLowerCase().includes(filtro)) ||
-                (d.nivelEstudios && d.nivelEstudios.toLowerCase().includes(filtro))
-            );
+        const filtradas = listaDocentes.filter(d =>
+            d.nombreDocente.toLowerCase().includes(filtro) ||
+            (d.apPaternoDocente && d.apPaternoDocente.toLowerCase().includes(filtro)) ||
+            (d.apMaternoDocente && d.apMaternoDocente.toLowerCase().includes(filtro)) ||
+            (d.correoDocente && d.correoDocente.toLowerCase().includes(filtro)) ||
+            (d.telefonoDocente && d.telefonoDocente.toLowerCase().includes(filtro)) ||
+            (d.nivelEstudios && d.nivelEstudios.toLowerCase().includes(filtro))
+        );
 
-            const inicio = (paginaDocente - 1) * filasDocente;
-            const fin = inicio + filasDocente;
-            const datos = filtradas.slice(inicio, fin);
+        const inicio = (paginaDocente - 1) * filasDocente;
+        const fin = inicio + filasDocente;
+        const datos = filtradas.slice(inicio, fin);
 
-            let html = '';
+        let html = '';
 
-            datos.forEach(docente => {
-                const nombreCompleto =
-                    `${docente.nombreDocente} ${docente.apPaternoDocente ?? ''} ${docente.apMaternoDocente ?? ''}`;
+        datos.forEach(docente => {
+            const nombreCompleto =
+                `${docente.nombreDocente} ${docente.apPaternoDocente ?? ''} ${docente.apMaternoDocente ?? ''}`;
 
-                html += `
+            html += `
                 <tr>
                     <td>${docente.idDocente}</td>
                     <td>${nombreCompleto}</td>
@@ -326,173 +327,173 @@
                     </td>
                 </tr>
                 `;
-            });
+        });
 
-            document.getElementById('tablaDocentes').innerHTML = html;
-            renderPaginacionDocentes(filtradas.length);
-        }
+        document.getElementById('tablaDocentes').innerHTML = html;
+        renderPaginacionDocentes(filtradas.length);
+    }
 
-        function renderPaginacionDocentes(total) {
-            const totalPaginas = Math.ceil(total / filasDocente);
-            let html = '';
+    function renderPaginacionDocentes(total) {
+        const totalPaginas = Math.ceil(total / filasDocente);
+        let html = '';
 
-            for (let i = 1; i <= totalPaginas; i++) {
-                html += `
+        for (let i = 1; i <= totalPaginas; i++) {
+            html += `
                 <button class="btn btn-sm ${i === paginaDocente ? 'btn-primary' : 'btn-outline-primary'} me-1"
                     onclick="cambiarPaginaDocente(${i})">
                     ${i}
                 </button>`;
-            }
-
-            document.getElementById('paginacion').innerHTML = html;
-            document.getElementById('infoPaginacion').innerText = `Mostrando ${total} registros`;
         }
 
-        window.cambiarPaginaDocente = function(p) {
-            paginaDocente = p;
-            renderDocentes();
-        }
+        document.getElementById('paginacion').innerHTML = html;
+        document.getElementById('infoPaginacion').innerText = `Mostrando ${total} registros`;
+    }
 
-        let modoDocente = 'crear'; // 'crear', 'editar', 'ver'
-        let idDocenteActual = null;
+    window.cambiarPaginaDocente = function(p) {
+        paginaDocente = p;
+        renderDocentes();
+    }
 
-        function setFormDisabled(disabled) {
+    let modoDocente = 'crear'; // 'crear', 'editar', 'ver'
+    let idDocenteActual = null;
+
+    function setFormDisabled(disabled) {
+        const form = document.getElementById('formDocente');
+        form.nombreDocente.disabled = disabled;
+        form.apPaternoDocente.disabled = disabled;
+        form.apMaternoDocente.disabled = disabled;
+        form.correoDocente.disabled = disabled;
+        form.telefonoDocente.disabled = disabled;
+        form.statusDocente.disabled = disabled;
+        form.observacionesDocente.disabled = disabled;
+        form.nivelEstudios.disabled = disabled;
+        form.fechaNacimiento.disabled = disabled;
+    }
+
+    // Reset modal to create mode when Alta button is clicked
+    const btnAlta = document.querySelector('[data-bs-target="#modalDocente"]');
+    if (btnAlta) {
+        btnAlta.addEventListener('click', function() {
+            modoDocente = 'crear';
+            idDocenteActual = null;
             const form = document.getElementById('formDocente');
-            form.nombreDocente.disabled = disabled;
-            form.apPaternoDocente.disabled = disabled;
-            form.apMaternoDocente.disabled = disabled;
-            form.correoDocente.disabled = disabled;
-            form.telefonoDocente.disabled = disabled;
-            form.statusDocente.disabled = disabled;
-            form.observacionesDocente.disabled = disabled;
-            form.nivelEstudios.disabled = disabled;
-            form.fechaNacimiento.disabled = disabled;
-        }
+            form.reset();
+            setFormDisabled(false);
+            document.querySelector('.modal-title').textContent = 'Alta Docente';
+            const submitBtn = document.querySelector('#formDocente button[type="submit"]');
+            submitBtn.style.display = 'block';
+            submitBtn.textContent = 'Guardar';
+        });
+    }
 
-        // Reset modal to create mode when Alta button is clicked
-        const btnAlta = document.querySelector('[data-bs-target="#modalDocente"]');
-        if (btnAlta) {
-            btnAlta.addEventListener('click', function() {
-                modoDocente = 'crear';
-                idDocenteActual = null;
-                const form = document.getElementById('formDocente');
-                form.reset();
-                setFormDisabled(false);
-                document.querySelector('.modal-title').textContent = 'Alta Docente';
-                const submitBtn = document.querySelector('#formDocente button[type="submit"]');
-                submitBtn.style.display = 'block';
-                submitBtn.textContent = 'Guardar';
+    window.verDocente = function(id) {
+        modoDocente = 'ver';
+        idDocenteActual = id;
+
+        fetch(`/docentes/${id}`)
+            .then(res => res.json())
+            .then(resp => {
+                if (resp.success && resp.data) {
+                    const d = resp.data;
+                    const form = document.getElementById('formDocente');
+                    form.nombreDocente.value = d.nombreDocente || '';
+                    form.apPaternoDocente.value = d.apPaternoDocente || '';
+                    form.apMaternoDocente.value = d.apMaternoDocente || '';
+                    form.correoDocente.value = d.correoDocente || '';
+                    form.telefonoDocente.value = d.telefonoDocente || '';
+                    form.statusDocente.value = d.statusDocente || 'ACTIVO';
+                    form.observacionesDocente.value = d.observacionesDocente || '';
+                    form.nivelEstudios.value = d.nivelEstudios || '';
+                    form.fechaNacimiento.value = d.fechaNacimiento || '';
+
+                    setFormDisabled(true);
+
+                    document.querySelector('.modal-title').textContent = 'Detalles de Docente';
+                    const submitBtn = document.querySelector('#formDocente button[type="submit"]');
+                    submitBtn.style.display = 'none';
+
+                    const modal = new bootstrap.Modal(document.getElementById('modalDocente'));
+                    modal.show();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al cargar detalles del docente.',
+                        confirmButtonColor: 'rgb(38, 104, 123)'
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al cargar detalles del docente.',
+                    confirmButtonColor: 'rgb(38, 104, 123)'
+                });
             });
-        }
+    }
 
-        window.verDocente = function(id) {
-            modoDocente = 'ver';
-            idDocenteActual = id;
+    window.editarDocente = function(id) {
+        modoDocente = 'editar';
+        idDocenteActual = id;
 
-            fetch(`/docentes/${id}`)
-                .then(res => res.json())
-                .then(resp => {
-                    if (resp.success && resp.data) {
-                        const d = resp.data;
-                        const form = document.getElementById('formDocente');
-                        form.nombreDocente.value = d.nombreDocente || '';
-                        form.apPaternoDocente.value = d.apPaternoDocente || '';
-                        form.apMaternoDocente.value = d.apMaternoDocente || '';
-                        form.correoDocente.value = d.correoDocente || '';
-                        form.telefonoDocente.value = d.telefonoDocente || '';
-                        form.statusDocente.value = d.statusDocente || 'ACTIVO';
-                        form.observacionesDocente.value = d.observacionesDocente || '';
-                        form.nivelEstudios.value = d.nivelEstudios || '';
-                        form.fechaNacimiento.value = d.fechaNacimiento || '';
+        fetch(`/docentes/${id}`)
+            .then(res => res.json())
+            .then(resp => {
+                if (resp.success && resp.data) {
+                    const d = resp.data;
+                    const form = document.getElementById('formDocente');
+                    form.nombreDocente.value = d.nombreDocente || '';
+                    form.apPaternoDocente.value = d.apPaternoDocente || '';
+                    form.apMaternoDocente.value = d.apMaternoDocente || '';
+                    form.correoDocente.value = d.correoDocente || '';
+                    form.telefonoDocente.value = d.telefonoDocente || '';
+                    form.statusDocente.value = d.statusDocente || 'ACTIVO';
+                    form.observacionesDocente.value = d.observacionesDocente || '';
+                    form.nivelEstudios.value = d.nivelEstudios || '';
+                    form.fechaNacimiento.value = d.fechaNacimiento || '';
 
-                        setFormDisabled(true);
+                    setFormDisabled(false);
 
-                        document.querySelector('.modal-title').textContent = 'Detalles de Docente';
-                        const submitBtn = document.querySelector('#formDocente button[type="submit"]');
-                        submitBtn.style.display = 'none';
+                    document.querySelector('.modal-title').textContent = 'Editar Docente';
+                    const submitBtn = document.querySelector('#formDocente button[type="submit"]');
+                    submitBtn.style.display = 'block';
+                    submitBtn.textContent = 'Actualizar';
 
-                        const modal = new bootstrap.Modal(document.getElementById('modalDocente'));
-                        modal.show();
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Error al cargar detalles del docente.',
-                            confirmButtonColor: 'rgb(38, 104, 123)'
-                        });
-                    }
-                })
-                .catch(() => {
+                    const modal = new bootstrap.Modal(document.getElementById('modalDocente'));
+                    modal.show();
+                } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
                         text: 'Error al cargar detalles del docente.',
                         confirmButtonColor: 'rgb(38, 104, 123)'
                     });
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al cargar detalles del docente.',
+                    confirmButtonColor: 'rgb(38, 104, 123)'
                 });
-        }
+            });
+    }
 
-        window.editarDocente = function(id) {
-            modoDocente = 'editar';
-            idDocenteActual = id;
-
-            fetch(`/docentes/${id}`)
-                .then(res => res.json())
-                .then(resp => {
-                    if (resp.success && resp.data) {
-                        const d = resp.data;
-                        const form = document.getElementById('formDocente');
-                        form.nombreDocente.value = d.nombreDocente || '';
-                        form.apPaternoDocente.value = d.apPaternoDocente || '';
-                        form.apMaternoDocente.value = d.apMaternoDocente || '';
-                        form.correoDocente.value = d.correoDocente || '';
-                        form.telefonoDocente.value = d.telefonoDocente || '';
-                        form.statusDocente.value = d.statusDocente || 'ACTIVO';
-                        form.observacionesDocente.value = d.observacionesDocente || '';
-                        form.nivelEstudios.value = d.nivelEstudios || '';
-                        form.fechaNacimiento.value = d.fechaNacimiento || '';
-
-                        setFormDisabled(false);
-
-                        document.querySelector('.modal-title').textContent = 'Editar Docente';
-                        const submitBtn = document.querySelector('#formDocente button[type="submit"]');
-                        submitBtn.style.display = 'block';
-                        submitBtn.textContent = 'Actualizar';
-
-                        const modal = new bootstrap.Modal(document.getElementById('modalDocente'));
-                        modal.show();
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Error al cargar detalles del docente.',
-                            confirmButtonColor: 'rgb(38, 104, 123)'
-                        });
-                    }
-                })
-                .catch(() => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Error al cargar detalles del docente.',
-                        confirmButtonColor: 'rgb(38, 104, 123)'
-                    });
-                });
-        }
-
-        window.eliminarDocente = function(id) {
-            Swal.fire({
-                title: '¿Deseas eliminar este docente?',
-                text: 'Esta acción no se puede deshacer.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: 'rgb(38, 104, 123)',
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(`/docentes/${id}`, {
+    window.eliminarDocente = function(id) {
+        Swal.fire({
+            title: '¿Deseas eliminar este docente?',
+            text: 'Esta acción no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: 'rgb(38, 104, 123)',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/docentes/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -505,7 +506,8 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: '¡Eliminado!',
-                                text: data.message || 'Docente eliminado correctamente.',
+                                text: data.message ||
+                                    'Docente eliminado correctamente.',
                                 confirmButtonColor: 'rgb(38, 104, 123)'
                             });
                             cargarDocentes();
@@ -526,79 +528,81 @@
                             confirmButtonColor: 'rgb(38, 104, 123)'
                         });
                     });
-                }
-            });
-        }
+            }
+        });
+    }
 
-        // =========================
-        // INSERTAR / ACTUALIZAR DOCENTE
-        // =========================
-        document.getElementById('formDocente').addEventListener('submit', function(e) {
-            e.preventDefault();
+    // =========================
+    // INSERTAR / ACTUALIZAR DOCENTE
+    // =========================
+    document.getElementById('formDocente').addEventListener('submit', function(e) {
+        e.preventDefault();
 
-            const data = {
-                nombreDocente: this.nombreDocente.value,
-                apPaternoDocente: this.apPaternoDocente.value,
-                apMaternoDocente: this.apMaternoDocente.value,
-                correoDocente: this.correoDocente.value,
-                telefonoDocente: this.telefonoDocente.value,
-                statusDocente: this.statusDocente.value,
-                observacionesDocente: this.observacionesDocente.value,
-                nivelEstudios: this.nivelEstudios.value,
-                fechaNacimiento: this.fechaNacimiento.value
-            };
+        const data = {
+            nombreDocente: this.nombreDocente.value,
+            apPaternoDocente: this.apPaternoDocente.value,
+            apMaternoDocente: this.apMaternoDocente.value,
+            correoDocente: this.correoDocente.value,
+            telefonoDocente: this.telefonoDocente.value,
+            statusDocente: this.statusDocente.value,
+            observacionesDocente: this.observacionesDocente.value,
+            nivelEstudios: this.nivelEstudios.value,
+            fechaNacimiento: this.fechaNacimiento.value
+        };
 
-            const url = modoDocente === 'editar' ? `/docentes/${idDocenteActual}` : '/docentes';
-            const method = modoDocente === 'editar' ? 'PUT' : 'POST';
+        const url = modoDocente === 'editar' ? `/docentes/${idDocenteActual}` : '/docentes';
+        const method = modoDocente === 'editar' ? 'PUT' : 'POST';
 
-            fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(res => res.json())
-                .then(resp => {
+        fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(resp => {
 
-                    if (resp.success) {
+                if (resp.success) {
 
-                        Swal.fire({
-                            icon: 'success',
-                            title: '¡Éxito!',
-                            text: modoDocente === 'editar' ? "Docente actualizado correctamente." : "Docente guardado correctamente.",
-                            confirmButtonColor: 'rgb(38, 104, 123)'
-                        });
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: modoDocente === 'editar' ?
+                            "Docente actualizado correctamente." :
+                            "Docente guardado correctamente.",
+                        confirmButtonColor: 'rgb(38, 104, 123)'
+                    });
 
-                        // cerrar modal
-                        bootstrap.Modal.getInstance(document.getElementById('modalDocente')).hide();
+                    // cerrar modal
+                    bootstrap.Modal.getInstance(document.getElementById('modalDocente')).hide();
 
-                        // limpiar form
-                        this.reset();
+                    // limpiar form
+                    this.reset();
 
-                        // recargar tabla
-                        cargarDocentes();
+                    // recargar tabla
+                    cargarDocentes();
 
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Error al guardar docente.',
-                            confirmButtonColor: 'rgb(38, 104, 123)'
-                        });
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
+                } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: 'Ocurrió un error inesperado al procesar la solicitud.',
+                        text: 'Error al guardar docente.',
                         confirmButtonColor: 'rgb(38, 104, 123)'
                     });
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Ocurrió un error inesperado al procesar la solicitud.',
+                    confirmButtonColor: 'rgb(38, 104, 123)'
                 });
-        });
-
+            });
     });
-    </script>
+
+});
+</script>
