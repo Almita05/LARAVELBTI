@@ -20,6 +20,7 @@
 
 
 </div>
+<style>
 
 .cards-container {
     margin-top: 20px;
