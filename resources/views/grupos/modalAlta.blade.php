@@ -195,6 +195,14 @@
                         </select>
                     </div>
 
+                    <!-- Estatus del Grupo -->
+                    <div class="col-md-6">
+                        <label class="form-label">Estatus del grupo <span class="text-danger">*</span></label>
+                        <select name="statusGrupo" class="form-select form-select-premium" required>
+                            <option value="ACTIVO">ACTIVO</option>
+                            <option value="INACTIVO">INACTIVO</option>
+                        </select>
+                    </div>
 
                 </div>
             </div>

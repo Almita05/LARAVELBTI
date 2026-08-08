@@ -51,6 +51,7 @@
                         <th>Clave</th>
                         <th>Fecha Inicio</th>
                         <th>Fecha Fin</th>
+                        <th>Estatus</th>
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -117,6 +118,7 @@ function setFormDisabled(disabled) {
     form.id_tipoPeriodo.disabled = disabled;
     form.id_nivel_academico.disabled = disabled;
     form.modalidadHorario.disabled = disabled;
+    if (form.statusGrupo) form.statusGrupo.disabled = disabled;
 }
 
 function initializeModalEvents() {
@@ -279,7 +281,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!grupos.length) {
             document.getElementById('tablaGrupos').innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-center text-muted">
+                    <td colspan="5" class="text-center text-muted">
                         No se encontraron grupos
                     </td>
                 </tr>
@@ -290,11 +292,16 @@ document.addEventListener("DOMContentLoaded", function() {
         let html = '';
 
         grupos.forEach(grupo => {
+            const status = (grupo.statusGrupo || 'ACTIVO').toUpperCase();
+            const badgeClass = status === 'ACTIVO' ? 'bg-success' : 'bg-danger';
+            const statusBadge = `<span class="badge ${badgeClass}" style="font-size: 0.75rem; padding: 5px 10px; border-radius: 12px;">${status}</span>`;
+
             html += `
                 <tr>
                     <td>${grupo.clave}</td>
                     <td>${formatearFecha(grupo.fechaInicio)}</td>
                     <td>${formatearFecha(grupo.fechaFin)}</td>
+                    <td>${statusBadge}</td>
                     <td class="text-center">
                         <button class="btn btn-ver btn-sm" onclick="verGrupo(${grupo.id})" title="Detalles del grupo">
                             <i class="fa-solid fa-eye"></i>
@@ -340,6 +347,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             form.id_tipoPeriodo.value = g.id_tipoPeriodo || '';
                             form.id_nivel_academico.value = g.id_nivel_academico || '';
                             form.modalidadHorario.value = g.modalidadHorario || '';
+                            if (form.statusGrupo) form.statusGrupo.value = g.statusGrupo || 'ACTIVO';
 
                             initializeModalEvents();
 
@@ -390,6 +398,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             form.id_tipoPeriodo.value = g.id_tipoPeriodo || '';
                             form.id_nivel_academico.value = g.id_nivel_academico || '';
                             form.modalidadHorario.value = g.modalidadHorario || '';
+                            if (form.statusGrupo) form.statusGrupo.value = g.statusGrupo || 'ACTIVO';
 
                             document.querySelector('.modal-title').textContent = 'Detalles del Grupo';
                             const submitBtn = document.querySelector('#formGrupo button[type="submit"]');

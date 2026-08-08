@@ -283,9 +283,45 @@
     font-size: 0.75rem;
     font-weight: 700;
     text-align: center;
-    width: 90px;
+    width: 105px;
     padding: 10px !important;
     border-right: 1px solid #e2e8f0 !important;
+}
+
+/* Receso Row Styling */
+.receso-row {
+    background: #f8fafc !important;
+}
+
+.receso-time-col {
+    background: #e2e8f0 !important;
+    color: #475569 !important;
+    font-weight: 800 !important;
+    font-size: 0.75rem !important;
+}
+
+.receso-cell {
+    background: #f8fafc !important;
+    padding: 6px 12px !important;
+    text-align: center;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.receso-banner {
+    background: linear-gradient(135deg, rgba(38, 104, 123, 0.08), rgba(107, 199, 232, 0.15));
+    border: 1px dashed rgba(38, 104, 123, 0.35);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: rgb(38, 104, 123);
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    user-select: none;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
 }
 
 /* Calendar Cell Slots */
@@ -789,17 +825,18 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     let timeBlocks = [
-        "07:00 - 08:00",
-        "08:00 - 09:00",
-        "09:00 - 10:00",
-        "10:00 - 11:00",
-        "11:00 - 12:00",
-        "12:00 - 13:00",
-        "13:00 - 14:00"
+        "07:30 - 08:20",
+        "08:20 - 09:10",
+        "09:10 - 10:00",
+        "10:00 - 10:30",
+        "10:30 - 11:20",
+        "11:20 - 12:10",
+        "12:10 - 13:00",
+        "13:00 - 13:50"
     ];
 
     // Default days
-    let dayNames = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    let dayNames = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
     // DOM Elements
     const groupListContainer = document.getElementById("groupListContainer");
@@ -1145,11 +1182,11 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
 
-        // Determinar días basados en la clave del grupo (BGNE -> Sábado, Domingo; Cualquier otro -> Lunes a Viernes)
+        // Determinar días basados en la clave del grupo (BGNE -> Sábado, Domingo; BTI y escolarizado -> Lunes a Viernes)
         const isBgne = group.clave.toUpperCase().startsWith("BGNE");
         dayNames = isBgne ? ["Sábado", "Domingo"] : ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
-        // Configurar bloques de horario basados en si es BGNE o no
+        // Configurar bloques de horario basados en si es BGNE o BTI/Escolarizado
         if (isBgne) {
             timeBlocks = [
                 "09:00 - 10:00",
@@ -1164,14 +1201,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 "18:00 - 19:00"
             ];
         } else {
+            // Grupos BTI y escolarizados: 07:30 a 13:50 con Receso de 10:00 a 10:30
             timeBlocks = [
-                "07:00 - 08:00",
-                "08:00 - 09:00",
-                "09:00 - 10:00",
-                "10:00 - 11:00",
-                "11:00 - 12:00",
-                "12:00 - 13:00",
-                "13:00 - 14:00"
+                "07:30 - 08:20",
+                "08:20 - 09:10",
+                "09:10 - 10:00",
+                "10:00 - 10:30",
+                "10:30 - 11:20",
+                "11:20 - 12:10",
+                "12:10 - 13:00",
+                "13:00 - 13:50"
             ];
         }
 
@@ -1506,31 +1545,51 @@ document.addEventListener("DOMContentLoaded", function() {
         calendarBody.innerHTML = '';
         timeBlocks.forEach((time, index) => {
             const tr = document.createElement("tr");
-            
-            const tdTime = document.createElement("td");
-            tdTime.className = "time-col";
-            tdTime.textContent = time;
-            tr.appendChild(tdTime);
+            const isReceso = time.includes("10:00 - 10:30") || time.toLowerCase().includes("receso");
 
-            days.forEach(day => {
-                const td = document.createElement("td");
-                
-                const slotDiv = document.createElement("div");
-                slotDiv.className = "cell-slot";
-                slotDiv.dataset.day = day;
-                slotDiv.dataset.time = time;
-                slotDiv.dataset.timeIdx = index;
-                
-                slotDiv.innerHTML = `
-                    <span class="placeholder-dash">—</span>
-                    <i class="fa-solid fa-plus add-btn-icon"></i>
+            if (isReceso) {
+                tr.className = "receso-row";
+                const tdTime = document.createElement("td");
+                tdTime.className = "time-col receso-time-col";
+                tdTime.textContent = time;
+                tr.appendChild(tdTime);
+
+                const tdReceso = document.createElement("td");
+                tdReceso.colSpan = days.length;
+                tdReceso.className = "receso-cell";
+                tdReceso.innerHTML = `
+                    <div class="receso-banner">
+                        <i class="fa-solid fa-mug-hot me-2"></i>
+                        <span>RECESO</span>
+                    </div>
                 `;
+                tr.appendChild(tdReceso);
+            } else {
+                const tdTime = document.createElement("td");
+                tdTime.className = "time-col";
+                tdTime.textContent = time;
+                tr.appendChild(tdTime);
 
-                slotDiv.addEventListener("click", () => handleCellClick(day, index, slotDiv));
+                days.forEach(day => {
+                    const td = document.createElement("td");
+                    
+                    const slotDiv = document.createElement("div");
+                    slotDiv.className = "cell-slot";
+                    slotDiv.dataset.day = day;
+                    slotDiv.dataset.time = time;
+                    slotDiv.dataset.timeIdx = index;
+                    
+                    slotDiv.innerHTML = `
+                        <span class="placeholder-dash">—</span>
+                        <i class="fa-solid fa-plus add-btn-icon"></i>
+                    `;
 
-                td.appendChild(slotDiv);
-                tr.appendChild(td);
-            });
+                    slotDiv.addEventListener("click", () => handleCellClick(day, index, slotDiv));
+
+                    td.appendChild(slotDiv);
+                    tr.appendChild(td);
+                });
+            }
 
             calendarBody.appendChild(tr);
         });
