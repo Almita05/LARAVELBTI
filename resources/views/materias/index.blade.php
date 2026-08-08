@@ -2,7 +2,7 @@
 
 @section('content')
 
-<link rel="stylesheet" href="{{ asset('css/estilosMaterias.css') }}">
+<link rel="stylesheet" href="{{ asset('css/estilosMaterias.css') }}?v={{ time() }}">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
@@ -75,7 +75,7 @@
 
 <!-- Modal Materia -->
 <div class="modal fade" id="modalMateria" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content glass-modal">
 
             <form id="formMateria">
@@ -194,6 +194,13 @@
 let listaDocentes = [];
 
 document.addEventListener("DOMContentLoaded", function() {
+
+    // Mover el modal a #contenedorModal en la raíz para evitar stacking context con backdrop
+    const modalEl = document.getElementById('modalMateria');
+    const modalContainer = document.getElementById('contenedorModal') || document.body;
+    if (modalEl && modalEl.parentElement !== modalContainer) {
+        modalContainer.appendChild(modalEl);
+    }
 
     const contenedorDocentes = document.getElementById('contenedorDocentes');
     const contenedorSeleccionados = document.getElementById('docentesSeleccionados');

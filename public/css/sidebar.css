@@ -145,21 +145,9 @@
 
 
 .sidebar .accordion-body a{
-
-    margin-top:5px;
-
-}
-
-
-.main-content{
-
-    position:relative;
-
-    z-index:1;
-
-}
-
-.sidebar .accordion-body a{
-    margin:5px 0;
-    padding-left:35px;
+    margin: 5px 0;
+    padding-left: 35px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
