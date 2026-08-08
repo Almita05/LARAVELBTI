@@ -11,54 +11,46 @@
     border-right: 1px solid rgba(255,255,255,.15);
 
     overflow-y: auto;
-
-    /* Ocultar barra */
-    scrollbar-width: none;      /* Firefox */
-    -ms-overflow-style: none;   /* IE y Edge antiguo */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 
     padding: 25px 0;
 }
 
-/* Chrome, Edge y Safari */
 .sidebar::-webkit-scrollbar{
-    display: none;
+    display:none;
 }
 
+
 .sidebar .logo{
-
     color:white;
-
     font-size:24px;
-
     font-weight:bold;
-
     text-align:center;
-
     margin-bottom:30px;
 }
 
+
 .sidebar ul{
-
     list-style:none;
-
     padding:0;
+    margin:0;
 }
 
-.sidebar li{
 
+.sidebar li{
     margin:6px 15px;
 }
 
+
+/* Links normales */
 .sidebar a{
 
     display:flex;
-
     align-items:center;
-
     gap:14px;
 
     color:white;
-
     text-decoration:none;
 
     padding:13px 20px;
@@ -67,6 +59,7 @@
 
     transition:.3s;
 }
+
 
 .sidebar a:hover{
 
@@ -77,12 +70,14 @@
     transform:translateX(8px);
 }
 
+
 .sidebar i{
 
     width:24px;
-
     color:#6BC7E8;
+
 }
+
 
 .menu-title{
 
@@ -96,7 +91,90 @@
 
     margin:25px 25px 10px;
 }
+
+
+
+/* ========================= */
+/* ACORDEON DEL SIDEBAR */
+/* ========================= */
+
+
+.sidebar .accordion-item{
+
+    background:transparent;
+    border:none;
+}
+
+
+.sidebar .accordion-button{
+
+    background:transparent;
+
+
+    padding:13px 20px;
+
+    border-radius:12px;
+
+    box-shadow:none;
+
+    font-weight:normal;
+
+}
+
+
+.sidebar .accordion-button:hover{
+
+    background:rgba(255,255,255,.12);
+
+    color:#6BC7E8;
+
+}
+
+
+/* Flecha */
+.sidebar .accordion-button::after{
+
+    filter:brightness(0) invert(1);
+
+}
+
+
+/* cuando está abierto */
+
+.sidebar .accordion-button:not(.collapsed){
+
+    background:rgba(255,255,255,.12);
+
+    color:#6BC7E8;
+
+}
+
+
+/* contenido desplegado */
+
+.sidebar .accordion-body{
+
+    padding:5px 0 5px 20px;
+
+}
+
+
+.sidebar .accordion-body a{
+
+    margin-top:5px;
+
+}
+
+
 .main-content{
-    position: relative;
-    z-index: 1;
+
+    position:relative;
+
+    z-index:1;
+
+}
+
+.sidebar .accordion-body a{
+    margin:5px 0;
+    padding-left:35px;
 }

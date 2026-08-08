@@ -72,63 +72,140 @@
     </div>
 
 </div>
+@endsection
 
 <!-- Modal -->
-<div class="modal fade" id="modalMateria" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <form id="formMateria" class="modal-content">
+<div class="modal fade" id="modalMateria" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content glass-card">
 
-            <div class="modal-header">
-                <h5 class="modal-title">Alta Materia</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+            <form id="formMateria">
 
-            <div class="modal-body">
-                <div class="row">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fa-solid fa-book me-2"></i>
+                        Alta Materia
+                    </h5>
 
-                    <div class="col-md-6 mb-2">
-                        <label>Nombre</label>
-                        <input type="text" class="form-control" name="nombreMateria" required>
-                    </div>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Cerrar">
+                    </button>
+                </div>
 
-                    <div class="col-md-6 mb-2">
-                        <label>Descripción</label>
-                        <input type="text" class="form-control" name="descripcionMateria" required>
-                    </div>
+                <div class="modal-body">
 
-                    <div class="col-md-12 mb-2">
-                        <label>Docentes</label>
+                    <div class="container-fluid">
 
-                        <div id="contenedorDocentes" style="max-height: 200px; overflow-y: auto; padding: 10px; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: rgba(255,255,255,0.05);"></div>
+                        <div class="row justify-content-center">
 
-                        <div id="docentesSeleccionados" class="mt-2"></div>
-                    </div>
+                            <!-- Nombre -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nombre</label>
 
-                    <div class="col-md-6 mb-2">
-                        <label>Clave</label>
-                        <input type="text" class="form-control" name="clave" placeholder="Ej. MAT-201" required>
-                    </div>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    name="nombreMateria"
+                                    required>
+                            </div>
 
-                    <div class="col-md-6 mb-2">
-                        <label>Estatus</label>
-                        <select class="form-control" name="estatusMateria">
-                            <option value="ACTIVA">ACTIVA</option>
-                            <option value="INACTIVA">INACTIVA</option>
-                        </select>
+                            <!-- Descripción -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Descripción</label>
+
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    name="descripcionMateria"
+                                    required>
+                            </div>
+
+                            <!-- Docentes -->
+                            <div class="col-12 mb-3">
+
+                                <label class="form-label">
+                                    Docentes
+                                </label>
+
+                                <div id="contenedorDocentes"
+                                     class="contenedor-docentes">
+
+                                </div>
+
+                                <div id="docentesSeleccionados"
+                                     class="mt-2">
+                                </div>
+
+                            </div>
+
+                            <!-- Clave -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Clave</label>
+
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    name="clave"
+                                    placeholder="Ej. MAT-201"
+                                    required>
+                            </div>
+
+                            <!-- Estatus -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Estatus</label>
+
+                                <select
+                                    class="form-control"
+                                    name="estatusMateria">
+
+                                    <option value="ACTIVA">
+                                        ACTIVA
+                                    </option>
+
+                                    <option value="INACTIVA">
+                                        INACTIVA
+                                    </option>
+
+                                </select>
+                            </div>
+
+                        </div>
+
                     </div>
 
                 </div>
-            </div>
 
-            <div class="modal-footer">
-                <button class="btn btn-success" type="submit">Guardar</button>
-            </div>
+                <div class="modal-footer justify-content-center">
 
-        </form>
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                    <button
+                        class="btn btn-success"
+                        type="submit">
+
+                        <i class="fa-solid fa-save me-2"></i>
+                        Guardar
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
     </div>
 </div>
 
-@endsection
+
 
 
 <script>
