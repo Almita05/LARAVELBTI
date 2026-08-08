@@ -1496,20 +1496,34 @@ document.addEventListener("DOMContentLoaded", function() {
 
             // Group by group + time slot + classroom to detect joint classes
             const groupedDetails = {};
+            let sumCalculatedHours = 0;
+
             details.forEach(item => {
                 const key = `${item.grupo}_${item.hora_inicio}_${item.hora_fin}_${item.aula || 'N/A'}`;
+                const isBti = (item.grupo || "").toUpperCase().startsWith("BTI");
+                
+                let dur = parseFloat(item.duracion || 0);
+                // En BTI cada clase/módulo (ej. 50 min) se considera como 1 hora completa (1.0 hr)
+                if (isBti && dur >= 0.7 && dur <= 1.05) {
+                    dur = 1.0;
+                }
+
                 if (!groupedDetails[key]) {
                     groupedDetails[key] = {
                         grupo: item.grupo,
                         aula: item.aula || "N/A",
                         hora_inicio: item.hora_inicio,
                         hora_fin: item.hora_fin,
-                        duracion: item.duracion,
+                        duracion: dur,
                         materias: []
                     };
+                    sumCalculatedHours += dur;
                 }
                 groupedDetails[key].materias.push(item.materia);
             });
+
+            // Actualizar la suma total del día con las horas calculadas
+            detailSumLabel.textContent = `${sumCalculatedHours.toFixed(1)} hrs`;
 
             let bodyHtml = '';
             Object.values(groupedDetails).forEach(item => {
