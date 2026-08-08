@@ -27,16 +27,16 @@
     background: rgba(255, 255, 255, .03);
 }
 
-.accordion-item {
+#modalDocente .accordion-item {
     background: rgba(255, 255, 255, .06);
     border: none;
     border-radius: 14px;
     overflow: hidden;
 }
 
-.accordion-button,
-.accordion-button.collapsed,
-.accordion-button:not(.collapsed) {
+#modalDocente .accordion-button,
+#modalDocente .accordion-button.collapsed,
+#modalDocente .accordion-button:not(.collapsed) {
     background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
     color: #fff !important;
     font-weight: 600;
@@ -44,15 +44,15 @@
     border: none;
 }
 
-.accordion-button:focus {
+#modalDocente .accordion-button:focus {
     box-shadow: none !important;
 }
 
-.accordion-button::after {
+#modalDocente .accordion-button::after {
     filter: brightness(0) invert(1);
 }
 
-.accordion-body {
+#modalDocente .accordion-body {
     background: white;
 }
 

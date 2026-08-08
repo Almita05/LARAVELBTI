@@ -72,103 +72,91 @@
     </div>
 
 </div>
-@endsection
 
-<!-- Modal -->
+<!-- Modal Materia -->
 <div class="modal fade" id="modalMateria" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content glass-card">
+        <div class="modal-content glass-modal">
 
             <form id="formMateria">
 
-                <div class="modal-header">
-                    <h5 class="modal-title">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold text-white">
                         <i class="fa-solid fa-book me-2"></i>
                         Alta Materia
                     </h5>
 
                     <button type="button"
-                            class="btn-close"
+                            class="btn-close btn-close-white"
                             data-bs-dismiss="modal"
                             aria-label="Cerrar">
                     </button>
                 </div>
 
-                <div class="modal-body">
+                <div class="modal-body p-4">
 
-                    <div class="container-fluid">
+                    <div class="container-fluid p-0">
 
-                        <div class="row justify-content-center">
+                        <div class="row g-3">
 
                             <!-- Nombre -->
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Nombre</label>
-
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre <span class="text-danger">*</span></label>
                                 <input
                                     type="text"
-                                    class="form-control"
+                                    class="form-control form-control-premium"
                                     name="nombreMateria"
+                                    placeholder="Ej. Matemáticas I"
                                     required>
                             </div>
 
                             <!-- Descripción -->
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Descripción</label>
-
+                            <div class="col-md-6">
+                                <label class="form-label">Descripción <span class="text-danger">*</span></label>
                                 <input
                                     type="text"
-                                    class="form-control"
+                                    class="form-control form-control-premium"
                                     name="descripcionMateria"
+                                    placeholder="Ej. Materia de tronco común"
                                     required>
                             </div>
 
-                            <!-- Docentes -->
-                            <div class="col-12 mb-3">
-
-                                <label class="form-label">
-                                    Docentes
-                                </label>
-
-                                <div id="contenedorDocentes"
-                                     class="contenedor-docentes">
-
-                                </div>
-
-                                <div id="docentesSeleccionados"
-                                     class="mt-2">
-                                </div>
-
-                            </div>
-
                             <!-- Clave -->
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Clave</label>
-
+                            <div class="col-md-6">
+                                <label class="form-label">Clave <span class="text-danger">*</span></label>
                                 <input
                                     type="text"
-                                    class="form-control"
+                                    class="form-control form-control-premium"
                                     name="clave"
                                     placeholder="Ej. MAT-201"
                                     required>
                             </div>
 
                             <!-- Estatus -->
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Estatus</label>
-
+                            <div class="col-md-6">
+                                <label class="form-label">Estatus <span class="text-danger">*</span></label>
                                 <select
-                                    class="form-control"
+                                    class="form-select form-select-premium"
                                     name="estatusMateria">
-
-                                    <option value="ACTIVA">
-                                        ACTIVA
-                                    </option>
-
-                                    <option value="INACTIVA">
-                                        INACTIVA
-                                    </option>
-
+                                    <option value="ACTIVA">ACTIVA</option>
+                                    <option value="INACTIVA">INACTIVA</option>
                                 </select>
+                            </div>
+
+                            <!-- Docentes -->
+                            <div class="col-12">
+                                <label class="form-label d-flex justify-content-between align-items-center">
+                                    <span><i class="fa-solid fa-chalkboard-user me-1 text-info"></i> Docentes asignados</span>
+                                    <small class="text-muted fw-normal">Selecciona los docentes</small>
+                                </label>
+
+                                <div id="contenedorDocentes"
+                                     class="contenedor-docentes">
+                                </div>
+
+                                <div id="docentesSeleccionados"
+                                     class="mt-2 d-flex flex-wrap gap-1">
+                                </div>
                             </div>
 
                         </div>
@@ -177,24 +165,20 @@
 
                 </div>
 
-                <div class="modal-footer justify-content-center">
+                <div class="modal-footer border-0">
 
                     <button
                         type="button"
-                        class="btn btn-secondary"
+                        class="btn btn-premium-cancel"
                         data-bs-dismiss="modal">
-
                         Cancelar
-
                     </button>
 
                     <button
-                        class="btn btn-success"
+                        class="btn btn-premium-save"
                         type="submit">
-
-                        <i class="fa-solid fa-save me-2"></i>
+                        <i class="fa-solid fa-floppy-disk me-2"></i>
                         Guardar
-
                     </button>
 
                 </div>
@@ -204,9 +188,7 @@
         </div>
     </div>
 </div>
-
-
-
+@endsection
 
 <script>
 let listaDocentes = [];
@@ -326,13 +308,13 @@ if (btnAlta) {
         idMateriaActual = null;
         const form = document.getElementById('formMateria');
         form.reset();
-        document.getElementById('contenedorSeleccionados').innerHTML = '';
+        document.getElementById('docentesSeleccionados').innerHTML = '';
         setFormDisabled(false);
         document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
-        document.querySelector('.modal-title').textContent = 'Alta Materia';
+        document.querySelector('#modalMateria .modal-title').innerHTML = '<i class="fa-solid fa-book me-2"></i> Alta Materia';
         const submitBtn = document.querySelector('#formMateria button[type="submit"]');
-        submitBtn.style.display = 'block';
-        submitBtn.textContent = 'Guardar';
+        submitBtn.style.display = 'inline-block';
+        submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Guardar';
     });
 }
 
@@ -360,7 +342,7 @@ window.verMateria = function(id) {
                 mostrarSeleccionados();
                 setFormDisabled(true);
 
-                document.querySelector('.modal-title').textContent = 'Detalles de Materia';
+                document.querySelector('#modalMateria .modal-title').innerHTML = '<i class="fa-solid fa-eye me-2"></i> Detalles de Materia';
                 const submitBtn = document.querySelector('#formMateria button[type="submit"]');
                 submitBtn.style.display = 'none';
 
@@ -409,10 +391,10 @@ window.editarMateria = function(id) {
                 mostrarSeleccionados();
                 setFormDisabled(false);
 
-                document.querySelector('.modal-title').textContent = 'Editar Materia';
+                document.querySelector('#modalMateria .modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square me-2"></i> Editar Materia';
                 const submitBtn = document.querySelector('#formMateria button[type="submit"]');
-                submitBtn.style.display = 'block';
-                submitBtn.textContent = 'Actualizar';
+                submitBtn.style.display = 'inline-block';
+                submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Actualizar';
 
                 const modal = new bootstrap.Modal(document.getElementById('modalMateria'));
                 modal.show();
