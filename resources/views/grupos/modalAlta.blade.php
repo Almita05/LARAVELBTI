@@ -111,33 +111,18 @@
                     <!-- Clave -->
                     <div class="col-md-6">
                         <label class="form-label">Clave del grupo <span class="text-danger">*</span></label>
-                        <input type="text" name="clave" class="form-control form-control-premium" placeholder="Ej. 1A-2026" required>
+                        <input type="text" name="clave" class="form-control form-control-premium"
+                            placeholder="Ej. 1A-2026" required>
                     </div>
 
-                    <!-- Fecha Creación -->
-                    <div class="col-md-6">
-                        <label class="form-label">Fecha creación <span class="text-danger">*</span></label>
-                        <input type="date" name="fechaCreacion" class="form-control form-control-premium" required>
-                    </div>
 
+
+
+                    <input type="hidden" name="fechaCreacion" id="fechaCreacion">
                     <!-- Fecha Inicio -->
                     <div class="col-md-6">
                         <label class="form-label">Fecha inicio <span class="text-danger">*</span></label>
                         <input type="date" name="fechaInicio" class="form-control form-control-premium" required>
-                    </div>
-
-                    <!-- Fecha Fin -->
-                    <div class="col-md-6">
-                        <label class="form-label">Fecha fin <span class="text-danger">*</span></label>
-                        <input type="date" name="fechaFin" class="form-control form-control-premium" required>
-                        <div id="divCalcularSemanas" style="display: none; margin-top: 8px;">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="chkCalcularSemanas">
-                                <label class="form-check-label" for="chkCalcularSemanas" style="font-weight: 600; font-size: 0.85rem; color: #475569;">
-                                    Calcular 78 semanas automáticamente (BGNE)
-                                </label>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Centro de Trabajo -->
@@ -151,16 +136,24 @@
                         </select>
                     </div>
 
-                    <!-- Plan de Estudios -->
+
+                    <!-- Fecha Fin -->
                     <div class="col-md-6">
-                        <label class="form-label">Plan de estudios <span class="text-danger">*</span></label>
-                        <select name="id_planEstudios" class="form-select form-select-premium" required>
-                            <option value="">Seleccione un plan</option>
-                            @foreach($planes as $pe)
-                            <option value="{{ $pe['id'] }}">{{ $pe['nombrePlan'] }}</option>
-                            @endforeach
-                        </select>
+                        <label class="form-label">Fecha fin <span class="text-danger">*</span></label>
+                        <input type="date" name="fechaFin" class="form-control form-control-premium" required>
+                        <div id="divCalcularSemanas" style="display: none; margin-top: 8px;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="chkCalcularSemanas">
+                                <label class="form-check-label" for="chkCalcularSemanas"
+                                    style="font-weight: 600; font-size: 0.85rem; color: #475569;">
+                                    Calcular 78 semanas automáticamente (BGNE)
+                                </label>
+                            </div>
+                        </div>
                     </div>
+
+                    <input type="hidden" name="id_planEstudios" id="id_planEstudios">
+
 
                     <!-- Tipo de Periodo -->
                     <div class="col-md-6">
@@ -194,7 +187,6 @@
                             <option value="LIBRE">LIBRE</option>
                         </select>
                     </div>
-
 
                 </div>
             </div>

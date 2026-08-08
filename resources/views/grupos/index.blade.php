@@ -2,10 +2,8 @@
 
 @section('content')
 
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="{{ asset('css/estilosGrupos.css') }}">
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="{{ asset('css/estilosGrupos.css') }}">
 
 <div class="page-container">
 
@@ -59,9 +57,9 @@
             </table>
         </div>
         <div class="glass-footer p-3 d-flex justify-content-between align-items-center">
-    <small id="infoGrupos"></small>
-    <div id="paginacionGrupos"></div>
-</div>
+            <small id="infoGrupos"></small>
+            <div id="paginacionGrupos"></div>
+        </div>
 
     </div>
 </div>
@@ -73,21 +71,21 @@ let idGrupoActual = null;
 
 function formatDateForInput(dateStr) {
     if (!dateStr) return '';
-    
+
     // Si ya está en formato YYYY-MM-DD
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
         return dateStr;
     }
-    
+
     // Si viene con hora "YYYY-MM-DD HH:MM:SS..."
     if (/^\d{4}-\d{2}-\d{2}\s/.test(dateStr)) {
         return dateStr.substring(0, 10);
     }
-    
+
     try {
         const d = new Date(dateStr);
         if (isNaN(d.getTime())) return '';
-        
+
         // Si tiene formato GMT/UTC, obtenemos los valores UTC para evitar desfases de zona horaria
         if (dateStr.includes('GMT') || dateStr.endsWith('Z')) {
             const yyyy = d.getUTCFullYear();
@@ -136,16 +134,17 @@ function initializeModalEvents() {
     function checkCt(showAlert = false) {
         const selectedOption = selectCt.options[selectCt.selectedIndex];
         const isBgne = selectedOption && selectedOption.textContent.toUpperCase().includes('BGNE');
-        
+
         if (isBgne) {
             chkDiv.style.display = 'block';
-            
+
             // Buscar la opción TRIMESTRAL en el select de periodo
-            const optionTrimestral = Array.from(selectPeriodo.options).find(opt => opt.textContent.toUpperCase().includes('TRIMESTRAL'));
+            const optionTrimestral = Array.from(selectPeriodo.options).find(opt => opt.textContent.toUpperCase()
+                .includes('TRIMESTRAL'));
             if (optionTrimestral) {
                 if (selectPeriodo.value !== optionTrimestral.value) {
                     selectPeriodo.value = optionTrimestral.value;
-                    
+
                     if (showAlert) {
                         Swal.fire({
                             title: 'Ajuste Automático',
@@ -174,11 +173,11 @@ function initializeModalEvents() {
                 const start = new Date(startParts[0], startParts[1] - 1, startParts[2]);
                 // 77 semanas * 7 días = 539 días desde la fecha de inicio
                 const end = new Date(start.getTime() + (77 * 7 * 24 * 60 * 60 * 1000));
-                
+
                 const yyyy = end.getFullYear();
                 const mm = String(end.getMonth() + 1).padStart(2, '0');
                 const dd = String(end.getDate()).padStart(2, '0');
-                
+
                 inputFin.value = `${yyyy}-${mm}-${dd}`;
                 inputFin.readOnly = true;
             }
@@ -344,7 +343,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             initializeModalEvents();
 
                             document.querySelector('.modal-title').textContent = 'Editar Grupo';
-                            const submitBtn = document.querySelector('#formGrupo button[type="submit"]');
+                            const submitBtn = document.querySelector(
+                                '#formGrupo button[type="submit"]');
                             if (submitBtn) {
                                 submitBtn.textContent = 'Actualizar';
                                 submitBtn.className = 'btn btn-primary';
@@ -370,19 +370,21 @@ document.addEventListener("DOMContentLoaded", function() {
         fetch('/grupos/modalAlta')
             .then(res => res.text())
             .then(html => {
+
                 document.getElementById('contenedorModal').innerHTML = html;
 
                 fetch(`/grupos/${id}`)
                     .then(res => res.json())
                     .then(resp => {
+
                         if (resp.success && resp.data) {
+
                             const g = resp.data;
                             const form = document.getElementById('formGrupo');
 
                             setFormDisabled(true);
 
                             form.clave.value = g.clave || '';
-                            form.fechaCreacion.value = formatDateForInput(g.fechaCreacion);
                             form.fechaInicio.value = formatDateForInput(g.fechaInicio);
                             form.fechaFin.value = formatDateForInput(g.fechaFin);
                             form.id_centroTrabajo.value = g.id_centroTrabajo || '';
@@ -391,22 +393,48 @@ document.addEventListener("DOMContentLoaded", function() {
                             form.id_nivel_academico.value = g.id_nivel_academico || '';
                             form.modalidadHorario.value = g.modalidadHorario || '';
 
-                            document.querySelector('.modal-title').textContent = 'Detalles del Grupo';
-                            const submitBtn = document.querySelector('#formGrupo button[type="submit"]');
+                            document.querySelector('.modal-title').textContent =
+                                'Detalles del Grupo';
+
+                            const submitBtn = document.querySelector(
+                                '#formGrupo button[type="submit"]'
+                            );
+
                             if (submitBtn) {
                                 submitBtn.style.display = 'none';
                             }
 
-                            let modal = new bootstrap.Modal(document.getElementById('modalGrupo'));
+                            let modal = new bootstrap.Modal(
+                                document.getElementById('modalGrupo')
+                            );
+
                             modal.show();
+
                         } else {
-                            alert('Error al cargar los detalles del grupo.');
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Error al cargar los detalles del grupo.',
+                                confirmButtonColor: '#317D92'
+                            });
+
                         }
+
                     })
                     .catch(err => {
+
                         console.error(err);
-                        alert('Error al cargar los detalles del grupo.');
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al cargar los detalles del grupo.',
+                            confirmButtonColor: '#317D92'
+                        });
+
                     });
+
             });
     };
 
@@ -445,6 +473,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Form submission for creating/editing group (delegated to index page since AJAX HTML script doesn't auto-evaluate)
+
     document.addEventListener('submit', function(e) {
         if (e.target.id === 'formGrupo') {
             e.preventDefault();
@@ -452,57 +481,91 @@ document.addEventListener("DOMContentLoaded", function() {
             let formData = new FormData(e.target);
             let data = Object.fromEntries(formData.entries());
 
-            // Si id_tipoPeriodo está deshabilitado en el form (por ser BGNE), FormData no lo captura.
-            // Lo recuperamos manualmente para enviarlo correctamente al backend.
+            // Si id_tipoPeriodo está deshabilitado en el form (por ser BGNE),
+            // FormData no lo captura. Lo recuperamos manualmente.
             if (e.target.id_tipoPeriodo && e.target.id_tipoPeriodo.disabled) {
                 data.id_tipoPeriodo = e.target.id_tipoPeriodo.value;
             }
 
-            const url = modoGrupo === 'editar' ? `/grupos/${idGrupoActual}` : '/grupos';
-            const method = modoGrupo === 'editar' ? 'PUT' : 'POST';
+            const url = modoGrupo === 'editar' ?
+                `/grupos/${idGrupoActual}` :
+                '/grupos';
+
+            const method = modoGrupo === 'editar' ?
+                'PUT' :
+                'POST';
 
             fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify(data)
-            })
-            .then(async res => {
-                const isJson = res.headers.get('content-type')?.includes('application/json');
-                const resData = isJson ? await res.json() : null;
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(async res => {
+                    const isJson = res.headers.get('content-type')?.includes(
+                        'application/json');
+                    const resData = isJson ? await res.json() : null;
 
-                if (!res.ok) {
-                    throw new Error(resData?.message || 'Error al guardar el grupo en el servidor backend');
-                }
-                return resData;
-            })
-            .then(res => {
-                alert(modoGrupo === 'editar' ? '¡Éxito: Grupo actualizado correctamente!' : '¡Éxito: Grupo guardado correctamente!');
-                
-                let modalEl = document.getElementById('modalGrupo');
-                let modal = bootstrap.Modal.getInstance(modalEl);
-                if (modal) {
-                    modal.hide();
-                }
+                    if (!res.ok) {
+                        throw new Error(
+                            resData?.message ||
+                            'Error al guardar el grupo en el servidor backend'
+                        );
+                    }
 
-                // Remove modal backdrop if any remains
-                const backdrop = document.querySelector('.modal-backdrop');
-                if (backdrop) {
-                    backdrop.remove();
-                }
+                    return resData;
+                })
+                .then(res => {
 
-                cargarGrupos();
-            })
-            .catch(err => {
-                alert('Advertencia / Error: ' + err.message);
-            });
+                    // SWEET ALERT DE ÉXITO
+                    Swal.fire({
+                        icon: 'success',
+                        title: modoGrupo === 'editar' ?
+                            '¡Grupo actualizado!' : '¡Grupo guardado!',
+                        text: modoGrupo === 'editar' ?
+                            'El grupo se actualizó correctamente.' :
+                            'El grupo se guardó correctamente.',
+                        confirmButtonColor: '#317D92',
+                        confirmButtonText: 'Aceptar'
+                    });
+
+                    let modalEl = document.getElementById('modalGrupo');
+                    let modal = bootstrap.Modal.getInstance(modalEl);
+
+                    if (modal) {
+                        modal.hide();
+                    }
+
+                    // Remove modal backdrop if any remains
+                    const backdrop = document.querySelector('.modal-backdrop');
+
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+
+                    cargarGrupos();
+                })
+                .catch(err => {
+
+                    // SWEET ALERT DE ERROR
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al guardar',
+                        text: err.message,
+                        confirmButtonColor: '#317D92',
+                        confirmButtonText: 'Aceptar'
+                    });
+
+                });
         }
     });
+
 
     // INIT
     cargarGrupos();
 
 });
 </script>
+
