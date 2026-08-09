@@ -1,86 +1,4 @@
 
-.glass-modal {
-    background: rgb(73, 164, 190) !important;
-    border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
-    overflow: hidden;
-    color: white;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
-}
-
-.glass-modal .modal-header {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
-    color: #fff;
-}
-
-.glass-modal .modal-body {
-    background: white;
-}
-
-.glass-modal .modal-footer {
-    border-top: 1px solid rgba(255, 255, 255, .08);
-    background: rgba(255, 255, 255, .03);
-}
-
-.accordion-item {
-    background: rgba(255, 255, 255, .06);
-    border: none;
-    border-radius: 14px;
-    overflow: hidden;
-}
-
-.accordion-button,
-.accordion-button.collapsed,
-.accordion-button:not(.collapsed) {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
-    color: #fff !important;
-    font-weight: 600;
-    box-shadow: none !important;
-    border: none;
-}
-
-.accordion-button:focus {
-    box-shadow: none !important;
-}
-
-.accordion-button::after {
-    filter: brightness(0) invert(1);
-}
-
-.accordion-body {
-    background: white;
-}
-
-.form-label {
-    font-weight: 600;
-    color: black;
-}
-
-.form-control-premium,
-.form-select-premium {
-    background: #fff;
-    border: 2px solid #9BDFFF;
-    border-radius: 15px;
-    color: #212529;
-    min-height: 48px;
-}
-
-.form-control-premium:hover,
-.form-select-premium:hover {
-    border-color: #7FD3FF;
-}
-
-.form-control-premium:focus,
-.form-select-premium:focus {
-    border-color: #66C9FF;
-    box-shadow:
-        0 0 0 3px rgba(102, 201, 255, .20),
-        inset 0 1px 2px rgba(0, 0, 0, .04);
-}
-
-
-
 .page-container {
     padding: 30px;
     min-height: 100vh;
@@ -88,7 +6,7 @@
 
 
 .page-title {
-    color: white;
+    color:rgb(7, 101, 136);
     font-weight: 700;
     text-shadow: 0 2px 8px rgba(0, 0, 0, .2);
 }
@@ -100,53 +18,37 @@
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
+    padding: .5%;
 }
 
-.glass-header {
-    background: rgba(255, 255, 255, .05);
-    border-bottom: 1px solid rgba(255, 255, 255, .15);
-}
 
 .glass-footer {
-    background: rgba(255, 255, 255, .05);
     border-top: 1px solid rgba(255, 255, 255, .15);
 }
 
-/* Tabla transparente */
-.glass-table,
-.glass-table thead,
-.glass-table tbody,
-.glass-table tr,
-.glass-table td,
-.glass-table th {
-    background-color: transparent !important;
-    color: white !important;
+.table-head{
+    background: rgb(49, 125, 146) !important;
+    color: rgb(8, 0, 0) !important;
 }
 
-/* Encabezado */
-.glass-table thead tr {
-    background: rgba(255,255,255,0.08) !important;
+
+
+.btn-regresar {
+     background: rgb(49, 125, 146) !important;
+    border: none;
+    font-weight: 600;
+    color: white;
 }
 
-/* Filas */
-.glass-table tbody tr {
-    background: rgba(255,255,255,0.03) !important;
-    transition: .3s;
-}
 
-/* Hover */
-.glass-table tbody tr:hover {
-    background: rgba(255,255,255,0.12) !important;
-}
-
-/* Bordes */
-.glass-table td,
-.glass-table th {
-    border-color: rgba(255,255,255,0.15) !important;
+.btn-regresar:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
 }
 
 .btn-azul {
-    background: linear-gradient(135deg, #1E6FA8, #6BC7E8);
+     background: rgb(49, 125, 146) !important;
     border: none;
     font-weight: 600;
 }
@@ -199,26 +101,88 @@
     color: white;
 }
 
-.btn-regresar {
-    background: rgba(255, 255, 255, .12);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, .2);
-    color: white;
-    font-weight: 600;
-}
-
-.btn-regresar:hover {
-    background: rgba(255, 255, 255, .2);
-    color: white;
-}
 
 /* Modal */
 .modal-content {
-    border-radius: 20px;
     border: none;
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #1E6FA8, #6BC7E8);
+     background: rgb(49, 125, 146) !important;
     color: white;
 }
+
+.glass-modal {
+    border: 1px solid rgba(255, 255, 255, .15);
+    border-radius: 20px;
+    overflow: hidden;
+    color: white;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
+}
+
+.glass-modal .modal-header {
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
+    color: #fff;
+}
+
+.glass-modal .modal-body {
+    background: white;
+}
+
+
+.accordion-item {
+    background: rgba(255, 255, 255, .06);
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.accordion-button,
+.accordion-button.collapsed,
+.accordion-button:not(.collapsed) {
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
+    color: #fff !important;
+    font-weight: 600;
+    box-shadow: none !important;
+    border: none;
+}
+
+.accordion-button:focus {
+    box-shadow: none !important;
+}
+
+.accordion-button::after {
+    filter: brightness(0) invert(1);
+}
+
+.accordion-body {
+    background: white;
+}
+
+.form-label {
+    font-weight: 500;
+    color: black;
+}
+
+.form-control-premium,
+.form-select-premium {
+    background: #fff;
+    color: #212529;
+    min-height: 48px;
+}
+
+.form-control-premium:hover,
+.form-select-premium:hover {
+    border-color: rgb(49, 125, 146) !important;
+}
+
+.form-control-premium:focus,
+.form-select-premium:focus {
+    border-color: rgb(49, 125, 146) !important;
+    box-shadow:
+        0 0 0 3px rgba(102, 201, 255, .20),
+        inset 0 1px 2px rgba(0, 0, 0, .04);
+}
+
+

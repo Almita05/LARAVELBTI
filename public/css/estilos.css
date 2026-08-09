@@ -1,12 +1,12 @@
 
 .page-container {
     padding: 30px;
-    min-height: calc(100vh - 80px);
+    min-height: 100vh;
 }
 
+
 .page-title {
-    color: white;
-    font-size: 2rem;
+    color:rgb(7, 101, 136);
     font-weight: 700;
     text-shadow: 0 2px 8px rgba(0, 0, 0, .2);
 }
@@ -17,269 +17,172 @@
     border: 1px solid rgba(255, 255, 255, .15);
     border-radius: 20px;
     overflow: hidden;
-}
-
-.glass-header {
-    background: rgba(255, 255, 255, .05);
-    color: white;
-}
-
-.glass-footer {
-    background: rgba(255, 255, 255, .05);
-    color: white;
-}
-
-.glass-table {
-    color: white;
-}
-
-.glass-table thead tr {
-    background: rgba(255, 255, 255, .08);
-}
-
-.glass-table tbody tr:hover {
-    background: rgba(255, 255, 255, .08);
-}
-
-.glass-table td,
-.glass-table th {
-    border-color: rgba(255, 255, 255, .1);
-}
-
-.glass-input {
-    background: rgba(255, 255, 255, .08);
-    border: 1px solid rgba(255, 255, 255, .15);
-    color: white;
-}
-
-.glass-input::placeholder {
-    color: rgba(255, 255, 255, .6);
-}
-
-.glass-input:focus {
-    background: rgba(255, 255, 255, .12);
-    color: white;
-    border-color: #6BC7E8;
-    box-shadow: 0 0 15px rgba(107, 199, 232, .3);
-}
-
-.btn-action {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    margin: 0 2px;
-}
-
-.btn-light.btn-action {
-    background: rgba(255, 255, 255, .15);
-    border: none;
-    color: white;
-}
-
-.btn-light.btn-action:hover {
-    background: rgba(255, 255, 255, .25);
-}
-
-.btn-warning.btn-action {
-    color: white;
-}
-
-/* Fondo transparente para integrarse al layout */
-.page-container {
-    padding: 20px;
-}
-
-/* Card principal */
-.glass-card {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 18px;
-    overflow: hidden;
     box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
+    padding: .5%;
 }
 
-/* Header */
-.glass-header {
-    background: rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    color: white;
-}
 
-/* Tabla */
-.glass-table {
-    color: white;
-    margin-bottom: 0;
-}
-
-.glass-table thead {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.glass-table thead th {
-    color: white;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.glass-table tbody tr {
-    transition: all .25s ease;
-}
-
-.glass-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.glass-table td,
-.glass-table th {
-    border-color: rgba(255, 255, 255, 0.08);
-}
-
-/* Buscador */
-.glass-input {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-}
-
-.glass-input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.glass-input:focus {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border-color: #6BC7E8;
-    box-shadow: 0 0 10px rgba(107, 199, 232, .5);
-}
-
-/* Footer */
 .glass-footer {
-    background: rgba(255, 255, 255, 0.05);
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, .15);
+}
+
+.table-head{
+    background: rgb(49, 125, 146) !important;
+    color: rgb(8, 0, 0) !important;
+}
+
+
+
+.btn-regresar {
+     background: rgb(49, 125, 146) !important;
+    border: none;
+    font-weight: 600;
     color: white;
 }
 
-.valueGeneraciones{
-    background: rgb(73, 164, 190) !important;
+
+.btn-regresar:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
 }
 
 .btn-azul {
-    background: rgb(73, 164, 190) !important;
+     background: rgb(49, 125, 146) !important;
     border: none;
-    color: white;
-    font-weight: 500;
-    transition: .3s;
-}
-
-.btn-azul:hover {
-    background: rgb(39, 105, 123) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(49, 125, 146, .4);
-    color: white;
-}
-
-/* Acciones */
-.btn-action {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-}
-
-/* Título */
-.page-title {
-    color: white;
     font-weight: 600;
 }
 
-.btn-back {
-    display: inline-block;
+.btn-azul:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
+}
+
+.textoDocentes{
+    color:white;
+}
+
+
+.card {
+    background: transparent !important;
+}
+
+.btn-ver {
+    background: #00BCD4;
+    color: white;
+    border: none;
+}
+
+.btn-ver:hover {
+    background: #0097A7;
+    color: white;
+}
+
+.btn-editar {
+    background: #FF9800;
+    color: white;
+    border: none;
+}
+
+.btn-editar:hover {
+    background: #F57C00;
+    color: white;
+}
+
+.btn-eliminar {
+    background: #E53935;
+    color: white;
+    border: none;
+}
+
+.btn-eliminar:hover {
+    background: #C62828;
+    color: white;
+}
+
+
+/* Modal */
+.modal-content {
+    border: none;
+}
+
+.modal-header {
+     background: rgb(49, 125, 146) !important;
+    color: white;
+}
+
+.glass-modal {
+    border: 1px solid rgba(255, 255, 255, .15);
+    border-radius: 20px;
+    overflow: hidden;
+    color: white;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
+}
+
+.glass-modal .modal-header {
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
+    color: #fff;
+}
+
+.glass-modal .modal-body {
     background: white;
-    color: #1A338F;
-    padding: 10px 20px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: bold;
-    margin-bottom: 30px;
-    transition: all 0.3s ease;
-
-    position: absolute;
-    top: 20px;
-    left: 20px;
-}
-
-.btn-back:hover {
-    background: #f0f0f0;
-    color: #1A338F;
-}
-
-#filtroBGNE {
-    background: rgba(255, 255, 255, 0.10) !important;
-    color: white !important;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-#filtroBGNE:focus {
-    background: rgba(255, 255, 255, 0.15) !important;
-    color: white !important;
-    border-color: #6BC7E8;
-    box-shadow: 0 0 10px rgba(107, 199, 232, .5);
-}
-
-#filtroBGNE option {
-    background: #6BC7E8;
-    color: white;
-}
-
-.input-group-text.glass-input {
-    background: rgba(255, 255, 255, 0.10) !important;
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 
-/* Quitar fondo blanco de Bootstrap */
-.glass-table,
-.glass-table thead,
-.glass-table tbody,
-.glass-table tr,
-.glass-table td,
-.glass-table th {
-    background-color: transparent !important;
+.accordion-item {
+    background: rgba(255, 255, 255, .06);
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
 }
 
-/* Color tipo glass para las filas */
-.glass-table tbody tr {
-    background: rgba(255, 255, 255, 0.03);
-    transition: all .25s ease;
+.accordion-button,
+.accordion-button.collapsed,
+.accordion-button:not(.collapsed) {
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
+    color: #fff !important;
+    font-weight: 600;
+    box-shadow: none !important;
+    border: none;
 }
 
-/* Hover */
-.glass-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.12) !important;
+.accordion-button:focus {
+    box-shadow: none !important;
 }
 
-/* Texto */
-.glass-table td,
-.glass-table th {
-    color: white !important;
+.accordion-button::after {
+    filter: brightness(0) invert(1);
 }
 
-.filtro-btn {
-    background: rgba(255, 255, 255, 0.10);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 15px;
-    transition: .3s;
+.accordion-body {
+    background: white;
 }
 
-.filtro-btn:hover {
-    background: rgba(255, 255, 255, 0.18);
-    color: white;
+.form-label {
+    font-weight: 500;
+    color: black;
 }
 
-.filtro-btn i {
-    font-size: 18px;
+.form-control-premium,
+.form-select-premium {
+    background: #fff;
+    color: #212529;
+    min-height: 48px;
 }
+
+.form-control-premium:hover,
+.form-select-premium:hover {
+    border-color: rgb(49, 125, 146) !important;
+}
+
+.form-control-premium:focus,
+.form-select-premium:focus {
+    border-color: rgb(49, 125, 146) !important;
+    box-shadow:
+        0 0 0 3px rgba(102, 201, 255, .20),
+        inset 0 1px 2px rgba(0, 0, 0, .04);
+}
+
+

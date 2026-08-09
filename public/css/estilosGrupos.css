@@ -1,6 +1,3 @@
-/* ===========================
-   CONTENEDOR PRINCIPAL
-=========================== */
 
 .page-container {
     padding: 30px;
@@ -8,345 +5,184 @@
 }
 
 
-/* ===========================
-   TÍTULO
-=========================== */
-
 .page-title {
-    color: #111827;
-    font-size: 28px;
+    color:rgb(7, 101, 136);
     font-weight: 700;
-    margin-bottom: 25px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, .2);
 }
-
-
-/* ===========================
-   TARJETA PRINCIPAL
-=========================== */
 
 .glass-card {
-    background: #ffffff;
-
-    border: 1px solid #e5e7eb;
-
-    border-radius: 16px;
-
+    background: rgba(255, 255, 255, .08);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, .15);
+    border-radius: 20px;
     overflow: hidden;
-
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
+    padding: .5%;
 }
 
 
-/* ===========================
-   ENCABEZADO
-=========================== */
-
-.glass-header {
-    background: rgb(49, 125, 146);
-
-    padding: 15px 20px;
-
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+.glass-footer {
+    border-top: 1px solid rgba(255, 255, 255, .15);
 }
 
-
-/* ===========================
-   BUSCADOR
-=========================== */
-
-.glass-input {
-    background: rgba(255, 255, 255, 0.12);
-
-    border: 1px solid rgba(255, 255, 255, 0.25);
-
-    border-radius: 8px;
-
-    color: white;
-
-    padding: 9px 14px;
-
-    transition: .2s;
-}
-
-
-.glass-input::placeholder {
-    color: rgba(255, 255, 255, 0.75);
-}
-
-
-.glass-input:focus {
-    background: rgba(255, 255, 255, 0.18);
-
-    color: white;
-
-    border-color: #6BC7E8;
-
-    box-shadow: 0 0 0 3px rgba(107, 199, 232, 0.15);
-
-    outline: none;
-}
-
-
-/* ===========================
-   TABLA
-=========================== */
-
-.glass-table {
-    width: 100%;
-
-    margin: 0;
-
-    border-collapse: separate;
-    border-spacing: 0;
-
+.table-head{
     background: rgb(49, 125, 146) !important;
-
-    color: white;
+    color: rgb(8, 0, 0) !important;
 }
 
 
-/* ===========================
-   ENCABEZADO DE TABLA
-=========================== */
-
-.glass-table thead {
-    background: rgb(49, 125, 146) !important;
-}
-
-
-.glass-table thead tr {
-    background: rgb(49, 125, 146) !important;
-}
-
-
-.glass-table thead th {
-    background: rgb(49, 125, 146) !important;
-
-    color: white !important;
-
-    font-size: 14px;
-
-    font-weight: 600;
-
-    padding: 13px 12px;
-
-    border: none;
-
-    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-
-/* ===========================
-   CUERPO
-=========================== */
-
-.glass-table tbody {
-    background: rgb(49, 125, 146) !important;
-}
-
-
-.glass-table tbody tr {
-    background: rgb(49, 125, 146) !important;
-
-    transition: .2s;
-}
-
-
-.glass-table tbody td {
-    background: rgb(49, 125, 146) !important;
-
-    color: white !important;
-
-    font-size: 14px;
-
-    padding: 12px;
-
-    border: none;
-
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-
-/* ===========================
-   HOVER
-=========================== */
-
-.glass-table tbody tr:hover,
-.glass-table tbody tr:hover td {
-    background: rgb(49, 125, 146) !important;
-}
-
-
-/* ===========================
-   ÚLTIMA FILA
-=========================== */
-
-.glass-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-
-/* ===========================
-   BOTÓN VER
-=========================== */
-
-.btn-ver {
-    background: #00BCD4;
-
-    color: white;
-
-    border: none;
-
-    width: 32px;
-    height: 32px;
-
-    border-radius: 7px;
-
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
-
-    transition: .2s;
-}
-
-
-.btn-ver:hover {
-    background: #0097A7;
-
-    color: white;
-
-    transform: translateY(-1px);
-}
-
-
-/* ===========================
-   BOTÓN EDITAR
-=========================== */
-
-.btn-editar {
-    background: #FF9800;
-
-    color: white;
-
-    border: none;
-
-    width: 32px;
-    height: 32px;
-
-    border-radius: 7px;
-
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
-
-    transition: .2s;
-}
-
-
-.btn-editar:hover {
-    background: #F57C00;
-
-    color: white;
-
-    transform: translateY(-1px);
-}
-
-
-/* ===========================
-   BOTÓN GRUPOS
-=========================== */
-
-.btn-grupos {
-    background: #2196F3;
-
-    color: white;
-
-    border: none;
-
-    width: 32px;
-    height: 32px;
-
-    border-radius: 7px;
-
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
-
-    transition: .2s;
-}
-
-
-.btn-grupos:hover {
-    background: #1976D2;
-
-    color: white;
-
-    transform: translateY(-1px);
-}
-
-
-/* ===========================
-   BOTÓN REGRESAR
-=========================== */
 
 .btn-regresar {
-    background: rgb(49, 125, 146);
-
-    color: white;
-
+     background: rgb(49, 125, 146) !important;
     border: none;
-
-    border-radius: 8px;
-
-    padding: 9px 18px;
-
     font-weight: 600;
-
-    transition: .2s;
+    color: white;
 }
 
 
 .btn-regresar:hover {
-    background: rgb(40, 105, 123);
-
     color: white;
-
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
 }
-
-
-/* ===========================
-   BOTÓN ALTA GRUPO
-=========================== */
 
 .btn-azul {
-    background: linear-gradient(
-        135deg,
-        #1E6FA8,
-        #6BC7E8
-    );
-
-    color: white;
-
+     background: rgb(49, 125, 146) !important;
     border: none;
-
-    border-radius: 8px;
-
-    padding: 9px 16px;
-
     font-weight: 600;
-
-    transition: .2s;
 }
-
 
 .btn-azul:hover {
     color: white;
-
-    transform: translateY(-1px);
-
-    box-shadow: 0 4px 12px rgba(107, 199, 232, .35);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
 }
+
+.textoDocentes{
+    color:white;
+}
+
+
+.card {
+    background: transparent !important;
+}
+
+.btn-ver {
+    background: #00BCD4;
+    color: white;
+    border: none;
+}
+
+.btn-ver:hover {
+    background: #0097A7;
+    color: white;
+}
+
+.btn-editar {
+    background: #FF9800;
+    color: white;
+    border: none;
+}
+
+.btn-editar:hover {
+    background: #F57C00;
+    color: white;
+}
+
+.btn-eliminar {
+    background: #E53935;
+    color: white;
+    border: none;
+}
+
+.btn-eliminar:hover {
+    background: #C62828;
+    color: white;
+}
+
+
+/* Modal */
+.modal-content {
+    border: none;
+}
+
+.modal-header {
+     background: rgb(49, 125, 146) !important;
+    color: white;
+}
+
+.glass-modal {
+    border: 1px solid rgba(255, 255, 255, .15);
+    border-radius: 20px;
+    overflow: hidden;
+    color: white;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
+}
+
+.glass-modal .modal-header {
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
+    color: #fff;
+}
+
+.glass-modal .modal-body {
+    background: white;
+}
+
+
+.accordion-item {
+    background: rgba(255, 255, 255, .06);
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.accordion-button,
+.accordion-button.collapsed,
+.accordion-button:not(.collapsed) {
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
+    color: #fff !important;
+    font-weight: 600;
+    box-shadow: none !important;
+    border: none;
+}
+
+.accordion-button:focus {
+    box-shadow: none !important;
+}
+
+.accordion-button::after {
+    filter: brightness(0) invert(1);
+}
+
+.accordion-body {
+    background: white;
+}
+
+.form-label {
+    font-weight: 500;
+    color: black;
+}
+
+.form-control-premium,
+.form-select-premium {
+    background: #fff;
+    color: #212529;
+    min-height: 48px;
+}
+
+.form-control-premium:hover,
+.form-select-premium:hover {
+    border-color: rgb(49, 125, 146) !important;
+}
+
+.form-control-premium:focus,
+.form-select-premium:focus {
+    border-color: rgb(49, 125, 146) !important;
+    box-shadow:
+        0 0 0 3px rgba(102, 201, 255, .20),
+        inset 0 1px 2px rgba(0, 0, 0, .04);
+}
+
+

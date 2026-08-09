@@ -1,15 +1,16 @@
+
 .page-container {
     padding: 30px;
     min-height: 100vh;
 }
 
+
 .page-title {
-    color: white;
+    color:rgb(7, 101, 136);
     font-weight: 700;
     text-shadow: 0 2px 8px rgba(0, 0, 0, .2);
 }
 
-/* Contenedor principal */
 .glass-card {
     background: rgba(255, 255, 255, .08);
     backdrop-filter: blur(15px);
@@ -17,49 +18,39 @@
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
+    padding: .5%;
 }
 
-/* Encabezado */
-.glass-header {
-    background: rgba(255, 255, 255, .05);
-    border-bottom: 1px solid rgba(255, 255, 255, .15);
-    color: white;
-}
 
-/* Pie */
 .glass-footer {
-    background: rgba(255, 255, 255, .05);
     border-top: 1px solid rgba(255, 255, 255, .15);
-    color: white;
 }
 
-/* Buscador */
-.glass-input {
-    background: rgba(255, 255, 255, .08);
-    border: 1px solid rgba(255, 255, 255, .15);
-    color: white;
+.table-head{
+    background: rgb(49, 125, 146) !important;
+    color: rgb(8, 0, 0) !important;
 }
 
-.glass-input::placeholder {
-    color: rgba(255, 255, 255, .7);
-}
 
-.glass-input:focus {
-    background: rgba(255, 255, 255, .12);
-    color: white;
-    border-color: #6BC7E8;
-    box-shadow: 0 0 12px rgba(107, 199, 232, .4);
-}
 
-.glass-input option {
-    color: black;
-}
-
-/* Botones */
-.btn-azul {
-    background: linear-gradient(135deg, #1E6FA8, #6BC7E8);
-    color: white;
+.btn-regresar {
+     background: rgb(49, 125, 146) !important;
     border: none;
+    font-weight: 600;
+    color: white;
+}
+
+
+.btn-regresar:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
+}
+
+.btn-azul {
+     background: rgb(49, 125, 146) !important;
+    border: none;
+    font-weight: 600;
 }
 
 .btn-azul:hover {
@@ -68,69 +59,130 @@
     box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
 }
 
-.btn-regresar {
-    background: rgba(255, 255, 255, .12);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, .2);
-    color: white;
-    font-weight: 600;
+.textoDocentes{
+    color:white;
 }
 
-.btn-regresar:hover {
-    background: rgba(255, 255, 255, .2);
+
+.card {
+    background: transparent !important;
+}
+
+.btn-ver {
+    background: #00BCD4;
+    color: white;
+    border: none;
+}
+
+.btn-ver:hover {
+    background: #0097A7;
     color: white;
 }
 
-/* Tarjetas de equivalencias */
-.equivalencia-card {
-    background: rgba(255, 255, 255, .08);
-    backdrop-filter: blur(12px);
+.btn-editar {
+    background: #FF9800;
+    color: white;
+    border: none;
+}
+
+.btn-editar:hover {
+    background: #F57C00;
+    color: white;
+}
+
+.btn-eliminar {
+    background: #E53935;
+    color: white;
+    border: none;
+}
+
+.btn-eliminar:hover {
+    background: #C62828;
+    color: white;
+}
+
+
+/* Modal */
+.modal-content {
+    border: none;
+}
+
+.modal-header {
+     background: rgb(49, 125, 146) !important;
+    color: white;
+}
+
+.glass-modal {
     border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 18px;
-    color: white;
-    transition: .3s;
-    overflow: hidden;
-    height: 100%;
-}
-
-.equivalencia-card:hover {
-    transform: translateY(-6px);
-    background: rgba(255, 255, 255, .12);
-    box-shadow: 0 12px 25px rgba(0, 0, 0, .20);
-}
-
-.equivalencia-card .card-body {
-    padding: 25px;
-}
-
-.equivalencia-card .card-title {
-    font-weight: 700;
-    margin-bottom: 15px;
-}
-
-.equivalencia-card p {
-    color: rgba(255,255,255,.9);
-}
-
-/* Estados */
-.badge-equivalencia {
-    font-size: .85rem;
-    padding: 8px 12px;
     border-radius: 20px;
+    overflow: hidden;
+    color: white;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
+}
+
+.glass-modal .modal-header {
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
+    color: #fff;
+}
+
+.glass-modal .modal-body {
+    background: white;
+}
+
+
+.accordion-item {
+    background: rgba(255, 255, 255, .06);
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.accordion-button,
+.accordion-button.collapsed,
+.accordion-button:not(.collapsed) {
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
+    color: #fff !important;
     font-weight: 600;
+    box-shadow: none !important;
+    border: none;
 }
 
-.estado-finalizada {
-    background: #28a745;
-    color: white;
+.accordion-button:focus {
+    box-shadow: none !important;
 }
 
-.estado-tramite {
-    background: #ffc107;
-    color: #000;
+.accordion-button::after {
+    filter: brightness(0) invert(1);
 }
 
-.estado-no {
-    background: #6c757d;
-    color: white;
+.accordion-body {
+    background: white;
 }
+
+.form-label {
+    font-weight: 500;
+    color: black;
+}
+
+.form-control-premium,
+.form-select-premium {
+    background: #fff;
+    color: #212529;
+    min-height: 48px;
+}
+
+.form-control-premium:hover,
+.form-select-premium:hover {
+    border-color: rgb(49, 125, 146) !important;
+}
+
+.form-control-premium:focus,
+.form-select-premium:focus {
+    border-color: rgb(49, 125, 146) !important;
+    box-shadow:
+        0 0 0 3px rgba(102, 201, 255, .20),
+        inset 0 1px 2px rgba(0, 0, 0, .04);
+}
+
+

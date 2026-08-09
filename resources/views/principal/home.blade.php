@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="container text-center text-white py-5">
+<div class="welcome-container">
 
     <h1 class="display-4 fw-bold">
         Control Escolarrrrrr
@@ -17,10 +17,36 @@
         {{ session('rol') }}
     </p>
 
-
-
 </div>
+
+@endsection
 <style>
+
+    .welcome-container {
+    width: 100%;
+    text-align: center;
+   color: rgb(49, 125, 146) !important;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 70vh;
+}
+
+.welcome-container h1 {
+    margin: 0;
+}
+
+.welcome-container h3 {
+    margin-bottom: 10px;
+}
+
+.welcome-container p {
+    margin: 0;
+    opacity: 0.9;
+}
 
 .cards-container {
     margin-top: 20px;
@@ -72,7 +98,6 @@
 }
 
 .footer .social-icons a {
-    color: white;
     font-size: 1.5rem;
     margin: 0 12px;
     transition: all .3s ease;
