@@ -1,5 +1,6 @@
 <style>
-.glass-modal {
+#modalAlumno.glass-modal,
+#modalAlumno .glass-modal {
     background: #ffffff !important;
     border: none;
     border-radius: 20px;
@@ -8,19 +9,19 @@
     box-shadow: 0 15px 40px rgba(0, 0, 0, .15);
 }
 
-.glass-modal .modal-header {
+#modalAlumno .modal-header {
     background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
     color: #fff;
     border-bottom: none;
     padding: 1.2rem 1.5rem;
 }
 
-.glass-modal .modal-body {
+#modalAlumno .modal-body {
     background: #f8fafc;
     padding: 1.5rem;
 }
 
-.accordion-item {
+#modalAlumno .accordion-item {
     background: white;
     border: 1px solid #e2e8f0;
     border-radius: 16px !important;
@@ -30,12 +31,12 @@
     transition: all 0.3s ease;
 }
 
-.accordion-item:hover {
+#modalAlumno .accordion-item:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     border-color: #cbd5e1;
 }
 
-.accordion-button {
+#modalAlumno .accordion-button {
     background: #f8fafc !important;
     color: #1e293b !important;
     font-weight: 600;
@@ -43,23 +44,23 @@
     border-bottom: 1px solid transparent;
 }
 
-.accordion-button:not(.collapsed) {
+#modalAlumno .accordion-button:not(.collapsed) {
     background: linear-gradient(135deg, rgba(73, 164, 190, 0.08) 0%, rgba(30, 111, 168, 0.08) 100%) !important;
     color: #1E6FA8 !important;
     border-bottom: 1px solid #e2e8f0;
     box-shadow: none !important;
 }
 
-.accordion-button:focus {
+#modalAlumno .accordion-button:focus {
     box-shadow: none !important;
 }
 
-.accordion-body {
+#modalAlumno .accordion-body {
     background: white;
     padding: 1.5rem;
 }
 
-.form-label {
+#modalAlumno .form-label {
     font-weight: 600;
     color: #334155;
     font-size: 0.85rem;
@@ -67,9 +68,9 @@
     display: inline-block;
 }
 
-.form-control-premium,
-.form-select-premium,
-textarea.form-control-premium {
+#modalAlumno .form-control-premium,
+#modalAlumno .form-select-premium,
+#modalAlumno textarea.form-control-premium {
     background: #ffffff;
     border: 1px solid #cbd5e1;
     border-radius: 12px;
@@ -80,19 +81,19 @@ textarea.form-control-premium {
     transition: all 0.2s ease-in-out;
 }
 
-.form-control-premium:hover,
-.form-select-premium:hover {
+#modalAlumno .form-control-premium:hover,
+#modalAlumno .form-select-premium:hover {
     border-color: #94a3b8;
 }
 
-.form-control-premium:focus,
-.form-select-premium:focus {
+#modalAlumno .form-control-premium:focus,
+#modalAlumno .form-select-premium:focus {
     border-color: #3b82f6;
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
     outline: none;
 }
 
-.glass-modal .modal-footer {
+#modalAlumno .modal-footer {
     background: #f8fafc !important;
     border-top: 1px solid #e2e8f0;
     padding: 1rem 1.5rem;
@@ -101,7 +102,7 @@ textarea.form-control-premium {
     gap: 12px;
 }
 
-.btn-premium-cancel {
+#modalAlumno .btn-premium-cancel {
     background: #f1f5f9;
     color: #475569 !important;
     border: 1px solid #cbd5e1;
@@ -111,13 +112,13 @@ textarea.form-control-premium {
     transition: all 0.25s ease;
 }
 
-.btn-premium-cancel:hover {
+#modalAlumno .btn-premium-cancel:hover {
     background: #e2e8f0;
     color: #1e293b !important;
     transform: translateY(-1px);
 }
 
-.btn-premium-save {
+#modalAlumno .btn-premium-save {
     background: linear-gradient(135deg, rgb(73, 164, 190) 0%, #1E6FA8 100%);
     color: white !important;
     border: none;
@@ -128,7 +129,7 @@ textarea.form-control-premium {
     transition: all 0.25s ease;
 }
 
-.btn-premium-save:hover {
+#modalAlumno .btn-premium-save:hover {
     background: linear-gradient(135deg, #1E6FA8 0%, #154c75 100%);
     box-shadow: 0 6px 16px rgba(30, 111, 168, 0.35);
     transform: translateY(-1px);

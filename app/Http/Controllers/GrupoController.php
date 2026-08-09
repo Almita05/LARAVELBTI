@@ -72,6 +72,7 @@ class GrupoController extends Controller
             'id_tipoPeriodo' => $request->id_tipoPeriodo,
             'modalidadHorario' => $request->modalidadHorario,
             'id_nivel_academico' => $request->id_nivel_academico,
+            'statusGrupo' => $request->statusGrupo ?? 'ACTIVO',
         ]);
 
         if ($response->failed()) {
@@ -118,6 +119,7 @@ class GrupoController extends Controller
             'id_tipoPeriodo' => $request->id_tipoPeriodo,
             'modalidadHorario' => $request->modalidadHorario,
             'id_nivel_academico' => $request->id_nivel_academico,
+            'statusGrupo' => $request->statusGrupo ?? 'ACTIVO',
         ]);
 
         if ($response->failed()) {
