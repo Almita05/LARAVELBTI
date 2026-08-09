@@ -42,13 +42,15 @@
     }
 
     .navbar {
-        background: rgba(38, 104, 123, .95);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, .25);
-        padding: 12px 25px;
-        z-index: 1100;
-    }
+    background: rgba(38, 104, 123, .95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, .25);
+    padding: 12px 25px;
+
+    /* Bootstrap navbar fijo */
+    z-index: 1030;
+}
 
     .navbar-brand img {
         border-radius: 50%;
@@ -219,28 +221,33 @@
 }
 
 
-/* Modal */
 .modal-content {
     border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .35);
 }
 
 .modal-header {
-     background: rgb(49, 125, 146) !important;
+    background: linear-gradient(
+        135deg,
+        rgb(73, 164, 190),
+        #1E6FA8
+    );
     color: white;
+    border: none;
 }
 
-.glass-modal {
-    border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
-    overflow: hidden;
-    color: white;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
+.modal-body {
+    background: #fff;
 }
 
-.glass-modal .modal-header {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
-    color: #fff;
+.modal-footer {
+    background: #f8fafc;
+    border-top: 1px solid #e5e7eb;
+}
+.glass-modal .modal-body {
+    background: white;
 }
 
 .glass-modal .modal-body {
