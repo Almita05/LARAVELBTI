@@ -37,7 +37,7 @@
 
     body {
         font-family: 'Segoe UI', sans-serif;
-        background: rgb(49, 125, 146);
+       
         background-attachment: fixed;
     }
 
@@ -101,6 +101,7 @@
     .table {
         border-radius: 15px;
         overflow: hidden;
+         background: rgb(49, 125, 146);
     }
 
    .main-content {

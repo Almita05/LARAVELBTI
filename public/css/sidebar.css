@@ -1,180 +1,142 @@
-.sidebar{
+ 
+.sidebar {
+    background: rgb(49, 125, 146) !important;
     position: fixed;
     left: 0;
     top: 0;
     width: 270px;
     height: 100vh;
     z-index: 1000;
-
-    background: rgba(255,255,255,.08);
-    backdrop-filter: blur(18px);
-    border-right: 1px solid rgba(255,255,255,.15);
-
     overflow-y: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
-
     padding: 25px 0;
 }
 
-.sidebar::-webkit-scrollbar{
-    display:none;
+
+.sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+.sidebar .logo {
+    color: rgb(25, 105, 128);
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
 }
 
 
-.sidebar .logo{
-    color:white;
-    font-size:24px;
-    font-weight:bold;
-    text-align:center;
-    margin-bottom:30px;
+.sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: rgb(248, 248, 248);
+    text-decoration: none;
+    padding: 13px 20px;
+    border-radius: 12px;
+    transition: all .3s ease;
 }
 
-
-.sidebar ul{
-    list-style:none;
-    padding:0;
-    margin:0;
+.sidebar a:hover {
+    color: #6BC7E8;
+    transform: translateX(8px);
 }
 
-
-.sidebar li{
-    margin:6px 15px;
+.sidebar i {
+    width: 24px;
 }
-
-
-/* Links normales */
-.sidebar a{
-
-    display:flex;
-    align-items:center;
-    gap:14px;
-
-    color:white;
-    text-decoration:none;
-
-    padding:13px 20px;
-
-    border-radius:12px;
-
-    transition:.3s;
-}
-
-
-.sidebar a:hover{
-
-    background:rgba(255,255,255,.12);
-
-    color:#6BC7E8;
-
-    transform:translateX(8px);
-}
-
-
-.sidebar i{
-
-    width:24px;
-    color:#6BC7E8;
+.menu-title {
+    margin: 6px 15px;
+    color: rgb(25, 105, 128);
+    font-size: 15px;
+    font-weight: bold;
 
 }
 
+.sidebar .accordion-item {
+    border: none;
+    background: transparent;
+}
 
-.menu-title{
 
-    color:#6BC7E8;
-
-    font-size:13px;
-
-    font-weight:bold;
-
-    text-transform:uppercase;
-
-    margin:25px 25px 10px;
+.sidebar .accordion-button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 13px 20px;
+    background: rgb(49, 125, 146) !important;
+    border: none !important;
+    border-radius: 12px;
+    box-shadow: none !important;
+    font-weight: normal;
+    text-align: left;
+    transition: all .3s ease;
 }
 
 
 
-/* ========================= */
-/* ACORDEON DEL SIDEBAR */
-/* ========================= */
-
-
-.sidebar .accordion-item{
-
-    background:transparent;
-    border:none;
+.sidebar .accordion-button:hover {
+    background: #6BC7E8 !important;
+    transform: translateX(5px);
 }
 
 
-.sidebar .accordion-button{
+.sidebar .accordion-button::after {
 
-    background:transparent;
-
-
-    padding:13px 20px;
-
-    border-radius:12px;
-
-    box-shadow:none;
-
-    font-weight:normal;
-
-}
-
-
-.sidebar .accordion-button:hover{
-
-    background:rgba(255,255,255,.12);
-
-    color:#6BC7E8;
+    content: "›";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-left: auto;
+    background-image: none !important;
+    font-size: 26px;
+    font-weight: normal;
+    line-height: 1;
+    opacity: 1;
+    transform: rotate(0deg);
+    transition: transform .25s ease;
 
 }
 
 
-/* Flecha */
-.sidebar .accordion-button::after{
+.sidebar .accordion-button:not(.collapsed)::after {
+    content: "›";
+    transform: rotate(90deg);
+}
 
-    filter:brightness(0) invert(1);
-
+.sidebar .accordion-button:not(.collapsed) {
+    background: rgb(49, 125, 146) !important;
+    box-shadow: none !important;
 }
 
 
-/* cuando está abierto */
-
-.sidebar .accordion-button:not(.collapsed){
-
-    background:rgba(255,255,255,.12);
-
-    color:#6BC7E8;
-
+.sidebar .accordion-body {
+    padding: 5px 0 5px 20px;
 }
 
 
-/* contenido desplegado */
-
-.sidebar .accordion-body{
-
-    padding:5px 0 5px 20px;
-
+.sidebar .accordion-body a {
+    margin: 3px 0;
+    padding: 5px 10px 5px 25px;
+    font-size: 13px;
+}
+.sidebar .accordion-body a:hover {
+    color: #6BC7E8;
+    background: rgba(107, 199, 232, .10);
+    transform: translateX(5px);
 }
 
-
-.sidebar .accordion-body a{
-
-    margin-top:5px;
-
+.main-content {
+    position: relative;
+    z-index: 1;
 }
-
-
-.main-content{
-
-    position:relative;
-
-    z-index:1;
-
-}
-
-.sidebar .accordion-body a{
-    margin:5px 0;
-    padding-left:35px;
+.sidebar .accordion-collapse,
+.sidebar .accordion-body {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }

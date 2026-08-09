@@ -2,87 +2,6 @@
 
 @section('content')
 
-<style>
-.glass-modal {
-    background: rgb(73, 164, 190) !important;
-    border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
-    overflow: hidden;
-    color: white;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
-}
-
-.glass-modal .modal-header {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
-    color: #fff;
-}
-
-.glass-modal .modal-body {
-    background: white;
-}
-
-.glass-modal .modal-footer {
-    border-top: 1px solid rgba(255, 255, 255, .08);
-    background: rgba(255, 255, 255, .03);
-}
-
-.accordion-item {
-    background: rgba(255, 255, 255, .06);
-    border: none;
-    border-radius: 14px;
-    overflow: hidden;
-}
-
-.accordion-button,
-.accordion-button.collapsed,
-.accordion-button:not(.collapsed) {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
-    color: #fff !important;
-    font-weight: 600;
-    box-shadow: none !important;
-    border: none;
-}
-
-.accordion-button:focus {
-    box-shadow: none !important;
-}
-
-.accordion-button::after {
-    filter: brightness(0) invert(1);
-}
-
-.accordion-body {
-    background: white;
-}
-
-.form-label {
-    font-weight: 600;
-    color: black;
-}
-
-.form-control-premium,
-.form-select-premium {
-    background: #fff;
-    border: 2px solid #9BDFFF;
-    border-radius: 15px;
-    color: #212529;
-    min-height: 48px;
-}
-
-.form-control-premium:hover,
-.form-select-premium:hover {
-    border-color: #7FD3FF;
-}
-
-.form-control-premium:focus,
-.form-select-premium:focus {
-    border-color: #66C9FF;
-    box-shadow:
-        0 0 0 3px rgba(102, 201, 255, .20),
-        inset 0 1px 2px rgba(0, 0, 0, .04);
-}
-</style>
 
 <head>
     <link rel="stylesheet" href="{{ asset('css/estilosDocentes.css') }}">
@@ -110,33 +29,36 @@
 
     </div>
 
+
+    <div class="glass-header p-3 d-flex justify-content-between align-items-center">
+
+        <h5 class="mb-0 textoDocentes">
+            Lista de docentes
+        </h5>
+
+        <input type="text" id="buscador" class="form-control glass-input w-25" placeholder="Buscar docente...">
+
+    </div>
+
+    <br>
+
+
+
     <div class="glass-card">
-
-        <div class="glass-header p-3 d-flex justify-content-between align-items-center">
-
-            <h5 class="mb-0 textoDocentes">
-                Lista de docentes
-            </h5>
-
-            <input type="text" id="buscador" class="form-control glass-input w-25" placeholder="Buscar docente...">
-
-        </div>
-
-
         <div class="table-responsive">
 
-            <table class="table table-borderless glass-table align-middle mb-0">
+            <table class="table glass-table align-middle mb-0">
 
-                <thead>
+                <thead class="table-head">
                     <tr>
                         <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Teléfono</th>
-                        <th>Status</th>
-                        <th>Nivel</th>
-                        <th>Fecha</th>
-                        <th class="text-center">Acciones</th>
+                        <th>NOMBRE</th>
+                        <th>CORREO</th>
+                        <th>TELÉFONO</th>
+                        <th>ESTATUS</th>
+                        <th>NIVEL</th>
+                        <th>FECHA</th>
+                        <th class="text-center">ACCIONES</th>
                     </tr>
                 </thead>
 
@@ -151,12 +73,12 @@
             <small id="infoPaginacion"></small>
             <div id="paginacion"></div>
         </div>
-
     </div>
 
+    @endsection
     <!-- MODAL -->
     <div class="modal fade" id="modalDocente" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <form id="formDocente" class="modal-content glass-modal">
 
                 <div class="modal-header">
@@ -231,13 +153,13 @@
 
                 <div class="modal-footer">
 
-                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-azul" data-bs-dismiss="modal">
 
                         Cancelar
 
                     </button>
 
-                    <button class="btn btn-outline-light" type="submit">
+                    <button class="btn btn-azul" type="submit">
 
                         <i class="bi bi-floppy-fill"></i>
                         Guardar Alumno
@@ -248,10 +170,11 @@
 
             </form>
         </div>
+
     </div>
 </div>
 
-@endsection
+
 
 
 {{-- ========================= JS ========================= --}}

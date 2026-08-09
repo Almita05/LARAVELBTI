@@ -1,3 +1,6 @@
+/* ===========================
+   CONTENEDOR PRINCIPAL
+=========================== */
 
 .page-container {
     padding: 30px;
@@ -5,154 +8,345 @@
 }
 
 
+/* ===========================
+   TÍTULO
+=========================== */
+
 .page-title {
-    color: white;
+    color: #111827;
+    font-size: 28px;
     font-weight: 700;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+    margin-bottom: 25px;
 }
+
+
+/* ===========================
+   TARJETA PRINCIPAL
+=========================== */
 
 .glass-card {
-    background: rgba(255, 255, 255, .08);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 16px;
+
     overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
+
+
+/* ===========================
+   ENCABEZADO
+=========================== */
 
 .glass-header {
-    background: rgba(255, 255, 255, .05);
-    border-bottom: 1px solid rgba(255, 255, 255, .15);
-    color: white;
+    background: rgb(49, 125, 146);
+
+    padding: 15px 20px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.glass-table {
-    margin-bottom: 0;
-}
 
-.glass-table thead {
-    background: #0D47A1;
-}
-
-.glass-table thead th {
-    border: none;
-    font-weight: 600;
-}
-
-.glass-table tbody {
-    background: rgba(13, 71, 161, .12);
-}
-
-.glass-table tbody tr {
-    transition: .3s;
-}
-
-.glass-table tbody tr:hover {
-    background: rgba(255, 255, 255, .08);
-}
-
-.glass-table td,
-.glass-table th {
-    border-color: rgba(255, 255, 255, .08);
-}
+/* ===========================
+   BUSCADOR
+=========================== */
 
 .glass-input {
-    background: rgba(255, 255, 255, .08);
-    border: 1px solid rgba(255, 255, 255, .15);
+    background: rgba(255, 255, 255, 0.12);
+
+    border: 1px solid rgba(255, 255, 255, 0.25);
+
+    border-radius: 8px;
+
     color: white;
+
+    padding: 9px 14px;
+
+    transition: .2s;
 }
+
 
 .glass-input::placeholder {
-    color: rgba(255, 255, 255, .7);
+    color: rgba(255, 255, 255, 0.75);
 }
+
 
 .glass-input:focus {
-    background: rgba(255, 255, 255, .12);
+    background: rgba(255, 255, 255, 0.18);
+
     color: white;
+
     border-color: #6BC7E8;
-    box-shadow: 0 0 12px rgba(107, 199, 232, .4);
+
+    box-shadow: 0 0 0 3px rgba(107, 199, 232, 0.15);
+
+    outline: none;
 }
 
-.btn-azul {
-    background: linear-gradient(135deg, #1E6FA8, #6BC7E8);
-    border: none;
-    color: white;
-    font-weight: 600;
-}
-
-.btn-azul:hover {
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
-}
-
-.btn-ver {
-    background: #00BCD4;
-    color: white;
-    border: none;
-}
-
-.btn-ver:hover {
-    background: #0097A7;
-    color: white;
-}
-
-.btn-editar {
-    background: #FF9800;
-    color: white;
-    border: none;
-}
-
-.btn-editar:hover {
-    background: #F57C00;
-    color: white;
-}
-
-.btn-regresar {
-    background: rgba(255, 255, 255, .12);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, .2);
-    color: white;
-    font-weight: 600;
-}
-
-.btn-regresar:hover {
-    background: rgba(255, 255, 255, .2);
-    color: white;
-}
 
 /* ===========================
    TABLA
 =========================== */
 
-.glass-table{
-    background: transparent !important;
+.glass-table {
+    width: 100%;
+
+    margin: 0;
+
+    border-collapse: separate;
+    border-spacing: 0;
+
+    background: rgb(49, 125, 146) !important;
+
     color: white;
 }
 
-.glass-table thead,
-.glass-table tbody,
-.glass-table tr,
-.glass-table th,
-.glass-table td{
-    background: transparent !important;
+
+/* ===========================
+   ENCABEZADO DE TABLA
+=========================== */
+
+.glass-table thead {
+    background: rgb(49, 125, 146) !important;
 }
 
-.glass-table thead th{
-    color: white;
+
+.glass-table thead tr {
+    background: rgb(49, 125, 146) !important;
+}
+
+
+.glass-table thead th {
+    background: rgb(49, 125, 146) !important;
+
+    color: white !important;
+
+    font-size: 14px;
+
     font-weight: 600;
-    border-bottom: 1px solid rgba(255,255,255,.15);
+
+    padding: 13px 12px;
+
+    border: none;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-.glass-table tbody td{
+
+/* ===========================
+   CUERPO
+=========================== */
+
+.glass-table tbody {
+    background: rgb(49, 125, 146) !important;
+}
+
+
+.glass-table tbody tr {
+    background: rgb(49, 125, 146) !important;
+
+    transition: .2s;
+}
+
+
+.glass-table tbody td {
+    background: rgb(49, 125, 146) !important;
+
+    color: white !important;
+
+    font-size: 14px;
+
+    padding: 12px;
+
+    border: none;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+
+/* ===========================
+   HOVER
+=========================== */
+
+.glass-table tbody tr:hover,
+.glass-table tbody tr:hover td {
+    background: rgb(49, 125, 146) !important;
+}
+
+
+/* ===========================
+   ÚLTIMA FILA
+=========================== */
+
+.glass-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* ===========================
+   BOTÓN VER
+=========================== */
+
+.btn-ver {
+    background: #00BCD4;
+
     color: white;
-    border-color: rgba(255,255,255,.15);
+
+    border: none;
+
+    width: 32px;
+    height: 32px;
+
+    border-radius: 7px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    transition: .2s;
 }
 
-.glass-table tbody tr{
-    transition: .3s;
+
+.btn-ver:hover {
+    background: #0097A7;
+
+    color: white;
+
+    transform: translateY(-1px);
 }
 
-.glass-table tbody tr:hover{
-    background: rgba(255,255,255,.08) !important;
+
+/* ===========================
+   BOTÓN EDITAR
+=========================== */
+
+.btn-editar {
+    background: #FF9800;
+
+    color: white;
+
+    border: none;
+
+    width: 32px;
+    height: 32px;
+
+    border-radius: 7px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    transition: .2s;
+}
+
+
+.btn-editar:hover {
+    background: #F57C00;
+
+    color: white;
+
+    transform: translateY(-1px);
+}
+
+
+/* ===========================
+   BOTÓN GRUPOS
+=========================== */
+
+.btn-grupos {
+    background: #2196F3;
+
+    color: white;
+
+    border: none;
+
+    width: 32px;
+    height: 32px;
+
+    border-radius: 7px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    transition: .2s;
+}
+
+
+.btn-grupos:hover {
+    background: #1976D2;
+
+    color: white;
+
+    transform: translateY(-1px);
+}
+
+
+/* ===========================
+   BOTÓN REGRESAR
+=========================== */
+
+.btn-regresar {
+    background: rgb(49, 125, 146);
+
+    color: white;
+
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 9px 18px;
+
+    font-weight: 600;
+
+    transition: .2s;
+}
+
+
+.btn-regresar:hover {
+    background: rgb(40, 105, 123);
+
+    color: white;
+
+    transform: translateY(-1px);
+}
+
+
+/* ===========================
+   BOTÓN ALTA GRUPO
+=========================== */
+
+.btn-azul {
+    background: linear-gradient(
+        135deg,
+        #1E6FA8,
+        #6BC7E8
+    );
+
+    color: white;
+
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 9px 16px;
+
+    font-weight: 600;
+
+    transition: .2s;
+}
+
+
+.btn-azul:hover {
+    color: white;
+
+    transform: translateY(-1px);
+
+    box-shadow: 0 4px 12px rgba(107, 199, 232, .35);
 }
