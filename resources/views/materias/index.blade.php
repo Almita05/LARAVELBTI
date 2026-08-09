@@ -75,7 +75,7 @@
 
 <!-- Modal Materia -->
 <div class="modal fade" id="modalMateria" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content glass-modal">
 
             <form id="formMateria">
@@ -146,12 +146,12 @@
                             <!-- Docentes -->
                             <div class="col-12">
                                 <label class="form-label d-flex justify-content-between align-items-center">
-                                    <span><i class="fa-solid fa-chalkboard-user me-1 text-info"></i> Docentes asignados</span>
+                                    <span><i class="fa-solid fa-chalkboard-user me-1"></i> Docentes asignados</span>
                                     <small class="text-muted fw-normal">Selecciona los docentes</small>
                                 </label>
 
                                 <div id="contenedorDocentes"
-                                     class="contenedor-docentes">
+                                     class="contenedor-docentes text-black">
                                 </div>
 
                                 <div id="docentesSeleccionados"
@@ -169,13 +169,13 @@
 
                     <button
                         type="button"
-                        class="btn btn-premium-cancel"
+                        class="btn btn-azul"
                         data-bs-dismiss="modal">
                         Cancelar
                     </button>
 
                     <button
-                        class="btn btn-premium-save"
+                        class="btn btn-azul"
                         type="submit">
                         <i class="fa-solid fa-floppy-disk me-2"></i>
                         Guardar
@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // =========================
     let listaMaterias = [];
 let paginaMateria = 1;
-const filasMateria = 5;
+const filasMateria = 15;
 
 function cargarMaterias() {
 
