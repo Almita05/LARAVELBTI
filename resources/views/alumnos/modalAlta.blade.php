@@ -1,140 +1,8 @@
-<style>
-#modalAlumno.glass-modal,
-#modalAlumno .glass-modal {
-    background: #ffffff !important;
-    border: none;
-    border-radius: 20px;
-    overflow: hidden;
-    color: #1e293b;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, .15);
-}
+@extends('layouts.app')
 
-#modalAlumno .modal-header {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
-    color: #fff;
-    border-bottom: none;
-    padding: 1.2rem 1.5rem;
-}
+@section('content')
 
-#modalAlumno .modal-body {
-    background: #f8fafc;
-    padding: 1.5rem;
-}
-
-#modalAlumno .accordion-item {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px !important;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-#modalAlumno .accordion-item:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    border-color: #cbd5e1;
-}
-
-#modalAlumno .accordion-button {
-    background: #f8fafc !important;
-    color: #1e293b !important;
-    font-weight: 600;
-    padding: 1.1rem 1.5rem;
-    border-bottom: 1px solid transparent;
-}
-
-#modalAlumno .accordion-button:not(.collapsed) {
-    background: linear-gradient(135deg, rgba(73, 164, 190, 0.08) 0%, rgba(30, 111, 168, 0.08) 100%) !important;
-    color: #1E6FA8 !important;
-    border-bottom: 1px solid #e2e8f0;
-    box-shadow: none !important;
-}
-
-#modalAlumno .accordion-button:focus {
-    box-shadow: none !important;
-}
-
-#modalAlumno .accordion-body {
-    background: white;
-    padding: 1.5rem;
-}
-
-#modalAlumno .form-label {
-    font-weight: 600;
-    color: #334155;
-    font-size: 0.85rem;
-    margin-bottom: 6px;
-    display: inline-block;
-}
-
-#modalAlumno .form-control-premium,
-#modalAlumno .form-select-premium,
-#modalAlumno textarea.form-control-premium {
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 12px;
-    color: #1e293b;
-    font-size: 0.9rem;
-    padding: 0.65rem 1rem;
-    min-height: 44px;
-    transition: all 0.2s ease-in-out;
-}
-
-#modalAlumno .form-control-premium:hover,
-#modalAlumno .form-select-premium:hover {
-    border-color: #94a3b8;
-}
-
-#modalAlumno .form-control-premium:focus,
-#modalAlumno .form-select-premium:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
-    outline: none;
-}
-
-#modalAlumno .modal-footer {
-    background: #f8fafc !important;
-    border-top: 1px solid #e2e8f0;
-    padding: 1rem 1.5rem;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
-#modalAlumno .btn-premium-cancel {
-    background: #f1f5f9;
-    color: #475569 !important;
-    border: 1px solid #cbd5e1;
-    border-radius: 12px;
-    padding: 0.6rem 1.5rem;
-    font-weight: 600;
-    transition: all 0.25s ease;
-}
-
-#modalAlumno .btn-premium-cancel:hover {
-    background: #e2e8f0;
-    color: #1e293b !important;
-    transform: translateY(-1px);
-}
-
-#modalAlumno .btn-premium-save {
-    background: linear-gradient(135deg, rgb(73, 164, 190) 0%, #1E6FA8 100%);
-    color: white !important;
-    border: none;
-    border-radius: 12px;
-    padding: 0.6rem 1.5rem;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(30, 111, 168, 0.25);
-    transition: all 0.25s ease;
-}
-
-#modalAlumno .btn-premium-save:hover {
-    background: linear-gradient(135deg, #1E6FA8 0%, #154c75 100%);
-    box-shadow: 0 6px 16px rgba(30, 111, 168, 0.35);
-    transform: translateY(-1px);
-}
-</style>
+    <link rel="stylesheet" href="{{ asset('css/estilosModal.css') }}">
 <div class="modal fade" id="modalAlumno" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <form id="formAlumno" class="modal-content glass-modal" novalidate>
@@ -158,7 +26,7 @@
                         <h2 class="accordion-header">
                             <button class="accordion-button rounded" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#datosPersonales">
-                                <i class="bi bi-person-badge-fill me-2 text-info"></i> Datos personales
+                                <i class="bi bi-person-badge-fill me-2"></i> Datos personales
                             </button>
                         </h2>
                         
@@ -221,7 +89,7 @@
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#datosTutor">
-                                <i class="bi bi-people me-2 text-primary"></i> Datos del tutor
+                                <i class="bi bi-people me-2"></i> Datos del tutor
                             </button>
                         </h2>
 
@@ -257,7 +125,7 @@
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#direccion">
-                                <i class="bi bi-geo-alt me-2 text-primary"></i> Dirección
+                                <i class="bi bi-geo-alt me-2"></i> Dirección
                             </button>
                         </h2>
 
@@ -291,7 +159,7 @@
                             <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#academicos">
 
-                                <i class="bi bi-mortarboard me-2 text-primary"></i> Datos académicos
+                                <i class="bi bi-mortarboard me-2"></i> Datos académicos
                             </button>
 
                         </h2>
@@ -370,7 +238,7 @@
                         <h2 class="accordion-header">
                             <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#cursosExtra">
-                                <i class="bi bi-journal-bookmark me-2 text-primary"></i> Cursos extracurriculares
+                                <i class="bi bi-journal-bookmark me-2"></i> Cursos extracurriculares
                             </button>
                         </h2>
 
@@ -407,10 +275,10 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn-premium-cancel" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-azul" data-bs-dismiss="modal">
                     Cancelar
                 </button>
-                <button class="btn-premium-save" type="submit">
+                <button class="btn btn-azul" type="submit">
                     <i class="bi bi-floppy-fill me-2"></i>
                     Guardar Alumno
                 </button>
