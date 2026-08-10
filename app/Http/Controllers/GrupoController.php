@@ -7,29 +7,61 @@ use Illuminate\Support\Facades\Http;
 
 class GrupoController extends Controller
 {
-     public function index()
+    public function index()
     {
         return view('grupos.index');
+    }
+
+    public function capturaCalificaciones()
+    {
+        return view('grupos.captura_calificaciones');
+    }
+
+    public function getCalificacionesGrupoMateria(Request $request, $id_grupo)
+    {
+        $url = config('services.api.base_url') . '/grupos/' . $id_grupo . '/calificaciones-materia';
+        $params = [];
+        if ($request->filled('id_materia')) {
+            $params['id_materia'] = $request->id_materia;
+        }
+        $response = Http::get($url, $params);
+        return response()->json($response->json(), $response->status());
+    }
+
+    public function saveCalificacionesGrupoMateria(Request $request, $id_grupo, $id_materia)
+    {
+        $url = config('services.api.base_url') . '/grupos/' . $id_grupo . '/calificaciones-materia/' . $id_materia;
+        $response = Http::post($url, $request->all());
+        return response()->json($response->json(), $response->status());
     }
 
    public function lista(Request $request)
 {
     $url = config('services.api.base_url') . '/grupos';
 
-    $response = Http::get($url, [
+    $params = [
         'page' => $request->page ?? 1,
-        'limit' => $request->limit ?? 5,
+        'limit' => $request->limit ?? 50,
         'search' => $request->search ?? ''
-    ]);
+    ];
+
+    if ($request->filled('id_centro_trabajo')) {
+        $params['id_centro_trabajo'] = $request->id_centro_trabajo;
+    }
+    if ($request->filled('status_grupo')) {
+        $params['status_grupo'] = $request->status_grupo;
+    }
+
+    $response = Http::get($url, $params);
 
     if ($response->failed()) {
-    return response()->json([
-        'data' => [],
-        'total' => 0,
-        'page' => 1,
-        'total_pages' => 1
-    ]);
-}
+        return response()->json([
+            'data' => [],
+            'total' => 0,
+            'page' => 1,
+            'total_pages' => 1
+        ]);
+    }
 
     return $response->json();
 }

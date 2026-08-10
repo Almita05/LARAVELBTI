@@ -99,13 +99,22 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::delete('/alumnos/{id}', [AlumnoController::class, 'destroy'])->name('alumnos.destroy');
     Route::get('/alumnos/{id}', [AlumnoController::class, 'show'])->where('id', '[0-9]+');
     Route::put('/alumnos/{id}', [AlumnoController::class, 'update'])->where('id', '[0-9]+');
+    Route::get('/alumnos/{id}/kardex', [AlumnoController::class, 'getKardex'])->where('id', '[0-9]+');
+    Route::post('/alumnos/{id}/calificaciones', [AlumnoController::class, 'guardarCalificaciones'])->where('id', '[0-9]+');
     Route::get('/grupos/{id_grupo}/alumnos', [AlumnoController::class, 'alumnosGrupo'])->where('id_grupo', '[0-9]+');
     Route::get('/alumnos/grupo/{id_grupo}', [AlumnoController::class, 'alumnosPorGrupo'])->where('id_grupo', '[0-9]+');
+
+    // Catálogos en Cascada para Formulario Dinámico
+    Route::get('/catalogos/centros-trabajo', [AlumnoController::class, 'getCentrosTrabajo']);
+    Route::get('/catalogos/niveles-academicos', [AlumnoController::class, 'getNivelesAcademicos']);
+    Route::get('/catalogos/generaciones', [AlumnoController::class, 'getGeneraciones']);
+    Route::get('/catalogos/grupos', [AlumnoController::class, 'getGrupos']);
 
     // Docentes
     Route::get('/docentes', [DocenteController::class, 'index'])->name('docentes');
     Route::get('/docentes/lista', [DocenteController::class, 'lista']);
     Route::post('/docentes', [DocenteController::class, 'store']);
+    Route::post('/docentes/{id}/credenciales', [DocenteController::class, 'guardarCredenciales']);
     Route::get('/docentes/{id}', [DocenteController::class, 'show']);
     Route::put('/docentes/{id}', [DocenteController::class, 'update']);
     Route::delete('/docentes/{id}', [DocenteController::class, 'destroy']);
@@ -120,6 +129,9 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
 
     // Grupos
     Route::get('/grupos', [GrupoController::class, 'index'])->name('grupos');
+    Route::get('/grupos/captura_calificaciones', [GrupoController::class, 'capturaCalificaciones'])->name('grupos.captura_calificaciones');
+    Route::get('/grupos/{id_grupo}/calificaciones-materia', [GrupoController::class, 'getCalificacionesGrupoMateria']);
+    Route::post('/grupos/{id_grupo}/calificaciones-materia/{id_materia}', [GrupoController::class, 'saveCalificacionesGrupoMateria']);
     Route::get('/grupos/lista', [GrupoController::class, 'lista']);
     Route::post('/grupos', [GrupoController::class, 'store']);
     Route::get('/grupos/modalAlta', [GrupoController::class, 'modalAlta']);

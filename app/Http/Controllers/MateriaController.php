@@ -39,6 +39,8 @@ public function store(Request $request)
         "descripcionMateria" => $request->input('descripcionMateria'),
         "estatusMateria" => $request->input('estatusMateria'),
         "clave" => $request->input('clave'),
+        "idCentroTrabajo" => $request->input('idCentroTrabajo'),
+        "id_nivel_academico" => $request->input('id_nivel_academico'),
         "docentes" => $request->input('docentes', [])
     ];
 
@@ -99,6 +101,8 @@ public function update(Request $request, $id)
         "descripcionMateria" => $request->input('descripcionMateria'),
         "estatusMateria" => $request->input('estatusMateria'),
         "clave" => $request->input('clave'),
+        "idCentroTrabajo" => $request->input('idCentroTrabajo'),
+        "id_nivel_academico" => $request->input('id_nivel_academico'),
         "docentes" => $request->input('docentes', [])
     ];
 

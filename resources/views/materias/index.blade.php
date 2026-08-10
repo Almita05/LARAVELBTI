@@ -45,12 +45,12 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                     
+                        <th>Clave</th>
                         <th>Nombre</th>
-                        <th>Descripción</th>
+                        <th>CCT</th>
+                        <th>Semestre / Periodo</th>
                         <th>Estatus</th>  
                         <th>Docentes</th>
-                       
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -143,10 +143,38 @@
                                 </select>
                             </div>
 
+                            <!-- Centro de Trabajo (CCT) -->
+                            <div class="col-md-6">
+                                <label class="form-label">Centro de Trabajo (CCT) <span class="text-danger">*</span></label>
+                                <select
+                                    class="form-select form-select-premium"
+                                    name="idCentroTrabajo"
+                                    id="selectCctMateria"
+                                    onchange="filtrarPeriodosPorCct(this.value)"
+                                    required>
+                                    <option value="">-- Seleccionar CCT --</option>
+                                    <option value="2">BTI (Bachillerato Tecnológico Interamericano)</option>
+                                    <option value="3">BGNE (Bachillerato General No Escolarizado)</option>
+                                    <option value="1">INFORMÁTICA Y COMPUTACIÓN</option>
+                                </select>
+                            </div>
+
+                            <!-- Nivel Académico (Semestre / Trimestre) -->
+                            <div class="col-md-6">
+                                <label class="form-label" id="labelNivelMateria">Semestre / Periodo <span class="text-danger">*</span></label>
+                                <select
+                                    class="form-select form-select-premium"
+                                    name="id_nivel_academico"
+                                    id="selectNivelMateria"
+                                    required>
+                                    <option value="">-- Primero seleccione un Centro de Trabajo --</option>
+                                </select>
+                            </div>
+
                             <!-- Docentes -->
                             <div class="col-12">
                                 <label class="form-label d-flex justify-content-between align-items-center">
-                                    <span><i class="fa-solid fa-chalkboard-user me-1 text-info"></i> Docentes asignados</span>
+                                    <span>Docentes asignados</span>
                                     <small class="text-muted fw-normal">Selecciona los docentes</small>
                                 </label>
 
@@ -221,14 +249,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 listaDocentes.forEach(docente => {
 
                     const id = docente.idDocente;
-                    const nombre = `${docente.nombreDocente} ${docente.apPaternoDocente} ${docente.apMaternoDocente}`;
+                    const nombre = `${docente.nombreDocente} ${docente.apPaternoDocente || ''} ${docente.apMaternoDocente || ''}`.trim();
 
                     const div = document.createElement('div');
-                    div.className = 'form-check';
+                    div.className = 'form-check mb-1';
 
                     div.innerHTML = `
                         <input class="form-check-input docenteCheck" type="checkbox" value="${id}" id="doc_${id}">
-                        <label class="form-check-label" for="doc_${id}">
+                        <label class="form-check-label text-dark fw-normal ms-1" for="doc_${id}">
                             ${nombre}
                         </label>
                     `;
@@ -298,12 +326,72 @@ document.getElementById('buscadorMateria')?.addEventListener('input', () => {
 let modoMateria = 'crear'; // 'crear', 'editar', 'ver'
 let idMateriaActual = null;
 
+window.filtrarPeriodosPorCct = function(cctVal, selectedNivel = null) {
+    const selectNivel = document.getElementById('selectNivelMateria');
+    const labelNivel = document.getElementById('labelNivelMateria');
+    if (!selectNivel) return;
+
+    selectNivel.innerHTML = '';
+
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = '-- Seleccionar Periodo --';
+    selectNivel.appendChild(defaultOpt);
+
+    cctVal = String(cctVal || '');
+
+    if (cctVal === '3') { // BGNE (Trimestral)
+        if (labelNivel) labelNivel.innerHTML = 'Trimestre <span class="text-danger">*</span>';
+        const trimestres = [
+            { id: 1, nombre: '1er Trimestre' },
+            { id: 2, nombre: '2do Trimestre' },
+            { id: 3, nombre: '3er Trimestre' },
+            { id: 4, nombre: '4to Trimestre' },
+            { id: 5, nombre: '5to Trimestre' },
+            { id: 6, nombre: '6to Trimestre' }
+        ];
+        trimestres.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.id;
+            opt.textContent = t.nombre;
+            if (selectedNivel && String(selectedNivel) === String(t.id)) {
+                opt.selected = true;
+            }
+            selectNivel.appendChild(opt);
+        });
+    } else if (cctVal === '1' || cctVal === '2') { // BTI o IC (Semestral)
+        if (labelNivel) labelNivel.innerHTML = 'Semestre <span class="text-danger">*</span>';
+        const semestres = [
+            { id: 7, nombre: '1er Semestre' },
+            { id: 8, nombre: '2do Semestre' },
+            { id: 9, nombre: '3er Semestre' },
+            { id: 10, nombre: '4to Semestre' },
+            { id: 11, nombre: '5to Semestre' },
+            { id: 12, nombre: '6to Semestre' }
+        ];
+        semestres.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = s.nombre;
+            if (selectedNivel && String(selectedNivel) === String(s.id)) {
+                opt.selected = true;
+            }
+            selectNivel.appendChild(opt);
+        });
+    } else {
+        if (labelNivel) labelNivel.innerHTML = 'Semestre / Periodo <span class="text-danger">*</span>';
+        defaultOpt.textContent = '-- Primero seleccione un Centro de Trabajo --';
+    }
+};
+
 function setFormDisabled(disabled) {
     const form = document.getElementById('formMateria');
     form.nombreMateria.disabled = disabled;
     form.descripcionMateria.disabled = disabled;
     if (form.clave) form.clave.disabled = disabled;
     form.estatusMateria.disabled = disabled;
+    if (form.idCentroTrabajo) form.idCentroTrabajo.disabled = disabled;
+    if (form.id_nivel_academico) form.id_nivel_academico.disabled = disabled;
     document.querySelectorAll('.docenteCheck').forEach(cb => cb.disabled = disabled);
 }
 
@@ -315,6 +403,8 @@ if (btnAlta) {
         idMateriaActual = null;
         const form = document.getElementById('formMateria');
         form.reset();
+        if (form.idCentroTrabajo) form.idCentroTrabajo.value = '';
+        filtrarPeriodosPorCct('');
         document.getElementById('docentesSeleccionados').innerHTML = '';
         setFormDisabled(false);
         document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
@@ -339,6 +429,8 @@ window.verMateria = function(id) {
                 form.descripcionMateria.value = m.descripcionMateria || '';
                 if (form.clave) form.clave.value = m.clave || '';
                 form.estatusMateria.value = m.estatusMateria || 'ACTIVA';
+                if (form.idCentroTrabajo) form.idCentroTrabajo.value = m.idCentroTrabajo || '';
+                filtrarPeriodosPorCct(m.idCentroTrabajo, m.id_nivel_academico);
 
                 document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
                 const checkIds = m.docentes ? m.docentes.map(d => d.idDocente) : [];
@@ -388,6 +480,8 @@ window.editarMateria = function(id) {
                 form.descripcionMateria.value = m.descripcionMateria || '';
                 if (form.clave) form.clave.value = m.clave || '';
                 form.estatusMateria.value = m.estatusMateria || 'ACTIVA';
+                if (form.idCentroTrabajo) form.idCentroTrabajo.value = m.idCentroTrabajo || '';
+                filtrarPeriodosPorCct(m.idCentroTrabajo, m.id_nivel_academico);
 
                 document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
                 const checkIds = m.docentes ? m.docentes.map(d => d.idDocente) : [];
@@ -491,13 +585,21 @@ function renderMaterias() {
     let html = '';
 
     datos.forEach(materia => {
+        const cctNombre = materia.nombreCentroTrabajo || (materia.idCentroTrabajo === 3 ? 'BGNE' : (materia.idCentroTrabajo === 2 ? 'BTI' : (materia.idCentroTrabajo === 1 ? 'INF. Y COMP.' : '—')));
+        const cctBadgeClass = materia.idCentroTrabajo === 3 ? 'bg-primary' : (materia.idCentroTrabajo === 2 ? 'bg-info text-dark' : 'bg-secondary');
+        const nivelNombre = materia.nombreNivelAcademico || (materia.id_nivel_academico ? (materia.id_nivel_academico <= 6 ? `${materia.id_nivel_academico}° Trimestre` : `${materia.id_nivel_academico - 6}° Semestre`) : '—');
 
         html += `
         <tr>
-            <td>${materia.id}</td>
-          
-            <td>${materia.nombreMateria}</td>
-            <td>${materia.descripcionMateria}</td>
+            <td><strong>${materia.id}</strong></td>
+            <td><code class="fw-bold">${materia.clave || '—'}</code></td>
+            <td><strong>${materia.nombreMateria}</strong></td>
+            <td>
+                <span class="badge ${cctBadgeClass}">${cctNombre}</span>
+            </td>
+            <td>
+                <span class="badge bg-light text-dark border">${nivelNombre}</span>
+            </td>
 
             <td>
                 <span class="badge ${materia.estatusMateria === 'ACTIVA' ? 'bg-success' : 'bg-danger'}">
@@ -508,17 +610,17 @@ function renderMaterias() {
             <td>
                 ${materia.docentes?.length
                     ? materia.docentes.map(d => d.nombreDocente).join(', ')
-                    : 'Sin docentes'}
+                    : '<span class="text-muted fst-italic">Sin docentes</span>'}
             </td>
 
             <td class="text-center">
-                <button class="btn btn-secondary btn-sm me-1" onclick="verMateria(${materia.id})">
+                <button class="btn btn-secondary btn-sm me-1 shadow-sm" onclick="verMateria(${materia.id})" title="Ver detalles">
                     <i class="fa-solid fa-eye"></i>
                 </button>
-                <button class="btn btn-warning btn-sm me-1" onclick="editarMateria(${materia.id})">
+                <button class="btn btn-warning btn-sm me-1 shadow-sm" onclick="editarMateria(${materia.id})" title="Editar">
                     <i class="fa-solid fa-pen"></i>
                 </button>
-                <button class="btn btn-danger btn-sm" onclick="eliminarMateria(${materia.id})">
+                <button class="btn btn-danger btn-sm shadow-sm" onclick="eliminarMateria(${materia.id})" title="Eliminar">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </td>
@@ -568,6 +670,8 @@ window.cambiarPaginaMateria = function(p) {
             descripcionMateria: this.descripcionMateria.value,
             estatusMateria: this.estatusMateria.value,
             clave: this.clave.value,
+            idCentroTrabajo: this.idCentroTrabajo.value ? parseInt(this.idCentroTrabajo.value) : null,
+            id_nivel_academico: this.id_nivel_academico.value ? parseInt(this.id_nivel_academico.value) : null,
             docentes: docentes
         };
 
@@ -597,18 +701,25 @@ window.cambiarPaginaMateria = function(p) {
 
                 this.reset();
                 contenedorSeleccionados.innerHTML = '';
-
                 cargarMaterias();
+
             } else {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Error al guardar materia.',
+                    text: resp.message || resp.error || "No se pudo guardar la materia.",
                     confirmButtonColor: 'rgb(38, 104, 123)'
                 });
             }
+        })
+        .catch(() => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: "Ocurrió un error al enviar el formulario.",
+                confirmButtonColor: 'rgb(38, 104, 123)'
+            });
         });
-
     });
 
     cargarDocentes();
