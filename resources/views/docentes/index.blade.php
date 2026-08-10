@@ -239,7 +239,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // =========================
     let listaDocentes = [];
     let paginaDocente = 1;
-    const filasDocente = 5;
+    const filasDocente = 13;
 
     function cargarDocentes() {
         fetch('/docentes/lista')
