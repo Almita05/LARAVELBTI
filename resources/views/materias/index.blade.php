@@ -10,6 +10,12 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
 
+
+        <a href="{{ url()->previous() }}" class="btn btn-azul">
+            <i class="fa-solid fa-arrow-left me-2"></i>
+            Regresar
+        </a>
+
         <h3 class="page-title">
             Lista de Materias
         </h3>
@@ -23,18 +29,16 @@
 
     <div class="glass-card">
 
+
+
         <div class="glass-header p-3 d-flex justify-content-between align-items-center">
 
-            <h5 class="mb-0">
-                Lista de Materias
-            </h5>
 
-            <input
-                type="text"
-                id="buscadorMateria"
-                class="form-control glass-input w-25"
-                placeholder="Buscar materia..."
-            >
+            <input type="text" id="buscadorMateria" class="form-control glass-input w-25"
+                placeholder="Buscar materia...">
+
+
+
 
         </div>
 
@@ -45,12 +49,12 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                     
+
                         <th>Nombre</th>
                         <th>Descripción</th>
-                        <th>Estatus</th>  
+                        <th>Estatus</th>
                         <th>Docentes</th>
-                       
+
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -75,7 +79,7 @@
 
 <!-- Modal Materia -->
 <div class="modal fade" id="modalMateria" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content glass-modal">
 
             <form id="formMateria">
@@ -86,10 +90,7 @@
                         Alta Materia
                     </h5>
 
-                    <button type="button"
-                            class="btn-close btn-close-white"
-                            data-bs-dismiss="modal"
-                            aria-label="Cerrar">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar">
                     </button>
                 </div>
 
@@ -102,42 +103,28 @@
                             <!-- Nombre -->
                             <div class="col-md-6">
                                 <label class="form-label">Nombre <span class="text-danger">*</span></label>
-                                <input
-                                    type="text"
-                                    class="form-control form-control-premium"
-                                    name="nombreMateria"
-                                    placeholder="Ej. Matemáticas I"
-                                    required>
+                                <input type="text" class="form-control form-control-premium" name="nombreMateria"
+                                    placeholder="Ej. Matemáticas I" required>
                             </div>
 
                             <!-- Descripción -->
                             <div class="col-md-6">
                                 <label class="form-label">Descripción <span class="text-danger">*</span></label>
-                                <input
-                                    type="text"
-                                    class="form-control form-control-premium"
-                                    name="descripcionMateria"
-                                    placeholder="Ej. Materia de tronco común"
-                                    required>
+                                <input type="text" class="form-control form-control-premium" name="descripcionMateria"
+                                    placeholder="Ej. Materia de tronco común" required>
                             </div>
 
                             <!-- Clave -->
                             <div class="col-md-6">
                                 <label class="form-label">Clave <span class="text-danger">*</span></label>
-                                <input
-                                    type="text"
-                                    class="form-control form-control-premium"
-                                    name="clave"
-                                    placeholder="Ej. MAT-201"
-                                    required>
+                                <input type="text" class="form-control form-control-premium" name="clave"
+                                    placeholder="Ej. MAT-201" required>
                             </div>
 
                             <!-- Estatus -->
                             <div class="col-md-6">
                                 <label class="form-label">Estatus <span class="text-danger">*</span></label>
-                                <select
-                                    class="form-select form-select-premium"
-                                    name="estatusMateria">
+                                <select class="form-select form-select-premium" name="estatusMateria">
                                     <option value="ACTIVA">ACTIVA</option>
                                     <option value="INACTIVA">INACTIVA</option>
                                 </select>
@@ -150,12 +137,10 @@
                                     <small class="text-muted fw-normal">Selecciona los docentes</small>
                                 </label>
 
-                                <div id="contenedorDocentes"
-                                     class="contenedor-docentes text-black">
+                                <div id="contenedorDocentes" class="contenedor-docentes text-black">
                                 </div>
 
-                                <div id="docentesSeleccionados"
-                                     class="mt-2 d-flex flex-wrap gap-1">
+                                <div id="docentesSeleccionados" class="mt-2 d-flex flex-wrap gap-1">
                                 </div>
                             </div>
 
@@ -167,16 +152,11 @@
 
                 <div class="modal-footer border-0">
 
-                    <button
-                        type="button"
-                        class="btn btn-azul"
-                        data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-azul" data-bs-dismiss="modal">
                         Cancelar
                     </button>
 
-                    <button
-                        class="btn btn-azul"
-                        type="submit">
+                    <button class="btn btn-azul" type="submit">
                         <i class="fa-solid fa-floppy-disk me-2"></i>
                         Guardar
                     </button>
@@ -221,7 +201,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 listaDocentes.forEach(docente => {
 
                     const id = docente.idDocente;
-                    const nombre = `${docente.nombreDocente} ${docente.apPaternoDocente} ${docente.apMaternoDocente}`;
+                    const nombre =
+                        `${docente.nombreDocente} ${docente.apPaternoDocente} ${docente.apMaternoDocente}`;
 
                     const div = document.createElement('div');
                     div.className = 'form-check';
@@ -275,189 +256,93 @@ document.addEventListener("DOMContentLoaded", function() {
     // CARGAR MATERIAS
     // =========================
     let listaMaterias = [];
-let paginaMateria = 1;
-const filasMateria = 15;
+    let paginaMateria = 1;
+    const filasMateria = 15;
 
-function cargarMaterias() {
+    function cargarMaterias() {
 
-    fetch('/materias/lista')
-        .then(res => res.json())
-        .then(data => {
-
-            listaMaterias = Array.isArray(data.data) ? data.data : [];
-            renderMaterias();
-        });
-}
-
-// 🔍 BUSCADOR
-document.getElementById('buscadorMateria')?.addEventListener('input', () => {
-    paginaMateria = 1;
-    renderMaterias();
-});
-
-let modoMateria = 'crear'; // 'crear', 'editar', 'ver'
-let idMateriaActual = null;
-
-function setFormDisabled(disabled) {
-    const form = document.getElementById('formMateria');
-    form.nombreMateria.disabled = disabled;
-    form.descripcionMateria.disabled = disabled;
-    if (form.clave) form.clave.disabled = disabled;
-    form.estatusMateria.disabled = disabled;
-    document.querySelectorAll('.docenteCheck').forEach(cb => cb.disabled = disabled);
-}
-
-// Reset modal to create mode when Alta button is clicked
-const btnAlta = document.querySelector('[data-bs-target="#modalMateria"]');
-if (btnAlta) {
-    btnAlta.addEventListener('click', function() {
-        modoMateria = 'crear';
-        idMateriaActual = null;
-        const form = document.getElementById('formMateria');
-        form.reset();
-        document.getElementById('docentesSeleccionados').innerHTML = '';
-        setFormDisabled(false);
-        document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
-        document.querySelector('#modalMateria .modal-title').innerHTML = '<i class="fa-solid fa-book me-2"></i> Alta Materia';
-        const submitBtn = document.querySelector('#formMateria button[type="submit"]');
-        submitBtn.style.display = 'inline-block';
-        submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Guardar';
-    });
-}
-
-window.verMateria = function(id) {
-    modoMateria = 'ver';
-    idMateriaActual = id;
-
-    fetch(`/materias/${id}`)
-        .then(res => res.json())
-        .then(resp => {
-            if (resp.success && resp.data) {
-                const m = resp.data;
-                const form = document.getElementById('formMateria');
-                form.nombreMateria.value = m.nombreMateria || '';
-                form.descripcionMateria.value = m.descripcionMateria || '';
-                if (form.clave) form.clave.value = m.clave || '';
-                form.estatusMateria.value = m.estatusMateria || 'ACTIVA';
-
-                document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
-                const checkIds = m.docentes ? m.docentes.map(d => d.idDocente) : [];
-                checkIds.forEach(docId => {
-                    const cb = document.getElementById(`doc_${docId}`);
-                    if (cb) cb.checked = true;
-                });
-                mostrarSeleccionados();
-                setFormDisabled(true);
-
-                document.querySelector('#modalMateria .modal-title').innerHTML = '<i class="fa-solid fa-eye me-2"></i> Detalles de Materia';
-                const submitBtn = document.querySelector('#formMateria button[type="submit"]');
-                submitBtn.style.display = 'none';
-
-                const modal = new bootstrap.Modal(document.getElementById('modalMateria'));
-                modal.show();
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Error al cargar detalles de la materia.',
-                    confirmButtonColor: 'rgb(38, 104, 123)'
-                });
-            }
-        })
-        .catch(() => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al cargar detalles de la materia.',
-                confirmButtonColor: 'rgb(38, 104, 123)'
-            });
-        });
-}
-
-window.editarMateria = function(id) {
-    modoMateria = 'editar';
-    idMateriaActual = id;
-
-    fetch(`/materias/${id}`)
-        .then(res => res.json())
-        .then(resp => {
-            if (resp.success && resp.data) {
-                const m = resp.data;
-                const form = document.getElementById('formMateria');
-                form.nombreMateria.value = m.nombreMateria || '';
-                form.descripcionMateria.value = m.descripcionMateria || '';
-                if (form.clave) form.clave.value = m.clave || '';
-                form.estatusMateria.value = m.estatusMateria || 'ACTIVA';
-
-                document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
-                const checkIds = m.docentes ? m.docentes.map(d => d.idDocente) : [];
-                checkIds.forEach(docId => {
-                    const cb = document.getElementById(`doc_${docId}`);
-                    if (cb) cb.checked = true;
-                });
-                mostrarSeleccionados();
-                setFormDisabled(false);
-
-                document.querySelector('#modalMateria .modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square me-2"></i> Editar Materia';
-                const submitBtn = document.querySelector('#formMateria button[type="submit"]');
-                submitBtn.style.display = 'inline-block';
-                submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Actualizar';
-
-                const modal = new bootstrap.Modal(document.getElementById('modalMateria'));
-                modal.show();
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Error al cargar detalles de la materia.',
-                    confirmButtonColor: 'rgb(38, 104, 123)'
-                });
-            }
-        })
-        .catch(() => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al cargar detalles de la materia.',
-                confirmButtonColor: 'rgb(38, 104, 123)'
-            });
-        });
-}
-
-window.eliminarMateria = function(id) {
-    Swal.fire({
-        title: '¿Deseas eliminar esta materia?',
-        text: 'Esta acción no se puede deshacer.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: 'rgb(38, 104, 123)',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`/materias/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
-            })
+        fetch('/materias/lista')
             .then(res => res.json())
             .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Eliminado!',
-                        text: data.message || 'Materia eliminada correctamente.',
-                        confirmButtonColor: 'rgb(38, 104, 123)'
+
+                listaMaterias = Array.isArray(data.data) ? data.data : [];
+                renderMaterias();
+            });
+    }
+
+    // 🔍 BUSCADOR
+    document.getElementById('buscadorMateria')?.addEventListener('input', () => {
+        paginaMateria = 1;
+        renderMaterias();
+    });
+
+    let modoMateria = 'crear'; // 'crear', 'editar', 'ver'
+    let idMateriaActual = null;
+
+    function setFormDisabled(disabled) {
+        const form = document.getElementById('formMateria');
+        form.nombreMateria.disabled = disabled;
+        form.descripcionMateria.disabled = disabled;
+        if (form.clave) form.clave.disabled = disabled;
+        form.estatusMateria.disabled = disabled;
+        document.querySelectorAll('.docenteCheck').forEach(cb => cb.disabled = disabled);
+    }
+
+    // Reset modal to create mode when Alta button is clicked
+    const btnAlta = document.querySelector('[data-bs-target="#modalMateria"]');
+    if (btnAlta) {
+        btnAlta.addEventListener('click', function() {
+            modoMateria = 'crear';
+            idMateriaActual = null;
+            const form = document.getElementById('formMateria');
+            form.reset();
+            document.getElementById('docentesSeleccionados').innerHTML = '';
+            setFormDisabled(false);
+            document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
+            document.querySelector('#modalMateria .modal-title').innerHTML =
+                '<i class="fa-solid fa-book me-2"></i> Alta Materia';
+            const submitBtn = document.querySelector('#formMateria button[type="submit"]');
+            submitBtn.style.display = 'inline-block';
+            submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Guardar';
+        });
+    }
+
+    window.verMateria = function(id) {
+        modoMateria = 'ver';
+        idMateriaActual = id;
+
+        fetch(`/materias/${id}`)
+            .then(res => res.json())
+            .then(resp => {
+                if (resp.success && resp.data) {
+                    const m = resp.data;
+                    const form = document.getElementById('formMateria');
+                    form.nombreMateria.value = m.nombreMateria || '';
+                    form.descripcionMateria.value = m.descripcionMateria || '';
+                    if (form.clave) form.clave.value = m.clave || '';
+                    form.estatusMateria.value = m.estatusMateria || 'ACTIVA';
+
+                    document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
+                    const checkIds = m.docentes ? m.docentes.map(d => d.idDocente) : [];
+                    checkIds.forEach(docId => {
+                        const cb = document.getElementById(`doc_${docId}`);
+                        if (cb) cb.checked = true;
                     });
-                    cargarMaterias();
+                    mostrarSeleccionados();
+                    setFormDisabled(true);
+
+                    document.querySelector('#modalMateria .modal-title').innerHTML =
+                        '<i class="fa-solid fa-eye me-2"></i> Detalles de Materia';
+                    const submitBtn = document.querySelector('#formMateria button[type="submit"]');
+                    submitBtn.style.display = 'none';
+
+                    const modal = new bootstrap.Modal(document.getElementById('modalMateria'));
+                    modal.show();
                 } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: data.message || 'Error al eliminar.',
+                        text: 'Error al cargar detalles de la materia.',
                         confirmButtonColor: 'rgb(38, 104, 123)'
                     });
                 }
@@ -466,33 +351,133 @@ window.eliminarMateria = function(id) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Error al eliminar materia.',
+                    text: 'Error al cargar detalles de la materia.',
                     confirmButtonColor: 'rgb(38, 104, 123)'
                 });
             });
-        }
-    });
-}
+    }
 
-function renderMaterias() {
+    window.editarMateria = function(id) {
+        modoMateria = 'editar';
+        idMateriaActual = id;
 
-    const filtro = document.getElementById('buscadorMateria').value.toLowerCase();
+        fetch(`/materias/${id}`)
+            .then(res => res.json())
+            .then(resp => {
+                if (resp.success && resp.data) {
+                    const m = resp.data;
+                    const form = document.getElementById('formMateria');
+                    form.nombreMateria.value = m.nombreMateria || '';
+                    form.descripcionMateria.value = m.descripcionMateria || '';
+                    if (form.clave) form.clave.value = m.clave || '';
+                    form.estatusMateria.value = m.estatusMateria || 'ACTIVA';
 
-    const filtradas = listaMaterias.filter(m =>
-        m.nombreMateria.toLowerCase().includes(filtro) ||
-        m.descripcionMateria.toLowerCase().includes(filtro) ||
-        (m.clave && m.clave.toLowerCase().includes(filtro))
-    );
+                    document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
+                    const checkIds = m.docentes ? m.docentes.map(d => d.idDocente) : [];
+                    checkIds.forEach(docId => {
+                        const cb = document.getElementById(`doc_${docId}`);
+                        if (cb) cb.checked = true;
+                    });
+                    mostrarSeleccionados();
+                    setFormDisabled(false);
 
-    const inicio = (paginaMateria - 1) * filasMateria;
-    const fin = inicio + filasMateria;
-    const datos = filtradas.slice(inicio, fin);
+                    document.querySelector('#modalMateria .modal-title').innerHTML =
+                        '<i class="fa-solid fa-pen-to-square me-2"></i> Editar Materia';
+                    const submitBtn = document.querySelector('#formMateria button[type="submit"]');
+                    submitBtn.style.display = 'inline-block';
+                    submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Actualizar';
 
-    let html = '';
+                    const modal = new bootstrap.Modal(document.getElementById('modalMateria'));
+                    modal.show();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al cargar detalles de la materia.',
+                        confirmButtonColor: 'rgb(38, 104, 123)'
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al cargar detalles de la materia.',
+                    confirmButtonColor: 'rgb(38, 104, 123)'
+                });
+            });
+    }
 
-    datos.forEach(materia => {
+    window.eliminarMateria = function(id) {
+        Swal.fire({
+            title: '¿Deseas eliminar esta materia?',
+            text: 'Esta acción no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: 'rgb(38, 104, 123)',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/materias/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Eliminado!',
+                                text: data.message ||
+                                    'Materia eliminada correctamente.',
+                                confirmButtonColor: 'rgb(38, 104, 123)'
+                            });
+                            cargarMaterias();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Error al eliminar.',
+                                confirmButtonColor: 'rgb(38, 104, 123)'
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al eliminar materia.',
+                            confirmButtonColor: 'rgb(38, 104, 123)'
+                        });
+                    });
+            }
+        });
+    }
 
-        html += `
+    function renderMaterias() {
+
+        const filtro = document.getElementById('buscadorMateria').value.toLowerCase();
+
+        const filtradas = listaMaterias.filter(m =>
+            m.nombreMateria.toLowerCase().includes(filtro) ||
+            m.descripcionMateria.toLowerCase().includes(filtro) ||
+            (m.clave && m.clave.toLowerCase().includes(filtro))
+        );
+
+        const inicio = (paginaMateria - 1) * filasMateria;
+        const fin = inicio + filasMateria;
+        const datos = filtradas.slice(inicio, fin);
+
+        let html = '';
+
+        datos.forEach(materia => {
+
+            html += `
         <tr>
             <td>${materia.id}</td>
           
@@ -524,36 +509,36 @@ function renderMaterias() {
             </td>
         </tr>
         `;
-    });
+        });
 
-    document.getElementById('tablaMaterias').innerHTML = html;
+        document.getElementById('tablaMaterias').innerHTML = html;
 
-    renderPaginacionMaterias(filtradas.length);
-}
+        renderPaginacionMaterias(filtradas.length);
+    }
 
-function renderPaginacionMaterias(total) {
+    function renderPaginacionMaterias(total) {
 
-    const totalPaginas = Math.ceil(total / filasMateria);
-    let html = '';
+        const totalPaginas = Math.ceil(total / filasMateria);
+        let html = '';
 
-    for (let i = 1; i <= totalPaginas; i++) {
-        html += `
+        for (let i = 1; i <= totalPaginas; i++) {
+            html += `
         <button class="btn btn-sm ${i === paginaMateria ? 'btn-primary' : 'btn-outline-primary'} me-1"
             onclick="cambiarPaginaMateria(${i})">
             ${i}
         </button>`;
+        }
+
+        document.getElementById('paginacionMaterias').innerHTML = html;
+
+        document.getElementById('infoPaginacionMaterias').innerText =
+            `Mostrando ${total} registros`;
     }
 
-    document.getElementById('paginacionMaterias').innerHTML = html;
-
-    document.getElementById('infoPaginacionMaterias').innerText =
-        `Mostrando ${total} registros`;
-}
-
-window.cambiarPaginaMateria = function(p) {
-    paginaMateria = p;
-    renderMaterias();
-}
+    window.cambiarPaginaMateria = function(p) {
+        paginaMateria = p;
+        renderMaterias();
+    }
 
     // =========================
     // FORMULARIO
@@ -575,39 +560,41 @@ window.cambiarPaginaMateria = function(p) {
         const method = modoMateria === 'editar' ? 'PUT' : 'POST';
 
         fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(res => res.json())
-        .then(resp => {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(resp => {
 
-            if (resp.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Éxito!',
-                    text: modoMateria === 'editar' ? "Materia actualizada correctamente." : "Materia guardada correctamente.",
-                    confirmButtonColor: 'rgb(38, 104, 123)'
-                });
+                if (resp.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: modoMateria === 'editar' ?
+                            "Materia actualizada correctamente." :
+                            "Materia guardada correctamente.",
+                        confirmButtonColor: 'rgb(38, 104, 123)'
+                    });
 
-                bootstrap.Modal.getInstance(document.getElementById('modalMateria')).hide();
+                    bootstrap.Modal.getInstance(document.getElementById('modalMateria')).hide();
 
-                this.reset();
-                contenedorSeleccionados.innerHTML = '';
+                    this.reset();
+                    contenedorSeleccionados.innerHTML = '';
 
-                cargarMaterias();
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Error al guardar materia.',
-                    confirmButtonColor: 'rgb(38, 104, 123)'
-                });
-            }
-        });
+                    cargarMaterias();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al guardar materia.',
+                        confirmButtonColor: 'rgb(38, 104, 123)'
+                    });
+                }
+            });
 
     });
 

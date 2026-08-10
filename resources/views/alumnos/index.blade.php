@@ -14,8 +14,13 @@
                 <i class="fa-solid fa-arrow-left me-2"></i>
                 Regresar
             </a>
+
+
+            
         </div>
         <h3 class="page-title">
+             <i class="fa-solid fa-chalkboard-user me-2"></i>
+            Listado de alumnos
         </h3>
 
         <button class="btn btn-azul" onclick="abrirModalAlumno()">
