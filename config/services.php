@@ -30,7 +30,7 @@ return [
     ],
 
     'api' => [
-        'base_url' => env('API_URL', 'http://100.105.12.98:5000'),
+        'base_url' => rtrim(env('API_URL', 'http://127.0.0.1:5000'), '/'),
     ],
 
     // 👇 Agrega esto

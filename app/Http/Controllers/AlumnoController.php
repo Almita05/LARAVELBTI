@@ -48,84 +48,64 @@ class AlumnoController extends Controller
 
 public function modalAlta()
 {
-    // Grupos
-    $responseGrupos = Http::get(config('services.api.base_url') . '/grupos');
+    $responseCentros = Http::get(config('services.api.base_url') . '/centroTrabajo');
+    $centrosTrabajo = $responseCentros->successful() ? $responseCentros->json() : [];
 
-    if ($responseGrupos->failed()) {
-        $grupos = [];
-    } else {
-        $grupos = $responseGrupos->json()['data'];
-    }
-
-    // Generaciones
-    $responseGeneraciones = Http::get(config('services.api.base_url') . '/generaciones');
-
-    $generaciones = $responseGeneraciones->successful()
-        ? $responseGeneraciones->json()
-        : [];
-
-    return view('alumnos.modalAlta', compact('grupos', 'generaciones'));
+    return view('alumnos.modalAlta', compact('centrosTrabajo'));
 }
 
+public function getCentrosTrabajo()
+{
+    $response = Http::get(config('services.api.base_url') . '/centroTrabajo');
+    return response()->json($response->json(), $response->status());
+}
+
+public function getNivelesAcademicos(Request $request)
+{
+    $response = Http::get(config('services.api.base_url') . '/getNivelAcademico', $request->all());
+    return response()->json($response->json(), $response->status());
+}
+
+public function getGeneraciones(Request $request)
+{
+    $response = Http::get(config('services.api.base_url') . '/generaciones', $request->all());
+    return response()->json($response->json(), $response->status());
+}
+
+public function getGrupos(Request $request)
+{
+    $response = Http::get(config('services.api.base_url') . '/grupos', $request->all());
+    return response()->json($response->json(), $response->status());
+}
 
 public function store(Request $request)
 {
-    $request->merge(json_decode($request->getContent(), true));
-    \Log::info('Store request payload:', $request->all());
+    $payload = $request->json()->all() ?: $request->all();
+    \Log::info('Store request payload:', $payload);
 
     $url = config('services.api.base_url') . '/crealumnos';
 
     $response = Http::withHeaders([
         'Accept' => 'application/json',
         'Content-Type' => 'application/json'
-    ])->post($url, [
-        "nombre" => $request->nombre,
-        "apPaterno" => $request->apPaterno,
-        "apMaterno" => $request->apMaterno ?: null,
-        "fechaNacimiento" => $request->fechaNacimiento ?: null,
-        "tutor" => $request->tutor ?: null,
-        "parentesco" => $request->parentesco ?: null,
-        "calle" => $request->calle ?: null,
-        "colonia" => $request->colonia ?: null,
-        "localidad" => $request->localidad ?: null,
-        "municipio" => $request->municipio ?: null,
-        "telefonoTutor" => $request->telefonoTutor ?: null,
-        "celularAlumno" => $request->celularAlumno ?: null,
-        "correoAlumno" => $request->correoAlumno ?: null,
-        "escuelaProcedencia" => $request->escuelaProcedencia ?: null,
-        "observaciones" => $request->observaciones ?: null,
-        "id_Generacion" => $request->id_Generacion ? (int)$request->id_Generacion : null,
-        "id_Grupo" => $request->id_Grupo ? (int)$request->id_Grupo : null,
-        "equivalencia" => ($request->equivalencia === 'SI' || $request->equivalencia === 'NO') ? $request->equivalencia : null,
-        "numeroControl" => $request->numeroControl ?: null,
-        "statusAlumno" => $request->statusAlumno ?: 'ACTIVO',
-        "folioCertificado" => $request->folioCertificado ?: null,
-        "curp" => $request->curp ?: null,
-        "fechaRecogioCertificado" => $request->fechaRecogioCertificado ?: null,
-        "recogioCertificado" => $request->recogioCertificado ?: null
-    ]);
+    ])->post($url, $payload);
 
     if ($response->failed()) {
+        $resJson = $response->json();
+        $errorMsg = $resJson['error'] ?? 'Error al guardar alumno';
         return response()->json([
             'success' => false,
-            'message' => 'Error al guardar alumno',
+            'message' => $errorMsg,
             'error' => $response->body()
-        ], 500);
+        ], $response->status() ?: 500);
     }
 
     $resData = $response->json();
-    if (isset($resData['error'])) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Error en la base de datos: ' . $resData['error']
-        ], 400);
-    }
-
     return response()->json([
         'success' => true,
-        'message' => 'Alumno guardado correctamente',
+        'message' => $resData['mensaje'] ?? 'Alumno guardado correctamente',
         'data' => $resData
-    ]);
+    ], 201);
 }
 
 public function destroy($id)
@@ -260,5 +240,42 @@ public function alumnosPorGrupo($id_grupo)
         'success' => true,
         'data' => $response->json()['data'] ?? []
     ]);
+}
+
+public function getKardex($id)
+{
+    $url = config('services.api.base_url') . '/alumnos/' . $id . '/kardex';
+    $response = Http::get($url);
+
+    if ($response->failed()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener el kárdex del alumno.',
+            'data' => null
+        ], $response->status());
+    }
+
+    return response()->json($response->json());
+}
+
+public function guardarCalificaciones(Request $request, $id)
+{
+    $url = config('services.api.base_url') . '/alumnos/' . $id . '/calificaciones';
+    $payload = $request->json()->all() ?: $request->all();
+
+    $response = Http::withHeaders([
+        'Accept' => 'application/json',
+        'Content-Type' => 'application/json'
+    ])->post($url, $payload);
+
+    if ($response->failed()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al guardar calificaciones.',
+            'error' => $response->body()
+        ], $response->status() ?: 500);
+    }
+
+    return response()->json($response->json());
 }
 }

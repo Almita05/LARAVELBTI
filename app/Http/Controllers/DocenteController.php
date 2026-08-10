@@ -148,4 +148,36 @@ public function destroy($id)
         'message' => 'Docente eliminado correctamente'
     ]);
 }
+
+public function guardarCredenciales(Request $request, $id)
+{
+    $request->validate([
+        'usuario' => 'required|string|max:100',
+        'password' => 'nullable|string|min:4'
+    ]);
+
+    $payload = [
+        'usuario' => trim($request->usuario)
+    ];
+
+    if ($request->filled('password')) {
+        $payload['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
+    }
+
+    $url = config('services.api.base_url') . '/docentes/' . $id . '/credenciales';
+    $response = Http::post($url, $payload);
+
+    if ($response->failed()) {
+        $resData = $response->json();
+        return response()->json([
+            'success' => false,
+            'message' => $resData['error'] ?? 'Error al actualizar credenciales'
+        ], 400);
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Credenciales del docente actualizadas correctamente'
+    ]);
+}
 }

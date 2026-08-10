@@ -47,6 +47,9 @@
                 <thead>
                     <tr>
                         <th>Clave</th>
+                        <th>CCT</th>
+                        <th>Semestre / Trimestre</th>
+                        <th>Progreso Periodo</th>
                         <th>Fecha Inicio</th>
                         <th>Fecha Fin</th>
                         <th>Estatus</th>
@@ -107,19 +110,58 @@ function formatDateForInput(dateStr) {
 function setFormDisabled(disabled) {
     const form = document.getElementById('formGrupo');
     if (!form) return;
-    form.clave.disabled = disabled;
-    form.fechaCreacion.disabled = disabled;
-    form.fechaInicio.disabled = disabled;
-    form.fechaFin.disabled = disabled;
-    form.id_centroTrabajo.disabled = disabled;
-    form.id_planEstudios.disabled = disabled;
-    form.id_tipoPeriodo.disabled = disabled;
-    form.id_nivel_academico.disabled = disabled;
-    form.modalidadHorario.disabled = disabled;
+    if (form.clave) form.clave.disabled = disabled;
+    if (form.fechaCreacion) form.fechaCreacion.disabled = disabled;
+    if (form.fechaInicio) form.fechaInicio.disabled = disabled;
+    if (form.fechaFin) form.fechaFin.disabled = disabled;
+    if (form.id_centroTrabajo) form.id_centroTrabajo.disabled = disabled;
+    if (form.id_planEstudios) form.id_planEstudios.disabled = disabled;
+    if (form.id_tipoPeriodo) form.id_tipoPeriodo.disabled = disabled;
+    if (form.id_nivel_academico) form.id_nivel_academico.disabled = disabled;
+    if (form.modalidadHorario) form.modalidadHorario.disabled = disabled;
     if (form.statusGrupo) form.statusGrupo.disabled = disabled;
+    const chk = document.getElementById('chkCalcularSemanas');
+    if (chk) chk.disabled = disabled;
 }
 
-function initializeModalEvents() {
+function cargarNivelesAcademicos(idCentroTrabajo, selectedNivelId = null) {
+    const form = document.getElementById('formGrupo');
+    if (!form || !form.id_nivel_academico) return Promise.resolve();
+    const selectNivel = form.id_nivel_academico;
+
+    if (!idCentroTrabajo) {
+        selectNivel.innerHTML = '<option value="">Seleccione un centro de trabajo primero</option>';
+        return Promise.resolve();
+    }
+
+    selectNivel.innerHTML = '<option value="">Cargando niveles académicos...</option>';
+
+    return fetch(`/catalogos/niveles-academicos?idCentroTrabajo=${idCentroTrabajo}`)
+        .then(res => res.json())
+        .then(niveles => {
+            selectNivel.innerHTML = '<option value="">Seleccione un nivel</option>';
+            if (Array.isArray(niveles)) {
+                niveles.forEach(n => {
+                    const opt = document.createElement('option');
+                    opt.value = n.id;
+                    opt.textContent = `${n.nombre}`;
+                    if (selectedNivelId && String(n.id) === String(selectedNivelId)) {
+                        opt.selected = true;
+                    }
+                    selectNivel.appendChild(opt);
+                });
+                if (selectedNivelId) {
+                    selectNivel.value = selectedNivelId;
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Error cargando niveles académicos:', err);
+            selectNivel.innerHTML = '<option value="">Error al cargar niveles</option>';
+        });
+}
+
+function initializeModalEvents(initialNivelId = null) {
     const form = document.getElementById('formGrupo');
     if (!form) return;
 
@@ -129,34 +171,47 @@ function initializeModalEvents() {
     const inputInicio = form.fechaInicio;
     const inputFin = form.fechaFin;
     const selectPeriodo = form.id_tipoPeriodo;
+    const selectNivel = form.id_nivel_academico;
 
-    if (!selectCt || !chkDiv || !chk || !inputInicio || !inputFin || !selectPeriodo) return;
+    if (!selectCt || !chkDiv || !chk || !inputInicio || !inputFin || !selectPeriodo || !selectNivel) return;
 
-    // Función para validar si el CT seleccionado es "BGNE"
-    function checkCt(showAlert = false) {
+    // Función para validar y ajustar según el CT seleccionado
+    function checkCt(showAlert = false, nivelIdToSelect = null) {
         const selectedOption = selectCt.options[selectCt.selectedIndex];
-        const isBgne = selectedOption && selectedOption.textContent.toUpperCase().includes('BGNE');
+        if (!selectedOption || !selectCt.value) {
+            selectNivel.innerHTML = '<option value="">Seleccione un centro de trabajo primero</option>';
+            chkDiv.style.display = 'none';
+            chk.checked = false;
+            inputFin.readOnly = false;
+            selectPeriodo.disabled = false;
+            return;
+        }
+
+        const ctNombre = (selectedOption.dataset.nombre || selectedOption.textContent || '').toUpperCase();
+        const idPeriodo = selectedOption.dataset.idPeriodo;
+        const isBgne = ctNombre.includes('BGNE');
+
+        // Auto-seleccionar Tipo de Periodo según el Centro de Trabajo
+        if (idPeriodo) {
+            selectPeriodo.value = idPeriodo;
+        } else if (isBgne) {
+            const optionTrimestral = Array.from(selectPeriodo.options).find(opt => 
+                opt.textContent.toUpperCase().includes('TRIMESTRAL')
+            );
+            if (optionTrimestral) selectPeriodo.value = optionTrimestral.value;
+        }
 
         if (isBgne) {
             chkDiv.style.display = 'block';
+            selectPeriodo.disabled = true;
 
-            // Buscar la opción TRIMESTRAL en el select de periodo
-            const optionTrimestral = Array.from(selectPeriodo.options).find(opt => opt.textContent.toUpperCase()
-                .includes('TRIMESTRAL'));
-            if (optionTrimestral) {
-                if (selectPeriodo.value !== optionTrimestral.value) {
-                    selectPeriodo.value = optionTrimestral.value;
-
-                    if (showAlert) {
-                        Swal.fire({
-                            title: 'Ajuste Automático',
-                            text: 'Al ser un Centro de Trabajo BGNE, el tipo de periodo se ha configurado forzosamente como TRIMESTRAL.',
-                            icon: 'info',
-                            confirmButtonColor: 'rgb(38, 104, 123)'
-                        });
-                    }
-                }
-                selectPeriodo.disabled = true;
+            if (showAlert) {
+                Swal.fire({
+                    title: 'Ajuste Automático',
+                    text: 'Al ser un Centro de Trabajo BGNE, el tipo de periodo se ha configurado forzosamente como TRIMESTRAL.',
+                    icon: 'info',
+                    confirmButtonColor: 'rgb(38, 104, 123)'
+                });
             }
         } else {
             chkDiv.style.display = 'none';
@@ -164,6 +219,9 @@ function initializeModalEvents() {
             inputFin.readOnly = false;
             selectPeriodo.disabled = false;
         }
+
+        // Cargar dinámicamente los niveles académicos del CCT (Semestre para BTI / Trimestre para BGNE)
+        cargarNivelesAcademicos(selectCt.value, nivelIdToSelect);
     }
 
     // Función para calcular y autocompletar la fecha de finalización (78 semanas)
@@ -189,8 +247,26 @@ function initializeModalEvents() {
     }
 
     selectCt.addEventListener('change', () => {
-        checkCt(true);
+        checkCt(true, null);
         calculateEndDate();
+    });
+
+    selectPeriodo.addEventListener('change', () => {
+        if (selectPeriodo.value && !selectCt.value) {
+            fetch(`/catalogos/niveles-academicos?idTipoPeriodo=${selectPeriodo.value}`)
+                .then(res => res.json())
+                .then(niveles => {
+                    selectNivel.innerHTML = '<option value="">Seleccione un nivel</option>';
+                    if (Array.isArray(niveles)) {
+                        niveles.forEach(n => {
+                            const opt = document.createElement('option');
+                            opt.value = n.id;
+                            opt.textContent = `${n.nombre}`;
+                            selectNivel.appendChild(opt);
+                        });
+                    }
+                });
+        }
     });
 
     chk.addEventListener('change', calculateEndDate);
@@ -198,7 +274,7 @@ function initializeModalEvents() {
     inputInicio.addEventListener('input', calculateEndDate);
 
     // Inicializar para cuando los valores ya estén pre-cargados (sin alerta)
-    checkCt(false);
+    checkCt(false, initialNivelId);
 
     // Auto-detectar si ya tiene 78 semanas asignadas para marcar el checkbox
     if (inputInicio.value && inputFin.value) {
@@ -272,7 +348,104 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     function formatearFecha(fecha) {
-        return new Date(fecha).toLocaleDateString();
+        if (!fecha) return '—';
+        const str = formatDateForInput(fecha);
+        const parts = str.split('-');
+        if (parts.length === 3) {
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return new Date(fecha).toLocaleDateString('es-MX');
+    }
+
+    function calcularProgresoPeriodo(g) {
+        if (!g.fechaInicio) return { percent: 0, nivelText: '', inicioPeriodo: '—', finPeriodo: '—' };
+
+        let fechaInicioAbs = new Date(g.fechaInicio);
+        if (isNaN(fechaInicioAbs.getTime())) return { percent: 0, nivelText: '', inicioPeriodo: '—', finPeriodo: '—' };
+
+        let currentDate = new Date(Date.UTC(
+            fechaInicioAbs.getUTCFullYear(),
+            fechaInicioAbs.getUTCMonth(),
+            fechaInicioAbs.getUTCDate()
+        ));
+
+        let groupEndDate = null;
+        if (g.fechaFin) {
+            let fechaFinAbs = new Date(g.fechaFin);
+            if (!isNaN(fechaFinAbs.getTime())) {
+                groupEndDate = new Date(Date.UTC(
+                    fechaFinAbs.getUTCFullYear(),
+                    fechaFinAbs.getUTCMonth(),
+                    fechaFinAbs.getUTCDate()
+                ));
+            }
+        }
+
+        let idTipoPeriodo = g.id_tipoPeriodo;
+        let idNivelActualDb = g.id_nivel_academico;
+
+        if (idTipoPeriodo === null || idTipoPeriodo === undefined) {
+            if (idNivelActualDb !== null && idNivelActualDb >= 7) {
+                idTipoPeriodo = 1; // SEMESTRAL
+            } else {
+                idTipoPeriodo = 2; // TRIMESTRAL (default)
+            }
+        }
+
+        const isTrimestral = idTipoPeriodo === 2;
+        const weeksPerPeriod = isTrimestral ? 13 : 26;
+        const periodLabel = isTrimestral ? "Trim." : "Sem.";
+
+        const now = new Date();
+        const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+
+        let periodNumber = 1;
+        let periodStartDate = new Date(currentDate.getTime());
+        let periodEndDate = new Date(currentDate.getTime() + ((weeksPerPeriod - 1) * 7 * 24 * 60 * 60 * 1000));
+
+        while (true) {
+            periodEndDate = new Date(periodStartDate.getTime() + ((weeksPerPeriod - 1) * 7 * 24 * 60 * 60 * 1000));
+
+            if (todayUTC.getTime() <= periodEndDate.getTime()) {
+                break;
+            }
+
+            if (groupEndDate && periodStartDate.getTime() > groupEndDate.getTime()) {
+                break;
+            }
+            if (isTrimestral && periodNumber >= 6) break;
+            if (!isTrimestral && periodNumber >= 6) break;
+
+            if (groupEndDate && periodEndDate.getTime() >= groupEndDate.getTime()) {
+                break;
+            }
+
+            periodStartDate = new Date(periodEndDate.getTime() + (7 * 24 * 60 * 60 * 1000));
+            periodNumber++;
+        }
+
+        const total = periodEndDate.getTime() - periodStartDate.getTime();
+        const elapsed = todayUTC.getTime() - periodStartDate.getTime();
+
+        let percent = 0;
+        if (total > 0) {
+            percent = Math.round((elapsed / total) * 100);
+            percent = Math.max(0, Math.min(100, percent));
+        }
+
+        const toDMY = (d) => {
+            const dd = String(d.getUTCDate()).padStart(2, '0');
+            const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+            const yyyy = d.getUTCFullYear();
+            return `${dd}/${mm}/${yyyy}`;
+        };
+
+        return {
+            percent: percent,
+            nivelText: `${periodNumber}° ${periodLabel}`,
+            inicioPeriodo: toDMY(periodStartDate),
+            finPeriodo: toDMY(periodEndDate)
+        };
     }
 
     function renderTabla() {
@@ -280,7 +453,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!grupos.length) {
             document.getElementById('tablaGrupos').innerHTML = `
                 <tr>
-                    <td colspan="5" class="text-center text-muted">
+                    <td colspan="8" class="text-center text-muted">
                         No se encontraron grupos
                     </td>
                 </tr>
@@ -295,11 +468,37 @@ document.addEventListener("DOMContentLoaded", function() {
             const badgeClass = status === 'ACTIVO' ? 'bg-success' : 'bg-danger';
             const statusBadge = `<span class="badge ${badgeClass}" style="font-size: 0.75rem; padding: 5px 10px; border-radius: 12px;">${status}</span>`;
 
+            const cctNombre = grupo.nombreCentroTrabajo || (grupo.id_centroTrabajo === 3 ? 'BGNE' : (grupo.id_centroTrabajo === 2 ? 'BTI' : (grupo.id_centroTrabajo === 1 ? 'INF. Y COMP.' : '—')));
+            const cctBadgeClass = grupo.id_centroTrabajo === 3 ? 'bg-primary' : (grupo.id_centroTrabajo === 2 ? 'bg-info text-dark' : 'bg-secondary');
+
+            const nivelNombre = grupo.nombre_nivel || (grupo.id_nivel_academico ? (grupo.id_nivel_academico <= 6 ? `${grupo.id_nivel_academico}° Trimestre` : `${grupo.id_nivel_academico - 6}° Semestre`) : '—');
+
+            const progreso = calcularProgresoPeriodo(grupo);
+
             html += `
                 <tr>
-                    <td>${grupo.clave}</td>
-                    <td>${formatearFecha(grupo.fechaInicio)}</td>
-                    <td>${formatearFecha(grupo.fechaFin)}</td>
+                    <td><strong>${grupo.clave}</strong></td>
+                    <td>
+                        <span class="badge ${cctBadgeClass}">${cctNombre}</span>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark border">${nivelNombre}</span>
+                    </td>
+                    <td style="min-width: 170px;">
+                        <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.76rem;">
+                            <span class="fw-bold text-dark">${progreso.nivelText || 'Periodo'}</span>
+                            <span class="fw-bold" style="color: rgb(38, 104, 123);">${progreso.percent}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px; background-color: #e2e8f0; border-radius: 4px; overflow: hidden;" title="Periodo: ${progreso.inicioPeriodo} - ${progreso.finPeriodo}">
+                            <div class="progress-bar" role="progressbar" style="width: ${progreso.percent}%; background-color: rgb(38, 104, 123);" aria-valuenow="${progreso.percent}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted mt-1" style="font-size: 0.68rem;">
+                            <span>${progreso.inicioPeriodo}</span>
+                            <span>${progreso.finPeriodo}</span>
+                        </div>
+                    </td>
+                    <td><span class="fw-semibold text-secondary">${formatearFecha(grupo.fechaInicio)}</span></td>
+                    <td><span class="fw-semibold text-secondary">${formatearFecha(grupo.fechaFin)}</span></td>
                     <td>${statusBadge}</td>
                     <td class="text-center">
                         <button class="btn btn-ver btn-sm" onclick="verGrupo(${grupo.id})" title="Detalles del grupo">
@@ -344,11 +543,10 @@ document.addEventListener("DOMContentLoaded", function() {
                             form.id_centroTrabajo.value = g.id_centroTrabajo || '';
                             form.id_planEstudios.value = g.id_planEstudios || '';
                             form.id_tipoPeriodo.value = g.id_tipoPeriodo || '';
-                            form.id_nivel_academico.value = g.id_nivel_academico || '';
                             form.modalidadHorario.value = g.modalidadHorario || '';
                             if (form.statusGrupo) form.statusGrupo.value = g.statusGrupo || 'ACTIVO';
 
-                            initializeModalEvents();
+                            initializeModalEvents(g.id_nivel_academico);
 
                             document.querySelector('.modal-title').textContent = 'Editar Grupo';
                             const submitBtn = document.querySelector(
@@ -390,17 +588,17 @@ document.addEventListener("DOMContentLoaded", function() {
                             const g = resp.data;
                             const form = document.getElementById('formGrupo');
 
-                            setFormDisabled(true);
-
                             form.clave.value = g.clave || '';
                             form.fechaInicio.value = formatDateForInput(g.fechaInicio);
                             form.fechaFin.value = formatDateForInput(g.fechaFin);
                             form.id_centroTrabajo.value = g.id_centroTrabajo || '';
                             form.id_planEstudios.value = g.id_planEstudios || '';
                             form.id_tipoPeriodo.value = g.id_tipoPeriodo || '';
-                            form.id_nivel_academico.value = g.id_nivel_academico || '';
                             form.modalidadHorario.value = g.modalidadHorario || '';
                             if (form.statusGrupo) form.statusGrupo.value = g.statusGrupo || 'ACTIVO';
+
+                            initializeModalEvents(g.id_nivel_academico);
+                            setFormDisabled(true);
 
                             document.querySelector('.modal-title').textContent =
                                 'Detalles del Grupo';

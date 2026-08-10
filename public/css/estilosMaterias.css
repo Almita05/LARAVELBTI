@@ -116,7 +116,7 @@
     border: 1px solid rgba(255, 255, 255, .15);
     border-radius: 20px;
     overflow: hidden;
-    color: white;
+    color: #1e293b;
     backdrop-filter: blur(12px);
     box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
 }
@@ -128,6 +128,23 @@
 
 .glass-modal .modal-body {
     background: white;
+    color: #1e293b;
+}
+
+.contenedor-docentes {
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 10px;
+    background: #f8fafc;
+}
+
+.form-check-label {
+    color: #1e293b !important;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
 }
 
 

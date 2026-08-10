@@ -131,7 +131,10 @@
                         <select name="id_centroTrabajo" class="form-select form-select-premium" required>
                             <option value="">Seleccione un centro de trabajo</option>
                             @foreach($centros as $ct)
-                            <option value="{{ $ct['id'] }}">{{ $ct['nombre'] }}</option>
+                            <option value="{{ $ct['id'] }}" 
+                                    data-id-periodo="{{ $ct['idTipoPeriodo'] ?? '' }}"
+                                    data-nombre-periodo="{{ $ct['nombrePeriodo'] ?? '' }}"
+                                    data-nombre="{{ $ct['nombre'] }}">{{ $ct['nombre'] }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -161,7 +164,7 @@
                         <select name="id_tipoPeriodo" class="form-select form-select-premium" required>
                             <option value="">Seleccione un periodo</option>
                             @foreach($periodos as $periodo)
-                            <option value="{{ $periodo['id'] }}">{{ $periodo['nombrePeriodo'] }}</option>
+                            <option value="{{ $periodo['id'] }}" data-nombre="{{ $periodo['nombrePeriodo'] }}">{{ $periodo['nombrePeriodo'] }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -170,10 +173,7 @@
                     <div class="col-md-6">
                         <label class="form-label">Nivel académico <span class="text-danger">*</span></label>
                         <select name="id_nivel_academico" class="form-select form-select-premium" required>
-                            <option value="">Seleccione un nivel</option>
-                            @foreach($niveles as $nivel)
-                            <option value="{{ $nivel['id'] }}">{{ $nivel['nombre'] }}</option>
-                            @endforeach
+                            <option value="">Seleccione primero un centro de trabajo</option>
                         </select>
                     </div>
 

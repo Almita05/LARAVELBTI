@@ -174,6 +174,57 @@
     </div>
 </div>
 
+{{-- MODAL CREDENCIALES DOCENTE --}}
+<div class="modal fade" id="modalCredencialesDocente" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <form id="formCredencialesDocente" class="modal-content glass-modal">
+            <div class="modal-header">
+                <h5 class="modal-title text-white">
+                    <i class="fa-solid fa-user-lock me-2"></i>Credenciales de Acceso
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-dark bg-white" style="border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+                <input type="hidden" id="credDocenteId" name="idDocente">
+                
+                <div class="mb-3">
+                    <label class="form-label text-dark fw-bold">Docente:</label>
+                    <div id="credDocenteNombre" class="fw-bold fs-6 text-primary bg-light p-2 rounded border">—</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-dark fw-bold">Nombre de Usuario *</label>
+                    <input type="text" class="form-control form-control-premium text-dark" id="credUsuario" name="usuario" required placeholder="Ej. juan.perez" style="color: #000000 !important; font-weight: 600;">
+                    <small class="text-muted">Se sugiere usar minúsculas separadas por punto.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-dark fw-bold" id="lblPasswordCred">Contraseña</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control form-control-premium text-dark" id="credPassword" name="password" placeholder="Mínimo 4 caracteres" style="color: #000000 !important; font-weight: 600;">
+                        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('credPassword')">
+                            <i class="fa-solid fa-eye" id="toggleIcon_credPassword"></i>
+                        </button>
+                    </div>
+                    <small class="text-muted" id="helpPasswordCred">Deja en blanco para conservar la contraseña actual.</small>
+                </div>
+
+                <div class="text-end">
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="generarPasswordAleatoria()">
+                        <i class="fa-solid fa-arrows-rotate me-1"></i> Generar Contraseña Segura
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary" style="background-color: #0f172a; border: none; font-weight: 600;">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Credenciales
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 
 
@@ -228,10 +279,20 @@ document.addEventListener("DOMContentLoaded", function() {
             const nombreCompleto =
                 `${docente.nombreDocente} ${docente.apPaternoDocente ?? ''} ${docente.apMaternoDocente ?? ''}`;
 
+            let userBadge = '';
+            if (docente.usuario) {
+                userBadge = `<small class="text-primary d-block mt-1" style="font-size: 0.76rem;"><i class="fa-solid fa-user-shield me-1"></i>${docente.usuario}</small>`;
+            } else {
+                userBadge = `<small class="text-muted d-block mt-1" style="font-size: 0.74rem;"><i class="fa-solid fa-user-slash me-1"></i>Sin usuario</small>`;
+            }
+
             html += `
                 <tr>
                     <td>${docente.idDocente}</td>
-                    <td>${nombreCompleto}</td>
+                    <td>
+                        <strong>${docente.nombreDocente} ${docente.apPaternoDocente ?? ''} ${docente.apMaternoDocente ?? ''}</strong>
+                        ${userBadge}
+                    </td>
                     <td>${docente.correoDocente}</td>
                     <td>${docente.telefonoDocente ?? ''}</td>
                     <td>
@@ -243,13 +304,16 @@ document.addEventListener("DOMContentLoaded", function() {
                     <td>${docente.fechaNacimiento ?? 'N/A'}</td>
 
                     <td>
-                        <button class="btn btn-secondary btn-sm btn-action me-1" onclick="verDocente(${docente.idDocente})">
+                        <button class="btn btn-secondary btn-sm btn-action me-1" onclick="verDocente(${docente.idDocente})" title="Ver detalles">
                             <i class="fa-solid fa-eye"></i>
                         </button>
-                        <button class="btn btn-warning btn-sm btn-action me-1" onclick="editarDocente(${docente.idDocente})">
+                        <button class="btn btn-warning btn-sm btn-action me-1" onclick="editarDocente(${docente.idDocente})" title="Editar">
                             <i class="fa-solid fa-pen"></i>
                         </button>
-                        <button class="btn btn-danger btn-sm btn-action" onclick="eliminarDocente(${docente.idDocente})">
+                        <button class="btn btn-primary btn-sm btn-action me-1" onclick="abrirModalCredenciales(${docente.idDocente}, '${docente.nombreDocente.replace(/'/g, "\\'")}', '${docente.apPaternoDocente ? docente.apPaternoDocente.replace(/'/g, "\\'") : ''}', '${docente.usuario ? docente.usuario.replace(/'/g, "\\'") : ''}', ${docente.tiene_password ?? 0})" title="Credenciales de acceso" style="background-color: #0f172a; border-color: #0f172a;">
+                            <i class="fa-solid fa-key"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm btn-action" onclick="eliminarDocente(${docente.idDocente})" title="Eliminar">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </td>
@@ -530,6 +594,100 @@ document.addEventListener("DOMContentLoaded", function() {
                     confirmButtonColor: 'rgb(38, 104, 123)'
                 });
             });
+    });
+
+    // ==========================================
+    // GESTIÓN DE CREDENCIALES DE DOCENTES
+    // ==========================================
+    window.abrirModalCredenciales = function(id, nombre, paterno, usuario, tienePassword) {
+        document.getElementById('credDocenteId').value = id;
+        document.getElementById('credDocenteNombre').textContent = `${nombre} ${paterno}`;
+        document.getElementById('credUsuario').value = usuario || (nombre.trim() + '.' + (paterno ? paterno.trim() : '')).toLowerCase().replace(/\s+/g, '').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        document.getElementById('credPassword').value = '';
+
+        if (tienePassword) {
+            document.getElementById('lblPasswordCred').textContent = 'Nueva Contraseña';
+            document.getElementById('helpPasswordCred').textContent = 'Deja en blanco para conservar la contraseña actual.';
+            document.getElementById('credPassword').required = false;
+        } else {
+            document.getElementById('lblPasswordCred').textContent = 'Contraseña *';
+            document.getElementById('helpPasswordCred').textContent = 'Ingresa una contraseña para activar la cuenta de acceso.';
+            document.getElementById('credPassword').required = true;
+        }
+
+        const modal = new bootstrap.Modal(document.getElementById('modalCredencialesDocente'));
+        modal.show();
+    };
+
+    window.togglePasswordVisibility = function(id) {
+        const inp = document.getElementById(id);
+        const icon = document.getElementById('toggleIcon_' + id);
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            icon.className = 'fa-solid fa-eye-slash';
+        } else {
+            inp.type = 'password';
+            icon.className = 'fa-solid fa-eye';
+        }
+    };
+
+    window.generarPasswordAleatoria = function() {
+        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$";
+        let pass = "";
+        for (let i = 0; i < 8; i++) {
+            pass += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        const inp = document.getElementById('credPassword');
+        inp.value = pass;
+        inp.type = 'text';
+        document.getElementById('toggleIcon_credPassword').className = 'fa-solid fa-eye-slash';
+    };
+
+    document.getElementById('formCredencialesDocente').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('credDocenteId').value;
+        const data = {
+            usuario: document.getElementById('credUsuario').value.trim(),
+            password: document.getElementById('credPassword').value
+        };
+
+        fetch(`/docentes/${id}/credenciales`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(resp => {
+            if (resp.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: 'Credenciales del docente actualizadas correctamente.',
+                    confirmButtonColor: 'rgb(38, 104, 123)'
+                });
+                bootstrap.Modal.getInstance(document.getElementById('modalCredencialesDocente')).hide();
+                cargarDocentes();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: resp.message || 'No se pudieron actualizar las credenciales.',
+                    confirmButtonColor: 'rgb(38, 104, 123)'
+                });
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error de conexión al guardar credenciales.',
+                confirmButtonColor: 'rgb(38, 104, 123)'
+            });
+        });
     });
 
 });

@@ -130,6 +130,10 @@ $rol = strtoupper(session('rol'));
                     -Inicio Grupos
                 </a>
 
+                <a href="{{ route('grupos.captura_calificaciones') }}">
+                    -Captura Calificaciones
+                </a>
+
                 <a href="{{ route('asistencias_docentes') }}">
                     -Asistencias Docentes
                 </a>

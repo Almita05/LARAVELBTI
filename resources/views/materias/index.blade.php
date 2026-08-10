@@ -130,10 +130,38 @@
                                 </select>
                             </div>
 
+                            <!-- Centro de Trabajo (CCT) -->
+                            <div class="col-md-6">
+                                <label class="form-label">Centro de Trabajo (CCT) <span class="text-danger">*</span></label>
+                                <select
+                                    class="form-select form-select-premium"
+                                    name="idCentroTrabajo"
+                                    id="selectCctMateria"
+                                    onchange="filtrarPeriodosPorCct(this.value)"
+                                    required>
+                                    <option value="">-- Seleccionar CCT --</option>
+                                    <option value="2">BTI (Bachillerato Tecnológico Interamericano)</option>
+                                    <option value="3">BGNE (Bachillerato General No Escolarizado)</option>
+                                    <option value="1">INFORMÁTICA Y COMPUTACIÓN</option>
+                                </select>
+                            </div>
+
+                            <!-- Nivel Académico (Semestre / Trimestre) -->
+                            <div class="col-md-6">
+                                <label class="form-label" id="labelNivelMateria">Semestre / Periodo <span class="text-danger">*</span></label>
+                                <select
+                                    class="form-select form-select-premium"
+                                    name="id_nivel_academico"
+                                    id="selectNivelMateria"
+                                    required>
+                                    <option value="">-- Primero seleccione un Centro de Trabajo --</option>
+                                </select>
+                            </div>
+
                             <!-- Docentes -->
                             <div class="col-12">
                                 <label class="form-label d-flex justify-content-between align-items-center">
-                                    <span><i class="fa-solid fa-chalkboard-user me-1"></i> Docentes asignados</span>
+                                    <span>Docentes asignados</span>
                                     <small class="text-muted fw-normal">Selecciona los docentes</small>
                                 </label>
 
@@ -205,11 +233,11 @@ document.addEventListener("DOMContentLoaded", function() {
                         `${docente.nombreDocente} ${docente.apPaternoDocente} ${docente.apMaternoDocente}`;
 
                     const div = document.createElement('div');
-                    div.className = 'form-check';
+                    div.className = 'form-check mb-1';
 
                     div.innerHTML = `
                         <input class="form-check-input docenteCheck" type="checkbox" value="${id}" id="doc_${id}">
-                        <label class="form-check-label" for="doc_${id}">
+                        <label class="form-check-label text-dark fw-normal ms-1" for="doc_${id}">
                             ${nombre}
                         </label>
                     `;
@@ -479,10 +507,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
             html += `
         <tr>
-            <td>${materia.id}</td>
-          
-            <td>${materia.nombreMateria}</td>
-            <td>${materia.descripcionMateria}</td>
+            <td><strong>${materia.id}</strong></td>
+            <td><code class="fw-bold">${materia.clave || '—'}</code></td>
+            <td><strong>${materia.nombreMateria}</strong></td>
+            <td>
+                <span class="badge ${cctBadgeClass}">${cctNombre}</span>
+            </td>
+            <td>
+                <span class="badge bg-light text-dark border">${nivelNombre}</span>
+            </td>
 
             <td>
                 <span class="badge ${materia.estatusMateria === 'ACTIVA' ? 'bg-success' : 'bg-danger'}">
@@ -493,17 +526,17 @@ document.addEventListener("DOMContentLoaded", function() {
             <td>
                 ${materia.docentes?.length
                     ? materia.docentes.map(d => d.nombreDocente).join(', ')
-                    : 'Sin docentes'}
+                    : '<span class="text-muted fst-italic">Sin docentes</span>'}
             </td>
 
             <td class="text-center">
-                <button class="btn btn-secondary btn-sm me-1" onclick="verMateria(${materia.id})">
+                <button class="btn btn-secondary btn-sm me-1 shadow-sm" onclick="verMateria(${materia.id})" title="Ver detalles">
                     <i class="fa-solid fa-eye"></i>
                 </button>
-                <button class="btn btn-warning btn-sm me-1" onclick="editarMateria(${materia.id})">
+                <button class="btn btn-warning btn-sm me-1 shadow-sm" onclick="editarMateria(${materia.id})" title="Editar">
                     <i class="fa-solid fa-pen"></i>
                 </button>
-                <button class="btn btn-danger btn-sm" onclick="eliminarMateria(${materia.id})">
+                <button class="btn btn-danger btn-sm shadow-sm" onclick="eliminarMateria(${materia.id})" title="Eliminar">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </td>
@@ -553,6 +586,8 @@ document.addEventListener("DOMContentLoaded", function() {
             descripcionMateria: this.descripcionMateria.value,
             estatusMateria: this.estatusMateria.value,
             clave: this.clave.value,
+            idCentroTrabajo: this.idCentroTrabajo.value ? parseInt(this.idCentroTrabajo.value) : null,
+            id_nivel_academico: this.id_nivel_academico.value ? parseInt(this.id_nivel_academico.value) : null,
             docentes: docentes
         };
 
