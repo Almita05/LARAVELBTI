@@ -37,6 +37,15 @@ $rol = strtoupper(session('rol'));
     </div>
     @if($rol=='ADMIN')
 
+    <div class="accordion-item menu-title">
+        <h2 class="accordion-header">
+            <a href="{{ route('notificaciones') }}" class="accordion-button no-chevron d-flex align-items-center text-white" style="text-decoration: none;">
+                <i class="fa-solid fa-bell me-2"></i>
+                <span>Avisos y Pendientes</span>
+                <span class="badge rounded-pill bg-danger ms-auto d-none" id="sidebar-notificaciones-badge" style="font-size: 0.72rem; padding: 0.35em 0.65em;">0</span>
+            </a>
+        </h2>
+    </div>
 
     <div class="accordion-item menu-title">
 
@@ -86,14 +95,28 @@ $rol = strtoupper(session('rol'));
             <div class="accordion-body">
 
                 <a href="{{ route('docentes') }}">
-                    -Docentes
+                    -Listado de Docentes
                 </a>
 
             </div>
             <div class="accordion-body">
 
                 <a href="{{ route('asistencias_docentes') }}">
-                    -Asistencia Docentes
+                    -Asistencia Docente
+                </a>
+
+            </div>
+            <div class="accordion-body">
+
+                <a href="javascript:void(0)" onclick="alert('Este módulo se encuentra en proceso de diseño.')" style="opacity: 0.65; cursor: not-allowed;">
+                    -Captura Calificaciones <span class="badge bg-warning text-dark ms-1" style="font-size: 0.63rem;">Proceso</span>
+                </a>
+
+            </div>
+            <div class="accordion-body">
+
+                <a href="{{ route('horarios_docentes') }}">
+                    -Horario Docente
                 </a>
 
             </div>
@@ -132,10 +155,6 @@ $rol = strtoupper(session('rol'));
 
                 <a href="{{ route('grupos.captura_calificaciones') }}">
                     -Captura Calificaciones
-                </a>
-
-                <a href="{{ route('asistencias_docentes') }}">
-                    -Asistencias Docentes
                 </a>
 
                 <a href="{{ route('horarios') }}">
@@ -271,6 +290,23 @@ $rol = strtoupper(session('rol'));
         </div>
     </div>
 
+    <div class="accordion-item menu-title">
+        <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                data-bs-target="#menu-Generaciones" aria-expanded="false" aria-controls="menu-Generaciones">
+                <i class="fa-solid fa-graduation-cap"></i>
+                Generaciones
+            </button>
+        </h2>
+        <div id="menu-Generaciones" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
+            <div class="accordion-body">
+                <a href="{{ route('generaciones') }}">
+                    -Generaciones
+                </a>
+            </div>
+        </div>
+    </div>
+
 
     @endif
 
@@ -293,3 +329,29 @@ $rol = strtoupper(session('rol'));
 
     </div>
 </div>
+
+<style>
+.accordion-button.no-chevron::after {
+    display: none !important;
+}
+.sidebar a.accordion-button.no-chevron {
+    color: white !important;
+}
+.sidebar a.accordion-button.no-chevron:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/notificaciones/count')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('sidebar-notificaciones-badge');
+            if (badge && data.total > 0) {
+                badge.textContent = data.total;
+                badge.classList.remove('d-none');
+            }
+        })
+        .catch(err => console.error('Error fetching notification count:', err));
+});
+</script>

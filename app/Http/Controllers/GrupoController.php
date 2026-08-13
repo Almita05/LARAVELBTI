@@ -35,36 +35,42 @@ class GrupoController extends Controller
         return response()->json($response->json(), $response->status());
     }
 
-   public function lista(Request $request)
-{
-    $url = config('services.api.base_url') . '/grupos';
+    public function lista(Request $request)
+    {
+        $url = config('services.api.base_url') . '/grupos';
 
-    $params = [
-        'page' => $request->page ?? 1,
-        'limit' => $request->limit ?? 50,
-        'search' => $request->search ?? ''
-    ];
+        $params = [
+            'page' => $request->page ?? 1,
+            'limit' => $request->limit ?? 50,
+            'search' => $request->search ?? ''
+        ];
 
-    if ($request->filled('id_centro_trabajo')) {
-        $params['id_centro_trabajo'] = $request->id_centro_trabajo;
+        if ($request->filled('id_centro_trabajo')) {
+            $params['id_centro_trabajo'] = $request->id_centro_trabajo;
+        }
+        if ($request->filled('status_grupo')) {
+            $params['status_grupo'] = $request->status_grupo;
+        }
+        if ($request->filled('modalidad_horario')) {
+            $params['modalidadHorario'] = $request->modalidad_horario;
+        }
+        if ($request->filled('dia')) {
+            $params['dia'] = $request->dia;
+        }
+
+        $response = Http::get($url, $params);
+
+        if ($response->failed()) {
+            return response()->json([
+                'data' => [],
+                'total' => 0,
+                'page' => 1,
+                'total_pages' => 1
+            ]);
+        }
+
+        return $response->json();
     }
-    if ($request->filled('status_grupo')) {
-        $params['status_grupo'] = $request->status_grupo;
-    }
-
-    $response = Http::get($url, $params);
-
-    if ($response->failed()) {
-        return response()->json([
-            'data' => [],
-            'total' => 0,
-            'page' => 1,
-            'total_pages' => 1
-        ]);
-    }
-
-    return $response->json();
-}
 
 
     public function modalAlta()
@@ -93,6 +99,16 @@ class GrupoController extends Controller
     public function store(Request $request)
     {
         $url = config('services.api.base_url') . '/createGrupos';
+        
+        $modalidad = strtoupper($request->modalidadHorario);
+        $diasClase = [];
+        if (str_contains($modalidad, 'SABADO')) {
+            $diasClase = ['SABADO'];
+        } elseif (str_contains($modalidad, 'DOMINGO')) {
+            $diasClase = ['DOMINGO'];
+        } else {
+            $diasClase = ['LUNES-VIERNES'];
+        }
 
         $response = Http::post($url, [
             'clave' => $request->clave,
@@ -105,11 +121,14 @@ class GrupoController extends Controller
             'modalidadHorario' => $request->modalidadHorario,
             'id_nivel_academico' => $request->id_nivel_academico,
             'statusGrupo' => $request->statusGrupo ?? 'ACTIVO',
+            'diasClase' => $diasClase,
         ]);
 
         if ($response->failed()) {
+            $errData = $response->json();
+            $errMsg = $errData['error'] ?? 'Error al guardar el grupo en el servidor backend';
             return response()->json([
-                'message' => 'Error al guardar el grupo en el servidor backend'
+                'message' => $errMsg
             ], 500);
         }
 
@@ -140,6 +159,16 @@ class GrupoController extends Controller
     public function update(Request $request, $id)
     {
         $url = config('services.api.base_url') . '/updateGrupo/' . $id;
+        
+        $modalidad = strtoupper($request->modalidadHorario);
+        $diasClase = [];
+        if (str_contains($modalidad, 'SABADO')) {
+            $diasClase = ['SABADO'];
+        } elseif (str_contains($modalidad, 'DOMINGO')) {
+            $diasClase = ['DOMINGO'];
+        } else {
+            $diasClase = ['LUNES-VIERNES'];
+        }
 
         $response = Http::put($url, [
             'clave' => $request->clave,
@@ -152,18 +181,40 @@ class GrupoController extends Controller
             'modalidadHorario' => $request->modalidadHorario,
             'id_nivel_academico' => $request->id_nivel_academico,
             'statusGrupo' => $request->statusGrupo ?? 'ACTIVO',
+            'diasClase' => $diasClase,
         ]);
 
         if ($response->failed()) {
+            $errData = $response->json();
+            $errMsg = $errData['error'] ?? 'Error al actualizar el grupo en el servidor backend';
             return response()->json([
                 'success' => false,
-                'message' => 'Error al actualizar el grupo en el servidor backend'
+                'message' => $errMsg
             ], 500);
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Grupo actualizado correctamente'
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $url = config('services.api.base_url') . '/deleteGrupo/' . $id;
+        $response = Http::delete($url);
+
+        if ($response->failed()) {
+            $err = $response->json();
+            return response()->json([
+                'success' => false,
+                'message' => $err['error'] ?? 'Error al eliminar el grupo en el servidor backend'
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Grupo eliminado correctamente'
         ]);
     }
 }

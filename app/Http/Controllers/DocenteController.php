@@ -180,4 +180,21 @@ public function guardarCredenciales(Request $request, $id)
         'message' => 'Credenciales del docente actualizadas correctamente'
     ]);
 }
+
+public function horarioDocente()
+{
+    return view('docentes.horario');
+}
+
+public function getHorarioDocente($id)
+{
+    $url = config('services.api.base_url') . '/getHorariosDocente/' . $id;
+    $response = Http::get($url);
+
+    if ($response->failed()) {
+        return response()->json([], $response->status());
+    }
+
+    return response()->json($response->json());
+}
 }

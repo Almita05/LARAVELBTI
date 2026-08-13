@@ -152,29 +152,21 @@
     <div class="glass-card mb-4 p-4">
         <div class="row g-3 align-items-center">
 
-            {{-- Filtros CCT --}}
-            <div class="col-12 col-xl-7">
+            {{-- Filtro CCT --}}
+            <div class="col-12 col-md-4 col-xl-4">
                 <label class="form-label text-dark fw-bold mb-2">
-                    <i class="fa-solid fa-school me-1 text-primary"></i> Filtrar por Centro de Trabajo (CCT):
+                    <i class="fa-solid fa-school me-1 text-primary"></i> Centro de Trabajo (CCT):
                 </label>
-                <div class="d-flex flex-wrap gap-2" id="filtroCctContainer">
-                    <button type="button" class="filter-pill-btn active" data-cct="" onclick="setFiltroCct('', this)">
-                        <i class="fa-solid fa-layer-group me-1"></i> Todos
-                    </button>
-                    <button type="button" class="filter-pill-btn" data-cct="3" onclick="setFiltroCct('3', this)">
-                        <span class="badge cct-badge-bgne me-1">BGNE</span> Bachillerato No Escolarizado
-                    </button>
-                    <button type="button" class="filter-pill-btn" data-cct="2" onclick="setFiltroCct('2', this)">
-                        <span class="badge cct-badge-bti me-1">BTI</span> Bachillerato Tecnológico
-                    </button>
-                    <button type="button" class="filter-pill-btn" data-cct="1" onclick="setFiltroCct('1', this)">
-                        <span class="badge cct-badge-ic me-1">INF</span> Informática y Computación
-                    </button>
-                </div>
+                <select id="selectFiltroCct" class="form-select shadow-sm" style="border-radius: 12px; font-weight: 500;" onchange="setFiltroCct(this.value)">
+                    <option value="" selected>Todos los CCT</option>
+                    <option value="3">BGNE (Bachillerato No Escolarizado)</option>
+                    <option value="2">BTI (Bachillerato Tecnológico)</option>
+                    <option value="1">INF (Informática y Computación)</option>
+                </select>
             </div>
 
             {{-- Filtro Estatus --}}
-            <div class="col-12 col-md-6 col-xl-2">
+            <div class="col-12 col-md-3 col-xl-3">
                 <label class="form-label text-dark fw-bold mb-2">
                     <i class="fa-solid fa-toggle-on me-1 text-primary"></i> Estatus:
                 </label>
@@ -186,7 +178,7 @@
             </div>
 
             {{-- Buscador en tiempo real --}}
-            <div class="col-12 col-md-6 col-xl-3">
+            <div class="col-12 col-md-5 col-xl-5">
                 <label class="form-label text-dark fw-bold mb-2">
                     <i class="fa-solid fa-magnifying-glass me-1 text-primary"></i> Buscar Grupo:
                 </label>
@@ -299,9 +291,9 @@
                             <div class="col-12 col-md-6 col-lg-3">
                                 <div class="d-flex align-items-center gap-2">
                                     <strong class="text-nowrap">MÓDULO:</strong>
-                                    <span id="boxModuloPeriodo" class="badge bg-secondary text-white px-2 py-1 fs-6">
-                                        —
-                                    </span>
+                                    <select id="selectPeriodoCaptura" class="form-select form-select-sm fw-bold border-dark shadow-sm" onchange="cambiarPeriodoSeleccionado(this.value)">
+                                        {{-- Poblado por JS --}}
+                                    </select>
                                 </div>
                             </div>
 
@@ -393,18 +385,6 @@ function calcularProgresoPeriodo(g) {
         fechaInicioAbs.getUTCDate()
     ));
 
-    let groupEndDate = null;
-    if (g.fechaFin) {
-        let fechaFinAbs = new Date(g.fechaFin);
-        if (!isNaN(fechaFinAbs.getTime())) {
-            groupEndDate = new Date(Date.UTC(
-                fechaFinAbs.getUTCFullYear(),
-                fechaFinAbs.getUTCMonth(),
-                fechaFinAbs.getUTCDate()
-            ));
-        }
-    }
-
     let idTipoPeriodo = g.id_tipoPeriodo;
     let idNivelActualDb = g.id_nivel_academico;
 
@@ -417,45 +397,10 @@ function calcularProgresoPeriodo(g) {
     }
 
     const isTrimestral = idTipoPeriodo === 2;
-    const weeksPerPeriod = isTrimestral ? 13 : 26;
     const periodLabel = isTrimestral ? "Trim." : "Sem.";
 
     const now = new Date();
     const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-
-    let periodNumber = 1;
-    let periodStartDate = new Date(currentDate.getTime());
-    let periodEndDate = new Date(currentDate.getTime() + ((weeksPerPeriod - 1) * 7 * 24 * 60 * 60 * 1000));
-
-    while (true) {
-        periodEndDate = new Date(periodStartDate.getTime() + ((weeksPerPeriod - 1) * 7 * 24 * 60 * 60 * 1000));
-
-        if (todayUTC.getTime() <= periodEndDate.getTime()) {
-            break;
-        }
-
-        if (groupEndDate && periodStartDate.getTime() > groupEndDate.getTime()) {
-            break;
-        }
-        if (isTrimestral && periodNumber >= 6) break;
-        if (!isTrimestral && periodNumber >= 6) break;
-
-        if (groupEndDate && periodEndDate.getTime() >= groupEndDate.getTime()) {
-            break;
-        }
-
-        periodStartDate = new Date(periodEndDate.getTime() + (7 * 24 * 60 * 60 * 1000));
-        periodNumber++;
-    }
-
-    const total = periodEndDate.getTime() - periodStartDate.getTime();
-    const elapsed = todayUTC.getTime() - periodStartDate.getTime();
-
-    let percent = 0;
-    if (total > 0) {
-        percent = Math.round((elapsed / total) * 100);
-        percent = Math.max(0, Math.min(100, percent));
-    }
 
     const toDMY = (d) => {
         const dd = String(d.getUTCDate()).padStart(2, '0');
@@ -464,9 +409,84 @@ function calcularProgresoPeriodo(g) {
         return `${dd}/${mm}/${yyyy}`;
     };
 
+    if (!isTrimestral) {
+        // LÓGICA SEMESTRAL (Escolarizado / BTI)
+        // Respetamos estrictamente el semestre configurado en la base de datos
+        let currentSemester = 1;
+        if (idNivelActualDb !== null && idNivelActualDb !== undefined && idNivelActualDb >= 7) {
+            currentSemester = idNivelActualDb - 6;
+        }
+
+        const startYear = fechaInicioAbs.getUTCFullYear();
+        const isFall = (currentSemester % 2 !== 0);
+        
+        // Calcular el año correspondiente a ese semestre
+        let periodYear = startYear;
+        if (isFall) {
+            periodYear = startYear + Math.floor((currentSemester - 1) / 2);
+        } else {
+            periodYear = startYear + Math.floor(currentSemester / 2);
+        }
+
+        // Fechas de inicio y fin del semestre activo
+        let periodStartDate, periodEndDate;
+        if (isFall) {
+            periodStartDate = new Date(Date.UTC(periodYear, 7, 1)); // 1 de Agosto
+            periodEndDate = new Date(Date.UTC(periodYear, 11, 31)); // 31 de Diciembre
+        } else {
+            periodStartDate = new Date(Date.UTC(periodYear, 1, 1)); // 1 de Febrero
+            periodEndDate = new Date(Date.UTC(periodYear, 6, 31)); // 31 de Julio
+        }
+
+        // Porcentaje de progreso
+        let percent = 0;
+        if (todayUTC.getTime() >= periodEndDate.getTime()) {
+            percent = 100;
+        } else if (todayUTC.getTime() <= periodStartDate.getTime()) {
+            percent = 0;
+        } else {
+            const total = periodEndDate.getTime() - periodStartDate.getTime();
+            const elapsed = todayUTC.getTime() - periodStartDate.getTime();
+            percent = Math.round((elapsed / total) * 100);
+            percent = Math.max(0, Math.min(100, percent));
+        }
+
+        return {
+            percent: percent,
+            nivelText: `${currentSemester}° ${periodLabel}`,
+            inicioPeriodo: toDMY(periodStartDate),
+            finPeriodo: toDMY(periodEndDate)
+        };
+    }
+
+    // LÓGICA TRIMESTRAL (BGNE)
+    let currentTrimestre = 1;
+    if (idNivelActualDb !== null && idNivelActualDb !== undefined && idNivelActualDb >= 1 && idNivelActualDb <= 6) {
+        currentTrimestre = idNivelActualDb;
+    }
+
+    // Cada trimestre dura 13 semanas (91 días)
+    const weeksOffset = (currentTrimestre - 1) * 13;
+    
+    const periodStartDate = new Date(currentDate.getTime() + (weeksOffset * 7 * 24 * 60 * 60 * 1000));
+    const periodEndDate = new Date(periodStartDate.getTime() + (13 * 7 * 24 * 60 * 60 * 1000) - (24 * 60 * 60 * 1000));
+
+    // Porcentaje de progreso
+    let percent = 0;
+    if (todayUTC.getTime() >= periodEndDate.getTime()) {
+        percent = 100;
+    } else if (todayUTC.getTime() <= periodStartDate.getTime()) {
+        percent = 0;
+    } else {
+        const total = periodEndDate.getTime() - periodStartDate.getTime();
+        const elapsed = todayUTC.getTime() - periodStartDate.getTime();
+        percent = Math.round((elapsed / total) * 100);
+        percent = Math.max(0, Math.min(100, percent));
+    }
+
     return {
         percent: percent,
-        nivelText: `${periodNumber}° ${periodLabel}`,
+        nivelText: `${currentTrimestre}° ${periodLabel}`,
         inicioPeriodo: toDMY(periodStartDate),
         finPeriodo: toDMY(periodEndDate)
     };
@@ -534,10 +554,8 @@ function cargarGruposCaptura() {
         });
 }
 
-function setFiltroCct(cctVal, btn) {
+function setFiltroCct(cctVal) {
     filtroCctActual = cctVal;
-    document.querySelectorAll('#filtroCctContainer .filter-pill-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
     aplicarFiltros();
 }
 
@@ -706,6 +724,23 @@ function cambiarMateriaSeleccionada(idMateria) {
     abrirCapturaGrupoMateria(grupoCapturaActualId, idMateria);
 }
 
+function cambiarPeriodoSeleccionado(idPeriodo) {
+    if (!grupoCapturaActualId || !datosGrupoMateriaActual) return;
+    const materias = datosGrupoMateriaActual.materias || [];
+    const filtered = materias.filter(m => String(m.id_nivel_academico) === String(idPeriodo));
+    if (filtered.length > 0) {
+        // Seleccionar la primera materia del periodo elegido
+        abrirCapturaGrupoMateria(grupoCapturaActualId, filtered[0].idMateria);
+    } else {
+        Swal.fire({
+            icon: 'info',
+            title: 'Sin asignaturas',
+            text: 'No hay asignaturas registradas para este periodo en el grupo.',
+            confirmButtonColor: 'rgb(49, 125, 146)'
+        });
+    }
+}
+
 function renderDatosControlOficial(data) {
     const grupo = data.grupo || {};
     const materias = data.materias || [];
@@ -716,14 +751,70 @@ function renderDatosControlOficial(data) {
     document.getElementById('boxNombreInstitucion').textContent = grupo.nombreCentroTrabajo || 'BACHILLERATO INTERAMERICANO';
     document.getElementById('badgeClaveGrupoOficial').textContent = grupo.clave || 'GRUPO';
 
+    // 1. Obtener periodos únicos de las materias
+    const uniqueLevels = [];
+    const levelIds = new Set();
+    materias.forEach(m => {
+        if (m.id_nivel_academico && !levelIds.has(m.id_nivel_academico)) {
+            levelIds.add(m.id_nivel_academico);
+            uniqueLevels.push({
+                id: m.id_nivel_academico,
+                nombre: m.nombreNivel || `Nivel ${m.id_nivel_academico}`,
+                numero: m.numeroNivel || 1
+            });
+        }
+    });
+
+    // Ordenar periodos por su número secuencial
+    uniqueLevels.sort((a, b) => a.numero - b.numero);
+
+    // Poblar Selector de Periodos
+    const selectPeriodo = document.getElementById('selectPeriodoCaptura');
+    selectPeriodo.innerHTML = '';
+    
+    if (uniqueLevels.length === 0) {
+        const opt = document.createElement('option');
+        opt.value = grupo.id_nivel_academico || '';
+        opt.textContent = grupo.nombreNivel || '—';
+        selectPeriodo.appendChild(opt);
+    } else {
+        uniqueLevels.forEach(lvl => {
+            const opt = document.createElement('option');
+            opt.value = lvl.id;
+            opt.textContent = lvl.nombre;
+            selectPeriodo.appendChild(opt);
+        });
+    }
+
+    // Seleccionar el periodo correspondiente a la materia seleccionada
+    const currentPeriodId = matSel.id_nivel_academico || grupo.id_nivel_academico;
+    if (currentPeriodId) {
+        selectPeriodo.value = currentPeriodId;
+    }
+
+    // 2. Filtrar materias pertenecientes al periodo seleccionado
+    const activePeriodId = selectPeriodo.value;
+    const filteredMaterias = materias.filter(m => String(m.id_nivel_academico) === String(activePeriodId));
+
+    // Si la materia seleccionada no está dentro de este periodo filtrado, auto-seleccionar la primera y recargar
+    if (filteredMaterias.length > 0) {
+        const isCurrentMatInPeriod = filteredMaterias.some(m => String(m.idMateria) === String(data.idMateriaSeleccionada));
+        if (!isCurrentMatInPeriod) {
+            setTimeout(() => {
+                abrirCapturaGrupoMateria(grupoCapturaActualId, filteredMaterias[0].idMateria);
+            }, 0);
+            return;
+        }
+    }
+
     // Poblar Selector de Materias
     const selectMat = document.getElementById('selectMateriaGrupo');
     selectMat.innerHTML = '';
 
-    if (materias.length === 0) {
+    if (filteredMaterias.length === 0) {
         selectMat.innerHTML = '<option value="">No hay materias registradas</option>';
     } else {
-        materias.forEach(m => {
+        filteredMaterias.forEach(m => {
             const opt = document.createElement('option');
             opt.value = m.idMateria;
             opt.textContent = m.nombreMateria;
@@ -738,9 +829,6 @@ function renderDatosControlOficial(data) {
     const docenteNombre = matSel.nombreDocente || 'Sin docente asignado';
     const nivelDoc = matSel.nivelEstudios ? `${matSel.nivelEstudios}. ` : '';
     document.getElementById('boxNombreDocente').textContent = docenteNombre !== 'Sin docente asignado' ? `${nivelDoc}${docenteNombre}` : docenteNombre;
-
-    // Módulo / Nivel
-    document.getElementById('boxModuloPeriodo').textContent = matSel.nombreNivel || grupo.nombreNivel || '—';
 
     // Fechas y modalidad
     document.getElementById('boxFechaInicioGrupo').textContent = formatearFecha(grupo.fechaInicio);
@@ -769,39 +857,54 @@ function renderDatosControlOficial(data) {
     alumnos.forEach((a, idx) => {
         const calif = a.calificacion !== null && a.calificacion !== undefined ? a.calificacion : '';
         const obs = a.observaciones || '';
-        const califLetra = numeroALetrasCalificacion(calif);
+        const isEquiv = a.es_equivalencia === true;
+        const califLetra = isEquiv ? 'EQUIVALENCIA' : numeroALetrasCalificacion(calif);
+
+        let p1Input = '';
+        let p2Input = '';
+        let p3Input = '';
+        let finalInput = '';
+
+        if (isEquiv) {
+            p1Input = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
+            p2Input = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
+            p3Input = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
+            finalInput = `<span class="badge bg-warning text-dark px-3 py-2 fw-bold d-inline-block">EQUIV.</span>
+                          <input type="hidden" class="inp-calif-final" value="0.0">`;
+        } else {
+            p1Input = `<input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-p1" value="" oninput="recalcularFilaOficial(this)">`;
+            p2Input = `<input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-p2" value="" oninput="recalcularFilaOficial(this)">`;
+            p3Input = `<input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-p3" value="" oninput="recalcularFilaOficial(this)">`;
+            finalInput = `<input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="${calif}" oninput="recalcularFilaOficial(this)" placeholder="0.0">`;
+        }
 
         html += `
-        <tr data-alumno-id="${a.idAlumno}">
+        <tr data-alumno-id="${a.idAlumno}" data-is-equivalencia="${isEquiv}">
             <td class="text-center fw-bold">${idx + 1}</td>
             <td class="fw-semibold">${a.apPaterno || ''}</td>
             <td class="fw-semibold">${a.apMaterno || ''}</td>
             <td class="fw-bold text-dark">${a.nombre || ''}</td>
             
-            {{-- P1, P2, P3 --}}
-            <td style="background-color: #fafafa;">
-                <input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-p1" value="" oninput="recalcularFilaOficial(this)">
+            <td style="background-color: #fafafa; text-align: center;">
+                ${p1Input}
             </td>
-            <td style="background-color: #fafafa;">
-                <input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-p2" value="" oninput="recalcularFilaOficial(this)">
+            <td style="background-color: #fafafa; text-align: center;">
+                ${p2Input}
             </td>
-            <td style="background-color: #fafafa;">
-                <input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-p3" value="" oninput="recalcularFilaOficial(this)">
-            </td>
-
-            {{-- Calificación Final --}}
-            <td style="background-color: #f1f5f9;">
-                <input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="${calif}" oninput="recalcularFilaOficial(this)" placeholder="0.0">
+            <td style="background-color: #fafafa; text-align: center;">
+                ${p3Input}
             </td>
 
-            {{-- Calificación con Letra --}}
-            <td class="text-center fw-bold text-secondary td-calif-letra" style="font-size: 0.78rem;">
+            <td style="background-color: #f1f5f9; text-align: center;">
+                ${finalInput}
+            </td>
+
+            <td class="text-center fw-bold td-calif-letra" style="font-size: 0.78rem;">
                 ${califLetra}
             </td>
 
-            {{-- Observaciones --}}
             <td>
-                <input type="text" class="input-observaciones-celda inp-obs" value="${obs}" placeholder="Opcional...">
+                <input type="text" class="input-observaciones-celda inp-obs" value="${obs}" placeholder="Opcional..." ${isEquiv ? 'disabled' : ''}>
             </td>
         </tr>
         `;
@@ -811,13 +914,26 @@ function renderDatosControlOficial(data) {
 
     // Recalcular estilos y estadísticas iniciales
     tbody.querySelectorAll('tr').forEach(tr => {
-        const inpFinal = tr.querySelector('.inp-calif-final');
-        if (inpFinal) recalcularFilaOficial(inpFinal);
+        const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
+        if (!isEquiv) {
+            const inpFinal = tr.querySelector('.inp-calif-final');
+            if (inpFinal) recalcularFilaOficial(inpFinal);
+        } else {
+            const tdLetra = tr.querySelector('.td-calif-letra');
+            if (tdLetra) {
+                tdLetra.className = 'text-center fw-bold text-warning td-calif-letra';
+            }
+        }
     });
+
+    recalcularEstadisticasMateria();
 }
 
 function recalcularFilaOficial(inputEl) {
     const tr = inputEl.closest('tr');
+    const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
+    if (isEquiv) return;
+
     const p1Inp = tr.querySelector('.inp-p1');
     const p2Inp = tr.querySelector('.inp-p2');
     const p3Inp = tr.querySelector('.inp-p3');
@@ -842,6 +958,7 @@ function recalcularFilaOficial(inputEl) {
 
     // Color rojo en notas menores a 6.0
     const checkRed = (inp) => {
+        if (!inp) return;
         const v = parseFloat(inp.value);
         if (!isNaN(v) && v < 6.0) {
             inp.style.color = '#dc2626';
@@ -878,6 +995,9 @@ function recalcularEstadisticasMateria() {
     let evaluados = 0;
 
     rows.forEach(tr => {
+        const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
+        if (isEquiv) return;
+
         const inpFinal = tr.querySelector('.inp-calif-final');
         if (!inpFinal) return;
         total++;
@@ -890,7 +1010,9 @@ function recalcularEstadisticasMateria() {
         }
     });
 
-    document.getElementById('statTotalAlumnos').textContent = total;
+    const totalEquiv = document.querySelectorAll('#tbodyAlumnosCalificacionesMateria tr[data-is-equivalencia="true"]').length;
+
+    document.getElementById('statTotalAlumnos').textContent = total + totalEquiv;
     document.getElementById('statAprobados').textContent = aprobados;
     document.getElementById('statReprobados').textContent = reprobados;
 
@@ -918,6 +1040,11 @@ function guardarCalificacionesMateriaSeleccionada() {
 
     rows.forEach(tr => {
         const idAlumno = tr.getAttribute('data-alumno-id');
+        const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
+        
+        // Omitir el guardado para alumnos que tienen equivalencia en este periodo
+        if (isEquiv) return;
+
         const califFinal = tr.querySelector('.inp-calif-final').value;
         const obs = tr.querySelector('.inp-obs').value;
 

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\GeneracionController;
 use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\AlumnoController;
@@ -50,7 +51,9 @@ Route::middleware('auth.session')->group(function () {
     Route::get('/planesBTI', [PlanEstudioController::class, 'bti'])->name('planesBTI');
     Route::get('/planesBGNE', [PlanEstudioController::class, 'bgne'])->name('planesBGNE');
 
-   
+    // Notificaciones
+    Route::get('/notificaciones', [\App\Http\Controllers\NotificacionController::class, 'index'])->name('notificaciones');
+    Route::get('/notificaciones/count', [\App\Http\Controllers\NotificacionController::class, 'count']);
 
 });
 
@@ -88,6 +91,10 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::post('/asistencias/upload', [AsistenciaDocenteController::class, 'uploadBiometrico']);
     Route::get('/asistencias', [AsistenciaDocenteController::class, 'getAsistencias']);
     Route::delete('/asistencias/clear', [AsistenciaDocenteController::class, 'clearAsistencias']);
+
+    // Horarios Docentes
+    Route::get('/horarios_docentes', [DocenteController::class, 'horarioDocente'])->name('horarios_docentes');
+    Route::get('/docentes/{id}/horario', [DocenteController::class, 'getHorarioDocente']);
 });
 
 
@@ -137,6 +144,7 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::get('/grupos/modalAlta', [GrupoController::class, 'modalAlta']);
     Route::get('/grupos/{id}', [GrupoController::class, 'show'])->where('id', '[0-9]+');
     Route::put('/grupos/{id}', [GrupoController::class, 'update'])->where('id', '[0-9]+');
+    Route::delete('/grupos/{id}', [GrupoController::class, 'destroy'])->where('id', '[0-9]+');
 
     // Equivalencias
     Route::get('/equivalencias', [EquivalenciaController::class, 'index'])->name('equivalencias');
@@ -176,4 +184,12 @@ Route::post('/calificaciones/guardar',
     Route::post('/horarios', [HorariosController::class, 'store']);
     Route::post('/horarios/validar', [HorariosController::class, 'validar']);
     Route::delete('/horarios/{id_horario}', [HorariosController::class, 'destroy']);
+
+    // Generaciones CRUD
+    Route::get('/generaciones', [GeneracionController::class, 'index'])->name('generaciones');
+    Route::get('/generaciones/lista', [GeneracionController::class, 'lista'])->name('generaciones.lista');
+    Route::get('/generaciones/ultima', [GeneracionController::class, 'getUltima'])->name('generaciones.ultima');
+    Route::post('/generaciones', [GeneracionController::class, 'store'])->name('generaciones.store');
+    Route::put('/generaciones/{id}', [GeneracionController::class, 'update'])->name('generaciones.update');
+    Route::delete('/generaciones/{id}', [GeneracionController::class, 'destroy'])->name('generaciones.destroy');
 

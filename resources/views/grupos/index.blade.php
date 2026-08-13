@@ -28,14 +28,56 @@
 
     <div class="glass-card">
 
-        <div class="glass-header p-3 d-flex justify-content-between align-items-center">
-
-            <h5 class="mb-0">
-
-            </h5>
-
-            <input type="text" id="buscadorGrupos" class="form-control glass-input w-25" placeholder="Buscar grupos...">
-
+        <div class="glass-header p-3">
+            <div class="row g-3 align-items-end">
+                <!-- Buscador -->
+                <div class="col-md-3">
+                    <label class="form-label mb-1" style="font-size:0.78rem; font-weight:600; color: #334155 !important;">Buscar por Clave</label>
+                    <input type="text" id="buscadorGrupos" class="form-control form-control-premium w-100" placeholder="Ej. 1A-2026..." style="min-height:38px; font-size:0.85rem;">
+                </div>
+                <!-- CCT -->
+                <div class="col-md-2">
+                    <label class="form-label mb-1" style="font-size:0.78rem; font-weight:600; color: #334155 !important;">CCT (Centro de Trabajo)</label>
+                    <select id="filtroCCT" class="form-select form-select-premium w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
+                        <option value="">-- Todos --</option>
+                        <option value="3">BGNE</option>
+                        <option value="2">BTI</option>
+                        <option value="1">INF. Y COMP.</option>
+                    </select>
+                </div>
+                <!-- Día -->
+                <div class="col-md-2">
+                    <label class="form-label mb-1" style="font-size:0.78rem; font-weight:600; color: #334155 !important;">Día de Clase</label>
+                    <select id="filtroDia" class="form-select form-select-premium w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
+                        <option value="">-- Todos --</option>
+                        <option value="SABADO">Sábado</option>
+                        <option value="DOMINGO">Domingo</option>
+                        <option value="LUNES-VIERNES">Lunes-Viernes</option>
+                    </select>
+                </div>
+                <!-- Horario/Modalidad -->
+                <div class="col-md-3">
+                    <label class="form-label mb-1" style="font-size:0.78rem; font-weight:600; color: #334155 !important;">Horario / Modalidad</label>
+                    <select id="filtroHorario" class="form-select form-select-premium w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
+                        <option value="">-- Todos --</option>
+                        <option value="MATUTINO">MATUTINO</option>
+                        <option value="VESPERTINO">VESPERTINO</option>
+                        <option value="SABADO MAÑANA">SÁBADO MAÑANA</option>
+                        <option value="SABADO TARDE">SÁBADO TARDE</option>
+                        <option value="DOMINGO MAÑANA">DOMINGO MAÑANA</option>
+                        <option value="LIBRE">LIBRE</option>
+                    </select>
+                </div>
+                <!-- Estatus -->
+                <div class="col-md-2">
+                    <label class="form-label mb-1" style="font-size:0.78rem; font-weight:600; color: #334155 !important;">Estatus</label>
+                    <select id="filtroStatus" class="form-select form-select-premium w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
+                        <option value="">-- Todos --</option>
+                        <option value="ACTIVO" selected>ACTIVO</option>
+                        <option value="INACTIVO">INACTIVO</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <div class="table-responsive">
@@ -175,6 +217,52 @@ function initializeModalEvents(initialNivelId = null) {
 
     if (!selectCt || !chkDiv || !chk || !inputInicio || !inputFin || !selectPeriodo || !selectNivel) return;
 
+    // Función para cambiar las opciones de modalidad de horario según el CCT
+    function ajustarModalidadHorario(isBgne, valorSeleccionado = null) {
+        const selectModalidad = form.modalidadHorario;
+        if (!selectModalidad) return;
+
+        const valActual = valorSeleccionado || selectModalidad.value;
+
+        selectModalidad.innerHTML = '';
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = 'Seleccione una modalidad';
+        selectModalidad.appendChild(defaultOpt);
+
+        if (isBgne) {
+            const opcionesBgne = [
+                { value: 'SABADO MAÑANA', text: 'SÁBADO MAÑANA' },
+                { value: 'SABADO TARDE', text: 'SÁBADO TARDE' },
+                { value: 'DOMINGO MAÑANA', text: 'DOMINGO MAÑANA' }
+            ];
+            opcionesBgne.forEach(opt => {
+                const el = document.createElement('option');
+                el.value = opt.value;
+                el.textContent = opt.text;
+                if (opt.value === valActual) {
+                    el.selected = true;
+                }
+                selectModalidad.appendChild(el);
+            });
+        } else {
+            const opcionesStandard = [
+                { value: 'MATUTINO', text: 'MATUTINO' },
+                { value: 'VESPERTINO', text: 'VESPERTINO' },
+                { value: 'LIBRE', text: 'LIBRE' }
+            ];
+            opcionesStandard.forEach(opt => {
+                const el = document.createElement('option');
+                el.value = opt.value;
+                el.textContent = opt.text;
+                if (opt.value === valActual) {
+                    el.selected = true;
+                }
+                selectModalidad.appendChild(el);
+            });
+        }
+    }
+
     // Función para validar y ajustar según el CT seleccionado
     function checkCt(showAlert = false, nivelIdToSelect = null) {
         const selectedOption = selectCt.options[selectCt.selectedIndex];
@@ -189,7 +277,7 @@ function initializeModalEvents(initialNivelId = null) {
 
         const ctNombre = (selectedOption.dataset.nombre || selectedOption.textContent || '').toUpperCase();
         const idPeriodo = selectedOption.dataset.idPeriodo;
-        const isBgne = ctNombre.includes('BGNE');
+        const isBgne = ctNombre.includes('BGNE') || String(selectCt.value) === '3';
 
         // Auto-seleccionar Tipo de Periodo según el Centro de Trabajo
         if (idPeriodo) {
@@ -219,6 +307,10 @@ function initializeModalEvents(initialNivelId = null) {
             inputFin.readOnly = false;
             selectPeriodo.disabled = false;
         }
+
+        // Cargar dinámicamente las modalidades del horario
+        const valActual = form.modalidadHorario ? form.modalidadHorario.value : null;
+        ajustarModalidadHorario(isBgne, valActual);
 
         // Cargar dinámicamente los niveles académicos del CCT (Semestre para BTI / Trimestre para BGNE)
         cargarNivelesAcademicos(selectCt.value, nivelIdToSelect);
@@ -329,7 +421,18 @@ document.addEventListener("DOMContentLoaded", function() {
 
         document.getElementById('loading').style.display = 'block';
 
-        fetch(`/grupos/lista?page=${pagina}&search=${search}`)
+        const cct = document.getElementById('filtroCCT').value;
+        const dia = document.getElementById('filtroDia').value;
+        const horario = document.getElementById('filtroHorario').value;
+        const status = document.getElementById('filtroStatus').value;
+
+        let query = `/grupos/lista?page=${pagina}&search=${encodeURIComponent(search)}`;
+        if (cct) query += `&id_centro_trabajo=${cct}`;
+        if (dia) query += `&dia=${encodeURIComponent(dia)}`;
+        if (horario) query += `&modalidad_horario=${encodeURIComponent(horario)}`;
+        if (status) query += `&status_grupo=${status}`;
+
+        fetch(query)
             .then(res => res.json())
             .then(res => {
                 grupos = res.data;
@@ -346,6 +449,16 @@ document.addEventListener("DOMContentLoaded", function() {
         pagina = 1;
         cargarGrupos();
     });
+
+    document.getElementById('filtroCCT').addEventListener('change', resetAndCargar);
+    document.getElementById('filtroDia').addEventListener('change', resetAndCargar);
+    document.getElementById('filtroHorario').addEventListener('change', resetAndCargar);
+    document.getElementById('filtroStatus').addEventListener('change', resetAndCargar);
+
+    function resetAndCargar() {
+        pagina = 1;
+        cargarGrupos();
+    }
 
     function formatearFecha(fecha) {
         if (!fecha) return '—';
@@ -369,18 +482,6 @@ document.addEventListener("DOMContentLoaded", function() {
             fechaInicioAbs.getUTCDate()
         ));
 
-        let groupEndDate = null;
-        if (g.fechaFin) {
-            let fechaFinAbs = new Date(g.fechaFin);
-            if (!isNaN(fechaFinAbs.getTime())) {
-                groupEndDate = new Date(Date.UTC(
-                    fechaFinAbs.getUTCFullYear(),
-                    fechaFinAbs.getUTCMonth(),
-                    fechaFinAbs.getUTCDate()
-                ));
-            }
-        }
-
         let idTipoPeriodo = g.id_tipoPeriodo;
         let idNivelActualDb = g.id_nivel_academico;
 
@@ -393,45 +494,10 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         const isTrimestral = idTipoPeriodo === 2;
-        const weeksPerPeriod = isTrimestral ? 13 : 26;
         const periodLabel = isTrimestral ? "Trim." : "Sem.";
 
         const now = new Date();
         const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-
-        let periodNumber = 1;
-        let periodStartDate = new Date(currentDate.getTime());
-        let periodEndDate = new Date(currentDate.getTime() + ((weeksPerPeriod - 1) * 7 * 24 * 60 * 60 * 1000));
-
-        while (true) {
-            periodEndDate = new Date(periodStartDate.getTime() + ((weeksPerPeriod - 1) * 7 * 24 * 60 * 60 * 1000));
-
-            if (todayUTC.getTime() <= periodEndDate.getTime()) {
-                break;
-            }
-
-            if (groupEndDate && periodStartDate.getTime() > groupEndDate.getTime()) {
-                break;
-            }
-            if (isTrimestral && periodNumber >= 6) break;
-            if (!isTrimestral && periodNumber >= 6) break;
-
-            if (groupEndDate && periodEndDate.getTime() >= groupEndDate.getTime()) {
-                break;
-            }
-
-            periodStartDate = new Date(periodEndDate.getTime() + (7 * 24 * 60 * 60 * 1000));
-            periodNumber++;
-        }
-
-        const total = periodEndDate.getTime() - periodStartDate.getTime();
-        const elapsed = todayUTC.getTime() - periodStartDate.getTime();
-
-        let percent = 0;
-        if (total > 0) {
-            percent = Math.round((elapsed / total) * 100);
-            percent = Math.max(0, Math.min(100, percent));
-        }
 
         const toDMY = (d) => {
             const dd = String(d.getUTCDate()).padStart(2, '0');
@@ -440,9 +506,84 @@ document.addEventListener("DOMContentLoaded", function() {
             return `${dd}/${mm}/${yyyy}`;
         };
 
+        if (!isTrimestral) {
+            // LÓGICA SEMESTRAL (Escolarizado / BTI)
+            // Respetamos estrictamente el semestre configurado en la base de datos
+            let currentSemester = 1;
+            if (idNivelActualDb !== null && idNivelActualDb !== undefined && idNivelActualDb >= 7) {
+                currentSemester = idNivelActualDb - 6;
+            }
+
+            const startYear = fechaInicioAbs.getUTCFullYear();
+            const isFall = (currentSemester % 2 !== 0);
+            
+            // Calcular el año correspondiente a ese semestre
+            let periodYear = startYear;
+            if (isFall) {
+                periodYear = startYear + Math.floor((currentSemester - 1) / 2);
+            } else {
+                periodYear = startYear + Math.floor(currentSemester / 2);
+            }
+
+            // Fechas de inicio y fin del semestre activo
+            let periodStartDate, periodEndDate;
+            if (isFall) {
+                periodStartDate = new Date(Date.UTC(periodYear, 7, 1)); // 1 de Agosto
+                periodEndDate = new Date(Date.UTC(periodYear, 11, 31)); // 31 de Diciembre
+            } else {
+                periodStartDate = new Date(Date.UTC(periodYear, 1, 1)); // 1 de Febrero
+                periodEndDate = new Date(Date.UTC(periodYear, 6, 31)); // 31 de Julio
+            }
+
+            // Porcentaje de progreso
+            let percent = 0;
+            if (todayUTC.getTime() >= periodEndDate.getTime()) {
+                percent = 100;
+            } else if (todayUTC.getTime() <= periodStartDate.getTime()) {
+                percent = 0;
+            } else {
+                const total = periodEndDate.getTime() - periodStartDate.getTime();
+                const elapsed = todayUTC.getTime() - periodStartDate.getTime();
+                percent = Math.round((elapsed / total) * 100);
+                percent = Math.max(0, Math.min(100, percent));
+            }
+
+            return {
+                percent: percent,
+                nivelText: `${currentSemester}° ${periodLabel}`,
+                inicioPeriodo: toDMY(periodStartDate),
+                finPeriodo: toDMY(periodEndDate)
+            };
+        }
+
+        // LÓGICA TRIMESTRAL (BGNE)
+        let currentTrimestre = 1;
+        if (idNivelActualDb !== null && idNivelActualDb !== undefined && idNivelActualDb >= 1 && idNivelActualDb <= 6) {
+            currentTrimestre = idNivelActualDb;
+        }
+
+        // Cada trimestre dura 13 semanas (91 días)
+        const weeksOffset = (currentTrimestre - 1) * 13;
+        
+        const periodStartDate = new Date(currentDate.getTime() + (weeksOffset * 7 * 24 * 60 * 60 * 1000));
+        const periodEndDate = new Date(periodStartDate.getTime() + (13 * 7 * 24 * 60 * 60 * 1000) - (24 * 60 * 60 * 1000));
+
+        // Porcentaje de progreso
+        let percent = 0;
+        if (todayUTC.getTime() >= periodEndDate.getTime()) {
+            percent = 100;
+        } else if (todayUTC.getTime() <= periodStartDate.getTime()) {
+            percent = 0;
+        } else {
+            const total = periodEndDate.getTime() - periodStartDate.getTime();
+            const elapsed = todayUTC.getTime() - periodStartDate.getTime();
+            percent = Math.round((elapsed / total) * 100);
+            percent = Math.max(0, Math.min(100, percent));
+        }
+
         return {
             percent: percent,
-            nivelText: `${periodNumber}° ${periodLabel}`,
+            nivelText: `${currentTrimestre}° ${periodLabel}`,
             inicioPeriodo: toDMY(periodStartDate),
             finPeriodo: toDMY(periodEndDate)
         };
@@ -510,6 +651,9 @@ document.addEventListener("DOMContentLoaded", function() {
                         <a href="/grupos/${grupo.id}/alumnos" class="btn btn-sm text-white" style="background: #0ea5e9; border: none; border-radius: 6px; padding: 4px 8px;" title="Ver alumnos del grupo">
                             <i class="fa-solid fa-users"></i>
                         </a>
+                        <button class="btn btn-eliminar btn-sm" onclick="confirmarEliminarGrupo(${grupo.id})" title="Eliminar grupo">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </td>
                 </tr>
             `;
@@ -643,6 +787,57 @@ document.addEventListener("DOMContentLoaded", function() {
                     });
 
             });
+    };
+
+    window.confirmarEliminarGrupo = function(id) {
+        Swal.fire({
+            title: '¿Deseas eliminar este grupo?',
+            text: 'Esta acción eliminará el grupo, sus horarios y la relación con los alumnos de forma permanente.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#E53935',
+            cancelButtonColor: '#cbd5e1',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/grupos/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Eliminado',
+                            text: data.message,
+                            confirmButtonColor: '#317D92'
+                        });
+                        cargarGrupos();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Error al eliminar el grupo.',
+                            confirmButtonColor: '#317D92'
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error de red al intentar eliminar el grupo.',
+                        confirmButtonColor: '#317D92'
+                    });
+                });
+            }
+        });
     };
 
     function renderPaginacion(data) {
