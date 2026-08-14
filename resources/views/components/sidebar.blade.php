@@ -4,11 +4,32 @@ $rol = strtoupper(session('rol'));
 
 <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
 
-<div class="sidebar">
+
+<div class="sidebar" id="sidebar">
 
     <div class="logo">
         <i class="fa-solid fa-school"></i>
         <span>Sistema Escolar</span>
+    </div>
+
+    <div class="usuario-sidebar">
+
+        <div class="usuario-info">
+
+            <i class="fa-solid fa-circle-user usuario-icono"></i>
+
+            <div class="usuario-texto">
+                <span class="usuario-nombre">
+                    {{ session('nombre') }}
+                </span>
+            </div>
+
+            <button type="button" id="toggleSidebar" class="toggle-sidebar">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+
+        </div>
+
     </div>
 
 
@@ -16,8 +37,8 @@ $rol = strtoupper(session('rol'));
 
         <h2 class="accordion-header">
 
-            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                data-bs-target="#menu-Inicio" aria-expanded="false" aria-controls="menu-Inicio">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#menu-Inicio"
+                aria-expanded="false" aria-controls="menu-Inicio">
                 <i class="fa-solid fa-house"></i>
                 Inicio
             </button>
@@ -42,8 +63,8 @@ $rol = strtoupper(session('rol'));
 
         <h2 class="accordion-header">
 
-            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                data-bs-target="#menu-Alumnos" aria-expanded="false" aria-controls="menu-Alumnos">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#menu-Alumnos"
+                aria-expanded="false" aria-controls="menu-Alumnos">
                 <i class="fa-solid fa-users"></i>
                 Alumnos
             </button>
@@ -75,8 +96,8 @@ $rol = strtoupper(session('rol'));
 
         <h2 class="accordion-header">
 
-            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                data-bs-target="#menu-Docentes" aria-expanded="false" aria-controls="menu-Docentes">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#menu-Docentes"
+                aria-expanded="false" aria-controls="menu-Docentes">
                 <i class="fa-solid fa-person-chalkboard"></i>
                 Docentes
             </button>
@@ -111,10 +132,10 @@ $rol = strtoupper(session('rol'));
 
         <h2 class="accordion-header">
 
-            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                data-bs-target="#menu-Grupos" aria-expanded="false" aria-controls="menu-Grupos">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#menu-Grupos"
+                aria-expanded="false" aria-controls="menu-Grupos">
 
-               <i class="fa-solid fa-user-group"></i>
+                <i class="fa-solid fa-user-group"></i>
                 <span>Grupos</span>
 
             </button>
@@ -154,8 +175,8 @@ $rol = strtoupper(session('rol'));
 
         <h2 class="accordion-header">
 
-            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                data-bs-target="#menu-Materias" aria-expanded="false" aria-controls="menu-Materias">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#menu-Materias"
+                aria-expanded="false" aria-controls="menu-Materias">
                 <i class="fa-solid fa-book-bookmark"></i>
                 Materias
             </button>
@@ -179,8 +200,8 @@ $rol = strtoupper(session('rol'));
 
         <h2 class="accordion-header">
 
-            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                data-bs-target="#menu-Tramites" aria-expanded="false" aria-controls="menu-Tramites">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#menu-Tramites"
+                aria-expanded="false" aria-controls="menu-Tramites">
                 <i class="fa-solid fa-folder-open"></i>
                 Trámites
             </button>
@@ -238,7 +259,7 @@ $rol = strtoupper(session('rol'));
 
     @if($rol=='ADMIN')
 
-<div class="accordion-item menu-title">
+    <div class="accordion-item menu-title">
 
         <h2 class="accordion-header">
 
@@ -277,8 +298,8 @@ $rol = strtoupper(session('rol'));
 
     <div class="accordion-item menu-title">
         <h2 class="accordion-header">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                data-bs-target="#menu-Otros" aria-expanded="false" aria-controls="flush-collapseOne">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#menu-Otros"
+                aria-expanded="false" aria-controls="flush-collapseOne">
                 Otros
             </button>
         </h2>
@@ -293,3 +314,28 @@ $rol = strtoupper(session('rol'));
 
     </div>
 </div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const sidebar = document.getElementById('sidebar');
+    const toggleButton = document.getElementById('toggleSidebar');
+    const icon = toggleButton.querySelector('i');
+
+    toggleButton.addEventListener('click', function() {
+
+        sidebar.classList.toggle('sidebar-hidden');
+        document.body.classList.toggle('sidebar-hidden');
+
+        if (sidebar.classList.contains('sidebar-hidden')) {
+            icon.classList.remove('fa-chevron-left');
+            icon.classList.add('fa-chevron-right');
+        } else {
+            icon.classList.remove('fa-chevron-right');
+            icon.classList.add('fa-chevron-left');
+        }
+    });
+
+});
+</script>
