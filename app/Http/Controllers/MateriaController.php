@@ -14,7 +14,7 @@ class MateriaController extends Controller
 
     public function lista()
     {
-        $url = config('services.api.base_url') . '/materias';
+        $url = config('services.api.base_url') . '/materias?limit=1000';
 
         $response = Http::get($url);
 

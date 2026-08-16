@@ -447,6 +447,8 @@
 </div>
 
 <script>
+const loggedInDocenteId = @json(session('id_docente'));
+const isDocenteRole = @json(session('rol') === 'DOCENTE');
 let selectDocente = null;
 let docentesMap = {};
 let horarioActual = [];
@@ -464,7 +466,33 @@ const BTI_HOURS = [
 ];
 
 document.addEventListener("DOMContentLoaded", function() {
-    cargarListaDocentes();
+    if (isDocenteRole && loggedInDocenteId) {
+        // Ocultar buscador e inputs innecesarios para el rol docente
+        const searchContainer = document.getElementById("docente-search")?.closest(".position-relative");
+        if (searchContainer) searchContainer.style.display = "none";
+        
+        const returnBtn = document.querySelector(".btn-regresar-light");
+        if (returnBtn) returnBtn.style.display = "none";
+
+        // Cargar los datos del docente directamente
+        fetch(`/docentes/${loggedInDocenteId}`)
+            .then(res => res.json())
+            .then(resp => {
+                if (resp.success && resp.data) {
+                    const d = resp.data;
+                    docentesMap[d.idDocente] = {
+                        ...d,
+                        nombreCompleto: `${d.nombreDocente} ${d.apPaternoDocente ?? ''} ${d.apMaternoDocente ?? ''}`.trim()
+                    };
+                    seleccionarDocente(d.idDocente);
+                }
+            })
+            .catch(err => {
+                console.error("Error al cargar datos del docente:", err);
+            });
+    } else {
+        cargarListaDocentes();
+    }
 });
 
 function cargarListaDocentes() {
@@ -486,7 +514,8 @@ function cargarListaDocentes() {
             const searchResults = document.getElementById("search-results");
 
             searchInput.addEventListener("input", function() {
-                const query = this.value.toLowerCase().trim();
+                const normalizeStr = str => (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                const query = normalizeStr(this.value).trim();
                 if (query.length === 0) {
                     resetPantalla();
                     searchResults.classList.add("d-none");
@@ -499,8 +528,8 @@ function cargarListaDocentes() {
                 
                 // Filtrar docentes
                 const matches = Object.values(docentesMap).filter(d => 
-                    d.nombreCompleto.toLowerCase().includes(query) ||
-                    (d.correoDocente && d.correoDocente.toLowerCase().includes(query)) ||
+                    normalizeStr(d.nombreCompleto).includes(query) ||
+                    normalizeStr(d.correoDocente).includes(query) ||
                     d.idDocente.toString().includes(query)
                 );
                 

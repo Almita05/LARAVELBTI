@@ -30,7 +30,8 @@ class HorariosController extends Controller
     public function getHorariosGrupo(Request $request, $id_grupo)
     {
         $agrupado = $request->query('agrupado', 'false');
-        $url = config('services.api.base_url') . '/getHorariosGrupo/' . $id_grupo . '?agrupado=' . $agrupado;
+        $es_prehorario = $request->query('es_prehorario', '0');
+        $url = config('services.api.base_url') . '/getHorariosGrupo/' . $id_grupo . '?agrupado=' . $agrupado . '&es_prehorario=' . $es_prehorario;
         $response = Http::get($url);
 
         if ($response->failed()) {
@@ -100,6 +101,7 @@ class HorariosController extends Controller
             'diaSemana' => $request->input('diaSemana'),
             'horaInicio' => $request->input('horaInicio'),
             'horaFin' => $request->input('horaFin'),
+            'es_prehorario' => $request->input('es_prehorario', 0),
         ]);
 
         if ($response->failed()) {

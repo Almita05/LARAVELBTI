@@ -49,12 +49,12 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-
+                        <th>Clave</th>
                         <th>Nombre</th>
-                        <th>Descripción</th>
+                        <th>Centro de Trabajo (CCT)</th>
+                        <th>Semestre / Periodo</th>
                         <th>Estatus</th>
                         <th>Docentes</th>
-
                         <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
@@ -307,12 +307,50 @@ document.addEventListener("DOMContentLoaded", function() {
     let modoMateria = 'crear'; // 'crear', 'editar', 'ver'
     let idMateriaActual = null;
 
+    window.filtrarPeriodosPorCct = function(idCentroTrabajo, selectedNivelId = null) {
+        const selectNivel = document.getElementById('selectNivelMateria');
+        if (!selectNivel) return Promise.resolve();
+
+        if (!idCentroTrabajo) {
+            selectNivel.innerHTML = '<option value="">-- Primero seleccione un Centro de Trabajo --</option>';
+            return Promise.resolve();
+        }
+
+        selectNivel.innerHTML = '<option value="">Cargando semestres / periodos...</option>';
+
+        return fetch(`/catalogos/niveles-academicos?idCentroTrabajo=${idCentroTrabajo}`)
+            .then(res => res.json())
+            .then(niveles => {
+                selectNivel.innerHTML = '<option value="">-- Seleccionar Nivel --</option>';
+                if (Array.isArray(niveles)) {
+                    niveles.forEach(n => {
+                        const opt = document.createElement('option');
+                        opt.value = n.id;
+                        opt.textContent = n.nombre;
+                        if (selectedNivelId && String(n.id) === String(selectedNivelId)) {
+                            opt.selected = true;
+                        }
+                        selectNivel.appendChild(opt);
+                    });
+                    if (selectedNivelId) {
+                        selectNivel.value = selectedNivelId;
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Error cargando niveles académicos:', err);
+                selectNivel.innerHTML = '<option value="">Error al cargar niveles</option>';
+            });
+    }
+
     function setFormDisabled(disabled) {
         const form = document.getElementById('formMateria');
         form.nombreMateria.disabled = disabled;
         form.descripcionMateria.disabled = disabled;
         if (form.clave) form.clave.disabled = disabled;
         form.estatusMateria.disabled = disabled;
+        if (form.idCentroTrabajo) form.idCentroTrabajo.disabled = disabled;
+        if (form.id_nivel_academico) form.id_nivel_academico.disabled = disabled;
         document.querySelectorAll('.docenteCheck').forEach(cb => cb.disabled = disabled);
     }
 
@@ -324,6 +362,10 @@ document.addEventListener("DOMContentLoaded", function() {
             idMateriaActual = null;
             const form = document.getElementById('formMateria');
             form.reset();
+            const selectNivel = document.getElementById('selectNivelMateria');
+            if (selectNivel) {
+                selectNivel.innerHTML = '<option value="">-- Primero seleccione un Centro de Trabajo --</option>';
+            }
             document.getElementById('docentesSeleccionados').innerHTML = '';
             setFormDisabled(false);
             document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
@@ -349,6 +391,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     form.descripcionMateria.value = m.descripcionMateria || '';
                     if (form.clave) form.clave.value = m.clave || '';
                     form.estatusMateria.value = m.estatusMateria || 'ACTIVA';
+                    if (form.idCentroTrabajo) form.idCentroTrabajo.value = m.idCentroTrabajo || '';
+
+                    // Cargar niveles académicos correspondientes y auto-seleccionar
+                    filtrarPeriodosPorCct(m.idCentroTrabajo, m.id_nivel_academico);
 
                     document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
                     const checkIds = m.docentes ? m.docentes.map(d => d.idDocente) : [];
@@ -399,6 +445,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     form.descripcionMateria.value = m.descripcionMateria || '';
                     if (form.clave) form.clave.value = m.clave || '';
                     form.estatusMateria.value = m.estatusMateria || 'ACTIVA';
+                    if (form.idCentroTrabajo) form.idCentroTrabajo.value = m.idCentroTrabajo || '';
+
+                    // Cargar niveles académicos correspondientes y auto-seleccionar
+                    filtrarPeriodosPorCct(m.idCentroTrabajo, m.id_nivel_academico);
 
                     document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
                     const checkIds = m.docentes ? m.docentes.map(d => d.idDocente) : [];
@@ -488,13 +538,13 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function renderMaterias() {
-
-        const filtro = document.getElementById('buscadorMateria').value.toLowerCase();
+        const normalizeStr = str => (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const filtro = normalizeStr(document.getElementById('buscadorMateria').value);
 
         const filtradas = listaMaterias.filter(m =>
-            m.nombreMateria.toLowerCase().includes(filtro) ||
-            m.descripcionMateria.toLowerCase().includes(filtro) ||
-            (m.clave && m.clave.toLowerCase().includes(filtro))
+            normalizeStr(m.nombreMateria).includes(filtro) ||
+            normalizeStr(m.descripcionMateria).includes(filtro) ||
+            normalizeStr(m.clave).includes(filtro)
         );
 
         const inicio = (paginaMateria - 1) * filasMateria;
@@ -504,6 +554,17 @@ document.addEventListener("DOMContentLoaded", function() {
         let html = '';
 
         datos.forEach(materia => {
+            const cctNombre = materia.nombreCentroTrabajo || 'N/A';
+            const nivelNombre = materia.nombreNivelAcademico || 'N/A';
+            
+            let cctBadgeClass = 'bg-secondary';
+            if (materia.idCentroTrabajo === 2) {
+                cctBadgeClass = 'bg-primary'; // BTI
+            } else if (materia.idCentroTrabajo === 3) {
+                cctBadgeClass = 'bg-info'; // BGNE
+            } else if (materia.idCentroTrabajo === 1) {
+                cctBadgeClass = 'bg-success'; // Computación
+            }
 
             html += `
         <tr>

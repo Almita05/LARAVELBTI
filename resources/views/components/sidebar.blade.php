@@ -73,6 +73,20 @@ $rol = strtoupper(session('rol'));
                 </a>
 
             </div>
+            <div class="accordion-body">
+
+                <a href="{{ route('asistencias_alumnos') }}">
+                    -Asistencia Alumnos
+                </a>
+
+            </div>
+            <div class="accordion-body">
+
+                <a href="{{ route('reportes.asistencias') }}">
+                    -Reporte de Asistencias
+                </a>
+
+            </div>
 
         </div>
 
@@ -117,6 +131,13 @@ $rol = strtoupper(session('rol'));
 
                 <a href="{{ route('horarios_docentes') }}">
                     -Horario Docente
+                </a>
+
+            </div>
+            <div class="accordion-body">
+
+                <a href="{{ route('permisos_captura') }}">
+                    -Permisos de Captura
                 </a>
 
             </div>
@@ -194,30 +215,49 @@ $rol = strtoupper(session('rol'));
     </div>
 
 
+    @endif
+
+    @if($rol=='DOCENTE')
     <div class="accordion-item menu-title">
-
         <h2 class="accordion-header">
-
-            <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                data-bs-target="#menu-Tramites" aria-expanded="false" aria-controls="menu-Tramites">
-                <i class="fa-solid fa-folder-open"></i>
-                Trámites
-            </button>
+            <a href="{{ route('horarios_docentes') }}" class="accordion-button no-chevron d-flex align-items-center text-white" style="text-decoration: none;">
+                <i class="fa-solid fa-calendar-days me-2"></i>
+                <span>Mi Horario</span>
+            </a>
         </h2>
-        <div id="menu-Tramites" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
-
-            <div class="accordion-body">
-
-                <a href="{{ route('equivalencias') }}">
-                    -Equivalencias
-                </a>
-
-            </div>
-
-        </div>
-
     </div>
 
+    <div class="accordion-item menu-title">
+        <h2 class="accordion-header">
+            <a href="{{ route('docentes.pendientes') }}" class="accordion-button no-chevron d-flex align-items-center text-white" style="text-decoration: none;">
+                <i class="fa-solid fa-list-check me-2"></i>
+                <span>Pendientes</span>
+            </a>
+        </h2>
+    </div>
+
+    <div class="accordion-item menu-title">
+        <h2 class="accordion-header">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                data-bs-target="#menu-GruposDocente" aria-expanded="false" aria-controls="menu-GruposDocente">
+                <i class="fa-solid fa-user-group"></i>
+                <span>Mis Grupos</span>
+            </button>
+        </h2>
+        <div id="menu-GruposDocente" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
+            <div class="accordion-body">
+                <a href="{{ route('grupos') }}">
+                    -Listado de Grupos
+                </a>
+                <a href="{{ route('grupos.captura_calificaciones') }}">
+                    -Capturar Calificaciones
+                </a>
+                <a href="{{ route('asistencias_alumnos') }}">
+                    -Asistencia
+                </a>
+            </div>
+        </div>
+    </div>
     @endif
 
 
@@ -311,6 +351,7 @@ $rol = strtoupper(session('rol'));
     @endif
 
 
+    @if($rol=='ADMIN')
     <div class="accordion-item menu-title">
         <h2 class="accordion-header">
             <button class="accordion-button" type="button" data-bs-toggle="collapse"
@@ -325,6 +366,7 @@ $rol = strtoupper(session('rol'));
             </a>
         </div>
     </div>
+    @endif
     <div class="accordion-item menu-title">
 
     </div>

@@ -21,12 +21,14 @@ use App\Http\Controllers\CalificacionesController;
 use App\Http\Controllers\HorariosController;
 use App\Http\Controllers\KardexCBgneController;
 use App\Http\Controllers\AsistenciaDocenteController;
+use App\Http\Controllers\PermisosCapturaController;
 
 
 
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
 
 Route::get('/login', [AuthController::class, 'showLogin'])
     ->name('login');
@@ -42,6 +44,9 @@ Route::get('/materias-usuario', [CalificacionesController::class, 'materiasUsuar
 Route::middleware('auth.session')->group(function () {
 
     Route::get('/home', function () {
+        if (session('rol') === 'DOCENTE') {
+            return redirect()->route('horarios_docentes');
+        }
         return view('principal.home');
     })->name('home');
 
@@ -95,6 +100,35 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     // Horarios Docentes
     Route::get('/horarios_docentes', [DocenteController::class, 'horarioDocente'])->name('horarios_docentes');
     Route::get('/docentes/{id}/horario', [DocenteController::class, 'getHorarioDocente']);
+
+    // Pendientes Docente
+    Route::get('/docentes/pendientes', [DocenteController::class, 'pendientes'])->name('docentes.pendientes');
+    Route::get('/docentes/pendientes/datos', [DocenteController::class, 'getPendingItems']);
+
+    // Asistencias Alumnos
+    Route::get('/asistencias_alumnos', [\App\Http\Controllers\AsistenciaAlumnoController::class, 'index'])->name('asistencias_alumnos');
+    Route::get('/asistencias_alumnos/grupo/{id_grupo}', [\App\Http\Controllers\AsistenciaAlumnoController::class, 'grupoGrid'])->name('asistencias_alumnos.grupo');
+    Route::post('/asistencias_alumnos/guardar', [\App\Http\Controllers\AsistenciaAlumnoController::class, 'guardar'])->name('asistencias_alumnos.guardar');
+    Route::post('/asistencias_alumnos/justificar', [\App\Http\Controllers\AsistenciaAlumnoController::class, 'justificar'])->name('asistencias_alumnos.justificar');
+
+    // Reportes de Asistencias
+    Route::get('/reportes/asistencias', [\App\Http\Controllers\ReporteAsistenciaController::class, 'index'])->name('reportes.asistencias');
+    Route::get('/reportes/asistencias/grupo/{id_grupo}', [\App\Http\Controllers\ReporteAsistenciaController::class, 'getGrupoReport'])->name('reportes.asistencias.grupo');
+    Route::get('/reportes/asistencias/grupo/{id_grupo}/alumno/{id_alumno}', [\App\Http\Controllers\ReporteAsistenciaController::class, 'getAlumnoHistorial'])->name('reportes.asistencias.alumno_historial');
+
+    // Permisos de Captura Docentes
+    Route::get('/permisos-captura', [PermisosCapturaController::class, 'index'])->name('permisos_captura');
+    Route::get('/permisos-captura/lista', [PermisosCapturaController::class, 'lista']);
+    Route::get('/permisos-captura/matriz', [PermisosCapturaController::class, 'getMatrizAvance']);
+    Route::get('/permisos-captura/docentes', [PermisosCapturaController::class, 'getDocentes']);
+    Route::get('/permisos-captura/grupos', [PermisosCapturaController::class, 'getGrupos']);
+    Route::post('/permisos-captura', [PermisosCapturaController::class, 'store']);
+    Route::put('/permisos-captura/{id}', [PermisosCapturaController::class, 'update']);
+    Route::delete('/permisos-captura/{id}', [PermisosCapturaController::class, 'destroy']);
+    Route::get('/permisos-captura/ccts', [PermisosCapturaController::class, 'getCcts']);
+    Route::get('/permisos-captura/cct/{cct_id}/grupos', [PermisosCapturaController::class, 'getGruposPorCct']);
+    Route::get('/permisos-captura/grupo-config/{grupo_id}', [PermisosCapturaController::class, 'getGrupoConfig']);
+    Route::post('/permisos-captura/grupo-config/{grupo_id}', [PermisosCapturaController::class, 'saveGrupoConfig']);
 });
 
 

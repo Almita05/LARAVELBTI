@@ -607,6 +607,8 @@
                         <input type="text" id="groupSearchInput" class="form-control search-input-custom" placeholder="Buscar grupo o alumno...">
                     </div>
 
+
+
                     <!-- Groups List -->
                     <div id="groupListContainer" class="group-list">
                         <div class="text-center py-4" id="groupListSpinner">
@@ -794,6 +796,26 @@ document.addEventListener("DOMContentLoaded", function() {
     let materiaSelectInstance = null;
     let materiaSelectMultipleInstance = null;
     let docenteSelectInstance = null;
+    let selectedPeriodNivel = null;
+    let currentPrehorarioMode = 0;
+
+    window.debugState = function() {
+        console.log("selectedPeriodNivel:", selectedPeriodNivel);
+        console.log("activeGroup:", activeGroup);
+        console.log("schedulesData for activeGroup:", activeGroup ? schedulesData[activeGroup.clave] : null);
+        console.log("all schedulesData:", schedulesData);
+    };
+
+    function setPrehorarioMode(val) {
+        currentPrehorarioMode = val;
+        if (activeGroup) {
+            if (val === 1) {
+                document.getElementById("selectedGroupName").textContent = activeGroup.clave + " (Pre-Horario)";
+            } else {
+                document.getElementById("selectedGroupName").textContent = activeGroup.clave;
+            }
+        }
+    }
 
     const dayNumbers = {
         "Lunes": 1,
@@ -906,15 +928,28 @@ document.addEventListener("DOMContentLoaded", function() {
 
         formMateriaSelect.innerHTML = '<option value="">Seleccione Materia</option>';
         formMateriaSelectMultiple.innerHTML = '';
-        materias.forEach(mat => {
+        const filteredMaterias = materias.filter(mat => {
+            if (!selectedPeriodNivel) return true;
+            const matLvl = mat.id_nivel_academico;
+            return matLvl === null || matLvl === undefined || String(matLvl) === String(selectedPeriodNivel);
+        });
+
+        filteredMaterias.forEach(mat => {
+            const rawCct = mat.nombreCentroTrabajo || (mat.idCentroTrabajo === 3 ? 'BGNE' : (mat.idCentroTrabajo === 2 ? 'BTI' : (mat.idCentroTrabajo === 1 ? 'INF. Y COMP.' : '')));
+            let cctNombre = rawCct;
+            if (rawCct === 'INFORMATICA Y COMPUTACION') {
+                cctNombre = 'INF. Y COMP.';
+            }
+            const cctSuffix = cctNombre ? ` (${cctNombre})` : '';
+
             const opt1 = document.createElement("option");
             opt1.value = mat.id_materia || mat.id || mat.nombreMateria;
-            opt1.textContent = mat.nombreMateria;
+            opt1.textContent = `${mat.nombreMateria}${cctSuffix}`;
             formMateriaSelect.appendChild(opt1);
 
             const opt2 = document.createElement("option");
             opt2.value = mat.id_materia || mat.id || mat.nombreMateria;
-            opt2.textContent = mat.nombreMateria;
+            opt2.textContent = `${mat.nombreMateria}${cctSuffix}`;
             formMateriaSelectMultiple.appendChild(opt2);
         });
 
@@ -988,7 +1023,7 @@ document.addEventListener("DOMContentLoaded", function() {
         let idNivelActualDb = g.id_nivel_academico;
 
         if (idTipoPeriodo === null || idTipoPeriodo === undefined) {
-            if (idNivelActualDb !== null && idNivelActualDb >= 11) {
+            if (idNivelActualDb !== null && idNivelActualDb >= 7) {
                 idTipoPeriodo = 1; // SEMESTRAL
             } else {
                 idTipoPeriodo = 2; // TRIMESTRAL (default)
@@ -996,41 +1031,62 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         const isTrimestral = idTipoPeriodo === 2;
+        if (!isTrimestral) {
+            const semNum = idNivelActualDb ? (idNivelActualDb - 6) : 1;
+            const today = new Date();
+            const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+            if (g.fechaFin) {
+                let fechaFinAbs = new Date(g.fechaFin);
+                let groupEndDate = new Date(Date.UTC(
+                    fechaFinAbs.getUTCFullYear(),
+                    fechaFinAbs.getUTCMonth(),
+                    fechaFinAbs.getUTCDate()
+                ));
+                if (todayUTC.getTime() > groupEndDate.getTime()) {
+                    return `${semNum}° Sem. (Fin)`;
+                }
+            }
+            return `${semNum}° Sem.`;
+        }
         const weeksPerPeriod = isTrimestral ? 13 : 26;
         const periodLabel = isTrimestral ? "Trim." : "Sem.";
+
+        const startLevel = isTrimestral ? 1 : 7;
+        let idNivel = startLevel;
 
         const today = new Date();
         const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
 
         if (todayUTC.getTime() < currentDate.getTime()) {
-            return `1° ${periodLabel}`;
+            const periodNum = isTrimestral ? idNivel : (idNivel - 6);
+            return `${periodNum}° ${periodLabel}`;
         }
-
-        let periodNumber = 1;
 
         while (true) {
             // Todos los periodos duran exactamente (weeks - 1) * 7 días inclusive
             let periodEndDate = new Date(currentDate.getTime() + ((weeksPerPeriod - 1) * 7 * 24 * 60 * 60 * 1000));
 
             if (todayUTC.getTime() <= periodEndDate.getTime()) {
-                return `${periodNumber}° ${periodLabel}`;
+                const periodNum = isTrimestral ? idNivel : (idNivel - 6);
+                return `${periodNum}° ${periodLabel}`;
             }
 
             if (groupEndDate && currentDate.getTime() > groupEndDate.getTime()) {
                 break;
             }
-            if (isTrimestral && periodNumber > 10) break;
-            if (!isTrimestral && periodNumber > 8) break;
+            if (isTrimestral && idNivel > 6) break;
+            if (!isTrimestral && idNivel > 12) break;
 
             if (groupEndDate && periodEndDate.getTime() >= groupEndDate.getTime()) {
                 if (todayUTC.getTime() > groupEndDate.getTime()) {
-                    return `${periodNumber}° ${periodLabel} (Fin)`;
+                    const periodNum = isTrimestral ? idNivel : (idNivel - 6);
+                    return `${periodNum}° ${periodLabel} (Fin)`;
                 }
                 break;
             }
 
             currentDate = new Date(periodEndDate.getTime() + (7 * 24 * 60 * 60 * 1000));
-            periodNumber++;
+            idNivel++;
         }
 
         if (groupEndDate && todayUTC.getTime() > groupEndDate.getTime()) {
@@ -1169,6 +1225,16 @@ document.addEventListener("DOMContentLoaded", function() {
         activeGroup = group;
         selectedGroupName.textContent = group.clave;
         
+        setPrehorarioMode(0);
+
+        // Pre-calculate selectedPeriodNivel synchronously to prevent race conditions during async fetching
+        const calculatedSync = calcularPeriodoNivel(group);
+        if (calculatedSync) {
+            selectedPeriodNivel = calculatedSync.idNivel;
+        } else {
+            selectedPeriodNivel = null;
+        }
+        
         // Ocultar elementos temporalmente hasta que se carguen los detalles extendidos
         document.getElementById("progressContainer").style.display = "none";
         selectedGroupNivel.style.display = "none";
@@ -1244,12 +1310,15 @@ document.addEventListener("DOMContentLoaded", function() {
                     let fechaInicioNivel = g.fechaInicioNivel;
                     let fechaFinNivel = g.fechaFinNivel;
                     
-                    if (!fechaInicioNivel || !fechaFinNivel) {
-                        const calculated = calcularPeriodoNivel(g);
-                        if (calculated) {
+                    const calculated = calcularPeriodoNivel(g);
+                    if (calculated) {
+                        selectedPeriodNivel = calculated.idNivel;
+                        if (!fechaInicioNivel || !fechaFinNivel) {
                             fechaInicioNivel = calculated.fechaInicioNivel;
                             fechaFinNivel = calculated.fechaFinNivel;
                         }
+                    } else {
+                        selectedPeriodNivel = null;
                     }
                     
                     if (fechaInicioNivel && fechaFinNivel) {
@@ -1294,6 +1363,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                     // Render dynamically calculated group calendar in right panel empty state
                     renderGroupCalendar(g);
+                    redrawCalendarGrid();
                 }
             })
             .catch(err => {
@@ -1304,33 +1374,55 @@ document.addEventListener("DOMContentLoaded", function() {
     function calcularPeriodoNivel(g) {
         if (!g.fechaInicio) return null;
         
-        // Parsear fechaInicio de forma segura
-        let fechaInicioAbs = new Date(g.fechaInicio);
-        if (isNaN(fechaInicioAbs.getTime())) return null;
-        
-        // Convertir a fecha UTC pura para evitar desfases de zona horaria del cliente
-        let fechaInicioNivel = new Date(Date.UTC(
-            fechaInicioAbs.getUTCFullYear(),
-            fechaInicioAbs.getUTCMonth(),
-            fechaInicioAbs.getUTCDate()
-        ));
+        const parseToUTCDate = (dateVal) => {
+            if (!dateVal) return null;
+            if (dateVal instanceof Date) {
+                return new Date(Date.UTC(dateVal.getFullYear(), dateVal.getMonth(), dateVal.getDate()));
+            }
+            const dateStr = String(dateVal).trim();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr) || /^\d{4}-\d{2}-\d{2}\s/.test(dateStr)) {
+                const parts = dateStr.substring(0, 10).split('-');
+                return new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
+            }
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return null;
+            if (dateStr.includes('GMT') || dateStr.endsWith('Z')) {
+                return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+            } else {
+                return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            }
+        };
+
+        let fechaInicioNivel = parseToUTCDate(g.fechaInicio);
+        if (!fechaInicioNivel) return null;
         
         let idTipoPeriodo = g.id_tipoPeriodo;
         let idNivelActualDb = g.id_nivel_academico;
         
         if (idTipoPeriodo === null || idTipoPeriodo === undefined) {
-            if (idNivelActualDb !== null && idNivelActualDb >= 11) {
+            if (idNivelActualDb !== null && idNivelActualDb >= 7) {
                 idTipoPeriodo = 1; // SEMESTRAL
             } else {
                 idTipoPeriodo = 2; // TRIMESTRAL (default)
             }
         }
         
-        let idNivel = 1;
-        if (idTipoPeriodo === 2) {
-            idNivel = 1; // 1er Trimestre
-        } else if (idTipoPeriodo === 1) {
-            idNivel = 11; // 1er Semestre
+        let idNivel = idTipoPeriodo === 2 ? 1 : 7;
+        const isTrimestral = idTipoPeriodo === 2;
+        if (!isTrimestral) {
+            const formatISO = (d) => {
+                const yyyy = d.getUTCFullYear();
+                const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+                const dd = String(d.getUTCDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            };
+            let startD = parseToUTCDate(g.fechaInicio);
+            let endD = parseToUTCDate(g.fechaFin) || startD;
+            return {
+                fechaInicioNivel: formatISO(startD),
+                fechaFinNivel: formatISO(endD),
+                idNivel: idNivelActualDb || 7
+            };
         }
         
         const now = new Date();
@@ -1339,14 +1431,14 @@ document.addEventListener("DOMContentLoaded", function() {
         let fechaFinNivel = new Date(fechaInicioNivel.getTime());
         
         const getDuracionSemanas = (levelId) => {
-            if (levelId >= 1 && levelId <= 10) return 13;
-            if (levelId >= 11 && levelId <= 18) return 26;
+            if (levelId >= 1 && levelId <= 6) return 13; // Trimestral
+            if (levelId >= 7 && levelId <= 12) return 28; // Semestral (duración 28 semanas)
             return 13;
         };
         
         const hasNextNivel = (levelId) => {
-            if (idTipoPeriodo === 2) return levelId < 10;
-            if (idTipoPeriodo === 1) return levelId < 18;
+            if (idTipoPeriodo === 2) return levelId < 6;
+            if (idTipoPeriodo === 1) return levelId < 12;
             return false;
         };
         
@@ -1369,6 +1461,15 @@ document.addEventListener("DOMContentLoaded", function() {
             idNivel = idNivel + 1;
         }
         
+        // Capping at group's official fechaFin
+        let groupEndDate = parseToUTCDate(g.fechaFin);
+        if (groupEndDate && fechaFinNivel > groupEndDate) {
+            fechaFinNivel = groupEndDate;
+        }
+        if (groupEndDate && fechaInicioNivel > groupEndDate) {
+            fechaInicioNivel = groupEndDate;
+        }
+
         const toISODate = (d) => {
             const yyyy = d.getUTCFullYear();
             const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
@@ -1431,7 +1532,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // If not defined, fallback based on academic level
         if (idTipoPeriodo === null || idTipoPeriodo === undefined) {
-            if (idNivelActualDb !== null && idNivelActualDb >= 11) {
+            if (idNivelActualDb !== null && idNivelActualDb >= 7) {
                 idTipoPeriodo = 1; // SEMESTRAL
             } else {
                 idTipoPeriodo = 2; // TRIMESTRAL (default)
@@ -1439,11 +1540,53 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         const isTrimestral = idTipoPeriodo === 2;
+        if (!isTrimestral) {
+            const semNum = idNivelActualDb ? (idNivelActualDb - 6) : 1;
+            const periodItem = document.createElement("div");
+            periodItem.style.padding = "10px 12px";
+            periodItem.style.borderRadius = "10px";
+            periodItem.style.transition = "all 0.2s ease";
+            periodItem.style.cursor = "pointer";
+            
+            periodItem.style.border = "2px solid rgb(38, 104, 123)";
+            periodItem.style.background = "rgba(38, 104, 123, 0.12)";
+            periodItem.style.color = "#0f172a";
+            periodItem.style.opacity = "1";
+            periodItem.style.boxShadow = "0 2px 8px rgba(38,104,123,0.15)";
+
+            const titleColor = "rgb(38, 104, 123)";
+            const dateColor = "#1e293b";
+            const iconColor = "rgb(38, 104, 123)";
+
+            const formatDateDMY = (dateObj) => {
+                const dd = String(dateObj.getUTCDate()).padStart(2, '0');
+                const mm = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+                const yyyy = dateObj.getUTCFullYear();
+                return `${dd}/${mm}/${yyyy}`;
+            };
+
+            periodItem.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-weight: 700; font-size: 0.85rem; color: ${titleColor};">
+                        ${semNum}° Semestre (Nivel ${idNivelActualDb || 7})
+                    </span>
+                    <span class="badge bg-success py-1 px-2 fw-bold" style="font-size: 0.65rem; border-radius: 6px; text-transform: uppercase;">ACTIVO</span>
+                </div>
+                <div style="font-size: 0.75rem; color: ${dateColor}; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-regular fa-calendar-check" style="color: ${iconColor};"></i>
+                    <span>${formatDateDMY(currentDate)}</span>
+                    <span style="color: #cbd5e1;">&rarr;</span>
+                    <span>${formatDateDMY(groupEndDate || currentDate)}</span>
+                </div>
+            `;
+
+            periodsList.appendChild(periodItem);
+            return;
+        }
         const weeksPerPeriod = isTrimestral ? 13 : 26;
         const periodNameSingular = isTrimestral ? "Trimestre" : "Semestre";
-        const startLevel = isTrimestral ? 1 : 11;
+        const startLevel = isTrimestral ? 1 : 7;
 
-        let periodNumber = 1;
         let idNivel = startLevel;
 
         const formatDateDMY = (dateObj) => {
@@ -1461,6 +1604,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const activeNivel = calculated ? calculated.idNivel : null;
 
         while (true) {
+            const periodNumber = isTrimestral ? idNivel : (idNivel - 6);
             // El periodo termina (weeksPerPeriod - 1) * 7 días después de su fecha de inicio
             let periodEndDate = new Date(currentDate.getTime() + ((weeksPerPeriod - 1) * 7 * 24 * 60 * 60 * 1000));
 
@@ -1470,9 +1614,10 @@ document.addEventListener("DOMContentLoaded", function() {
             }
 
             // Si el periodo excede el límite académico
-            if (isTrimestral && periodNumber > 10) break;
-            if (!isTrimestral && periodNumber > 8) break;
+            if (isTrimestral && idNivel > 6) break;
+            if (!isTrimestral && idNivel > 12) break;
 
+            const isSelected = idNivel === selectedPeriodNivel;
             const isCurrent = idNivel === activeNivel;
             const isPast = activeNivel !== null && idNivel < activeNivel;
 
@@ -1480,19 +1625,27 @@ document.addEventListener("DOMContentLoaded", function() {
             periodItem.style.padding = "10px 12px";
             periodItem.style.borderRadius = "10px";
             periodItem.style.transition = "all 0.2s ease";
+            periodItem.style.cursor = "pointer";
 
-            if (isCurrent) {
-                // Periodo activo: borde institucional azul marino y fondo sutil
-                periodItem.style.border = "1.5px solid rgb(38, 104, 123)";
-                periodItem.style.background = "rgba(38, 104, 123, 0.08)";
-                periodItem.style.color = "#1e293b";
+            if (isSelected) {
+                // Seleccionado actualmente para ver: borde institucional grueso y fondo destacado
+                periodItem.style.border = "2px solid rgb(38, 104, 123)";
+                periodItem.style.background = "rgba(38, 104, 123, 0.12)";
+                periodItem.style.color = "#0f172a";
+                periodItem.style.opacity = "1";
+                periodItem.style.boxShadow = "0 2px 8px rgba(38,104,123,0.15)";
+            } else if (isCurrent) {
+                // Periodo activo pero no seleccionado: borde azul sutil
+                periodItem.style.border = "1.5px solid rgba(38, 104, 123, 0.4)";
+                periodItem.style.background = "rgba(38, 104, 123, 0.03)";
+                periodItem.style.color = "#334155";
                 periodItem.style.opacity = "1";
             } else if (isPast) {
                 // Periodo finalizado: borde discontinuo y ligeramente opaco
                 periodItem.style.border = "1px dashed #cbd5e1";
                 periodItem.style.background = "rgba(241, 245, 249, 0.4)";
                 periodItem.style.color = "#64748b";
-                periodItem.style.opacity = "0.65";
+                periodItem.style.opacity = "0.75";
             } else {
                 // Periodo futuro: borde estándar
                 periodItem.style.border = "1px solid #e2e8f0";
@@ -1501,16 +1654,55 @@ document.addEventListener("DOMContentLoaded", function() {
                 periodItem.style.opacity = "1";
             }
 
+            // Hover effects
+            periodItem.addEventListener("mouseenter", () => {
+                if (!isSelected) {
+                    periodItem.style.background = "rgba(38, 104, 123, 0.05)";
+                    periodItem.style.borderColor = "rgba(38, 104, 123, 0.5)";
+                }
+            });
+            periodItem.addEventListener("mouseleave", () => {
+                if (!isSelected) {
+                    if (isCurrent) {
+                        periodItem.style.border = "1.5px solid rgba(38, 104, 123, 0.4)";
+                        periodItem.style.background = "rgba(38, 104, 123, 0.03)";
+                    } else if (isPast) {
+                        periodItem.style.border = "1px dashed #cbd5e1";
+                        periodItem.style.background = "rgba(241, 245, 249, 0.4)";
+                    } else {
+                        periodItem.style.border = "1px solid #e2e8f0";
+                        periodItem.style.background = "#ffffff";
+                    }
+                }
+            });
+
+            // Click action
+            const targetNivel = idNivel;
+            const isFuture = !isCurrent && !isPast;
+            const isBgne = g.clave.toUpperCase().startsWith("BGNE");
+            periodItem.addEventListener("click", () => {
+                selectedPeriodNivel = targetNivel;
+                setPrehorarioMode(isFuture && isBgne ? 1 : 0);
+                renderGroupCalendar(g);
+                redrawCalendarGrid();
+                renderActiveGroupClasses();
+            });
+
             let badgeHtml = "";
             if (isCurrent) {
                 badgeHtml = '<span style="font-size: 0.65rem; font-weight: 700; color: white; background: rgb(38, 104, 123); padding: 2px 6px; border-radius: 8px; text-transform: uppercase;">Activo</span>';
             } else if (isPast) {
                 badgeHtml = '<span style="font-size: 0.65rem; font-weight: 600; color: #475569; background: #e2e8f0; padding: 2px 6px; border-radius: 8px;">Finalizado</span>';
+            } else {
+                // Periodo futuro: colocar botón "Anticipar Horario" si es BGNE
+                if (isBgne) {
+                    badgeHtml = '<button type="button" class="btn btn-warning btn-xs py-0 px-2 fw-bold text-dark btn-anticipar-horario" style="font-size: 0.65rem; border-radius: 6px; border: none; height: 18px; line-height: 18px; display: inline-flex; align-items: center; justify-content: center;">Anticipar Horario</button>';
+                }
             }
 
-            const titleColor = isCurrent ? "rgb(38, 104, 123)" : (isPast ? "#64748b" : "#1e293b");
-            const dateColor = isCurrent ? "#334155" : (isPast ? "#8c9ba5" : "#475569");
-            const iconColor = isCurrent ? "rgb(38, 104, 123)" : (isPast ? "#94a3b8" : "rgb(56, 189, 248)");
+            const titleColor = isSelected ? "rgb(38, 104, 123)" : (isCurrent ? "rgb(38, 104, 123)" : (isPast ? "#64748b" : "#1e293b"));
+            const dateColor = isSelected ? "#1e293b" : (isCurrent ? "#334155" : (isPast ? "#8c9ba5" : "#475569"));
+            const iconColor = isSelected ? "rgb(38, 104, 123)" : (isCurrent ? "rgb(38, 104, 123)" : (isPast ? "#94a3b8" : "rgb(56, 189, 248)"));
 
             periodItem.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
@@ -1536,7 +1728,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
             // Siguiente periodo empieza exactamente 1 semana después de que finaliza el actual
             currentDate = new Date(periodEndDate.getTime() + (7 * 24 * 60 * 60 * 1000));
-            periodNumber++;
             idNivel++;
         }
     }
@@ -1598,6 +1789,9 @@ document.addEventListener("DOMContentLoaded", function() {
     function handleCellClick(day, timeIdx, element) {
         if (!activeGroup) return;
 
+        // Re-populate dropdowns dynamically to apply level-based filters
+        populateDropdowns();
+
         if (selectedCell) {
             selectedCell.element.classList.remove("selected");
         }
@@ -1614,7 +1808,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const groupData = schedulesData[activeGroup.clave] || {};
         const cellKey = `${day}-${timeIdx}`;
-        const existingClass = groupData[cellKey];
+        let existingClass = groupData[cellKey];
 
         if (existingClass) {
             // Normalizar a formato agrupado si no lo tiene
@@ -1624,42 +1818,69 @@ document.addEventListener("DOMContentLoaded", function() {
                     id_materia: existingClass.materiaId,
                     materia_nombre: existingClass.subjectName,
                     id_docente: existingClass.docenteId,
-                    docente_nombre: existingClass.teacherName
+                    docente_nombre: existingClass.teacherName,
+                    id_nivel_materia: existingClass.id_nivel_materia
                 }];
             }
 
-            if (existingClass.clases.length > 1) {
-                chkMultipleClasses.checked = true;
-                singleMateriaContainer.style.display = "none";
-                multipleMateriaContainer.style.display = "block";
-                formMateriaSelect.removeAttribute("required");
-                formMateriaSelectMultiple.setAttribute("required", "required");
+            // Filtrar clases que corresponden al nivel seleccionado
+            const levelClases = existingClass.clases.filter(c => {
+                return c.id_nivel_materia === undefined || c.id_nivel_materia === null || c.id_nivel_materia === selectedPeriodNivel;
+            });
 
-                // Set multiple materia values
-                const matIds = existingClass.clases.map(c => String(c.id_materia));
-                if (materiaSelectMultipleInstance) materiaSelectMultipleInstance.setValue(matIds);
-                if (materiaSelectInstance) materiaSelectInstance.setValue("");
+            if (levelClases.length > 0) {
+                existingClass = {
+                    ...existingClass,
+                    clases: levelClases
+                };
+
+                if (existingClass.clases.length > 1) {
+                    chkMultipleClasses.checked = true;
+                    singleMateriaContainer.style.display = "none";
+                    multipleMateriaContainer.style.display = "block";
+                    formMateriaSelect.removeAttribute("required");
+                    formMateriaSelectMultiple.setAttribute("required", "required");
+
+                    // Set multiple materia values
+                    const matIds = existingClass.clases.map(c => String(c.id_materia));
+                    if (materiaSelectMultipleInstance) materiaSelectMultipleInstance.setValue(matIds);
+                    if (materiaSelectInstance) materiaSelectInstance.setValue("");
+                } else {
+                    chkMultipleClasses.checked = false;
+                    singleMateriaContainer.style.display = "block";
+                    multipleMateriaContainer.style.display = "none";
+                    formMateriaSelect.setAttribute("required", "required");
+                    formMateriaSelectMultiple.removeAttribute("required");
+
+                    const singleClase = existingClass.clases[0];
+                    if (singleClase) {
+                        if (materiaSelectInstance) materiaSelectInstance.setValue(singleClase.id_materia);
+                    } else {
+                        if (materiaSelectInstance) materiaSelectInstance.setValue("");
+                    }
+                    if (materiaSelectMultipleInstance) materiaSelectMultipleInstance.setValue([]);
+                }
+                
+                // Popolar docente (compartido) y aula
+                const firstClase = existingClass.clases[0];
+                const firstClassDocente = firstClase ? firstClase.id_docente : (existingClass.id_docente || "");
+                const firstClassAula = firstClase ? firstClase.aula : (existingClass.aula || "");
+                if (docenteSelectInstance) docenteSelectInstance.setValue(firstClassDocente);
+                formAulaSelect.value = firstClassAula || "";
+                btnDeleteClass.style.display = "block";
             } else {
                 chkMultipleClasses.checked = false;
                 singleMateriaContainer.style.display = "block";
                 multipleMateriaContainer.style.display = "none";
                 formMateriaSelect.setAttribute("required", "required");
                 formMateriaSelectMultiple.removeAttribute("required");
-
-                const singleClase = existingClass.clases[0];
-                if (singleClase) {
-                    if (materiaSelectInstance) materiaSelectInstance.setValue(singleClase.id_materia);
-                } else {
-                    if (materiaSelectInstance) materiaSelectInstance.setValue("");
-                }
+                
+                if (materiaSelectInstance) materiaSelectInstance.setValue("");
                 if (materiaSelectMultipleInstance) materiaSelectMultipleInstance.setValue([]);
+                if (docenteSelectInstance) docenteSelectInstance.setValue("");
+                formAulaSelect.value = "";
+                btnDeleteClass.style.display = "none";
             }
-            
-            // Popolar docente (compartido) y aula
-            const firstClassDocente = existingClass.id_docente || (existingClass.clases[0] ? existingClass.clases[0].id_docente : "");
-            if (docenteSelectInstance) docenteSelectInstance.setValue(firstClassDocente);
-            formAulaSelect.value = existingClass.aula || "";
-            btnDeleteClass.style.display = "block";
         } else {
             chkMultipleClasses.checked = false;
             singleMateriaContainer.style.display = "block";
@@ -1699,7 +1920,8 @@ document.addEventListener("DOMContentLoaded", function() {
             diaSemana: dayNumbers[selectedCell.day],
             horaInicio: horaInicio,
             horaFin: horaFin,
-            aula: aula
+            aula: aula,
+            es_prehorario: currentPrehorarioMode
         };
 
         const docenteId = formDocenteSelect.value;
@@ -1761,7 +1983,8 @@ document.addEventListener("DOMContentLoaded", function() {
                         id_docente: parseInt(docenteId),
                         diaSemana: dayNumbers[selectedCell.day],
                         horaInicio: horaInicio,
-                        horaFin: horaFin
+                        horaFin: horaFin,
+                        es_prehorario: currentPrehorarioMode
                     })
                 });
 
@@ -1799,7 +2022,20 @@ document.addEventListener("DOMContentLoaded", function() {
             // If it exists in backend, delete all previous classes first
             if (existingClass && existingClass.clases && existingClass.clases.length > 0) {
                 for (let clase of existingClass.clases) {
-                    const delRes = await fetch(`/horarios/${clase.id_horario}`, {
+                    if (clase.id_nivel_materia === undefined || clase.id_nivel_materia === null || clase.id_nivel_materia === selectedPeriodNivel) {
+                        const delRes = await fetch(`/horarios/${clase.id_horario}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        });
+                        if (!delRes.ok) throw new Error("Error al remover horario previo.");
+                    }
+                }
+            } else if (existingClass && existingClass.id) {
+                // Fallback for single class delete
+                if (existingClass.id_nivel_materia === undefined || existingClass.id_nivel_materia === null || existingClass.id_nivel_materia === selectedPeriodNivel) {
+                    const delRes = await fetch(`/horarios/${existingClass.id}`, {
                         method: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -1807,15 +2043,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     });
                     if (!delRes.ok) throw new Error("Error al remover horario previo.");
                 }
-            } else if (existingClass && existingClass.id) {
-                // Fallback for single class delete
-                const delRes = await fetch(`/horarios/${existingClass.id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
-                });
-                if (!delRes.ok) throw new Error("Error al remover horario previo.");
             }
 
             const saveRes = await fetch('/horarios', {
@@ -1881,7 +2108,17 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (result.isConfirmed) {
                     btnDeleteClass.disabled = true;
                     try {
-                        const listToDelete = existingClass.clases || [{ id_horario: existingClass.id }];
+                        // Filter the list of classes to delete based on the selected level
+                        const listToDelete = (existingClass.clases || []).filter(c => {
+                            return c.id_nivel_materia === undefined || c.id_nivel_materia === null || c.id_nivel_materia === selectedPeriodNivel;
+                        });
+                        
+                        if (listToDelete.length === 0 && existingClass.id) {
+                            if (existingClass.id_nivel_materia === undefined || existingClass.id_nivel_materia === null || existingClass.id_nivel_materia === selectedPeriodNivel) {
+                                listToDelete.push({ id_horario: existingClass.id });
+                            }
+                        }
+
                         for (let clase of listToDelete) {
                             if (clase.id_horario) {
                                 const response = await fetch(`/horarios/${clase.id_horario}`, {
@@ -1903,13 +2140,19 @@ document.addEventListener("DOMContentLoaded", function() {
                             }
                         }
 
-                        delete schedulesData[activeGroup.clave][cellKey];
+                        // Remove deleted classes from in-memory cache
+                        if (schedulesData[activeGroup.clave] && schedulesData[activeGroup.clave][cellKey]) {
+                            const remainingClases = (schedulesData[activeGroup.clave][cellKey].clases || []).filter(c => {
+                                return c.id_nivel_materia !== undefined && c.id_nivel_materia !== null && c.id_nivel_materia !== selectedPeriodNivel;
+                            });
+                            if (remainingClases.length > 0) {
+                                schedulesData[activeGroup.clave][cellKey].clases = remainingClases;
+                            } else {
+                                delete schedulesData[activeGroup.clave][cellKey];
+                            }
+                        }
                         
-                        selectedCell.element.innerHTML = `
-                            <span class="placeholder-dash">—</span>
-                            <i class="fa-solid fa-plus add-btn-icon"></i>
-                        `;
-
+                        redrawCalendarGrid();
                         clearForm();
                         
                         Swal.fire({
@@ -1950,8 +2193,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    async function renderActiveGroupClasses() {
-        // Clear cells first
+    function redrawCalendarGrid() {
         const cells = calendarBody.getElementsByClassName("cell-slot");
         Array.from(cells).forEach(cell => {
             cell.innerHTML = `
@@ -1961,13 +2203,59 @@ document.addEventListener("DOMContentLoaded", function() {
             cell.classList.remove("selected");
         });
 
-        if (!activeGroup) return;
+        if (!activeGroup || !schedulesData[activeGroup.clave]) return;
+
+        const cellsArray = Array.from(cells);
+        console.log("--- REDRAW GRID ---");
+        console.log("DOM Cell Keys:", cellsArray.map(c => `${c.dataset.day}-${c.dataset.timeIdx}`));
+        
+        Object.entries(schedulesData[activeGroup.clave]).forEach(([cellKey, classData]) => {
+            const [dayName, timeIdxStr] = cellKey.split('-');
+            const timeIdx = parseInt(timeIdxStr);
+
+            console.log(`Raw classes for ${cellKey}:`, (classData.clases || []).map(c => ({ nombre: c.materia_nombre, level: c.id_nivel_materia, levelType: typeof c.id_nivel_materia })));
+            console.log(`selectedPeriodNivel:`, selectedPeriodNivel, "type:", typeof selectedPeriodNivel);
+
+            // Filter classes by selected level
+            const filteredClases = (classData.clases || []).filter(c => {
+                return c.id_nivel_materia === undefined || c.id_nivel_materia === null || c.id_nivel_materia === selectedPeriodNivel;
+            });
+
+            console.log(`Data Key ${cellKey}: filteredClases:`, filteredClases.map(c => c.materia_nombre));
+
+            if (filteredClases.length > 0) {
+                const cellElement = cellsArray.find(c => c.dataset.day === dayName && c.dataset.timeIdx == timeIdx);
+                console.log(`Match for ${dayName}-${timeIdx}:`, cellElement ? "FOUND" : "NOT FOUND");
+                if (cellElement) {
+                    const filteredClassData = {
+                        ...classData,
+                        clases: filteredClases
+                    };
+                    renderClassCardInCell(cellElement, filteredClassData);
+                }
+            }
+        });
+    }
+
+    async function renderActiveGroupClasses() {
+        if (!activeGroup) {
+            // Clear cells if no active group
+            const cells = calendarBody.getElementsByClassName("cell-slot");
+            Array.from(cells).forEach(cell => {
+                cell.innerHTML = `
+                    <span class="placeholder-dash">—</span>
+                    <i class="fa-solid fa-plus add-btn-icon"></i>
+                `;
+                cell.classList.remove("selected");
+            });
+            return;
+        }
 
         const groupId = activeGroup.id || activeGroup.id_grupo;
         if (!groupId) return;
 
         try {
-            const response = await fetch(`/horarios/grupo/${groupId}?agrupado=true`);
+            const response = await fetch(`/horarios/grupo/${groupId}?agrupado=true&es_prehorario=${currentPrehorarioMode}`);
             if (!response.ok) throw new Error("Error al obtener los horarios");
             const data = await response.json();
 
@@ -1981,22 +2269,37 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (dayName && timeIdx !== -1) {
                     const cellKey = `${dayName}-${timeIdx}`;
                     
-                    schedulesData[activeGroup.clave][cellKey] = {
-                        diaSemana: item.diaSemana,
-                        horaInicio: item.horaInicio,
-                        horaFin: item.horaFin,
-                        aula: item.aula || "",
-                        id_docente: item.id_docente,
-                        docente_nombre: item.docente_nombre || "",
-                        clases: item.clases || []
-                    };
-
-                    const cellElement = Array.from(cells).find(c => c.dataset.day === dayName && c.dataset.timeIdx == timeIdx);
-                    if (cellElement) {
-                        renderClassCardInCell(cellElement, schedulesData[activeGroup.clave][cellKey]);
+                    if (!schedulesData[activeGroup.clave][cellKey]) {
+                        schedulesData[activeGroup.clave][cellKey] = {
+                            diaSemana: item.diaSemana,
+                            horaInicio: item.horaInicio,
+                            horaFin: item.horaFin,
+                            aula: item.aula || "",
+                            id_docente: item.id_docente,
+                            docente_nombre: item.docente_nombre || "",
+                            clases: []
+                        };
+                    }
+                    
+                    if (item.clases && item.clases.length > 0) {
+                        item.clases.forEach(c => {
+                            if (!schedulesData[activeGroup.clave][cellKey].clases.some(existing => existing.id_horario === c.id_horario)) {
+                                schedulesData[activeGroup.clave][cellKey].clases.push(c);
+                            }
+                        });
+                    }
+                    
+                    if (item.id_docente && !schedulesData[activeGroup.clave][cellKey].id_docente) {
+                        schedulesData[activeGroup.clave][cellKey].id_docente = item.id_docente;
+                        schedulesData[activeGroup.clave][cellKey].docente_nombre = item.docente_nombre || "";
+                    }
+                    if (item.aula && !schedulesData[activeGroup.clave][cellKey].aula) {
+                        schedulesData[activeGroup.clave][cellKey].aula = item.aula;
                     }
                 }
             });
+            
+            redrawCalendarGrid();
         } catch (error) {
             console.error("Error al cargar horarios del grupo:", error);
             Swal.fire({
@@ -2009,19 +2312,22 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function renderClassCardInCell(cellElement, data) {
-        const aulaText = data.aula ? `<div style="font-size: 0.7rem; font-weight: 500; margin-top: 4px; color: #475569; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-door-open"></i> ${data.aula}</div>` : '';
         let html = '<div class="class-card" draggable="true">';
         data.clases.forEach((clase, idx) => {
             if (idx > 0) {
                 html += '<hr style="margin: 4px 0; opacity: 0.15; border-color: rgb(38, 104, 123);">';
             }
-            const teacherName = data.docente_nombre || clase.docente_nombre || '';
+            const teacherName = clase.docente_nombre || data.docente_nombre || '';
+            const aula = clase.aula || data.aula || '';
+            const aulaBadge = aula ? ` <span style="font-size: 0.65rem; background-color: #f1f5f9; color: #475569; padding: 2px 4px; border-radius: 4px; border: 1px solid #e2e8f0; font-weight: 600; margin-left: 4px; display: inline-flex; align-items: center; gap: 2px;"><i class="fa-solid fa-door-open" style="font-size: 0.58rem;"></i> ${aula}</span>` : '';
             html += `
-                <div class="class-subject" style="font-size: 0.85rem; font-weight: 700; line-height: 1.2;">${clase.materia_nombre}</div>
-                <div class="class-detail" style="font-size: 0.72rem; color: #475569; line-height: 1.2;"><i class="fa-solid fa-user-tie"></i> ${teacherName}</div>
+                <div class="class-subject" style="font-size: 0.85rem; font-weight: 700; line-height: 1.2; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+                    <span>${clase.materia_nombre}</span>
+                    ${aulaBadge}
+                </div>
+                <div class="class-detail" style="font-size: 0.72rem; color: #475569; line-height: 1.2; margin-top: 2px;"><i class="fa-solid fa-user-tie"></i> ${teacherName}</div>
             `;
         });
-        html += aulaText;
         html += '</div>';
         cellElement.innerHTML = html;
     }
@@ -2201,7 +2507,8 @@ document.addEventListener("DOMContentLoaded", function() {
                         id_docente: parseInt(docenteId),
                         diaSemana: dayNumbers[targetDay],
                         horaInicio: horaInicio,
-                        horaFin: horaFin
+                        horaFin: horaFin,
+                        es_prehorario: currentPrehorarioMode
                     })
                 });
 
@@ -2275,7 +2582,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 horaInicio: horaInicio,
                 horaFin: horaFin,
                 aula: sourceData.aula || "",
-                id_docente: parseInt(docenteId)
+                id_docente: parseInt(docenteId),
+                es_prehorario: currentPrehorarioMode
             };
 
             if (sourceData.clases.length > 1) {
@@ -2317,6 +2625,26 @@ document.addEventListener("DOMContentLoaded", function() {
                 text: error.message || "Error al mover la clase.",
                 confirmButtonColor: 'rgb(38, 104, 123)'
             });
+        }
+        // Parse URL params for pre-selected group or pre-horario mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlGroupId = urlParams.get('grupo_id');
+        const urlEsPrehorario = urlParams.get('es_prehorario');
+
+        if (urlGroupId) {
+            const checkAndSelect = setInterval(() => {
+                if (groups && groups.length > 0) {
+                    clearInterval(checkAndSelect);
+                    const matchedGroup = groups.find(g => String(g.id) === String(urlGroupId));
+                    if (matchedGroup) {
+                        selectGroup(matchedGroup);
+                        if (urlEsPrehorario === '1' && matchedGroup.clave.toUpperCase().startsWith("BGNE")) {
+                            setPrehorarioMode(1);
+                            renderActiveGroupClasses();
+                        }
+                    }
+                }
+            }, 100);
         }
     }
 });

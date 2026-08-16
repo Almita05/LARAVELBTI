@@ -78,9 +78,7 @@
                                     <strong>Grupo:</strong> {{ $doc['grupo'] }}
                                 </td>
                                 <td class="text-center">
-                                    <a href="/alumnos?buscar={{ urlencode($doc['matricula'] != 'Sin Matrícula' ? $doc['matricula'] : $doc['nombre']) }}" class="btn btn-editar btn-sm text-white">
-                                        <i class="bi bi-pencil-square me-1"></i> Editar Alumno
-                                    </a>
+                                    <span class="text-muted">—</span>
                                 </td>
                             </tr>
                         @endforeach
@@ -105,9 +103,7 @@
                                     <strong>Grupo:</strong> {{ $eq['grupo'] }}
                                 </td>
                                 <td class="text-center">
-                                    <a href="/alumnos?buscar={{ urlencode($eq['matricula'] != 'Sin Matrícula' ? $eq['matricula'] : $eq['nombre']) }}" class="btn btn-editar btn-sm text-white">
-                                        <i class="bi bi-pencil-square me-1"></i> Editar Alumno
-                                    </a>
+                                    <span class="text-muted">—</span>
                                 </td>
                             </tr>
                         @endforeach
@@ -126,9 +122,16 @@
                                     <strong>CCT:</strong> {{ $gp['cct'] }}
                                 </td>
                                 <td class="text-center">
-                                    <a href="/grupos/captura_calificaciones" class="btn btn-ver btn-sm text-white">
-                                        <i class="bi bi-journal-check me-1"></i> Capturar Notas
-                                    </a>
+                                    <div class="d-flex flex-column gap-1 align-items-center">
+                                        <a href="/grupos/captura_calificaciones" class="btn btn-ver btn-sm text-white w-100">
+                                            <i class="bi bi-journal-check me-1"></i> Capturar Notas
+                                        </a>
+                                        @if(isset($gp['id_centroTrabajo']) && $gp['id_centroTrabajo'] == 3)
+                                            <a href="/horarios?grupo_id={{ $gp['idGrupo'] }}&es_prehorario=1" class="btn btn-warning btn-sm text-dark w-100">
+                                                <i class="bi bi-calendar-plus me-1"></i> Armar Pre-Horario
+                                            </a>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

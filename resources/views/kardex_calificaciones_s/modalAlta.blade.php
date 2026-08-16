@@ -19,7 +19,7 @@
             <div class="modal-body">
                 <div class="materia-info text-center mb-4">
 
-                    @if(session('rol') === 'admin')
+                    @if(strtolower(session('rol')) === 'admin')
                     <select id="selectorMateria" class="form-select w-50 mx-auto"></select>
                     @else
                     <span class="badge px-3 py-2 mb-2" id="contadorMateria"></span>
@@ -59,7 +59,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-const esAdmin = @json(session('rol') === 'admin');
+const esAdmin = @json(strtolower(session('rol')) === 'admin');
 let materiasActuales = [];
 let materiaActual = 0;
 let materiaSeleccionada = null;

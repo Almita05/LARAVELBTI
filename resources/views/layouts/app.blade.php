@@ -394,7 +394,19 @@
     <!-- Contenedor global para Modales (evita problemas de z-index y stacking context con backdrop) -->
     <div id="contenedorModal"></div>
 
-    
+    <!-- Script Global para Limpieza de Modales y Backdrops residuales -->
+    <script>
+        document.addEventListener('hidden.bs.modal', function () {
+            setTimeout(() => {
+                if (!document.querySelector('.modal.show')) {
+                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }
+            }, 50);
+        });
+    </script>
 
 </body>
 

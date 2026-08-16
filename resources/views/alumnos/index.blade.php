@@ -2241,6 +2241,101 @@ let idAlumnoKardexActual = null;
 
 window.abrirKardexAlumno = function(idAlumno) {
     idAlumnoKardexActual = idAlumno;
+    
+    // Primero, mostramos un loading rápido para consultar la información general del alumno y su CCT
+    Swal.fire({
+        title: 'Cargando información...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    fetch(`/alumnos/${idAlumno}/kardex`)
+        .then(r => r.json())
+        .then(resp => {
+            Swal.close();
+            if (!resp.success || !resp.data) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo cargar la información del alumno.'
+                });
+                return;
+            }
+
+            const data = resp.data;
+            const al = data.alumno;
+            const isBti = (al.id_centroTrabajo === 2 || al.claveCentroTrabajo === '21PCT0073R' || (al.nombreCentroTrabajo && al.nombreCentroTrabajo.toUpperCase().includes('BTI')));
+
+            if (isBti) {
+                // Preguntar si quiere Kárdex o Boleta
+                Swal.fire({
+                    title: 'Seleccione Tipo de Documento',
+                    text: '¿Desea consultar el Kárdex general o imprimir una Boleta de calificaciones de un semestre específico?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    showDenyButton: true,
+                    confirmButtonColor: 'rgb(38, 104, 123)',
+                    denyButtonColor: '#0ea5e9',
+                    cancelButtonColor: '#cbd5e1',
+                    confirmButtonText: 'Kárdex General',
+                    denyButtonText: 'Boleta de Semestre',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Cargar Kárdex normal
+                        mostrarKardexConDatos(data);
+                    } else if (result.isDenied) {
+                        // Preguntar qué semestre (1 al 6)
+                        Swal.fire({
+                            title: 'Seleccionar Semestre',
+                            text: 'Seleccione el semestre (del 1 al 6) para generar la boleta:',
+                            input: 'select',
+                            inputOptions: {
+                                '7': '1° Semestre',
+                                '8': '2° Semestre',
+                                '9': '3° Semestre',
+                                '10': '4° Semestre',
+                                '11': '5° Semestre',
+                                '12': '6° Semestre'
+                            },
+                            inputPlaceholder: 'Seleccione semestre...',
+                            showCancelButton: true,
+                            confirmButtonColor: 'rgb(38, 104, 123)',
+                            cancelButtonColor: '#cbd5e1',
+                            confirmButtonText: 'Generar Boleta',
+                            cancelButtonText: 'Cancelar',
+                            inputValidator: (value) => {
+                                if (!value) {
+                                     return 'Debe seleccionar un semestre';
+                                }
+                            }
+                        }).then((semResult) => {
+                            if (semResult.isConfirmed) {
+                                const idNivelSemestre = parseInt(semResult.value); // 7 a 12
+                                imprimirBoletaBTISemestre(data, idNivelSemestre);
+                            }
+                        });
+                    }
+                });
+            } else {
+                // No es BTI (es BGNE u otro), cargar Kárdex normal directamente
+                mostrarKardexConDatos(data);
+            }
+        })
+        .catch(err => {
+            Swal.close();
+            console.error('Error al cargar datos del alumno:', err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Hubo un error al comunicarse con el servidor.'
+            });
+        });
+};
+
+function mostrarKardexConDatos(data) {
     const modalEl = document.getElementById('modalKardexAlumno');
     if (modalEl && modalEl.parentElement !== document.body) {
         document.body.appendChild(modalEl);
@@ -2249,149 +2344,622 @@ window.abrirKardexAlumno = function(idAlumno) {
     modal.show();
 
     const contenedor = document.getElementById('contenedorPeriodosKardex');
-    contenedor.innerHTML = `
-        <div class="col-12 text-center py-5">
-            <div class="spinner-border text-primary"></div>
-            <div class="text-muted mt-2">Cargando kárdex de calificaciones...</div>
-        </div>
-    `;
+    const al = data.alumno;
+    const periodos = data.periodos || [];
 
-    fetch(`/alumnos/${idAlumno}/kardex`)
-        .then(r => r.json())
-        .then(resp => {
-            if (!resp.success || !resp.data) {
-                contenedor.innerHTML = '<div class="col-12 alert alert-danger text-center">Error al cargar el kárdex.</div>';
-                return;
-            }
+    const isBti = (al.id_centroTrabajo === 2 || al.claveCentroTrabajo === '21PCT0073R' || (al.nombreCentroTrabajo && al.nombreCentroTrabajo.toUpperCase().includes('BTI')));
 
-            const data = resp.data;
-            const al = data.alumno;
-            const periodos = data.periodos || [];
+    // Datos de encabezado
+    document.getElementById('kardexNombreAlumno').textContent = `${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}`.trim().toUpperCase();
+    if (al.claveCentroTrabajo) {
+        document.getElementById('kardexCCTClave').textContent = `CLAVE CT: ${al.claveCentroTrabajo}`;
+    }
+    if (al.nombreCentroTrabajo) {
+        document.getElementById('kardexCCTNombre').textContent = al.nombreCentroTrabajo.toUpperCase();
+    }
 
-            // Datos de encabezado
-            document.getElementById('kardexNombreAlumno').textContent = `${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}`.trim().toUpperCase();
-            if (al.claveCentroTrabajo) {
-                document.getElementById('kardexCCTClave').textContent = `CLAVE CT: ${al.claveCentroTrabajo}`;
-            }
-            if (al.nombreCentroTrabajo) {
-                document.getElementById('kardexCCTNombre').textContent = al.nombreCentroTrabajo.toUpperCase();
-            }
-
-            // Renderizar las 6 cajas de periodos
-            let htmlPeriodos = '';
-            periodos.forEach((p, idx) => {
-                let htmlMaterias = '';
-                (p.materias || []).forEach(m => {
-                    const califVal = m.calificacion !== null ? m.calificacion : (m.es_equivalencia ? 'EQUIV.' : '');
+    // Renderizar las 6 cajas de periodos
+    let htmlPeriodos = '';
+    periodos.forEach((p, idx) => {
+        let htmlMaterias = '';
+        
+        (p.materias || []).forEach(m => {
+            const isEquiv = m.es_equivalencia === true;
+            if (isEquiv) {
+                if (isBti) {
                     htmlMaterias += `
-                        <tr>
+                        <tr data-materia-id="${m.idMateria}" data-is-equivalencia="true">
+                            <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #cbd5e1;">
+                                ${m.nombreMateria}
+                            </td>
+                            <td colspan="7" class="text-center px-1 py-1 text-warning fw-bold align-middle" style="font-size: 0.85rem; border-color: #cbd5e1;">
+                                EQUIVALENCIA
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    htmlMaterias += `
+                        <tr data-materia-id="${m.idMateria}" data-nivel="${p.idNivel}" data-is-equivalencia="true">
                             <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #cbd5e1;">
                                 ${m.nombreMateria}
                             </td>
                             <td class="px-1 py-1 text-center align-middle" style="width: 85px; border-color: #cbd5e1;">
-                                <input type="text" 
+                                <span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>
+                            </td>
+                        </tr>
+                    `;
+                }
+            } else {
+                const califVal = m.calificacion !== null ? m.calificacion : '';
+                if (isBti) {
+                    const p1 = m.parcial1 !== null ? m.parcial1 : '';
+                    const p2 = m.parcial2 !== null ? m.parcial2 : '';
+                    const p3 = m.parcial3 !== null ? m.parcial3 : '';
+                    const sem = m.semestral !== null ? m.semestral : '';
+                    const ext = m.extraordinario !== null ? m.extraordinario : '';
+                    const asist = m.asistencias !== null ? m.asistencias : '';
+                    const totAsist = m.total_asistencias !== null ? m.total_asistencias : '';
+
+                    htmlMaterias += `
+                        <tr data-materia-id="${m.idMateria}" data-nivel="${p.idNivel}">
+                            <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #000;">
+                                ${m.nombreMateria}
+                            </td>
+                            <td class="px-1 py-1 align-middle text-center" style="border-color: #000 !important;">
+                                <input type="number" step="0.1" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-p1" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="parcial1" value="${p1}" style="height: 28px; font-size: 0.82rem; padding: 2px;" oninput="recalcularFilaKardexSemestral(this)">
+                            </td>
+                            <td class="px-1 py-1 align-middle text-center" style="border-color: #000 !important;">
+                                <input type="number" step="0.1" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-p2" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="parcial2" value="${p2}" style="height: 28px; font-size: 0.82rem; padding: 2px;" oninput="recalcularFilaKardexSemestral(this)">
+                            </td>
+                            <td class="px-1 py-1 align-middle text-center" style="border-color: #000 !important;">
+                                <input type="number" step="0.1" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-p3" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="parcial3" value="${p3}" style="height: 28px; font-size: 0.82rem; padding: 2px;" oninput="recalcularFilaKardexSemestral(this)">
+                            </td>
+                            <td class="px-1 py-1 align-middle text-center" style="border-color: #000 !important;">
+                                <input type="number" step="0.1" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-semestral" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="semestral" value="${sem}" style="height: 28px; font-size: 0.82rem; padding: 2px;" oninput="recalcularFilaKardexSemestral(this)">
+                            </td>
+                            <td class="px-1 py-1 align-middle text-center" style="border-color: #000 !important;">
+                                <input type="number" step="0.1" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-extraordinario" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="extraordinario" value="${ext}" style="height: 28px; font-size: 0.82rem; padding: 2px;" oninput="recalcularFilaKardexSemestral(this)">
+                            </td>
+                            <td class="px-1 py-1 align-middle text-center" style="border-color: #000 !important;">
+                                <input type="number" step="0.1" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-calif-final" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="calificacion" value="${califVal}" readonly style="height: 28px; font-size: 0.82rem; padding: 2px; background-color: #f1f5f9;">
+                            </td>
+                            <td class="px-1 py-1 align-middle text-center" style="border-color: #000 !important;">
+                                <div class="d-flex align-items-center gap-1 justify-content-center">
+                                    <input type="number" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-asistencias" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="asistencias" value="${asist}" style="height: 28px; font-size: 0.80rem; padding: 2px; width: 28px;" oninput="calcularPromediosKardex()">
+                                    <span style="font-size: 0.7rem;">/</span>
+                                    <input type="number" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-total-asistencias" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="total_asistencias" value="${totAsist}" style="height: 28px; font-size: 0.80rem; padding: 2px; width: 28px;" oninput="calcularPromediosKardex()">
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    htmlMaterias += `
+                        <tr data-materia-id="${m.idMateria}" data-nivel="${p.idNivel}">
+                            <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #cbd5e1;">
+                                ${m.nombreMateria}
+                            </td>
+                            <td class="px-1 py-1 text-center align-middle" style="width: 85px; border-color: #cbd5e1;">
+                                <input type="text" maxlength="4" 
                                     class="form-control form-control-sm text-center fw-bold input-calif-kardex" 
                                     data-materia="${m.idMateria}" 
                                     data-nivel="${p.idNivel}" 
-                                    data-periodo-idx="${idx}"
+                                    data-periodo-idx="${idx}" 
+                                    data-field="calificacion" 
                                     value="${califVal}" 
-                                    style="height: 28px; font-size: 0.85rem; padding: 2px 4px;"
-                                    placeholder="—"
+                                    style="height: 28px; font-size: 0.85rem; padding: 2px; background: transparent; border: 1px solid #cbd5e1;"
                                     oninput="this.value = this.value.toUpperCase(); calcularPromediosKardex()">
                             </td>
                         </tr>
                     `;
-                });
-
-                const promInicial = p.promedio !== null ? p.promedio : '—';
-
-                let footerHtml = `
-                    <tfoot>
-                        <tr class="bg-light fw-bold" style="border-color: #333; font-size: 0.78rem;">
-                            <td class="text-end px-2 py-1 text-uppercase">PROMEDIO</td>
-                            <td class="text-center px-1 py-1 text-primary fw-bold prom-periodo-val" id="promPeriodo_${idx}">${promInicial}</td>
-                        </tr>
-                `;
-
-                if (idx === 4) { // 5to periodo
-                    footerHtml += `
-                        <tr class="fw-bold" style="border-color: #333; font-size: 0.8rem; background: #e2e8f0;">
-                            <td class="text-end px-2 py-1 text-uppercase">PROMEDIO FINAL</td>
-                            <td class="text-center px-1 py-1 fw-bold text-primary" id="kardexPromedioFinal">0.0</td>
-                        </tr>
-                    `;
-                } else if (idx === 5) { // 6to periodo (balance visual)
-                    footerHtml += `
-                        <tr style="border-color: transparent; height: 26px;">
-                            <td colspan="2" style="border: none !important; background: transparent;"></td>
-                        </tr>
-                    `;
                 }
-                footerHtml += `</tfoot>`;
+            }
+        });
 
-                htmlPeriodos += `
-                    <div class="col-6" style="width: 50%;">
-                        <div class="border rounded-1 shadow-none overflow-hidden bg-white h-100" style="border-color: #000 !important;">
-                            <div class="py-1 px-2 fw-bold text-dark text-uppercase bg-light border-bottom" style="font-size: 0.78rem; letter-spacing: 0.5px; border-color: #000 !important;">
-                                ${p.nombrePeriodo}
+        const promInicial = p.promedio !== null ? p.promedio : '—';
+
+        let footerHtml = '';
+        if (isBti) {
+            footerHtml = `
+                <tfoot>
+                    <tr class="bg-light fw-bold" style="border-color: #333; font-size: 0.70rem;">
+                        <td class="text-end px-2 py-1 text-uppercase">PROMEDIO</td>
+                        <td class="text-center px-1 py-1 prom-p1-val" id="promP1_${idx}">—</td>
+                        <td class="text-center px-1 py-1 prom-p2-val" id="promP2_${idx}">—</td>
+                        <td class="text-center px-1 py-1 prom-p3-val" id="promP3_${idx}">—</td>
+                        <td class="text-center px-1 py-1 prom-sem-val" id="promSem_${idx}">—</td>
+                        <td class="text-center px-1 py-1 prom-ext-val" id="promExt_${idx}">—</td>
+                        <td class="text-center px-1 py-1 text-primary fw-bold prom-periodo-val" id="promPeriodo_${idx}">${promInicial}</td>
+                        <td class="text-center px-1 py-1" style="font-size: 0.65rem;" id="totalAsistPeriodo_${idx}">—</td>
+                    </tr>
+            `;
+        } else {
+            footerHtml = `
+                <tfoot>
+                    <tr class="bg-light fw-bold" style="border-color: #333; font-size: 0.78rem;">
+                        <td class="text-end px-2 py-1 text-uppercase">PROMEDIO</td>
+                        <td class="text-center px-1 py-1 text-primary fw-bold prom-periodo-val" id="promPeriodo_${idx}">${promInicial}</td>
+                    </tr>
+            `;
+        }
+
+        if (idx === 4) { // 5to periodo
+            footerHtml += `
+                <tr class="fw-bold" style="border-color: #333; font-size: 0.8rem; background: #e2e8f0;">
+                    <td class="${isBti ? 'text-end' : 'text-end'} px-2 py-1 text-uppercase" colspan="${isBti ? '6' : '1'}">PROMEDIO FINAL</td>
+                    <td class="text-center px-1 py-1 fw-bold text-primary" id="kardexPromedioFinal">0.0</td>
+                    ${isBti ? '<td style="border: none !important;"></td>' : ''}
+                </tr>
+            `;
+        } else if (idx === 5) { // 6to periodo (balance visual)
+            footerHtml += `
+                <tr style="border-color: transparent; height: 26px;">
+                    <td colspan="${isBti ? '8' : '2'}" style="border: none !important; background: transparent;"></td>
+                </tr>
+            `;
+        }
+        footerHtml += `</tfoot>`;
+
+        htmlPeriodos += `
+            <div class="col-6" style="width: 50%;">
+                <div class="border rounded-1 shadow-none overflow-hidden bg-white h-100" style="border-color: #000 !important;">
+                    <div class="py-1 px-2 fw-bold text-dark text-uppercase bg-light border-bottom" style="font-size: 0.78rem; letter-spacing: 0.5px; border-color: #000 !important;">
+                        ${p.nombrePeriodo}
+                    </div>
+                    <div class="table-responsive mb-0">
+                        <table class="table table-bordered table-sm mb-0" style="border-color: #000 !important;">
+                            <thead class="table-light">
+                                <tr style="font-size: 0.70rem; border-color: #000;">
+                                    ${isBti ? `
+                                    <th class="px-2 py-1 text-uppercase text-dark" style="border-color: #000 !important;">MATERIA</th>
+                                    <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 42px; border-color: #000 !important;">P1</th>
+                                    <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 42px; border-color: #000 !important;">P2</th>
+                                    <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 42px; border-color: #000 !important;">P3</th>
+                                    <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 42px; border-color: #000 !important;">SEM</th>
+                                    <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 42px; border-color: #000 !important;">EXT</th>
+                                    <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 48px; border-color: #000 !important;">FINAL</th>
+                                    <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 66px; border-color: #000 !important;">ASIST.</th>
+                                    ` : `
+                                    <th class="px-2 py-1 text-uppercase text-dark" style="border-color: #000 !important;">MATERIA</th>
+                                    <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 80px; border-color: #000 !important;">EVALUACIÓN OBTENIDA</th>
+                                    `}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${htmlMaterias}
+                            </tbody>
+                            ${footerHtml}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    contenedor.innerHTML = htmlPeriodos;
+    calcularPromediosKardex();
+}
+
+function imprimirBoletaBTISemestre(data, idNivelSemestre) {
+    const al = data.alumno;
+    const periodos = data.periodos || [];
+    const p = periodos.find(x => x.idNivel === idNivelSemestre);
+    const materias = p ? p.materias || [] : [];
+
+    const semestresNombres = {
+        7: 'PRIMER',
+        8: 'SEGUNDO',
+        9: 'TERCER',
+        10: 'CUARTO',
+        11: 'QUINTO',
+        12: 'SEXTO'
+    };
+    const semestreNombreLargo = semestresNombres[idNivelSemestre] || 'SEMESTRE';
+
+    let filasMateriasHtml = '';
+    let p1Vals = []; let p2Vals = []; let p3Vals = []; let semVals = []; let extVals = []; let finalVals = [];
+    let totalAsist = 0; let totalTotAsist = 0;
+
+    materias.forEach(m => {
+        const isEquiv = m.es_equivalencia === true;
+        if (isEquiv) {
+            filasMateriasHtml += `
+                <tr style="text-align: center; height: 32px;">
+                    <td style="border: 1px solid #000; padding: 6px; text-align: left; text-transform: uppercase; font-weight: bold; font-size: 8.5pt;">${m.nombreMateria}</td>
+                    <td colspan="5" style="border: 1px solid #000; padding: 6px; font-weight: bold; color: #d97706; font-size: 8.5pt;">EQUIVALENCIA</td>
+                    <td style="border: 1px solid #000; padding: 6px; font-weight: bold; font-size: 8.5pt;">—</td>
+                </tr>
+            `;
+            return;
+        }
+
+        const p1 = m.parcial1 !== null ? parseFloat(m.parcial1) : null;
+        const p2 = m.parcial2 !== null ? parseFloat(m.parcial2) : null;
+        const p3 = m.parcial3 !== null ? parseFloat(m.parcial3) : null;
+        const sem = m.semestral !== null ? parseFloat(m.semestral) : null;
+        const ext = m.extraordinario !== null ? parseFloat(m.extraordinario) : null;
+        const finalVal = m.calificacion !== null ? parseFloat(m.calificacion) : null;
+
+        const parseVal = (v, arr) => { if (v !== null) arr.push(v); };
+        parseVal(p1, p1Vals);
+        parseVal(p2, p2Vals);
+        parseVal(p3, p3Vals);
+        parseVal(sem, semVals);
+        parseVal(ext, extVals);
+        parseVal(finalVal, finalVals);
+
+        if (m.asistencias !== null) totalAsist += parseInt(m.asistencias) || 0;
+        if (m.total_asistencias !== null) totalTotAsist += parseInt(m.total_asistencias) || 0;
+
+        const p1Text = p1 !== null ? p1.toFixed(1) : '—';
+        const p2Text = p2 !== null ? p2.toFixed(1) : '—';
+        const p3Text = p3 !== null ? p3.toFixed(1) : '—';
+        const semText = sem !== null ? sem.toFixed(1) : '—';
+        const extText = ext !== null ? ext.toFixed(1) : '0.0';
+        
+        const extStyle = ext !== null && ext > 0 ? 'color: #dc2626; font-weight: bold;' : 'color: #000;';
+        const finalStyle = finalVal !== null && finalVal < 6.0 ? 'color: #dc2626; font-weight: bold;' : 'color: #000;';
+        const finalText = finalVal !== null ? finalVal.toFixed(1) : '—';
+
+        filasMateriasHtml += `
+            <tr style="text-align: center; height: 32px;">
+                <td style="border: 1px solid #000; padding: 6px 8px; text-align: left; text-transform: uppercase; font-weight: 700; font-size: 8.5pt;">${m.nombreMateria}</td>
+                <td style="border: 1px solid #000; padding: 6px; font-size: 9pt;">${p1Text}</td>
+                <td style="border: 1px solid #000; padding: 6px; font-size: 9pt;">${p2Text}</td>
+                <td style="border: 1px solid #000; padding: 6px; font-size: 9pt;">${p3Text}</td>
+                <td style="border: 1px solid #000; padding: 6px; font-size: 9pt;">${semText}</td>
+                <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${extStyle}">${extText}</td>
+                <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; background: #f8fafc; ${finalStyle}">${finalText}</td>
+            </tr>
+        `;
+    });
+
+    const getAvg = (arr) => arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '—';
+
+    const p1Avg = getAvg(p1Vals);
+    const p2Avg = getAvg(p2Vals);
+    const p3Avg = getAvg(p3Vals);
+    const semAvg = getAvg(semVals);
+    const extAvg = getAvg(extVals);
+    const finalAvg = getAvg(finalVals);
+
+    const totalAsistVal = totalAsist;
+    const totalTotAsistVal = totalTotAsist;
+
+    const win = window.open('', '', 'height=850,width=1100');
+    win.document.write(`
+        <html>
+            <head>
+                <title>Boleta de Calificaciones - ${semestreNombreLargo} Semestre</title>
+                <style>
+                    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
+                    @page {
+                        size: letter portrait;
+                        margin: 10mm 12mm;
+                    }
+                    html, body {
+                        font-family: Arial, Helvetica, sans-serif;
+                        background: #fff;
+                        color: #000;
+                        padding: 0;
+                        margin: 0;
+                    }
+                    .boleta-container {
+                        width: 100%;
+                        max-width: 800px;
+                        margin: 0 auto;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="boleta-container">
+                    
+                    <!-- Header -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 20px;">
+                        <div style="width: 100px; text-align: left;">
+                            <img src="/img/BTI_ICON.png" style="height: 60px; width: auto; object-fit: contain;">
+                        </div>
+                        <div style="text-align: center; flex: 1;">
+                            <div style="font-size: 10pt; font-weight: bold; color: #000; letter-spacing: 0.5px; text-transform: uppercase;">Dirección General de Educación Tecnológica Industrial y de Servicios</div>
+                            <div style="font-size: 9pt; font-weight: 700; color: #334155; margin-top: 3px; text-transform: uppercase;">Educación Media Superior</div>
+                            <div style="font-size: 11pt; font-weight: 800; color: #0f172a; margin-top: 6px; text-transform: uppercase;">BOLETA DE CALIFICACIONES DEL ${semestreNombreLargo} SEMESTRE</div>
+                            <div style="font-size: 8.5pt; font-weight: bold; color: #475569; margin-top: 3px; text-transform: uppercase;">Ciclo Escolar 2025-2026</div>
+                        </div>
+                        <div style="width: 100px; text-align: right;">
+                            <img src="/img/logo.png" style="height: 60px; width: auto; object-fit: contain;">
+                        </div>
+                    </div>
+
+                    <!-- Details Row 1 -->
+                    <div style="display: flex; gap: 30px; font-size: 8.5pt; margin-bottom: 12px;">
+                        <div style="flex: 2; display: flex; flex-direction: column;">
+                            <div style="display: flex; align-items: flex-end; margin-bottom: 2px;">
+                                <span style="font-weight: bold; color: #475569; width: 150px; text-transform: uppercase;">DATOS DEL ALUMNO (A):</span>
+                                <span style="flex: 1; border-bottom: 1.2px solid #000; font-weight: 700; font-size: 9.5pt; text-align: center; padding-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    ${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}
+                                </span>
                             </div>
-                            <div class="table-responsive mb-0">
-                                <table class="table table-bordered table-sm mb-0" style="border-color: #000 !important;">
-                                    <thead class="table-light">
-                                        <tr style="font-size: 0.70rem; border-color: #000;">
-                                            <th class="px-2 py-1 text-uppercase text-dark" style="border-color: #000 !important;">MATERIA</th>
-                                            <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 80px; border-color: #000 !important;">EVALUACIÓN OBTENIDA</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${htmlMaterias}
-                                    </tbody>
-                                    ${footerHtml}
-                                </table>
+                            <div style="display: flex; justify-content: space-around; font-size: 7.2pt; color: #64748b; padding-left: 150px; margin-top: 1px;">
+                                <span>Apellido Paterno</span>
+                                <span>Apellido Materno</span>
+                                <span>Nombre</span>
                             </div>
                         </div>
                     </div>
-                `;
-            });
 
-            contenedor.innerHTML = htmlPeriodos;
-            calcularPromediosKardex();
-        })
-        .catch(err => {
-            console.error('Error cargando kardex:', err);
-            contenedor.innerHTML = '<div class="col-12 alert alert-danger text-center">Error de conexión al cargar kárdex.</div>';
-        });
+                    <!-- Details Row 2 -->
+                    <div style="display: flex; gap: 20px; font-size: 8.5pt; margin-bottom: 20px; align-items: flex-end;">
+                        <div style="flex: 2; display: flex; align-items: flex-end;">
+                            <span style="font-weight: bold; color: #475569; width: 150px; text-transform: uppercase;">DATOS DE LA ESCUELA:</span>
+                            <span style="flex: 1; border-bottom: 1.2px solid #000; font-weight: 700; text-align: center; padding-bottom: 2px; text-transform: uppercase; font-size: 9pt;">
+                                ${al.nombreCentroTrabajo || 'BACHILLERATO TECNOLÓGICO INTERAMERICANO'}
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 15px; font-size: 8pt; text-align: center;">
+                            <div style="display: flex; flex-direction: column; width: 60px;">
+                                <span style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 2px; text-transform: uppercase;">${al.nombreGrupoTexto || '—'}</span>
+                                <span style="font-size: 7pt; color: #475569; font-weight: bold; margin-top: 2px;">GRUPO</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; width: 90px;">
+                                <span style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 2px; text-transform: uppercase;">${al.modalidadHorario || 'MATUTINO'}</span>
+                                <span style="font-size: 7pt; color: #475569; font-weight: bold; margin-top: 2px;">TURNO</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; width: 90px;">
+                                <span style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 2px; text-transform: uppercase;">${al.claveCentroTrabajo || '21PCT0073R'}</span>
+                                <span style="font-size: 7pt; color: #475569; font-weight: bold; margin-top: 2px;">CCT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grades Table and Info blocks -->
+                    <div style="display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; margin-bottom: 25px;">
+                        
+                        <!-- Main Grades Table -->
+                        <div style="flex: 1;">
+                            <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 8pt;">
+                                <thead>
+                                    <tr style="background: #e2e8f0; color: #000; text-align: center; border-bottom: 1.5px solid #000;">
+                                        <th rowspan="2" style="border: 1px solid #000; padding: 6px; text-align: left; width: 220px; font-size: 7.8pt; text-transform: uppercase; font-weight: 800;">ASIGNATURAS / ÁREAS</th>
+                                        <th colspan="4" style="border: 1px solid #000; padding: 4px; font-size: 7.8pt; font-weight: 800;">PERIODOS DE EVALUACIÓN ORDINARIA</th>
+                                        <th rowspan="2" style="border: 1px solid #000; padding: 6px; width: 50px; font-size: 7.2pt; font-weight: 800; border-left: 1.5px solid #000;">EXTRAORDINARIO</th>
+                                        <th rowspan="2" style="border: 1px solid #000; padding: 6px; width: 65px; font-size: 7.2pt; font-weight: 800; border-left: 1.5px solid #000;">PROMEDIO FINAL/<br>MATERIA</th>
+                                    </tr>
+                                    <tr style="background: #f8fafc; color: #000; text-align: center; font-size: 7.2pt; border-bottom: 1.5px solid #000;">
+                                        <th style="border: 1px solid #000; padding: 4px; width: 45px;">1ER. PARCIAL</th>
+                                        <th style="border: 1px solid #000; padding: 4px; width: 45px;">2DO. PARCIAL</th>
+                                        <th style="border: 1px solid #000; padding: 4px; width: 45px;">3ER. PARCIAL</th>
+                                        <th style="border: 1px solid #000; padding: 4px; width: 55px;">SEMESTRAL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${filasMateriasHtml}
+                                    <tr style="font-weight: bold; background: #e2e8f0; text-align: center; font-size: 8pt; border-top: 1.5px solid #000; height: 32px;">
+                                        <td style="border: 1px solid #000; padding: 6px; text-align: right; text-transform: uppercase; font-weight: 800;">PROMEDIO</td>
+                                        <td style="border: 1px solid #000; padding: 5px;">${p1Avg}</td>
+                                        <td style="border: 1px solid #000; padding: 5px;">${p2Avg}</td>
+                                        <td style="border: 1px solid #000; padding: 5px;">${p3Avg}</td>
+                                        <td style="border: 1px solid #000; padding: 5px;">${semAvg}</td>
+                                        <td style="border: 1px solid #000; padding: 5px; color: #dc2626; border-left: 1.5px solid #000;">${extAvg}</td>
+                                        <td style="border: 1px solid #000; padding: 5px; background: #cbd5e1; color: #1e293b; border-left: 1.5px solid #000;">${finalAvg}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Sidebar details -->
+                        <div style="width: 250px; display: flex; flex-direction: column; gap: 25px; align-items: center;">
+                            
+                            <!-- Badges -->
+                            <div style="display: flex; gap: 15px; width: 100%; justify-content: center;">
+                                <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                                    <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block;">ASISTENCIAS</span>
+                                    <span style="font-size: 11pt; font-weight: 800; padding: 12px 5px; color: #0f172a; display: block;">${totalAsistVal} / ${totalTotAsistVal}</span>
+                                </div>
+                                <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                                    <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; line-height: 1.1;">PROMEDIO FINAL<br>DEL SEMESTRE</span>
+                                    <span style="font-size: 13pt; font-weight: 900; padding: 10px 5px; color: #1e3a8a; display: block;">${finalAvg}</span>
+                                </div>
+                            </div>
+
+                            <!-- Director Signature -->
+                            <div style="margin-top: 15px; width: 100%; text-align: center;">
+                                <div style="border-bottom: 1px solid #000; width: 160px; margin: 0 auto 5px auto; height: 45px;"></div>
+                                <div style="font-size: 7.8pt; font-weight: 800; text-transform: uppercase; color: #0f172a;">ING. FAUSTO LEYVA FLORES</div>
+                                <div style="font-size: 7.2pt; font-weight: 700; color: #475569; text-transform: uppercase; margin-top: 1px;">DIRECTOR</div>
+                            </div>
+
+                            <!-- Date info -->
+                            <div style="font-size: 7.5pt; font-weight: bold; color: #1e293b; margin-top: 10px; text-transform: uppercase; text-align: center; border: 1px dashed #cbd5e1; padding: 4px 8px; border-radius: 4px;">
+                                TEZIUTLÁN PUEBLA A 14 DE AGOSTO DE 2026
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Recommendations Table -->
+                    <div style="margin-top: 25px;">
+                        <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 8pt;">
+                            <thead>
+                                <tr style="background: #2e596b; color: #ffffff; font-weight: 800; text-transform: uppercase; text-align: center;">
+                                    <th style="border: 1px solid #000; padding: 6px; font-size: 7.8pt; letter-spacing: 0.5px;">OBSERVACIONES O RECOMENDACIONES DE LA DOCENTE O DEL DOCENTE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="border: 1px solid #000; padding: 0;">
+                                        <div style="display: flex; align-items: center; border-bottom: 1px solid #cbd5e1; min-height: 28px;">
+                                            <span style="font-size: 6.8pt; font-weight: bold; background: #e2e8f0; color: #334155; width: 110px; text-align: center; padding: 6px 0; border-right: 1px solid #cbd5e1; text-transform: uppercase; flex-shrink: 0;">PRIMER PARCIAL</span>
+                                            <div style="flex: 1; padding: 0 10px;"></div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; border-bottom: 1px solid #cbd5e1; min-height: 28px;">
+                                            <span style="font-size: 6.8pt; font-weight: bold; background: #e2e8f0; color: #334155; width: 110px; text-align: center; padding: 6px 0; border-right: 1px solid #cbd5e1; text-transform: uppercase; flex-shrink: 0;">SEGUNDO PARCIAL</span>
+                                            <div style="flex: 1; padding: 0 10px;"></div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; border-bottom: 1px solid #cbd5e1; min-height: 28px;">
+                                            <span style="font-size: 6.8pt; font-weight: bold; background: #e2e8f0; color: #334155; width: 110px; text-align: center; padding: 6px 0; border-right: 1px solid #cbd5e1; text-transform: uppercase; flex-shrink: 0;">TERCER PARCIAL</span>
+                                            <div style="flex: 1; padding: 0 10px;"></div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; min-height: 28px;">
+                                            <span style="font-size: 6.8pt; font-weight: bold; background: #e2e8f0; color: #334155; width: 110px; text-align: center; padding: 6px 0; border-right: 1px solid #cbd5e1; text-transform: uppercase; flex-shrink: 0;">SEMESTRAL</span>
+                                            <div style="flex: 1; padding: 0 10px;"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        setTimeout(function() { window.close(); }, 500);
+                    };
+                <\/script>
+            </body>
+        </html>
+    `);
+}
+
+window.recalcularFilaKardexSemestral = function(inputEl) {
+    const tr = inputEl.closest('tr');
+    if (!tr) return;
+
+    const p1Inp = tr.querySelector('.inp-p1');
+    const p2Inp = tr.querySelector('.inp-p2');
+    const p3Inp = tr.querySelector('.inp-p3');
+    const semInp = tr.querySelector('.inp-semestral');
+    const extInp = tr.querySelector('.inp-extraordinario');
+    const pFinalInp = tr.querySelector('.inp-calif-final');
+
+    const v1 = parseFloat(p1Inp.value);
+    const v2 = parseFloat(p2Inp.value);
+    const v3 = parseFloat(p3Inp.value);
+
+    // 1. Verificar si los 3 parciales están llenos
+    const partialsFilled = !isNaN(v1) && !isNaN(v2) && !isNaN(v3);
+
+    if (partialsFilled) {
+        const sumPartials = v1 + v2 + v3;
+        if (sumPartials < 18) {
+            // No tiene derecho a semestral. Va directamente a extraordinario
+            semInp.value = "";
+            semInp.disabled = true;
+            semInp.placeholder = "N/A";
+            
+            extInp.disabled = false;
+            extInp.placeholder = "0.0";
+            
+            const extVal = parseFloat(extInp.value);
+            if (!isNaN(extVal)) {
+                pFinalInp.value = Math.min(extVal, 7.0).toFixed(1);
+            } else {
+                pFinalInp.value = "";
+            }
+        } else {
+            semInp.disabled = false;
+            semInp.placeholder = "0.0";
+            
+            extInp.value = "";
+            extInp.disabled = true;
+            extInp.placeholder = "N/A";
+
+            const semVal = parseFloat(semInp.value);
+            if (!isNaN(semVal)) {
+                pFinalInp.value = ((v1 + v2 + v3 + semVal) / 4).toFixed(1);
+            } else {
+                pFinalInp.value = "";
+            }
+        }
+    } else {
+        semInp.disabled = false;
+        extInp.disabled = false;
+        
+        let vals = [];
+        if (!isNaN(v1)) vals.push(v1);
+        if (!isNaN(v2)) vals.push(v2);
+        if (!isNaN(v3)) vals.push(v3);
+        
+        if (vals.length > 0) {
+            pFinalInp.value = (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1);
+        } else {
+            pFinalInp.value = "";
+        }
+    }
+
+    // Color rojo
+    const checkRed = (inp) => {
+        if (!inp) return;
+        const v = parseFloat(inp.value);
+        if (!isNaN(v) && v < 6.0) {
+            inp.style.color = '#dc2626';
+        } else {
+            inp.style.color = '#1e293b';
+        }
+    };
+    checkRed(p1Inp);
+    checkRed(p2Inp);
+    checkRed(p3Inp);
+    checkRed(semInp);
+    checkRed(extInp);
+    checkRed(pFinalInp);
+
+    calcularPromediosKardex();
 };
 
 window.calcularPromediosKardex = function() {
     const inputs = document.querySelectorAll('.input-calif-kardex');
-    const periodosSums = {};
-    const periodosCounts = {};
+    const isBti = document.getElementById('kardexCCTNombre')?.textContent.includes('BTI') || document.getElementById('kardexCCTClave')?.textContent.includes('21PCT0073R') || (document.querySelector('.prom-p1-val') !== null);
+
+    const p1Sums = {}; const p1Counts = {};
+    const p2Sums = {}; const p2Counts = {};
+    const p3Sums = {}; const p3Counts = {};
+    const semSums = {}; const semCounts = {};
+    const extSums = {}; const extCounts = {};
+    const periodosSums = {}; const periodosCounts = {};
+    const asistSums = {}; const totAsistSums = {};
+
     let sumGlobal = 0;
     let countGlobal = 0;
 
     inputs.forEach(inp => {
         const pIdx = inp.dataset.periodoIdx;
+        const field = inp.dataset.field || 'calificacion';
         const valStr = inp.value.trim();
 
         if (!periodosSums[pIdx]) {
-            periodosSums[pIdx] = 0;
-            periodosCounts[pIdx] = 0;
+            p1Sums[pIdx] = 0; p1Counts[pIdx] = 0;
+            p2Sums[pIdx] = 0; p2Counts[pIdx] = 0;
+            p3Sums[pIdx] = 0; p3Counts[pIdx] = 0;
+            semSums[pIdx] = 0; semCounts[pIdx] = 0;
+            extSums[pIdx] = 0; extCounts[pIdx] = 0;
+            periodosSums[pIdx] = 0; periodosCounts[pIdx] = 0;
+            asistSums[pIdx] = 0; totAsistSums[pIdx] = 0;
         }
 
         if (valStr !== '' && !isNaN(valStr)) {
             const num = parseFloat(valStr);
-            periodosSums[pIdx] += num;
-            periodosCounts[pIdx] += 1;
-            sumGlobal += num;
-            countGlobal += 1;
+            if (field === 'parcial1') { p1Sums[pIdx] += num; p1Counts[pIdx]++; }
+            else if (field === 'parcial2') { p2Sums[pIdx] += num; p2Counts[pIdx]++; }
+            else if (field === 'parcial3') { p3Sums[pIdx] += num; p3Counts[pIdx]++; }
+            else if (field === 'semestral') { semSums[pIdx] += num; semCounts[pIdx]++; }
+            else if (field === 'extraordinario') { extSums[pIdx] += num; extCounts[pIdx]++; }
+            else if (field === 'calificacion') { 
+                periodosSums[pIdx] += num; 
+                periodosCounts[pIdx]++; 
+                sumGlobal += num;
+                countGlobal++;
+            }
+            else if (field === 'asistencias') { asistSums[pIdx] += num; }
+            else if (field === 'total_asistencias') { totAsistSums[pIdx] += num; }
 
-            if (num < 6.0) {
-                inp.style.setProperty('color', '#dc2626', 'important');
-                inp.style.setProperty('font-weight', '700', 'important');
-            } else {
-                inp.style.setProperty('color', '#1e293b', 'important');
-                inp.style.setProperty('font-weight', '700', 'important');
+            if (field !== 'asistencias' && field !== 'total_asistencias') {
+                if (num < 6.0) {
+                    inp.style.setProperty('color', '#dc2626', 'important');
+                    inp.style.setProperty('font-weight', '700', 'important');
+                } else {
+                    inp.style.setProperty('color', '#1e293b', 'important');
+                    inp.style.setProperty('font-weight', '700', 'important');
+                }
             }
         } else if (valStr.toUpperCase() === 'EQUIV.' || valStr.toUpperCase() === 'EQUIVALENCIA') {
             inp.style.setProperty('color', '#d97706', 'important');
@@ -2404,22 +2972,34 @@ window.calcularPromediosKardex = function() {
 
     // Actualizar promedios por periodo
     Object.keys(periodosSums).forEach(pIdx => {
-        const el = document.getElementById(`promPeriodo_${pIdx}`);
-        if (el) {
-            const count = periodosCounts[pIdx];
-            if (count > 0) {
-                const prom = (periodosSums[pIdx] / count).toFixed(1);
-                el.textContent = prom;
-                if (parseFloat(prom) < 6.0) {
-                    el.style.setProperty('color', '#dc2626', 'important');
+        const updateAvgEl = (id, sum, count) => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (count > 0) {
+                    const avg = (sum / count).toFixed(1);
+                    el.textContent = avg;
+                    el.style.setProperty('color', parseFloat(avg) < 6.0 ? '#dc2626' : '#1e6fa8', 'important');
                 } else {
-                    el.style.setProperty('color', '#1e6fa8', 'important');
+                    el.textContent = '—';
+                    el.style.setProperty('color', '#64748b', 'important');
                 }
-            } else {
-                el.textContent = '—';
-                el.style.setProperty('color', '#64748b', 'important');
+            }
+        };
+
+        if (isBti) {
+            updateAvgEl(`promP1_${pIdx}`, p1Sums[pIdx], p1Counts[pIdx]);
+            updateAvgEl(`promP2_${pIdx}`, p2Sums[pIdx], p2Counts[pIdx]);
+            updateAvgEl(`promP3_${pIdx}`, p3Sums[pIdx], p3Counts[pIdx]);
+            updateAvgEl(`promSem_${pIdx}`, semSums[pIdx], semCounts[pIdx]);
+            updateAvgEl(`promExt_${pIdx}`, extSums[pIdx], extCounts[pIdx]);
+            
+            const asistEl = document.getElementById(`totalAsistPeriodo_${pIdx}`);
+            if (asistEl) {
+                asistEl.textContent = `${asistSums[pIdx]} / ${totAsistSums[pIdx]}`;
             }
         }
+        
+        updateAvgEl(`promPeriodo_${pIdx}`, periodosSums[pIdx], periodosCounts[pIdx]);
     });
 
     // Actualizar promedio final
@@ -2428,11 +3008,7 @@ window.calcularPromediosKardex = function() {
         if (countGlobal > 0) {
             const promFinal = (sumGlobal / countGlobal).toFixed(1);
             finalEl.textContent = promFinal;
-            if (parseFloat(promFinal) < 6.0) {
-                finalEl.style.setProperty('color', '#dc2626', 'important');
-            } else {
-                finalEl.style.setProperty('color', '#1e6fa8', 'important');
-            }
+            finalEl.style.setProperty('color', parseFloat(promFinal) < 6.0 ? '#dc2626' : '#1e6fa8', 'important');
         } else {
             finalEl.textContent = '0.0';
             finalEl.style.setProperty('color', '#1e6fa8', 'important');
@@ -2443,23 +3019,51 @@ window.calcularPromediosKardex = function() {
 window.guardarCalificacionesKardex = function() {
     if (!idAlumnoKardexActual) return;
     const btn = document.getElementById('btnGuardarKardex');
-    const inputs = document.querySelectorAll('.input-calif-kardex');
+    const rows = document.querySelectorAll('#contenedorPeriodosKardex tbody tr');
     const calificaciones = [];
 
-    inputs.forEach(inp => {
-        const valStr = inp.value.trim().toUpperCase();
-        let calif = null;
+    rows.forEach(tr => {
+        const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
+        if (isEquiv) return;
 
+        const idMateria = tr.getAttribute('data-materia-id');
+        const idNivel = tr.getAttribute('data-nivel');
+        if (!idMateria) return;
+
+        const p1Inp = tr.querySelector('.inp-p1');
+        const p2Inp = tr.querySelector('.inp-p2');
+        const p3Inp = tr.querySelector('.inp-p3');
+        const semInp = tr.querySelector('.inp-semestral');
+        const extInp = tr.querySelector('.inp-extraordinario');
+        const finalInp = tr.querySelector('.inp-calif-final') || tr.querySelector('.input-calif-kardex');
+
+        if (!finalInp) return;
+
+        const valStr = finalInp.value.trim();
+        let calif = null;
         if (valStr !== '' && !isNaN(valStr)) {
             calif = parseFloat(valStr);
         }
 
-        calificaciones.push({
-            idMateria: parseInt(inp.dataset.materia),
-            id_nivel_academico: parseInt(inp.dataset.nivel),
+        const dataObj = {
+            idMateria: parseInt(idMateria),
+            id_nivel_academico: parseInt(idNivel || finalInp.dataset.nivel),
             calificacion: calif,
             tipoAcreditacion: 'ORDINARIO'
-        });
+        };
+
+        if (p1Inp) dataObj.parcial1 = p1Inp.value !== "" ? parseFloat(p1Inp.value) : null;
+        if (p2Inp) dataObj.parcial2 = p2Inp.value !== "" ? parseFloat(p2Inp.value) : null;
+        if (p3Inp) dataObj.parcial3 = p3Inp.value !== "" ? parseFloat(p3Inp.value) : null;
+        if (semInp) dataObj.semestral = semInp.value !== "" ? parseFloat(semInp.value) : null;
+        if (extInp) dataObj.extraordinario = extInp.value !== "" ? parseFloat(extInp.value) : null;
+        
+        const asistInp = tr.querySelector('.inp-asistencias');
+        const totAsistInp = tr.querySelector('.inp-total-asistencias');
+        if (asistInp) dataObj.asistencias = asistInp.value !== "" ? parseInt(asistInp.value) : null;
+        if (totAsistInp) dataObj.total_asistencias = totAsistInp.value !== "" ? parseInt(totAsistInp.value) : null;
+
+        calificaciones.push(dataObj);
     });
 
     btn.disabled = true;
@@ -2507,6 +3111,8 @@ window.guardarCalificacionesKardex = function() {
 };
 
 window.imprimirKardex = function() {
+    const isBti = document.getElementById('kardexCCTNombre')?.textContent.includes('BTI') || document.getElementById('kardexCCTClave')?.textContent.includes('21PCT0073R') || (document.querySelector('.prom-p1-val') !== null);
+
     const alumnoNombre = document.getElementById('kardexNombreAlumno')?.textContent || '—';
     const cctClave = document.getElementById('kardexCCTClave')?.textContent || 'CLAVE CT: 21PBH0353G';
     const cctNombre = document.getElementById('kardexCCTNombre')?.textContent || 'BACHILLERATO GENERAL NO ESCOLARIZADO';
@@ -2524,12 +3130,38 @@ window.imprimirKardex = function() {
 
         trs.forEach(tr => {
             const matName = tr.querySelector('td:first-child')?.textContent.trim() || '';
-            const inp = tr.querySelector('input.input-calif-kardex');
-            const calif = inp ? inp.value.trim() : '';
+            const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
+            
+            const p1Inp = tr.querySelector('.inp-p1');
+            const p2Inp = tr.querySelector('.inp-p2');
+            const p3Inp = tr.querySelector('.inp-p3');
+            const semInp = tr.querySelector('.inp-semestral');
+            const extInp = tr.querySelector('.inp-extraordinario');
+            const finalInp = tr.querySelector('.inp-calif-final') || tr.querySelector('input.input-calif-kardex');
+            const asistInp = tr.querySelector('.inp-asistencias');
+            const totAsistInp = tr.querySelector('.inp-total-asistencias');
+
+            const p1 = p1Inp ? p1Inp.value.trim() : '';
+            const p2 = p2Inp ? p2Inp.value.trim() : '';
+            const p3 = p3Inp ? p3Inp.value.trim() : '';
+            const sem = semInp ? semInp.value.trim() : '';
+            const ext = extInp ? extInp.value.trim() : '';
+            const finalVal = finalInp ? finalInp.value.trim() : '';
+            const asist = asistInp ? asistInp.value.trim() : '';
+            const totAsist = totAsistInp ? totAsistInp.value.trim() : '';
+
             rows.push({
                 materia: matName,
-                calificacion: calif !== '' ? calif : '—',
-                esReprobatoria: calif !== '' && !isNaN(calif) && parseFloat(calif) < 6.0
+                isEquiv: isEquiv,
+                p1: p1 !== '' ? p1 : '—',
+                p2: p2 !== '' ? p2 : '—',
+                p3: p3 !== '' ? p3 : '—',
+                semestral: sem !== '' ? sem : '—',
+                extraordinario: ext !== '' ? ext : '—',
+                calificacion: finalVal !== '' ? finalVal : '—',
+                asistencias: asist !== '' ? asist : '0',
+                total_asistencias: totAsist !== '' ? totAsist : '0',
+                esReprobatoria: finalVal !== '' && !isNaN(finalVal) && parseFloat(finalVal) < 6.0
             });
         });
 
@@ -2544,74 +3176,185 @@ window.imprimirKardex = function() {
     function renderTablaPeriodo(p, is5to, is6to) {
         if (!p) return '';
         let filasHtml = '';
-        p.materias.forEach(m => {
-            const styleColor = m.esReprobatoria ? 'color: #dc2626 !important; font-weight: bold;' : 'color: #000;';
-            filasHtml += `
-                <tr>
-                    <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; text-align: left; text-transform: uppercase;">
-                        ${m.materia}
-                    </td>
-                    <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8.5pt; text-align: center; font-weight: bold; width: 75px; ${styleColor}">
-                        ${m.calificacion}
-                    </td>
-                </tr>
-            `;
-        });
+        
+        if (isBti) {
+            p.materias.forEach(m => {
+                if (m.isEquiv) {
+                    filasHtml += `
+                        <tr>
+                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 7.5pt; text-align: left; text-transform: uppercase;">
+                                ${m.materia}
+                            </td>
+                            <td colspan="7" style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; text-align: center; font-weight: bold; color: #d97706;">
+                                EQUIVALENCIA
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    const styleColor = m.esReprobatoria ? 'color: #dc2626 !important; font-weight: bold;' : 'color: #000;';
+                    filasHtml += `
+                        <tr>
+                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 7.5pt; text-align: left; text-transform: uppercase;">
+                                ${m.materia}
+                            </td>
+                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; text-align: center; color: #000;">${m.p1}</td>
+                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; text-align: center; color: #000;">${m.p2}</td>
+                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; text-align: center; color: #000;">${m.p3}</td>
+                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; text-align: center; color: #000;">${m.semestral}</td>
+                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; text-align: center; color: #000;">${m.extraordinario}</td>
+                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; text-align: center; background-color: #f1f5f9; ${styleColor}">${m.calificacion}</td>
+                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 7.5pt; text-align: center; color: #000;">${m.asistencias} / ${m.total_asistencias}</td>
+                        </tr>
+                    `;
+                }
+            });
 
-        let footerExtra = '';
-        if (is5to) {
-            const finalColor = promFinal !== '—' && !isNaN(promFinal) && parseFloat(promFinal) < 6.0 ? 'color: #dc2626 !important;' : 'color: #000;';
-            footerExtra = `
-                <tr>
-                    <td style="border: 1.5px solid #000; padding: 2.5px 5px; font-size: 8.2pt; font-weight: bold; text-align: right; background: #e8ecf2;">
-                        PROMEDIO FINAL
-                    </td>
-                    <td style="border: 1.5px solid #000; padding: 2.5px 5px; font-size: 8.8pt; font-weight: bold; text-align: center; background: #e8ecf2; ${finalColor}">
-                        ${promFinal}
-                    </td>
-                </tr>
+            // Calculate columns averages
+            let p1Vals = []; let p2Vals = []; let p3Vals = []; let semVals = []; let extVals = []; let finalVals = [];
+            let totalAsist = 0; let totalTotAsist = 0;
+
+            p.materias.forEach(m => {
+                if (m.isEquiv) return;
+                const parseVal = (v, arr) => { if (v !== '—' && !isNaN(v)) arr.push(parseFloat(v)); };
+                parseVal(m.p1, p1Vals);
+                parseVal(m.p2, p2Vals);
+                parseVal(m.p3, p3Vals);
+                parseVal(m.semestral, semVals);
+                parseVal(m.extraordinario, extVals);
+                parseVal(m.calificacion, finalVals);
+                
+                if (m.asistencias !== '—') totalAsist += parseInt(m.asistencias) || 0;
+                if (m.total_asistencias !== '—') totalTotAsist += parseInt(m.total_asistencias) || 0;
+            });
+
+            const getAvg = (arr) => arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '—';
+            const avgFinal = getAvg(finalVals);
+
+            let footerExtra = '';
+            if (is5to) {
+                footerExtra = `
+                    <tr style="font-weight: bold; background: #e8ecf2;">
+                        <td style="border: 1.5px solid #000; padding: 3px 5px; font-size: 8.2pt; text-align: right;">PROMEDIO FINAL DEL SEMESTRE</td>
+                        <td colspan="7" style="border: 1.5px solid #000; padding: 3px 5px; font-size: 9pt; text-align: center; color: #1e6fa8;">${avgFinal}</td>
+                    </tr>
+                `;
+            } else if (is6to) {
+                footerExtra = `
+                    <tr>
+                        <td colspan="8" style="border: 1px solid #000; height: 21px; background: #f8fafc;"></td>
+                    </tr>
+                `;
+            }
+
+            return `
+                <div style="margin-bottom: 8px;">
+                    <div style="font-size: 8.5pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; color: #000;">
+                        ${p.titulo}
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; border: 1.2px solid #000; font-family: Arial, sans-serif;">
+                        <thead>
+                            <tr style="background: #e2e8f0; font-size: 6.8pt; font-weight: bold; text-align: center; color: #000;">
+                                <th style="border: 1px solid #000; padding: 3px; text-align: left; width: 180px;">ASIGNATURAS / ÁREAS</th>
+                                <th style="border: 1px solid #000; padding: 3px; width: 32px;">1ER. PAR.</th>
+                                <th style="border: 1px solid #000; padding: 3px; width: 32px;">2DO. PAR.</th>
+                                <th style="border: 1px solid #000; padding: 3px; width: 32px;">3ER. PAR.</th>
+                                <th style="border: 1px solid #000; padding: 3px; width: 32px;">SEM.</th>
+                                <th style="border: 1px solid #000; padding: 3px; width: 32px;">EXT.</th>
+                                <th style="border: 1px solid #000; padding: 3px; width: 45px;">FINAL</th>
+                                <th style="border: 1px solid #000; padding: 3px; width: 60px;">ASIST.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filasHtml}
+                            <tr style="font-weight: bold; background: #f8fafc;">
+                                <td style="border: 1px solid #000; padding: 3.5px 5px; font-size: 8pt; text-align: right;">PROMEDIO:</td>
+                                <td style="border: 1px solid #000; padding: 3px; text-align: center;">${getAvg(p1Vals)}</td>
+                                <td style="border: 1px solid #000; padding: 3px; text-align: center;">${getAvg(p2Vals)}</td>
+                                <td style="border: 1px solid #000; padding: 3px; text-align: center;">${getAvg(p3Vals)}</td>
+                                <td style="border: 1px solid #000; padding: 3px; text-align: center;">${getAvg(semVals)}</td>
+                                <td style="border: 1px solid #000; padding: 3px; text-align: center;">${getAvg(extVals)}</td>
+                                <td style="border: 1px solid #000; padding: 3.5px 5px; font-size: 8pt; text-align: center; color: #1e6fa8; background: #e2e8f0;">${avgFinal}</td>
+                                <td style="border: 1px solid #000; padding: 3px; text-align: center; font-size: 7.2pt;">${totalAsist} / ${totalTotAsist}</td>
+                            </tr>
+                            ${footerExtra}
+                        </tbody>
+                    </table>
+                </div>
             `;
-        } else if (is6to) {
-            footerExtra = `
-                <tr>
-                    <td colspan="2" style="border: 1px solid #000; height: 21px; background: #f8fafc;"></td>
-                </tr>
+        } else {
+            p.materias.forEach(m => {
+                const styleColor = m.esReprobatoria ? 'color: #dc2626 !important; font-weight: bold;' : 'color: #000;';
+                filasHtml += `
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; text-align: left; text-transform: uppercase;">
+                            ${m.materia}
+                        </td>
+                        <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8.5pt; text-align: center; font-weight: bold; width: 75px; ${styleColor}">
+                            ${m.calificacion}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            let footerExtra = '';
+            if (is5to) {
+                const finalColor = promFinal !== '—' && !isNaN(promFinal) && parseFloat(promFinal) < 6.0 ? 'color: #dc2626 !important;' : 'color: #000;';
+                footerExtra = `
+                    <tr>
+                        <td style="border: 1.5px solid #000; padding: 2.5px 5px; font-size: 8.2pt; font-weight: bold; text-align: right; background: #e8ecf2;">
+                            PROMEDIO FINAL
+                        </td>
+                        <td style="border: 1.5px solid #000; padding: 2.5px 5px; font-size: 8.8pt; font-weight: bold; text-align: center; background: #e8ecf2; ${finalColor}">
+                            ${promFinal}
+                        </td>
+                    </tr>
+                `;
+            } else if (is6to) {
+                footerExtra = `
+                    <tr>
+                        <td colspan="2" style="border: 1px solid #000; height: 21px; background: #f8fafc;"></td>
+                    </tr>
+                `;
+            }
+
+            const promColor = p.promReprobatorio ? 'color: #dc2626 !important;' : 'color: #000;';
+
+            return `
+                <div style="margin-bottom: 8px;">
+                    <div style="font-size: 8.2pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; color: #000;">
+                        ${p.titulo}
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-family: Arial, sans-serif;">
+                        <thead>
+                            <tr style="background: #ffffff;">
+                                <th style="border: 1px solid #000; padding: 2.5px 5px; font-size: 7.8pt; text-align: left; font-weight: bold; width: 275px;">MATERIA</th>
+                                <th style="border: 1px solid #000; padding: 2.5px 2px; font-size: 7.2pt; text-align: center; font-weight: bold; width: 75px; line-height: 1.1;">EVALUACIÓN<br>OBTENIDA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filasHtml}
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; font-weight: bold; text-align: right;">
+                                    PROMEDIO
+                                </td>
+                                <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8.5pt; font-weight: bold; text-align: center; ${promColor}">
+                                    ${p.promedio}
+                                </td>
+                            </tr>
+                            ${footerExtra}
+                        </tbody>
+                    </table>
+                </div>
             `;
         }
-
-        const promColor = p.promReprobatorio ? 'color: #dc2626 !important;' : 'color: #000;';
-
-        return `
-            <div style="margin-bottom: 8px;">
-                <div style="font-size: 8.2pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; color: #000;">
-                    ${p.titulo}
-                </div>
-                <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-family: Arial, sans-serif;">
-                    <thead>
-                        <tr style="background: #ffffff;">
-                            <th style="border: 1px solid #000; padding: 2.5px 5px; font-size: 7.8pt; text-align: left; font-weight: bold; width: 275px;">MATERIA</th>
-                            <th style="border: 1px solid #000; padding: 2.5px 2px; font-size: 7.2pt; text-align: center; font-weight: bold; width: 75px; line-height: 1.1;">EVALUACIÓN<br>OBTENIDA</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${filasHtml}
-                        <tr>
-                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; font-weight: bold; text-align: right;">
-                                PROMEDIO
-                            </td>
-                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8.5pt; font-weight: bold; text-align: center; ${promColor}">
-                                ${p.promedio}
-                            </td>
-                        </tr>
-                        ${footerExtra}
-                    </tbody>
-                </table>
-            </div>
-        `;
     }
 
+    const pageContainerWidth = isBti ? '920px' : '720px';
+    const pageColWidth = isBti ? '450px' : '350px';
+    const pageSize = isBti ? 'letter landscape' : 'letter portrait';
+
     const colIzqHtml = `
-        <div style="width: 350px; flex-shrink: 0;">
+        <div style="width: ${pageColWidth}; flex-shrink: 0;">
             ${renderTablaPeriodo(periodosData[0], false, false)}
             ${renderTablaPeriodo(periodosData[2], false, false)}
             ${renderTablaPeriodo(periodosData[4], true, false)}
@@ -2619,12 +3362,28 @@ window.imprimirKardex = function() {
     `;
 
     const colDerHtml = `
-        <div style="width: 350px; flex-shrink: 0;">
+        <div style="width: ${pageColWidth}; flex-shrink: 0;">
             ${renderTablaPeriodo(periodosData[1], false, false)}
             ${renderTablaPeriodo(periodosData[3], false, false)}
             ${renderTablaPeriodo(periodosData[5], false, true)}
         </div>
     `;
+
+    let signaturesHtml = '';
+    if (isBti) {
+        signaturesHtml = `
+            <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: flex-end; width: 920px; font-family: Arial, sans-serif;">
+                <div style="width: 380px; text-align: center;">
+                    <div style="border-bottom: 1px solid #000; width: 240px; margin: 0 auto 5px auto; height: 45px;"></div>
+                    <div style="font-size: 8pt; font-weight: bold;">ING. FAUSTO LEYVA FLORES</div>
+                    <div style="font-size: 7.5pt; color: #444; text-transform: uppercase;">DIRECTOR</div>
+                </div>
+                <div style="width: 380px; text-align: center; font-size: 8.5pt; font-weight: bold; padding-bottom: 15px;">
+                    TEZIUTLÁN PUEBLA A 14 DE AGOSTO DE 2026
+                </div>
+            </div>
+        `;
+    }
 
     const win = window.open('', '', 'height=850,width=1100');
     win.document.write(`
@@ -2634,7 +3393,7 @@ window.imprimirKardex = function() {
                 <style>
                     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
                     @page {
-                        size: letter portrait;
+                        size: ${pageSize};
                         margin: 6mm 8mm 4mm 8mm;
                     }
                     html, body {
@@ -2646,7 +3405,7 @@ window.imprimirKardex = function() {
                         height: 100%;
                     }
                     .kardex-hoja {
-                        width: 720px;
+                        width: ${pageContainerWidth};
                         margin: 0 auto;
                         text-align: center;
                     }
@@ -2659,7 +3418,7 @@ window.imprimirKardex = function() {
                         <div style="width: 80px; text-align: left;">
                             <img src="/img/logo.png" alt="Logo" style="height: 60px; object-fit: contain;">
                         </div>
-                        <div style="width: 630px; border: 1.5px solid #10599a; overflow: hidden; border-radius: 3px;">
+                        <div style="width: ${isBti ? '820px' : '630px'}; border: 1.5px solid #10599a; overflow: hidden; border-radius: 3px;">
                             <div style="background: #10599a; color: #ffffff; font-weight: bold; font-size: 11.5pt; padding: 3px 6px; text-align: center; letter-spacing: 0.8px;">
                                 BACHILLERATO INTERAMERICANO
                             </div>
@@ -2684,13 +3443,15 @@ window.imprimirKardex = function() {
                     </div>
 
                     <!-- TABLAS DE LOS 6 PERIODOS (2 COLUMNAS) -->
-                    <div style="display: flex; justify-content: space-between; width: 720px; margin: 0 auto; text-align: left;">
+                    <div style="display: flex; justify-content: space-between; width: ${pageContainerWidth}; margin: 0 auto; text-align: left;">
                         ${colIzqHtml}
                         ${colDerHtml}
                     </div>
 
+                    ${signaturesHtml}
+
                     <!-- LEMA INFERIOR -->
-                    <div style="width: 720px; margin: 6px auto 0 auto; background: #5b9bd5; color: #ffffff; font-weight: bold; font-size: 8.2pt; padding: 3px 0; text-align: center; border-radius: 2px;">
+                    <div style="width: ${pageContainerWidth}; margin: 6px auto 0 auto; background: #5b9bd5; color: #ffffff; font-weight: bold; font-size: 8.2pt; padding: 3px 0; text-align: center; border-radius: 2px;">
                         ¡ Excelencia educativa a su servicio !
                     </div>
                 </div>

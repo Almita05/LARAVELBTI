@@ -16,13 +16,15 @@
 
         <h3 class="page-title mb-0">
             <i class="fa-solid fa-users me-2"></i>
-            Grupos
+            {{ session('rol') === 'DOCENTE' ? 'Mis Grupos' : 'Grupos' }}
         </h3>
 
+        @if(session('rol') !== 'DOCENTE')
         <button class="btn btn-azul" onclick="abrirModalGrupo()">
             <i class="fa-solid fa-plus me-2"></i>
             Alta grupo
         </button>
+        @endif
 
     </div>
 
@@ -112,6 +114,9 @@
 @endsection
 
 <script>
+const isDocente = @json(session('rol') === 'DOCENTE');
+const routeBoletasBTI = @json(route('boletas_bti'));
+const routeCapturaBGNE = @json(route('grupos.captura_calificaciones'));
 let modoGrupo = 'crear';
 let idGrupoActual = null;
 
@@ -203,7 +208,7 @@ function cargarNivelesAcademicos(idCentroTrabajo, selectedNivelId = null) {
         });
 }
 
-function initializeModalEvents(initialNivelId = null) {
+function initializeModalEvents(initialNivelId = null, selectedModalidad = null) {
     const form = document.getElementById('formGrupo');
     if (!form) return;
 
@@ -309,7 +314,7 @@ function initializeModalEvents(initialNivelId = null) {
         }
 
         // Cargar dinámicamente las modalidades del horario
-        const valActual = form.modalidadHorario ? form.modalidadHorario.value : null;
+        const valActual = selectedModalidad || (form.modalidadHorario ? form.modalidadHorario.value : null);
         ajustarModalidadHorario(isBgne, valActual);
 
         // Cargar dinámicamente los niveles académicos del CCT (Semestre para BTI / Trimestre para BGNE)
@@ -473,14 +478,27 @@ document.addEventListener("DOMContentLoaded", function() {
     function calcularProgresoPeriodo(g) {
         if (!g.fechaInicio) return { percent: 0, nivelText: '', inicioPeriodo: '—', finPeriodo: '—' };
 
-        let fechaInicioAbs = new Date(g.fechaInicio);
-        if (isNaN(fechaInicioAbs.getTime())) return { percent: 0, nivelText: '', inicioPeriodo: '—', finPeriodo: '—' };
+        const parseToUTCDate = (dateVal) => {
+            if (!dateVal) return null;
+            if (dateVal instanceof Date) {
+                return new Date(Date.UTC(dateVal.getFullYear(), dateVal.getMonth(), dateVal.getDate()));
+            }
+            const dateStr = String(dateVal).trim();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr) || /^\d{4}-\d{2}-\d{2}\s/.test(dateStr)) {
+                const parts = dateStr.substring(0, 10).split('-');
+                return new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
+            }
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return null;
+            if (dateStr.includes('GMT') || dateStr.endsWith('Z')) {
+                return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+            } else {
+                return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            }
+        };
 
-        let currentDate = new Date(Date.UTC(
-            fechaInicioAbs.getUTCFullYear(),
-            fechaInicioAbs.getUTCMonth(),
-            fechaInicioAbs.getUTCDate()
-        ));
+        let periodStartDate = parseToUTCDate(g.fechaInicio);
+        if (!periodStartDate) return { percent: 0, nivelText: '', inicioPeriodo: '—', finPeriodo: '—' };
 
         let idTipoPeriodo = g.id_tipoPeriodo;
         let idNivelActualDb = g.id_nivel_academico;
@@ -500,39 +518,41 @@ document.addEventListener("DOMContentLoaded", function() {
         const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
 
         const toDMY = (d) => {
+            if (!d || isNaN(d.getTime())) return '—';
             const dd = String(d.getUTCDate()).padStart(2, '0');
             const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
             const yyyy = d.getUTCFullYear();
             return `${dd}/${mm}/${yyyy}`;
         };
 
+        let periodEndDate;
+
         if (!isTrimestral) {
             // LÓGICA SEMESTRAL (Escolarizado / BTI)
-            // Respetamos estrictamente el semestre configurado en la base de datos
             let currentSemester = 1;
             if (idNivelActualDb !== null && idNivelActualDb !== undefined && idNivelActualDb >= 7) {
                 currentSemester = idNivelActualDb - 6;
             }
 
-            const startYear = fechaInicioAbs.getUTCFullYear();
-            const isFall = (currentSemester % 2 !== 0);
+            periodEndDate = parseToUTCDate(g.fechaFin);
             
-            // Calcular el año correspondiente a ese semestre
-            let periodYear = startYear;
-            if (isFall) {
-                periodYear = startYear + Math.floor((currentSemester - 1) / 2);
-            } else {
-                periodYear = startYear + Math.floor(currentSemester / 2);
-            }
-
-            // Fechas de inicio y fin del semestre activo
-            let periodStartDate, periodEndDate;
-            if (isFall) {
-                periodStartDate = new Date(Date.UTC(periodYear, 7, 1)); // 1 de Agosto
-                periodEndDate = new Date(Date.UTC(periodYear, 11, 31)); // 31 de Diciembre
-            } else {
-                periodStartDate = new Date(Date.UTC(periodYear, 1, 1)); // 1 de Febrero
-                periodEndDate = new Date(Date.UTC(periodYear, 6, 31)); // 31 de Julio
+            if (!periodEndDate) {
+                // Fallback si no tiene fechaFin
+                const startYear = periodStartDate.getUTCFullYear();
+                const isFall = (currentSemester % 2 !== 0);
+                let periodYear = startYear;
+                if (isFall) {
+                    periodYear = startYear + Math.floor((currentSemester - 1) / 2);
+                } else {
+                    periodYear = startYear + Math.floor(currentSemester / 2);
+                }
+                if (isFall) {
+                    periodStartDate = new Date(Date.UTC(periodYear, 7, 1)); // 1 de Agosto
+                    periodEndDate = new Date(Date.UTC(periodYear, 11, 31)); // 31 de Diciembre
+                } else {
+                    periodStartDate = new Date(Date.UTC(periodYear, 1, 1)); // 1 de Febrero
+                    periodEndDate = new Date(Date.UTC(periodYear, 6, 31)); // 31 de Julio
+                }
             }
 
             // Porcentaje de progreso
@@ -565,8 +585,9 @@ document.addEventListener("DOMContentLoaded", function() {
         // Cada trimestre dura 13 semanas (91 días)
         const weeksOffset = (currentTrimestre - 1) * 13;
         
-        const periodStartDate = new Date(currentDate.getTime() + (weeksOffset * 7 * 24 * 60 * 60 * 1000));
-        const periodEndDate = new Date(periodStartDate.getTime() + (13 * 7 * 24 * 60 * 60 * 1000) - (24 * 60 * 60 * 1000));
+        // periodStartDate es la fechaInicio original del primer trimestre
+        periodStartDate = new Date(periodStartDate.getTime() + (weeksOffset * 7 * 24 * 60 * 60 * 1000));
+        periodEndDate = new Date(periodStartDate.getTime() + (12 * 7 * 24 * 60 * 60 * 1000));
 
         // Porcentaje de progreso
         let percent = 0;
@@ -616,6 +637,44 @@ document.addEventListener("DOMContentLoaded", function() {
 
             const progreso = calcularProgresoPeriodo(grupo);
 
+            let btnCaptura = '';
+            if (grupo.id_centroTrabajo === 2) {
+                btnCaptura = `<a href="${routeCapturaBGNE}" class="btn btn-sm text-white" style="background: #10b981; border: none; border-radius: 6px; padding: 4px 8px; margin-right: 4px;" title="Captura Calificaciones BTI"><i class="fa-solid fa-pen-to-square"></i></a>`;
+            } else if (grupo.id_centroTrabajo === 3) {
+                btnCaptura = `<a href="${routeCapturaBGNE}" class="btn btn-sm text-white" style="background: #10b981; border: none; border-radius: 6px; padding: 4px 8px; margin-right: 4px;" title="Captura Calificaciones BGNE"><i class="fa-solid fa-pen-to-square"></i></a>`;
+            } else if (grupo.id_centroTrabajo === 1) {
+                btnCaptura = `<a href="${routeCapturaBGNE}" class="btn btn-sm text-white" style="background: #10b981; border: none; border-radius: 6px; padding: 4px 8px; margin-right: 4px;" title="Captura Calificaciones INF"><i class="fa-solid fa-pen-to-square"></i></a>`;
+            }
+
+            let actionButtons = '';
+            if (isDocente) {
+                actionButtons = `
+                    <button class="btn btn-ver btn-sm me-1" onclick="verGrupo(${grupo.id})" title="Detalles del grupo">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <a href="/grupos/${grupo.id}/alumnos" class="btn btn-sm text-white me-1" style="background: #0ea5e9; border: none; border-radius: 6px; padding: 4px 8px;" title="Ver alumnos del grupo">
+                        <i class="fa-solid fa-users"></i>
+                    </a>
+                    ${btnCaptura}
+                `;
+            } else {
+                actionButtons = `
+                    <button class="btn btn-ver btn-sm me-1" onclick="verGrupo(${grupo.id})" title="Detalles del grupo">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button class="btn btn-editar btn-sm me-1" onclick="editarGrupo(${grupo.id})" title="Editar grupo">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <a href="/grupos/${grupo.id}/alumnos" class="btn btn-sm text-white me-1" style="background: #0ea5e9; border: none; border-radius: 6px; padding: 4px 8px;" title="Ver alumnos del grupo">
+                        <i class="fa-solid fa-users"></i>
+                    </a>
+                    ${btnCaptura}
+                    <button class="btn btn-eliminar btn-sm" onclick="confirmarEliminarGrupo(${grupo.id})" title="Eliminar grupo">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+            }
+
             html += `
                 <tr>
                     <td><strong>${grupo.clave}</strong></td>
@@ -642,18 +701,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     <td><span class="fw-semibold text-secondary">${formatearFecha(grupo.fechaFin)}</span></td>
                     <td>${statusBadge}</td>
                     <td class="text-center">
-                        <button class="btn btn-ver btn-sm" onclick="verGrupo(${grupo.id})" title="Detalles del grupo">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
-                        <button class="btn btn-editar btn-sm" onclick="editarGrupo(${grupo.id})" title="Editar grupo">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <a href="/grupos/${grupo.id}/alumnos" class="btn btn-sm text-white" style="background: #0ea5e9; border: none; border-radius: 6px; padding: 4px 8px;" title="Ver alumnos del grupo">
-                            <i class="fa-solid fa-users"></i>
-                        </a>
-                        <button class="btn btn-eliminar btn-sm" onclick="confirmarEliminarGrupo(${grupo.id})" title="Eliminar grupo">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                        ${actionButtons}
                     </td>
                 </tr>
             `;
@@ -690,7 +738,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             form.modalidadHorario.value = g.modalidadHorario || '';
                             if (form.statusGrupo) form.statusGrupo.value = g.statusGrupo || 'ACTIVO';
 
-                            initializeModalEvents(g.id_nivel_academico);
+                            initializeModalEvents(g.id_nivel_academico, g.modalidadHorario);
 
                             document.querySelector('.modal-title').textContent = 'Editar Grupo';
                             const submitBtn = document.querySelector(
@@ -741,7 +789,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             form.modalidadHorario.value = g.modalidadHorario || '';
                             if (form.statusGrupo) form.statusGrupo.value = g.statusGrupo || 'ACTIVO';
 
-                            initializeModalEvents(g.id_nivel_academico);
+                            initializeModalEvents(g.id_nivel_academico, g.modalidadHorario);
                             setFormDisabled(true);
 
                             document.querySelector('.modal-title').textContent =

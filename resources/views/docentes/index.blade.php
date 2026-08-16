@@ -141,6 +141,21 @@
                             <input type="text" class="form-control form-control-premium" name="idBiometrico">
                         </div>
 
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre de Usuario</label>
+                            <input type="text" class="form-control form-control-premium" name="usuario" placeholder="Ej. juan.perez">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label" id="lblFormDocentePassword">Contraseña</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control form-control-premium" name="password" id="formDocentePassword" placeholder="Dejar en blanco para no cambiar">
+                                <button class="btn btn-outline-secondary" type="button" id="btnToggleFormDocentePassword" onclick="togglePasswordVisibility('formDocentePassword')">
+                                    <i class="fa-solid fa-eye" id="toggleIcon_formDocentePassword"></i>
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="col-12">
                             <label class="form-label">Observaciones</label>
                             <textarea class="form-control form-control-premium" name="observacionesDocente"
@@ -258,15 +273,16 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     function renderDocentes() {
-        const filtro = document.getElementById('buscador').value.toLowerCase();
+        const normalizeStr = str => (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const filtro = normalizeStr(document.getElementById('buscador').value);
 
         const filtradas = listaDocentes.filter(d =>
-            d.nombreDocente.toLowerCase().includes(filtro) ||
-            (d.apPaternoDocente && d.apPaternoDocente.toLowerCase().includes(filtro)) ||
-            (d.apMaternoDocente && d.apMaternoDocente.toLowerCase().includes(filtro)) ||
-            (d.correoDocente && d.correoDocente.toLowerCase().includes(filtro)) ||
-            (d.telefonoDocente && d.telefonoDocente.toLowerCase().includes(filtro)) ||
-            (d.nivelEstudios && d.nivelEstudios.toLowerCase().includes(filtro))
+            normalizeStr(d.nombreDocente).includes(filtro) ||
+            normalizeStr(d.apPaternoDocente).includes(filtro) ||
+            normalizeStr(d.apMaternoDocente).includes(filtro) ||
+            normalizeStr(d.correoDocente).includes(filtro) ||
+            normalizeStr(d.telefonoDocente).includes(filtro) ||
+            normalizeStr(d.nivelEstudios).includes(filtro)
         );
 
         const inicio = (paginaDocente - 1) * filasDocente;
@@ -360,6 +376,11 @@ document.addEventListener("DOMContentLoaded", function() {
         form.observacionesDocente.disabled = disabled;
         form.nivelEstudios.disabled = disabled;
         form.fechaNacimiento.disabled = disabled;
+        form.idBiometrico.disabled = disabled;
+        form.usuario.disabled = disabled;
+        form.password.disabled = disabled;
+        const btnTogglePass = document.getElementById('btnToggleFormDocentePassword');
+        if (btnTogglePass) btnTogglePass.disabled = disabled;
     }
 
     // Reset modal to create mode when Alta button is clicked
@@ -371,6 +392,8 @@ document.addEventListener("DOMContentLoaded", function() {
             const form = document.getElementById('formDocente');
             form.reset();
             setFormDisabled(false);
+            document.getElementById('lblFormDocentePassword').textContent = 'Contraseña';
+            form.password.placeholder = 'Ingrese contraseña';
             document.querySelector('.modal-title').textContent = 'Alta Docente';
             const submitBtn = document.querySelector('#formDocente button[type="submit"]');
             submitBtn.style.display = 'block';
@@ -397,6 +420,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     form.observacionesDocente.value = d.observacionesDocente || '';
                     form.nivelEstudios.value = d.nivelEstudios || '';
                     form.fechaNacimiento.value = d.fechaNacimiento || '';
+                    form.idBiometrico.value = d.idBiometrico || '';
+                    form.usuario.value = d.usuario || '';
+                    form.password.value = '';
+                    document.getElementById('lblFormDocentePassword').textContent = 'Contraseña';
+                    form.password.placeholder = 'No asignada';
 
                     setFormDisabled(true);
 
@@ -444,6 +472,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     form.observacionesDocente.value = d.observacionesDocente || '';
                     form.nivelEstudios.value = d.nivelEstudios || '';
                     form.fechaNacimiento.value = d.fechaNacimiento || '';
+                    form.idBiometrico.value = d.idBiometrico || '';
+                    form.usuario.value = d.usuario || '';
+                    form.password.value = '';
+                    document.getElementById('lblFormDocentePassword').textContent = 'Nueva Contraseña';
+                    form.password.placeholder = 'Dejar en blanco para conservar actual';
 
                     setFormDisabled(false);
 
@@ -539,7 +572,10 @@ document.addEventListener("DOMContentLoaded", function() {
             statusDocente: this.statusDocente.value,
             observacionesDocente: this.observacionesDocente.value,
             nivelEstudios: this.nivelEstudios.value,
-            fechaNacimiento: this.fechaNacimiento.value
+            fechaNacimiento: this.fechaNacimiento.value,
+            idBiometrico: this.idBiometrico.value,
+            usuario: this.usuario.value,
+            password: this.password.value
         };
 
         const url = modoDocente === 'editar' ? `/docentes/${idDocenteActual}` : '/docentes';
