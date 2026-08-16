@@ -21,15 +21,10 @@ use App\Http\Controllers\CalificacionesController;
 use App\Http\Controllers\HorariosController;
 use App\Http\Controllers\KardexCBgneController;
 use App\Http\Controllers\AsistenciaDocenteController;
-<<<<<<< HEAD
 use App\Http\Controllers\PermisosCapturaController;
 use App\Http\Controllers\PersonalController;
 
 
-=======
-use App\Http\Controllers\EstadoCuentaController;
-use App\Http\Controllers\QrpController;
->>>>>>> feature/RamaAlma
 
 
 
