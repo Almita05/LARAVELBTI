@@ -23,27 +23,39 @@ class AlumnoController extends Controller
 }
 
    public function lista(Request $request)
-{
-    $url = config('services.api.base_url') . '/alumnos';
+   {
+       $url = config('services.api.base_url') . '/alumnos';
 
-    $response = Http::get($url, [
-        'page' => $request->page ?? 1,
-        'limit' => $request->limit ?? 5,
-        'search' => $request->search ?? '',
-        'generacion' => $request->generacion ?? ''
-    ]);
+       $params = [
+           'page' => $request->page ?? 1,
+           'limit' => $request->limit ?? 10,
+           'search' => $request->search ?? '',
+           'generacion' => $request->generacion ?? ''
+       ];
 
-    if ($response->failed()) {
-    return response()->json([
-        'data' => [],
-        'total' => 0,
-        'page' => 1,
-        'total_pages' => 1
-    ]);
-}
+       if ($request->filled('id_centro_trabajo')) {
+           $params['idCentroTrabajo'] = $request->id_centro_trabajo;
+       }
+       if ($request->filled('status_alumno')) {
+           $params['statusAlumno'] = $request->status_alumno;
+       }
+       if ($request->filled('order')) {
+           $params['order'] = $request->order;
+       }
 
-    return $response->json();
-}
+       $response = Http::get($url, $params);
+
+       if ($response->failed()) {
+           return response()->json([
+               'data' => [],
+               'total' => 0,
+               'page' => 1,
+               'total_pages' => 1
+           ]);
+       }
+
+       return $response->json();
+   }
 
 
 public function modalAlta()
@@ -51,7 +63,13 @@ public function modalAlta()
     $responseCentros = Http::get(config('services.api.base_url') . '/centroTrabajo');
     $centrosTrabajo = $responseCentros->successful() ? $responseCentros->json() : [];
 
-    return view('alumnos.modalAlta', compact('centrosTrabajo'));
+    $responseGrupos = Http::get(config('services.api.base_url') . '/grupos');
+    $grupos = $responseGrupos->successful() ? ($responseGrupos->json()['data'] ?? []) : [];
+
+    $responseGens = Http::get(config('services.api.base_url') . '/generaciones');
+    $generaciones = $responseGens->successful() ? $responseGens->json() : [];
+
+    return view('alumnos.modalAlta', compact('centrosTrabajo', 'grupos', 'generaciones'));
 }
 
 public function getCentrosTrabajo()
@@ -101,6 +119,24 @@ public function store(Request $request)
     }
 
     $resData = $response->json();
+
+    // Check if the API returned an error message inside the JSON response
+    if (isset($resData['error'])) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al guardar alumno: ' . $resData['error'],
+            'data' => $resData
+        ], 400);
+    }
+
+    if (isset($resData['success']) && !$resData['success']) {
+        return response()->json([
+            'success' => false,
+            'message' => $resData['mensaje'] ?? ($resData['message'] ?? 'Error al guardar alumno'),
+            'data' => $resData
+        ], 400);
+    }
+
     return response()->json([
         'success' => true,
         'message' => $resData['mensaje'] ?? 'Alumno guardado correctamente',
@@ -179,7 +215,12 @@ public function update(Request $request, $id)
         "folioCertificado" => $request->folioCertificado ?: null,
         "curp" => $request->curp ?: null,
         "fechaRecogioCertificado" => $request->fechaRecogioCertificado ?: null,
-        "recogioCertificado" => $request->recogioCertificado ?: null
+        "recogioCertificado" => $request->recogioCertificado ?: null,
+        "id_nivel_ingreso" => $request->id_nivel_academico ? (int)$request->id_nivel_academico : ($request->id_nivel_ingreso ? (int)$request->id_nivel_ingreso : null),
+        "certificado_incompleto" => $request->certificadoIncompleto ?: null,
+        "fecha_entrega_certificado" => $request->fechaEntregaCertificado ?: ($request->fechaEntregaDocumentos ?: null),
+        "trae_boleta" => $request->traeBoleta ?: 'SI',
+        "estado_pago_equivalencia" => $request->estadoPagoEquivalencia ?: 'PENDIENTE'
     ]);
 
     if ($response->failed()) {

@@ -31,34 +31,67 @@
 
     <div class="glass-card">
 
-        <div class="glass-header p-3 d-flex justify-content-between align-items-center">
-
-            <h5 class="mb-0" id="tituloListaAlumnos">
-                @if(isset($grupoId))
-                    Alumnos del Grupo: <strong>{{ $grupoClave }}</strong>
-                @else
-                    Lista de alumnos
-                @endif
-            </h5>
-
-            <div class="input-group w-25" id="contenedorFiltroGeneracion">
-                <select id="filtroBGNE" class="form-select glass-input">
-                    <option value="" class="valueGeneraciones">Todas las generaciones</option>
-                    @foreach($generaciones as $generacion)
-                    <option value="{{ $generacion['generacion'] }}" class="valueGeneraciones">
-                        Generación {{ $generacion['generacion'] }} - {{ $generacion['nombreGeneracion'] }}
-                    </option>
-                    @endforeach
-                </select>
-                <button class="btn filtro-btn" type="button">
-                    <i class="fa-solid fa-filter"></i>
-                </button>
-            </div>
-
-            <!-- Búsqueda por texto -->
-            <input type="text" id="buscadorAlumnos" class="form-control glass-input w-25"
-                placeholder="Buscar alumnos...">
-
+        <div class="glass-header p-3">
+            @if(isset($grupoId))
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" id="tituloListaAlumnos">
+                        Alumnos del Grupo: <strong>{{ $grupoClave }}</strong>
+                    </h5>
+                </div>
+            @else
+                <div class="row g-3 align-items-end">
+                    <!-- Título -->
+                    <div class="col-md-2">
+                        <h5 class="mb-0" id="tituloListaAlumnos" style="font-weight:600; color:#334155; font-size: 1.1rem;">Lista de alumnos</h5>
+                    </div>
+                    <!-- Buscador -->
+                    <div class="col-md-3">
+                        <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">Buscar Alumno</label>
+                        <input type="text" id="buscadorAlumnos" class="form-control glass-input w-100" placeholder="Buscar alumnos..." style="min-height:38px; font-size:0.85rem;">
+                    </div>
+                    <!-- CCT -->
+                    <div class="col-md-2">
+                        <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">CCT</label>
+                        <select id="filtroCCT" class="form-select glass-input w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
+                            <option value="">-- Todos --</option>
+                            <option value="3">BGNE</option>
+                            <option value="2">BTI</option>
+                            <option value="1">INF. Y COMP.</option>
+                        </select>
+                    </div>
+                    <!-- Generación -->
+                    <div class="col-md-2" id="contenedorFiltroGeneracion">
+                        <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">Generación</label>
+                        <select id="filtroBGNE" class="form-select glass-input w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
+                            <option value="" class="valueGeneraciones">Todas</option>
+                            @foreach($generaciones as $generacion)
+                            <option value="{{ $generacion['generacion'] }}" class="valueGeneraciones">
+                                Gen {{ $generacion['generacion'] }} - {{ $generacion['nombreGeneracion'] }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <!-- Estado -->
+                    <div class="col-md-2">
+                        <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">Estado</label>
+                        <select id="filtroStatus" class="form-select glass-input w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
+                            <option value="">-- Todos --</option>
+                            <option value="ACTIVO">ACTIVO</option>
+                            <option value="INACTIVO">INACTIVO</option>
+                            <option value="CERTIFICADO">CERTIFICADO</option>
+                            <option value="BAJA">BAJA</option>
+                        </select>
+                    </div>
+                    <!-- Ordenación -->
+                    <div class="col-md-1">
+                        <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">Orden ID</label>
+                        <select id="filtroOrden" class="form-select glass-input w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
+                            <option value="ASC">Menor-Mayor</option>
+                            <option value="DESC">Mayor-Menor</option>
+                        </select>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <div class="table-responsive">
@@ -262,7 +295,19 @@ function verificarEdadBGNE() {
     const edad = calcularEdadExacta(inputFechaNac.value);
     if (!edad) return;
 
-    const ctNombre = (selectCCT && selectCCT.selectedIndex >= 0 ? selectCCT.options[selectCCT.selectedIndex].textContent : '').toUpperCase();
+    const selectedCCTVal = selectCCT ? selectCCT.value : '';
+
+    if (!selectedCCTVal) {
+        // CCT no seleccionado: mostrar solo la edad calculada de manera neutral
+        if (txtEdad) {
+            txtEdad.innerHTML = `<span class="text-secondary"><i class="bi bi-calendar3 me-1"></i>Edad calculada: ${edad.anos} años, ${edad.meses} meses</span>`;
+        }
+        if (alertaBGNE) alertaBGNE.style.display = 'none';
+        return;
+    }
+
+    const selectedOpt = selectCCT.options[selectCCT.selectedIndex];
+    const ctNombre = selectedOpt ? selectedOpt.textContent.toUpperCase() : '';
     const isBgne = ctNombre.includes('BGNE');
 
     if (txtEdad) {
@@ -293,6 +338,19 @@ function verificarEdadBGNE() {
 function actualizarResumenYSemaforo() {
     const form = document.getElementById('formAlumno');
     if (!form) return;
+
+    // 0. Nombre del Alumno
+    const inputNombre = form.querySelector('[name="nombre"]');
+    const inputApPaterno = form.querySelector('[name="apPaterno"]');
+    const inputApMaterno = form.querySelector('[name="apMaterno"]');
+    const sumNombreAlumno = form.querySelector('#sumNombreAlumno');
+    if (sumNombreAlumno) {
+        let nom = inputNombre ? inputNombre.value.trim() : '';
+        let pat = inputApPaterno ? inputApPaterno.value.trim() : '';
+        let mat = inputApMaterno ? inputApMaterno.value.trim() : '';
+        let completo = `${nom} ${pat} ${mat}`.trim().toUpperCase();
+        sumNombreAlumno.textContent = completo || '—';
+    }
 
     const selectCCT = form.querySelector('#selectCCT');
     const selectNivel = form.querySelector('#selectNivelAcademico');
@@ -330,10 +388,82 @@ function actualizarResumenYSemaforo() {
     if (sumPeriodo) sumPeriodo.textContent = periodoTexto;
 
     // 3. Día y Jornada
-    const diaTexto = selectDia && selectDia.value ? selectDia.options[selectDia.selectedIndex].text.split('(')[0].trim() : '—';
-    const jornadaTexto = selectJornada && selectJornada.value ? selectJornada.options[selectJornada.selectedIndex].text : '—';
+    let turnoAsistencia = '—';
+    const inputGrupoVal = form.querySelector('#inputGrupoSeleccionado');
+    const grupoModalidad = inputGrupoVal ? inputGrupoVal.dataset.modalidad : '';
+    
+    if (grupoModalidad) {
+        // Si hay un grupo seleccionado, usar su modalidad de horario formateada
+        const modUpper = grupoModalidad.toUpperCase();
+        if (modUpper.includes('SÁBADO') || modUpper.includes('SABADO')) {
+            if (modUpper.includes('MAÑANA') || modUpper.includes('MANANA')) {
+                turnoAsistencia = 'Sábado (Matutino)';
+            } else if (modUpper.includes('TARDE')) {
+                turnoAsistencia = 'Sábado (Vespertino)';
+            } else {
+                turnoAsistencia = `Sábado (${grupoModalidad})`;
+            }
+        } else if (modUpper.includes('DOMINGO')) {
+            if (modUpper.includes('MAÑANA') || modUpper.includes('MANANA')) {
+                turnoAsistencia = 'Domingo (Matutino)';
+            } else {
+                turnoAsistencia = `Domingo (${grupoModalidad})`;
+            }
+        } else if (modUpper.includes('MATUTINO')) {
+            turnoAsistencia = 'Lunes a Viernes (Matutino)';
+        } else if (modUpper.includes('VESPERTINO')) {
+            turnoAsistencia = 'Lunes a Viernes (Vespertino)';
+        } else {
+            turnoAsistencia = grupoModalidad;
+        }
+    } else {
+        // Si no hay grupo seleccionado, usar los dropdowns del formulario
+        const diaTexto = selectDia && selectDia.value ? selectDia.options[selectDia.selectedIndex].text.split('(')[0].trim() : '—';
+        const jornadaTexto = selectJornada && selectJornada.value ? selectJornada.options[selectJornada.selectedIndex].text : '—';
+        if (diaTexto !== '—' || jornadaTexto !== '—') {
+            if (diaTexto !== '—' && jornadaTexto !== '—') {
+                turnoAsistencia = `${diaTexto} (${jornadaTexto})`;
+            } else {
+                turnoAsistencia = diaTexto !== '—' ? diaTexto : jornadaTexto;
+            }
+        }
+    }
+    
     if (sumDiaJornada) {
-        sumDiaJornada.textContent = (diaTexto !== '—' || jornadaTexto !== '—') ? `${diaTexto} (${jornadaTexto})` : '—';
+        sumDiaJornada.textContent = turnoAsistencia;
+    }
+
+    // 3.1 Fecha Inicio y Fin Tentativa del Grupo
+    const sumFechaInicioGrupo = form.querySelector('#sumFechaInicioGrupo');
+    const sumFechaFinTentativa = form.querySelector('#sumFechaFinTentativa');
+    if (sumFechaInicioGrupo && sumFechaFinTentativa) {
+        const inputGrupo = form.querySelector('#inputGrupoSeleccionado');
+        const fechaInicioStr = inputGrupo ? inputGrupo.dataset.fechaInicio : '';
+        
+        if (fechaInicioStr) {
+            sumFechaInicioGrupo.textContent = formatearFechaDisplay(fechaInicioStr);
+            
+            // Calcular término tentativo
+            const parts = fechaInicioStr.split('-');
+            const baseDate = new Date(parts[0], parts[1] - 1, parts[2]);
+            baseDate.setHours(0, 0, 0, 0);
+            
+            const optNivel = selectNivel && selectNivel.selectedIndex >= 0 ? selectNivel.options[selectNivel.selectedIndex] : null;
+            const tipoNivel = optNivel ? (optNivel.dataset.tipo || 'TRIMESTRE') : 'TRIMESTRE';
+            const semanasPorPeriodo = (tipoNivel === 'SEMESTRE') ? 28 : 13;
+            const totalSemanas = 6 * semanasPorPeriodo;
+            
+            const endDate = new Date(baseDate);
+            endDate.setDate(baseDate.getDate() + (totalSemanas * 7));
+            
+            const yyyy = endDate.getFullYear();
+            const mm = String(endDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(endDate.getDate()).padStart(2, '0');
+            sumFechaFinTentativa.textContent = `${dd}/${mm}/${yyyy}`;
+        } else {
+            sumFechaInicioGrupo.textContent = '—';
+            sumFechaFinTentativa.textContent = '—';
+        }
     }
 
     // 4. Grupo Asignado SEP
@@ -369,7 +499,7 @@ function actualizarResumenYSemaforo() {
     const sumDetalleTrayectoria = form.querySelector('#sumDetalleTrayectoria');
     
     if (sumAsistePresencialTexto) {
-        sumAsistePresencialTexto.textContent = esPresencial ? 'SÍ (Trayectoria Cruzada)' : 'Regular (Asistencia directa)';
+        sumAsistePresencialTexto.textContent = esPresencial ? 'SÍ (Trayectoria Cruzada)' : 'Presencial';
     }
     if (sumDetalleTrayectoria) {
         let detalle = esPresencial ? `Plantel ${cctPresencialTexto} (Grupo: ${grupoPresencialVal}` : 'Mismo CCT Administrativo';
@@ -407,10 +537,17 @@ function actualizarResumenYSemaforo() {
     if (listaPendientes) {
         const pendientes = [];
         
+        const selectTraeBoleta = form.querySelector('#selectTraeBoleta');
+        const traeBoleta = selectTraeBoleta && selectTraeBoleta.value === 'SI';
+
+        if (traeBoleta) {
+            pendientes.push('<div>• <strong>Trámite de Parcial:</strong> Alumno cuenta con boleta parcial. Dar seguimiento al trámite y pago de su parcial ante la autoridad educativa.</div>');
+        }
+
         if (requiereEquiv && pagoEquiv === 'PAGADO') {
             pendientes.push('<div>• <strong>Trámite de Equivalencia:</strong> Pago recibido. Pendiente gestionar dictamen ante la autoridad educativa.</div>');
         } else if (requiereEquiv && pagoEquiv === 'PENDIENTE') {
-            pendientes.push('<div>• <strong>Trámite de Equivalencia:</strong> Pendiente de pago y recepción de documentación de procedencia.</div>');
+            pendientes.push('<div>• <strong>Trámite de Equivalencia:</strong> Pendiente de pago de equivalencia, entrega de certificado parcial, pendiente de trámite de equivalencia.</div>');
         }
 
         if (filasMaterias.length > 0) {
@@ -424,7 +561,11 @@ function actualizarResumenYSemaforo() {
 
         if (estadoSep === 'PENDIENTE') {
             if (isBgne && edad && edad.esMenor16Medio) {
-                pendientes.push(`<div>• <strong>Alta oficial ante SEP (BGNE):</strong> Alumno menor a 16.5 años (${edad.anos} años, ${edad.meses} meses). Cursa en plantel; el personal administrativo debe tramitar su alta oficial ante SEP una vez cumplida la edad reglamentaria.</div>`);
+                if (traeBoleta) {
+                    pendientes.push(`<div>• <strong>Alta oficial ante SEP (BGNE):</strong> Alumno menor a 16.5 años (${edad.anos} años, ${edad.meses} meses) pero cuenta con boleta parcial. Dar seguimiento al trámite de validación y reingreso de su parcial ante la SEP.</div>`);
+                } else {
+                    pendientes.push(`<div>• <strong>Alta oficial ante SEP (BGNE):</strong> Alumno menor a 16.5 años (${edad.anos} años, ${edad.meses} meses). Cursa en plantel; el personal administrativo debe tramitar su alta oficial ante SEP una vez cumplida la edad reglamentaria.</div>`);
+                }
             } else {
                 pendientes.push(`<div>• <strong>Alta oficial ante SEP (${cctTexto !== '—' ? cctTexto : 'Plantel'}):</strong> Trámite de alta y registro oficial del alumno ante la SEP pendiente de realizar por el personal administrativo.</div>`);
             }
@@ -593,38 +734,98 @@ function buscarYRecomendarGrupos() {
 
             if (alertaSinGrupo) alertaSinGrupo.style.display = 'none';
 
-            // Grupo recomendado: el primero con fecha de inicio futura
-            const recomendado = grupos[0];
+            // 0. Obtener información del nivel seleccionado
+            const selectedNivelOpt = selectNivel && selectNivel.selectedIndex >= 0 ? selectNivel.options[selectNivel.selectedIndex] : null;
+            const numeroNivel = selectedNivelOpt ? parseInt(selectedNivelOpt.dataset.numero) || 1 : 1;
+            const tipoNivel = selectedNivelOpt ? (selectedNivelOpt.dataset.tipo || 'TRIMESTRE') : 'TRIMESTRE';
+
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+
+            const optCCT = selectCCT && selectCCT.selectedIndex >= 0 ? selectCCT.options[selectCCT.selectedIndex] : null;
+            const ctNombre = optCCT ? optCCT.textContent.toUpperCase() : '';
+            const isBgne = ctNombre.includes('BGNE');
+            const maxDaysPast = isBgne ? 14 : 30; // 2 semanas (14 días) para BGNE, 1 mes (30 días) para BTI
+
+            // Calcular fecha de inicio del nivel para cada grupo
+            const gruposConFechaNivel = grupos.map(g => {
+                let fInicioNivel = null;
+                if (g.fechaInicio) {
+                    const parts = g.fechaInicio.split('-');
+                    if (parts.length === 3) {
+                        const baseDate = new Date(parts[0], parts[1] - 1, parts[2]);
+                        baseDate.setHours(0, 0, 0, 0);
+                        
+                        const semanasPorPeriodo = (tipoNivel === 'SEMESTRE') ? 28 : 13;
+                        const semanasAdicionales = (numeroNivel - 1) * semanasPorPeriodo;
+                        
+                        fInicioNivel = new Date(baseDate);
+                        fInicioNivel.setDate(baseDate.getDate() + (semanasAdicionales * 7));
+                    }
+                }
+                return {
+                    ...g,
+                    fechaInicioNivelObj: fInicioNivel,
+                    fechaInicioNivelStr: fInicioNivel ? fInicioNivel.toISOString().split('T')[0] : g.fechaInicio
+                };
+            });
+
+            // Encontrar el grupo recomendado usando la fecha del nivel
+            const gruposRecomendables = gruposConFechaNivel.filter(g => {
+                const fInicio = g.fechaInicioNivelObj;
+                if (!fInicio) return false;
+
+                if (fInicio >= hoy) {
+                    return true; // Próximos a empezar
+                } else {
+                    // Ya empezaron
+                    const diffTime = hoy - fInicio;
+                    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                    return diffDays <= maxDaysPast; // máximo 14 días para BGNE, 30 días para BTI
+                }
+            });
+
+            let recomendado = null;
+            if (gruposRecomendables.length > 0) {
+                // Ordenar por cercanía a hoy
+                gruposRecomendables.sort((a, b) => {
+                    return Math.abs(a.fechaInicioNivelObj - hoy) - Math.abs(b.fechaInicioNivelObj - hoy);
+                });
+                recomendado = gruposRecomendables[0];
+            }
+
             if (boxRecomendado && recomendado) {
                 boxRecomendado.style.display = 'block';
                 form.querySelector('#txtRecomendadoClave').textContent = recomendado.clave;
                 form.querySelector('#txtRecomendadoMeta').innerHTML = `
                     <strong>Modalidad:</strong> ${recomendado.modalidadHorario || 'General'} | 
                     <strong>Nivel:</strong> ${recomendado.nombre_nivel || 'Nivel ' + nivelId} | 
-                    <strong>Fecha Inicio:</strong> ${formatearFechaDisplay(recomendado.fechaInicio)}
+                    <strong>Fecha Inicio Nivel:</strong> ${formatearFechaDisplay(recomendado.fechaInicioNivelStr)}
                 `;
                 const btnRec = form.querySelector('#btnElegirRecomendado');
                 if (btnRec) {
                     btnRec.onclick = function() {
-                        elegirGrupoFinal(recomendado.id, recomendado.clave);
+                        elegirGrupoFinal(recomendado.id, recomendado.clave, recomendado.modalidadHorario, recomendado.fechaInicio);
                     };
                 }
+            } else if (boxRecomendado) {
+                boxRecomendado.style.display = 'none';
             }
 
-            // Tabla de todos los grupos
+            // Tabla de todos los grupos (mostrando la fecha de inicio del nivel en la columna Fecha Inicio)
             if (boxTabla && tbody) {
                 boxTabla.style.display = 'block';
                 let htmlRows = '';
-                grupos.forEach(g => {
+                gruposConFechaNivel.forEach(g => {
                     htmlRows += `
                         <tr>
                             <td class="fw-bold text-primary">${g.clave}</td>
                             <td>${g.modalidadHorario || 'Regular'}</td>
                             <td>${g.nombre_nivel || 'N/A'}</td>
-                            <td>${formatearFechaDisplay(g.fechaInicio)}</td>
+                            <td>${formatearFechaDisplay(g.fechaInicioNivelStr)}</td>
                             <td class="text-end">
                                 <button type="button" class="btn btn-xs btn-outline-primary py-1 px-2 btn-elegir-grupo-tabla" 
-                                    data-id="${g.id}" data-clave="${g.clave}">
+                                    data-id="${g.id}" data-clave="${g.clave}" data-modalidad="${g.modalidadHorario || ''}" data-fecha-inicio="${g.fechaInicio || ''}">
                                     Seleccionar
                                 </button>
                             </td>
@@ -643,14 +844,18 @@ function buscarYRecomendarGrupos() {
         });
 }
 
-function elegirGrupoFinal(idGrupo, claveGrupo) {
+function elegirGrupoFinal(idGrupo, claveGrupo, modalidad, fechaInicio) {
     const form = document.getElementById('formAlumno');
     if (!form) return;
     const inputGrupo = form.querySelector('#inputGrupoSeleccionado');
     const badgeElegido = form.querySelector('#badgeGrupoElegidoFinal');
     const txtElegido = form.querySelector('#txtNombreGrupoElegido');
 
-    if (inputGrupo) inputGrupo.value = idGrupo;
+    if (inputGrupo) {
+        inputGrupo.value = idGrupo;
+        inputGrupo.dataset.modalidad = modalidad || '';
+        inputGrupo.dataset.fechaInicio = fechaInicio || '';
+    }
     if (txtElegido) txtElegido.textContent = claveGrupo;
     if (badgeElegido) badgeElegido.style.display = 'block';
 
@@ -1057,8 +1262,12 @@ window.initModalAlumnoDinamico = function(al) {
                 const inputGrupo = form.querySelector('#inputGrupoSeleccionado');
                 const badgeElegido = form.querySelector('#badgeGrupoElegidoFinal');
                 const txtElegido = form.querySelector('#txtNombreGrupoElegido');
-                if (inputGrupo) inputGrupo.value = grupoIdAl;
-                if (txtElegido) txtElegido.textContent = al.claveGrupo || al.nombreGrupo || `Grupo #${grupoIdAl}`;
+                if (inputGrupo) {
+                    inputGrupo.value = grupoIdAl;
+                    inputGrupo.dataset.modalidad = al.jornadaHorario || al.modalidadHorario || '';
+                    inputGrupo.dataset.fechaInicio = al.fechaInicioGrupo || al.fechaInicio || '';
+                }
+                if (txtElegido) txtElegido.textContent = al.nombreGrupoTexto || al.claveGrupo || al.nombreGrupo || `Grupo #${grupoIdAl}`;
                 if (badgeElegido) badgeElegido.style.display = 'block';
             }
 
@@ -1111,10 +1320,13 @@ window.initModalAlumnoDinamico = function(al) {
     actualizarResumenYSemaforo();
 };
 
-// Listener de input para actualizar edad en tiempo real al escribir
+// Listener de input para actualizar edad y resumen en tiempo real al escribir
 document.addEventListener('input', function(e) {
-    if (e.target.name === 'fechaNacimiento' || e.target.id === 'inputFechaNacimiento') {
-        verificarEdadBGNE();
+    const form = document.getElementById('formAlumno');
+    if (form && form.contains(e.target)) {
+        if (e.target.name === 'fechaNacimiento' || e.target.id === 'inputFechaNacimiento') {
+            verificarEdadBGNE();
+        }
         actualizarResumenYSemaforo();
     }
 });
@@ -1127,7 +1339,7 @@ document.addEventListener('click', function(e) {
     // Seleccionar grupo de la tabla
     if (e.target.classList.contains('btn-elegir-grupo-tabla') || e.target.closest('.btn-elegir-grupo-tabla')) {
         const btn = e.target.classList.contains('btn-elegir-grupo-tabla') ? e.target : e.target.closest('.btn-elegir-grupo-tabla');
-        elegirGrupoFinal(btn.dataset.id, btn.dataset.clave);
+        elegirGrupoFinal(btn.dataset.id, btn.dataset.clave, btn.dataset.modalidad, btn.dataset.fechaInicio);
     }
 
     // Quitar grupo seleccionado
@@ -1154,11 +1366,87 @@ document.addEventListener('click', function(e) {
             <td><input type="number" name="materiasPendientesPeriodo[]" class="form-control form-control-sm" placeholder="Periodo" min="1" max="6"></td>
             <td><input type="number" step="0.1" name="materiasPendientesCalif[]" class="form-control form-control-sm" placeholder="Calificación"></td>
             <td class="text-center">
-                <button type="button" class="btn btn-sm btn-link text-danger p-0 btn-eliminar-materia-pend"><i class="bi bi-trash"></i></button>
+                <div class="d-flex align-items-center justify-content-center gap-2">
+                    <button type="button" class="btn btn-sm btn-link text-success p-0 btn-confirmar-materia-pend" title="Confirmar materia"><i class="bi bi-check-lg" style="font-size: 1.25rem;"></i></button>
+                    <button type="button" class="btn btn-sm btn-link text-danger p-0 btn-eliminar-materia-pend" title="Eliminar"><i class="bi bi-trash"></i></button>
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
         actualizarResumenYSemaforo();
+    }
+
+    // Confirmar materia pendiente
+    if (e.target.classList.contains('btn-confirmar-materia-pend') || e.target.closest('.btn-confirmar-materia-pend')) {
+        const btn = e.target.classList.contains('btn-confirmar-materia-pend') ? e.target : e.target.closest('.btn-confirmar-materia-pend');
+        const tr = btn.closest('tr');
+        if (tr) {
+            const inputNombre = tr.querySelector('input[name="materiasPendientesNombre[]"]');
+            const inputPeriodo = tr.querySelector('input[name="materiasPendientesPeriodo[]"]');
+            const inputCalif = tr.querySelector('input[name="materiasPendientesCalif[]"]');
+            
+            if (inputNombre) {
+                const nombreVal = inputNombre.value.trim();
+                const periodoVal = inputPeriodo ? inputPeriodo.value.trim() : '';
+                const califVal = inputCalif ? inputCalif.value.trim() : '';
+                
+                if (!nombreVal) {
+                    inputNombre.focus();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Campo Requerido',
+                        text: 'Por favor, introduce el nombre de la materia.',
+                        confirmButtonColor: '#317D92'
+                    });
+                    return;
+                }
+                
+                tr.innerHTML = `
+                    <td>
+                        <span class="text-dark fw-semibold">${nombreVal}</span>
+                        <input type="hidden" name="materiasPendientesNombre[]" value="${nombreVal}">
+                    </td>
+                    <td>
+                        <span>${periodoVal ? (periodoVal + '°') : '—'}</span>
+                        <input type="hidden" name="materiasPendientesPeriodo[]" value="${periodoVal}">
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary" style="font-size: 0.8rem; padding: 4px 8px; border-radius: 6px;">${califVal || '—'}</span>
+                        <input type="hidden" name="materiasPendientesCalif[]" value="${califVal}">
+                    </td>
+                    <td class="text-center">
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <button type="button" class="btn btn-sm btn-link text-primary p-0 btn-editar-materia-pend" title="Editar"><i class="bi bi-pencil"></i></button>
+                            <button type="button" class="btn btn-sm btn-link text-danger p-0 btn-eliminar-materia-pend" title="Eliminar"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+                actualizarResumenYSemaforo();
+            }
+        }
+    }
+
+    // Editar materia pendiente
+    if (e.target.classList.contains('btn-editar-materia-pend') || e.target.closest('.btn-editar-materia-pend')) {
+        const btn = e.target.classList.contains('btn-editar-materia-pend') ? e.target : e.target.closest('.btn-editar-materia-pend');
+        const tr = btn.closest('tr');
+        if (tr) {
+            const nombreVal = tr.querySelector('input[name="materiasPendientesNombre[]"]')?.value || '';
+            const periodoVal = tr.querySelector('input[name="materiasPendientesPeriodo[]"]')?.value || '';
+            const califVal = tr.querySelector('input[name="materiasPendientesCalif[]"]')?.value || '';
+            
+            tr.innerHTML = `
+                <td><input type="text" name="materiasPendientesNombre[]" class="form-control form-control-sm" placeholder="Nombre de la materia" value="${nombreVal}" required></td>
+                <td><input type="number" name="materiasPendientesPeriodo[]" class="form-control form-control-sm" placeholder="Periodo" min="1" max="6" value="${periodoVal}"></td>
+                <td><input type="number" step="0.1" name="materiasPendientesCalif[]" class="form-control form-control-sm" placeholder="Calificación" value="${califVal}"></td>
+                <td class="text-center">
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                        <button type="button" class="btn btn-sm btn-link text-success p-0 btn-confirmar-materia-pend" title="Confirmar materia"><i class="bi bi-check-lg" style="font-size: 1.25rem;"></i></button>
+                        <button type="button" class="btn btn-sm btn-link text-danger p-0 btn-eliminar-materia-pend" title="Eliminar"><i class="bi bi-trash"></i></button>
+                    </div>
+                </td>
+            `;
+        }
     }
 
     // Eliminar fila de materia pendiente
@@ -1171,6 +1459,26 @@ document.addEventListener('click', function(e) {
                 tbody.innerHTML = '<tr class="fila-vacia-materias"><td colspan="4" class="text-center text-muted py-2">Sin materias pendientes registradas.</td></tr>';
             }
             actualizarResumenYSemaforo();
+        }
+    }
+});
+
+// Evitar que la tecla Enter envíe el formulario principal y simular confirmación de materia
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        const form = document.getElementById('formAlumno');
+        if (form && form.contains(e.target) && e.target.tagName === 'INPUT') {
+            e.preventDefault();
+            
+            // Si están escribiendo en una fila de materias pendientes, simular clic en confirmar
+            if (e.target.name && e.target.name.startsWith('materiasPendientes')) {
+                const tr = e.target.closest('tr');
+                const btnConfirmar = tr ? tr.querySelector('.btn-confirmar-materia-pend') : null;
+                if (btnConfirmar) {
+                    btnConfirmar.click();
+                }
+            }
+            return false;
         }
     }
 });
@@ -1280,6 +1588,18 @@ window.verAlumno = function(id) {
                             }
                         });
 
+                        // Procesar boleta parcial
+                        let obs = al.observaciones || '';
+                        let traeBoleta = 'NO';
+                        if (obs.includes('[BOLETA_PARCIAL]')) {
+                            traeBoleta = 'SI';
+                            obs = obs.replace('[BOLETA_PARCIAL]', '').trim();
+                        }
+                        const selectTraeBoleta = form.querySelector('#selectTraeBoleta');
+                        if (selectTraeBoleta) selectTraeBoleta.value = traeBoleta;
+                        const textareaObs = form.querySelector('[name="observaciones"]');
+                        if (textareaObs) textareaObs.value = obs;
+
                         if (typeof window.initModalAlumnoDinamico === 'function') {
                             window.initModalAlumnoDinamico(al);
                         }
@@ -1343,6 +1663,18 @@ window.editarAlumno = function(id) {
                             }
                         });
 
+                        // Procesar boleta parcial
+                        let obs = al.observaciones || '';
+                        let traeBoleta = 'NO';
+                        if (obs.includes('[BOLETA_PARCIAL]')) {
+                            traeBoleta = 'SI';
+                            obs = obs.replace('[BOLETA_PARCIAL]', '').trim();
+                        }
+                        const selectTraeBoleta = form.querySelector('#selectTraeBoleta');
+                        if (selectTraeBoleta) selectTraeBoleta.value = traeBoleta;
+                        const textareaObs = form.querySelector('[name="observaciones"]');
+                        if (textareaObs) textareaObs.value = obs;
+
                         if (typeof window.initModalAlumnoDinamico === 'function') {
                             window.initModalAlumnoDinamico(al);
                         }
@@ -1370,6 +1702,136 @@ window.editarAlumno = function(id) {
         });
 }
 
+function cargarContextoGrupo(grupoId) {
+    if (!grupoId) return;
+    
+    const form = document.getElementById('formAlumno');
+    if (!form) return;
+    
+    fetch(`/grupos/${grupoId}`)
+        .then(res => res.json())
+        .then(resp => {
+            if (resp.success && resp.data) {
+                const gr = resp.data.data || resp.data;
+                
+                // 1. Establecer idGrupo en el input oculto
+                const inputGrupo = form.querySelector('#inputGrupoSeleccionado') || form.querySelector('input[name="id_Grupo"]');
+                if (inputGrupo) {
+                    inputGrupo.value = grupoId;
+                    inputGrupo.dataset.modalidad = gr.modalidadHorario || '';
+                    inputGrupo.dataset.fechaInicio = gr.fechaInicio || '';
+                }
+
+                // Mostrar banner de grupo elegido
+                const txtElegido = form.querySelector('#txtNombreGrupoElegido');
+                const badgeElegido = form.querySelector('#badgeGrupoElegidoFinal');
+                if (txtElegido) txtElegido.textContent = gr.clave;
+                if (badgeElegido) badgeElegido.style.display = 'block';
+
+                // 2. Seleccionar CCT
+                const selectCCT = form.querySelector('#selectCCT');
+                if (selectCCT && gr.id_centroTrabajo) {
+                    selectCCT.value = gr.id_centroTrabajo;
+
+                    // Mostrar sección académica
+                    const seccionAcademica = form.querySelector('#seccionAcademicaDinamica');
+                    const avisoCCT = form.querySelector('#avisoSeleccionarCCT');
+                    const selectDia = form.querySelector('#selectDiaAsistencia');
+
+                    if (avisoCCT) avisoCCT.style.display = 'none';
+                    if (seccionAcademica) seccionAcademica.style.display = 'block';
+
+                    // Configurar opciones de Día de asistencia según Centro de Trabajo
+                    const optCCT = selectCCT.options[selectCCT.selectedIndex];
+                    const ctNombre = (optCCT ? optCCT.textContent : '').toUpperCase();
+                    const isBgne = ctNombre.includes('BGNE');
+                    if (selectDia) {
+                        if (isBgne) {
+                            selectDia.innerHTML = `
+                                <option value="">-- Todos los días / Seleccione --</option>
+                                <option value="SABADO">Sábado</option>
+                                <option value="DOMINGO">Domingo</option>
+                            `;
+                        } else {
+                            selectDia.innerHTML = `
+                                <option value="LUNES-VIERNES" selected>Lunes a Viernes (Escolarizado)</option>
+                                <option value="">-- Todos los días --</option>
+                            `;
+                        }
+                    }
+
+                    // Cargar y auto-seleccionar Nivel
+                    const selectNivel = form.querySelector('#selectNivelAcademico');
+                    let p1 = Promise.resolve();
+                    if (selectNivel && gr.id_nivel_academico) {
+                        selectNivel.innerHTML = '<option value="">Cargando periodos...</option>';
+                        p1 = fetch(`/catalogos/niveles-academicos?idCentroTrabajo=${gr.id_centroTrabajo}`)
+                            .then(r => r.json())
+                            .then(niveles => {
+                                selectNivel.innerHTML = '<option value="">-- Seleccione Periodo --</option>';
+                                if (Array.isArray(niveles)) {
+                                    niveles.forEach(n => {
+                                        const opt = document.createElement('option');
+                                        opt.value = n.id;
+                                        opt.dataset.numero = n.numero;
+                                        opt.dataset.tipo = n.tipo;
+                                        opt.textContent = `${n.nombre} (${n.nombrePeriodo || n.tipo})`;
+                                        if (String(n.id) === String(gr.id_nivel_academico)) {
+                                            opt.selected = true;
+                                        }
+                                        selectNivel.appendChild(opt);
+                                    });
+                                }
+                                
+                                // Regla de Equivalencia: 1er Periodo -> Oculto. 2do en adelante -> Visible
+                                const accordionEquiv = form.querySelector('#accordionItemEquivalencia');
+                                if (accordionEquiv) {
+                                    const selectedOpt = selectNivel.options[selectNivel.selectedIndex];
+                                    const numPeriodo = selectedOpt ? parseInt(selectedOpt.dataset.numero || 1) : 1;
+                                    if (numPeriodo >= 2) {
+                                        accordionEquiv.style.display = 'block';
+                                    } else {
+                                        accordionEquiv.style.display = 'none';
+                                    }
+                                }
+                            });
+                    }
+
+                    // Cargar y auto-seleccionar Generación
+                    const selectGen = form.querySelector('#selectGeneracion');
+                    let p2 = Promise.resolve();
+                    if (selectGen) {
+                        selectGen.innerHTML = '<option value="">Cargando generaciones...</option>';
+                        p2 = fetch(`/catalogos/generaciones?idCentroTrabajo=${gr.id_centroTrabajo}`)
+                            .then(r => r.json())
+                            .then(gens => {
+                                selectGen.innerHTML = '<option value="">Pendiente de registro SEP</option>';
+                                if (Array.isArray(gens)) {
+                                    gens.forEach(g => {
+                                        const opt = document.createElement('option');
+                                        opt.value = g.id;
+                                        opt.textContent = `Gen. ${g.generacion || ''} - ${g.nombreGeneracion}`;
+                                        if (gr.idGeneracion && String(g.id) === String(gr.idGeneracion)) {
+                                            opt.selected = true;
+                                        }
+                                        selectGen.appendChild(opt);
+                                    });
+                                }
+                            });
+                    }
+
+                    Promise.all([p1, p2]).then(() => {
+                        verificarEdadBGNE();
+                        actualizarResumenYSemaforo();
+                    });
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Error al cargar contexto de grupo:', err);
+        });
+}
+
 function abrirModalAlumno() {
     modoAlumno = 'crear';
     idAlumnoActual = null;
@@ -1385,10 +1847,7 @@ function abrirModalAlumno() {
             }
 
             if (grupoId) {
-                const groupSelect = document.querySelector('#formAlumno select[name="id_Grupo"]');
-                if (groupSelect) {
-                    groupSelect.value = grupoId;
-                }
+                cargarContextoGrupo(grupoId);
             }
 
             let modal = new bootstrap.Modal(document.getElementById('modalAlumno'));
@@ -1414,7 +1873,17 @@ document.addEventListener("DOMContentLoaded", function() {
 
         let fetchUrl = grupoId 
             ? `/alumnos/grupo/${grupoId}`
-            : `/alumnos/lista?page=${pagina}&limit=10&search=${search}&generacion=${generacion}`;
+            : `/alumnos/lista?page=${pagina}&limit=10&search=${encodeURIComponent(search)}&generacion=${generacion}`;
+
+        if (!grupoId) {
+            const cct = document.getElementById('filtroCCT') ? document.getElementById('filtroCCT').value : '';
+            const status = document.getElementById('filtroStatus') ? document.getElementById('filtroStatus').value : '';
+            const order = document.getElementById('filtroOrden') ? document.getElementById('filtroOrden').value : 'ASC';
+
+            if (cct) fetchUrl += `&id_centro_trabajo=${cct}`;
+            if (status) fetchUrl += `&status_alumno=${status}`;
+            if (order) fetchUrl += `&order=${order}`;
+        }
 
         fetch(fetchUrl)
             .then(res => res.json())
@@ -1443,20 +1912,41 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     let timeout = null;
-    document.getElementById('buscadorAlumnos').addEventListener('input', (e) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-            search = e.target.value;
+    if (document.getElementById('buscadorAlumnos')) {
+        document.getElementById('buscadorAlumnos').addEventListener('input', (e) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                search = e.target.value;
+                pagina = 1;
+                cargarAlumnos();
+            }, 400);
+        });
+    }
+
+    if (document.getElementById('filtroBGNE')) {
+        document.getElementById('filtroBGNE').addEventListener('change', (e) => {
+            generacion = e.target.value;
             pagina = 1;
             cargarAlumnos();
-        }, 400);
-    });
+        });
+    }
 
-    document.getElementById('filtroBGNE').addEventListener('change', (e) => {
-        generacion = e.target.value;
+    if (!grupoId) {
+        if (document.getElementById('filtroCCT')) {
+            document.getElementById('filtroCCT').addEventListener('change', resetAndCargarAlumnos);
+        }
+        if (document.getElementById('filtroStatus')) {
+            document.getElementById('filtroStatus').addEventListener('change', resetAndCargarAlumnos);
+        }
+        if (document.getElementById('filtroOrden')) {
+            document.getElementById('filtroOrden').addEventListener('change', resetAndCargarAlumnos);
+        }
+    }
+
+    function resetAndCargarAlumnos() {
         pagina = 1;
         cargarAlumnos();
-    });
+    }
 
     function renderTabla(alumnos) {
         if (!alumnos.length) {
@@ -1601,8 +2091,44 @@ document.addEventListener("DOMContentLoaded", function() {
         if (e.target.id !== 'formAlumno') return;
         e.preventDefault();
 
+        // VALIDACIÓN FRONTEND: Verificar campos requeridos nativos de HTML5
+        if (!e.target.checkValidity()) {
+            e.stopPropagation();
+            e.target.classList.add('was-validated');
+
+            // Encontrar el primer control inválido para enfocarlo
+            const primerInvalido = e.target.querySelector(':invalid');
+            if (primerInvalido) {
+                // Si el control está dentro de un panel colapsado del acordeón, expandirlo
+                const collapseParent = primerInvalido.closest('.accordion-collapse');
+                if (collapseParent && !collapseParent.classList.contains('show')) {
+                    const toggleBtn = document.querySelector(`[data-bs-target="#${collapseParent.id}"]`);
+                    if (toggleBtn) {
+                        toggleBtn.click();
+                    }
+                }
+                setTimeout(() => {
+                    primerInvalido.focus();
+                }, 200);
+            }
+
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campos requeridos faltantes',
+                text: 'Por favor complete todos los campos obligatorios marcados con asterisco (*).',
+                confirmButtonColor: 'rgb(38, 104, 123)'
+            });
+            return;
+        }
+
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
+
+        // Procesar flag de boleta parcial en observaciones
+        let obsValue = data.observaciones || '';
+        if (data.traeBoleta === 'SI') {
+            obsValue = `[BOLETA_PARCIAL] ${obsValue}`.trim();
+        }
 
         // Recoger cursos seleccionados
         const cursos = [];
@@ -1628,7 +2154,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 localidad: data.localidad || null,
                 municipio: data.municipio || null,
                 escuelaProcedencia: data.escuelaProcedencia || null,
-                observaciones: data.observaciones || null,
+                observaciones: obsValue || null,
                 numeroControl: data.numeroControl || null,
                 statusAlumno: data.statusAlumno || 'ACTIVO',
                 curp: data.curp || null,
@@ -1756,14 +2282,14 @@ window.abrirKardexAlumno = function(idAlumno) {
             periodos.forEach((p, idx) => {
                 let htmlMaterias = '';
                 (p.materias || []).forEach(m => {
-                    const califVal = m.calificacion !== null ? m.calificacion : '';
+                    const califVal = m.calificacion !== null ? m.calificacion : (m.es_equivalencia ? 'EQUIV.' : '');
                     htmlMaterias += `
                         <tr>
                             <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #cbd5e1;">
                                 ${m.nombreMateria}
                             </td>
                             <td class="px-1 py-1 text-center align-middle" style="width: 85px; border-color: #cbd5e1;">
-                                <input type="number" step="0.1" min="0" max="10" 
+                                <input type="text" 
                                     class="form-control form-control-sm text-center fw-bold input-calif-kardex" 
                                     data-materia="${m.idMateria}" 
                                     data-nivel="${p.idNivel}" 
@@ -1771,7 +2297,7 @@ window.abrirKardexAlumno = function(idAlumno) {
                                     value="${califVal}" 
                                     style="height: 28px; font-size: 0.85rem; padding: 2px 4px;"
                                     placeholder="—"
-                                    oninput="calcularPromediosKardex()">
+                                    oninput="this.value = this.value.toUpperCase(); calcularPromediosKardex()">
                             </td>
                         </tr>
                     `;
@@ -1867,8 +2393,12 @@ window.calcularPromediosKardex = function() {
                 inp.style.setProperty('color', '#1e293b', 'important');
                 inp.style.setProperty('font-weight', '700', 'important');
             }
+        } else if (valStr.toUpperCase() === 'EQUIV.' || valStr.toUpperCase() === 'EQUIVALENCIA') {
+            inp.style.setProperty('color', '#d97706', 'important');
+            inp.style.setProperty('font-weight', '700', 'important');
         } else {
             inp.style.setProperty('color', '#1e293b', 'important');
+            inp.style.setProperty('font-weight', 'normal', 'important');
         }
     });
 
@@ -1917,15 +2447,19 @@ window.guardarCalificacionesKardex = function() {
     const calificaciones = [];
 
     inputs.forEach(inp => {
-        const valStr = inp.value.trim();
+        const valStr = inp.value.trim().toUpperCase();
+        let calif = null;
+
         if (valStr !== '' && !isNaN(valStr)) {
-            calificaciones.push({
-                idMateria: parseInt(inp.dataset.materia),
-                id_nivel_academico: parseInt(inp.dataset.nivel),
-                calificacion: parseFloat(valStr),
-                tipoAcreditacion: 'ORDINARIO'
-            });
+            calif = parseFloat(valStr);
         }
+
+        calificaciones.push({
+            idMateria: parseInt(inp.dataset.materia),
+            id_nivel_academico: parseInt(inp.dataset.nivel),
+            calificacion: calif,
+            tipoAcreditacion: 'ORDINARIO'
+        });
     });
 
     btn.disabled = true;
@@ -2159,6 +2693,201 @@ window.imprimirKardex = function() {
                     <div style="width: 720px; margin: 6px auto 0 auto; background: #5b9bd5; color: #ffffff; font-weight: bold; font-size: 8.2pt; padding: 3px 0; text-align: center; border-radius: 2px;">
                         ¡ Excelencia educativa a su servicio !
                     </div>
+                </div>
+            </body>
+        </html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => {
+        win.print();
+        win.close();
+    }, 400);
+};
+
+window.imprimirFichaInscripcion = function() {
+    const form = document.getElementById('formAlumno');
+    if (!form) return;
+
+    const nom = form.querySelector('[name="nombre"]')?.value.trim() || '';
+    const pat = form.querySelector('[name="apPaterno"]')?.value.trim() || '';
+    const mat = form.querySelector('[name="apMaterno"]')?.value.trim() || '';
+    const alumnoNombre = `${nom} ${pat} ${mat}`.trim().toUpperCase() || '—';
+
+    const sumCCT = form.querySelector('#sumCCT')?.textContent || '—';
+    const sumGrupo = form.querySelector('#sumGrupo')?.textContent || 'Sin grupo';
+    const sumPeriodo = form.querySelector('#sumPeriodo')?.textContent || '—';
+    const sumGeneracion = form.querySelector('#sumGeneracion')?.textContent || 'Pendiente SEP';
+    const sumDiaJornada = form.querySelector('#sumDiaJornada')?.textContent || '—';
+    const sumEstadoSEP = form.querySelector('#sumEstadoSEP')?.textContent || 'PENDIENTE';
+    const sumAsistePresencialTexto = form.querySelector('#sumAsistePresencialTexto')?.textContent || 'Regular';
+    const sumDetalleTrayectoria = form.querySelector('#sumDetalleTrayectoria')?.textContent || 'Mismo CCT Administrativo';
+    const sumEquivalencia = form.querySelector('#sumEquivalencia')?.textContent || 'No requiere';
+    const sumMateriasPend = form.querySelector('#sumMateriasPend')?.textContent || '0';
+    const listaPendientes = form.querySelector('#listaPendientesControlEscolar')?.innerHTML || 'Sin observaciones.';
+
+    const win = window.open('', '', 'height=850,width=850');
+    win.document.write(`
+        <html>
+            <head>
+                <title>Ficha de Inscripción y Control Escolar</title>
+                <style>
+                    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
+                    @page {
+                        size: letter portrait;
+                        margin: 15mm;
+                    }
+                    body {
+                        font-family: Arial, Helvetica, sans-serif;
+                        color: #000;
+                        background: #fff;
+                        padding: 0;
+                        margin: 0;
+                    }
+                    .header-container {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        margin-bottom: 15px;
+                        border-bottom: 2px solid #1e6fa8;
+                        padding-bottom: 10px;
+                    }
+                    .title-doc {
+                        font-size: 14pt;
+                        font-weight: bold;
+                        color: #1e6fa8;
+                        text-transform: uppercase;
+                        margin: 0;
+                    }
+                    .subtitle-doc {
+                        font-size: 9pt;
+                        color: #666;
+                        margin: 2px 0 0 0;
+                    }
+                    .table-ficha {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 15px;
+                    }
+                    .table-ficha th, .table-ficha td {
+                        border: 1px solid #cbd5e1;
+                        padding: 8px 12px;
+                        font-size: 9pt;
+                    }
+                    .table-ficha th {
+                        background-color: #f1f5f9;
+                        color: #334155;
+                        text-align: left;
+                        font-weight: bold;
+                        text-transform: uppercase;
+                    }
+                    .section-header {
+                        background-color: #e2e8f0 !important;
+                        font-weight: bold;
+                        color: #000 !important;
+                    }
+                    .label-col {
+                        color: #475569;
+                        width: 25%;
+                        font-weight: bold;
+                    }
+                    .val-col {
+                        color: #0f172a;
+                        width: 25%;
+                    }
+                    .obs-box {
+                        border: 1px solid #cbd5e1;
+                        padding: 12px;
+                        background-color: #fafafb;
+                        font-size: 9pt;
+                        border-radius: 4px;
+                        line-height: 1.5;
+                    }
+                    .footer-doc {
+                        margin-top: 30px;
+                        font-size: 8pt;
+                        color: #666;
+                        text-align: center;
+                        border-top: 1px dashed #cbd5e1;
+                        padding-top: 10px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header-container">
+                    <div>
+                        <h1 class="title-doc">Ficha de Inscripción y Control Escolar</h1>
+                        <p class="subtitle-doc">Resumen administrativo del expediente del alumno</p>
+                    </div>
+                    <img src="/img/logo.png" alt="Logo" style="height: 50px; object-fit: contain;">
+                </div>
+
+                <table class="table-ficha">
+                    <tbody>
+                        <tr class="section-header">
+                            <th colspan="4">Datos del Alumno</th>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Nombre Completo:</td>
+                            <td colspan="3" class="val-col" style="font-size: 11pt; font-weight: bold; text-transform: uppercase;">
+                                \${alumnoNombre}
+                            </td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <th colspan="4">1. Programa Académico y Registro SEP</th>
+                        </tr>
+                        <tr>
+                            <td class="label-col">CCT Administrativo (SEP):</td>
+                            <td class="val-col">\${sumCCT}</td>
+                            <td class="label-col">Grupo Oficial SEP:</td>
+                            <td class="val-col">\${sumGrupo}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Periodo / Nivel:</td>
+                            <td class="val-col">\${sumPeriodo}</td>
+                            <td class="label-col">Generación SEP:</td>
+                            <td class="val-col">\${sumGeneracion}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Turno / Asistencia:</td>
+                            <td class="val-col">\${sumDiaJornada}</td>
+                            <td class="label-col">Estatus Registro SEP:</td>
+                            <td class="val-col">\${sumEstadoSEP}</td>
+                        </tr>
+
+                        <tr class="section-header">
+                            <th colspan="4">2. Modalidad de Atención y Plantel de Clases</th>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Modalidad de Asistencia:</td>
+                            <td class="val-col">\${sumAsistePresencialTexto}</td>
+                            <td class="label-col">Plantel y Grupo Presencial:</td>
+                            <td class="val-col">\${sumDetalleTrayectoria}</td>
+                        </tr>
+
+                        <tr class="section-header">
+                            <th colspan="4">3. Trámites y Regularidad Académica</th>
+                        </tr>
+                        <tr>
+                            <td class="label-col">Trámite de Equivalencia:</td>
+                            <td class="val-col">\${sumEquivalencia}</td>
+                            <td class="label-col">Materias Pendientes:</td>
+                            <td class="val-col">\${sumMateriasPend}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="font-weight: bold; font-size: 9.5pt; color: #334155; margin-bottom: 6px; text-transform: uppercase;">
+                    4. Observaciones y Pendientes de Control Escolar
+                </div>
+                <div class="obs-box">
+                    \${listaPendientes}
+                </div>
+
+                <div class="footer-doc">
+                    Documento informativo generado el \${new Date().toLocaleDateString('es-MX')} a las \${new Date().toLocaleTimeString('es-MX')}.<br>
+                    Bachillerato Interamericano - Excelencia educativa a su servicio.
                 </div>
             </body>
         </html>
