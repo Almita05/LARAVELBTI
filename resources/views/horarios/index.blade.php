@@ -1182,8 +1182,11 @@ document.addEventListener("DOMContentLoaded", function() {
         const query = e.target.value.toLowerCase().trim();
         clearTimeout(searchDebounceTimeout);
 
-        // 1. Filtrar grupos locales de inmediato
-        const filteredGroups = groups.filter(g => g.clave.toLowerCase().includes(query));
+        // 1. Filtrar grupos locales de inmediato de forma segura (evitando nulos en clave)
+        const filteredGroups = groups.filter(g => {
+            const clave = g.clave ? String(g.clave).toLowerCase() : '';
+            return clave.includes(query);
+        });
         renderGroupsList(filteredGroups);
 
         // 2. Si tiene 3 o más caracteres, buscar alumnos con debounce
@@ -1194,7 +1197,21 @@ document.addEventListener("DOMContentLoaded", function() {
                     .then(resp => {
                         const students = resp.data || [];
                         if (students.length > 0) {
-                            renderGroupsAndStudentsList(filteredGroups, students);
+                            // Extraer los IDs de grupo de los alumnos encontrados
+                            const studentGroupIds = students.map(s => s.idGrupo || s.id_Grupo).filter(Boolean);
+                            
+                            // Buscar qué grupos coinciden con esos alumnos
+                            const matchedGroupsByStudents = groups.filter(g => studentGroupIds.includes(g.id));
+                            
+                            // Combinar con los grupos filtrados por clave (evitando duplicados)
+                            const combinedGroups = [...filteredGroups];
+                            matchedGroupsByStudents.forEach(mg => {
+                                if (!combinedGroups.some(cg => cg.id === mg.id)) {
+                                    combinedGroups.push(mg);
+                                }
+                            });
+
+                            renderGroupsAndStudentsList(combinedGroups, students);
                         }
                     })
                     .catch(err => console.error("Error al buscar alumnos en horarios:", err));

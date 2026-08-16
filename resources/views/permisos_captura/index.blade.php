@@ -534,7 +534,7 @@ input:checked + .slider-premium:before {
                     {{-- DOCENTE --}}
                     <div class="mb-3">
                         <label class="form-label fw-semibold text-dark"><i class="fa-solid fa-chalkboard-user me-1 text-primary"></i> Docente:</label>
-                        <select id="selectAltaDocente" class="form-select form-select-premium w-100" required>
+                        <select id="selectAltaDocente" class="form-select form-select-premium w-100" onchange="filtrarMaterias()" required>
                             <option value="">Selecciona un docente...</option>
                         </select>
                     </div>
@@ -554,6 +554,14 @@ input:checked + .slider-premium:before {
                             <option value="">(Primero selecciona un grupo)</option>
                         </select>
                         <div id="loaderMaterias" class="spinner-border spinner-border-sm text-primary ms-2" role="status" style="display: none;"></div>
+                        
+                        {{-- Mostrar materias pasadas del grupo --}}
+                        <div class="form-check mt-2" id="divCheckMateriaPasada" style="display: none;">
+                            <input class="form-check-input" type="checkbox" id="checkMateriaPasada" onchange="filtrarMaterias()" style="cursor: pointer;">
+                            <label class="form-check-label text-dark fw-semibold" for="checkMateriaPasada" style="font-size: 0.85rem; cursor: pointer;">
+                                <i class="fa-solid fa-clock-rotate-left text-warning me-1"></i> Mostrar materias pasadas o de otros niveles
+                            </label>
+                        </div>
                     </div>
 
                     {{-- FECHA LÍMITE (EXTENSION) --}}
@@ -1076,16 +1084,23 @@ function abrirModalAlta() {
     });
 }
 
-// ==========================================
-// CARGAR MATERIAS CUANDO SE ELIGE GRUPO
-// ==========================================
+// Variables para almacenar las materias y la información del grupo cargados
+let materiasCargadas = [];
+let grupoCargado = null;
+
 function cargarMateriasPorGrupo(idGrupo) {
     const selectMateria = document.getElementById('selectAltaMateria');
     const loader = document.getElementById('loaderMaterias');
+    const divCheck = document.getElementById('divCheckMateriaPasada');
+    const checkPasada = document.getElementById('checkMateriaPasada');
 
     if (!idGrupo) {
         selectMateria.innerHTML = '<option value="">(Primero selecciona un grupo)</option>';
         selectMateria.disabled = true;
+        if (divCheck) divCheck.style.display = 'none';
+        if (checkPasada) checkPasada.checked = false;
+        materiasCargadas = [];
+        grupoCargado = null;
         return;
     }
 
@@ -1095,31 +1110,92 @@ function cargarMateriasPorGrupo(idGrupo) {
     fetch(`/grupos/${idGrupo}/calificaciones-materia`)
         .then(res => res.json())
         .then(resp => {
-            selectMateria.innerHTML = '';
-            if (resp.success && resp.data && Array.isArray(resp.data.materias) && resp.data.materias.length > 0) {
-                const optDef = document.createElement('option');
-                optDef.value = '';
-                optDef.textContent = 'Selecciona una asignatura...';
-                selectMateria.appendChild(optDef);
-
-                resp.data.materias.forEach(m => {
-                    const opt = document.createElement('option');
-                    opt.value = m.idMateria;
-                    opt.textContent = `${m.nombreMateria} (${m.claveMateria})`;
-                    selectMateria.appendChild(opt);
-                });
-                selectMateria.disabled = false;
+            if (resp.success && resp.data) {
+                materiasCargadas = resp.data.materias || [];
+                grupoCargado = resp.data.grupo || null;
+                if (divCheck) divCheck.style.display = 'block';
+                filtrarMaterias();
             } else {
                 selectMateria.innerHTML = '<option value="">No hay asignaturas en este grupo</option>';
+                if (divCheck) divCheck.style.display = 'none';
+                if (checkPasada) checkPasada.checked = false;
+                materiasCargadas = [];
+                grupoCargado = null;
             }
         })
         .catch(err => {
             console.error('Error al cargar materias:', err);
             selectMateria.innerHTML = '<option value="">Error al cargar asignaturas</option>';
+            if (divCheck) divCheck.style.display = 'none';
+            if (checkPasada) checkPasada.checked = false;
+            materiasCargadas = [];
+            grupoCargado = null;
         })
         .finally(() => {
             loader.style.display = 'none';
         });
+}
+
+function filtrarMaterias() {
+    const selectMateria = document.getElementById('selectAltaMateria');
+    const docenteId = document.getElementById('selectAltaDocente').value;
+    const checkPasada = document.getElementById('checkMateriaPasada');
+    const mostrarPasadas = checkPasada ? checkPasada.checked : false;
+
+    selectMateria.innerHTML = '';
+
+    if (materiasCargadas.length === 0) {
+        selectMateria.innerHTML = '<option value="">No hay asignaturas en este grupo</option>';
+        selectMateria.disabled = true;
+        return;
+    }
+
+    // 1. Filtrar materias por el docente seleccionado (si hay uno elegido)
+    let filtered = materiasCargadas;
+    if (docenteId) {
+        filtered = materiasCargadas.filter(m => {
+            return m.id_docente && parseInt(m.id_docente) === parseInt(docenteId);
+        });
+    }
+
+    // 2. Si no mostramos las pasadas, filtrar por el nivel actual del grupo
+    if (!mostrarPasadas && grupoCargado && grupoCargado.id_nivel_academico) {
+        const currentLevel = parseInt(grupoCargado.id_nivel_academico);
+        filtered = filtered.filter(m => {
+            return !m.id_nivel_academico || parseInt(m.id_nivel_academico) === currentLevel;
+        });
+    }
+
+    if (filtered.length === 0) {
+        const optNone = document.createElement('option');
+        optNone.value = '';
+        optNone.textContent = docenteId 
+            ? (mostrarPasadas ? 'El docente no imparte materias en este grupo' : 'El docente no imparte materias en el nivel actual del grupo')
+            : 'No hay materias que coincidan';
+        selectMateria.appendChild(optNone);
+        selectMateria.disabled = true;
+        return;
+    }
+
+    const optDef = document.createElement('option');
+    optDef.value = '';
+    optDef.textContent = 'Selecciona una asignatura...';
+    selectMateria.appendChild(optDef);
+
+    filtered.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.idMateria;
+        
+        let labelNivel = '';
+        if (m.nombreNivel) {
+            labelNivel = ` - ${m.nombreNivel}`;
+        }
+        
+        opt.textContent = `${m.nombreMateria} (${m.claveMateria})${labelNivel}`;
+        selectMateria.appendChild(opt);
+    });
+
+    selectMateria.disabled = false;
 }
 
 // ==========================================

@@ -57,7 +57,7 @@
                         <th>ESTATUS</th>
                         <th>NIVEL</th>
                         <th>FECHA</th>
-                        <th class="text-center">ACCIONES</th>
+                        <th class="text-center" style="width: 175px; min-width: 175px;">ACCIONES</th>
                     </tr>
                 </thead>
 
@@ -223,10 +223,35 @@
                     <small class="text-muted" id="helpPasswordCred">Deja en blanco para conservar la contraseña actual.</small>
                 </div>
 
-                <div class="text-end">
+                <div class="text-end mb-3">
                     <button type="button" class="btn btn-sm btn-secondary" onclick="generarPasswordAleatoria()">
                         <i class="fa-solid fa-arrows-rotate me-1"></i> Generar Contraseña Segura
                     </button>
+                </div>
+
+                <div class="mb-3 border-top pt-3">
+                    <label class="form-label text-dark fw-bold">Módulos Habilitados (Rol Docente):</label>
+                    <div class="p-3 rounded bg-light border">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="permisos_modulos[]" value="horarios" id="chkModuloHorarios" checked>
+                            <label class="form-check-label text-dark fw-semibold" for="chkModuloHorarios" style="cursor: pointer;">
+                                <i class="fa-solid fa-calendar-days me-1 text-primary"></i> Mi Horario
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="permisos_modulos[]" value="pendientes" id="chkModuloPendientes" checked>
+                            <label class="form-check-label text-dark fw-semibold" for="chkModuloPendientes" style="cursor: pointer;">
+                                <i class="fa-solid fa-list-check me-1 text-warning"></i> Pendientes
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="permisos_modulos[]" value="grupos" id="chkModuloGrupos" checked>
+                            <label class="form-check-label text-dark fw-semibold" for="chkModuloGrupos" style="cursor: pointer;">
+                                <i class="fa-solid fa-user-group me-1 text-success"></i> Mis Grupos (Calificaciones, Asistencias)
+                            </label>
+                        </div>
+                    </div>
+                    <small class="text-muted">Marca los módulos que el docente podrá visualizar en su barra lateral al iniciar sesión.</small>
                 </div>
             </div>
             <div class="modal-footer bg-light">
@@ -318,14 +343,14 @@ document.addEventListener("DOMContentLoaded", function() {
                     <td>${docente.nivelEstudios ?? 'N/A'}</td>
                     <td>${docente.fechaNacimiento ?? 'N/A'}</td>
 
-                    <td>
+                    <td class="text-center" style="white-space: nowrap;">
                         <button class="btn btn-secondary btn-sm btn-action me-1" onclick="verDocente(${docente.idDocente})" title="Ver detalles">
                             <i class="fa-solid fa-eye"></i>
                         </button>
                         <button class="btn btn-warning btn-sm btn-action me-1" onclick="editarDocente(${docente.idDocente})" title="Editar">
                             <i class="fa-solid fa-pen"></i>
                         </button>
-                        <button class="btn btn-primary btn-sm btn-action me-1" onclick="abrirModalCredenciales(${docente.idDocente}, '${docente.nombreDocente.replace(/'/g, "\\'")}', '${docente.apPaternoDocente ? docente.apPaternoDocente.replace(/'/g, "\\'") : ''}', '${docente.usuario ? docente.usuario.replace(/'/g, "\\'") : ''}', ${docente.tiene_password ?? 0})" title="Credenciales de acceso" style="background-color: #0f172a; border-color: #0f172a;">
+                        <button class="btn btn-primary btn-sm btn-action me-1" onclick="abrirModalCredenciales(${docente.idDocente}, '${docente.nombreDocente.replace(/'/g, "\\'")}', '${docente.apPaternoDocente ? docente.apPaternoDocente.replace(/'/g, "\\'") : ''}', '${docente.usuario ? docente.usuario.replace(/'/g, "\\'") : ''}', ${docente.tiene_password ?? 0}, '${docente.permisos_modulos || ''}')" title="Credenciales de acceso" style="background-color: #0f172a; border-color: #0f172a;">
                             <i class="fa-solid fa-key"></i>
                         </button>
                         <button class="btn btn-danger btn-sm btn-action" onclick="eliminarDocente(${docente.idDocente})" title="Eliminar">
@@ -634,7 +659,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // ==========================================
     // GESTIÓN DE CREDENCIALES DE DOCENTES
     // ==========================================
-    window.abrirModalCredenciales = function(id, nombre, paterno, usuario, tienePassword) {
+    window.abrirModalCredenciales = function(id, nombre, paterno, usuario, tienePassword, permisosModulos) {
         document.getElementById('credDocenteId').value = id;
         document.getElementById('credDocenteNombre').textContent = `${nombre} ${paterno}`;
         document.getElementById('credUsuario').value = usuario || (nombre.trim() + '.' + (paterno ? paterno.trim() : '')).toLowerCase().replace(/\s+/g, '').normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -649,6 +674,12 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('helpPasswordCred').textContent = 'Ingresa una contraseña para activar la cuenta de acceso.';
             document.getElementById('credPassword').required = true;
         }
+
+        // Marcar checkboxes según permisos guardados
+        const modulos = (permisosModulos || 'horarios,pendientes,grupos').split(',');
+        document.getElementById('chkModuloHorarios').checked = modulos.includes('horarios');
+        document.getElementById('chkModuloPendientes').checked = modulos.includes('pendientes');
+        document.getElementById('chkModuloGrupos').checked = modulos.includes('grupos');
 
         const modal = new bootstrap.Modal(document.getElementById('modalCredencialesDocente'));
         modal.show();
@@ -681,9 +712,16 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById('formCredencialesDocente').addEventListener('submit', function(e) {
         e.preventDefault();
         const id = document.getElementById('credDocenteId').value;
+
+        const permisos_modulos = [];
+        if (document.getElementById('chkModuloHorarios').checked) permisos_modulos.push('horarios');
+        if (document.getElementById('chkModuloPendientes').checked) permisos_modulos.push('pendientes');
+        if (document.getElementById('chkModuloGrupos').checked) permisos_modulos.push('grupos');
+
         const data = {
             usuario: document.getElementById('credUsuario').value.trim(),
-            password: document.getElementById('credPassword').value
+            password: document.getElementById('credPassword').value,
+            permisos_modulos: permisos_modulos
         };
 
         fetch(`/docentes/${id}/credenciales`, {

@@ -78,7 +78,41 @@ public function showLogin()
                 'usuario' => $docenteData['usuario'] ?: $docenteData['correoDocente'],
                 'nombre' => $nombreCompleto,
                 'rol' => 'DOCENTE',
-                'id_docente' => $docenteData['idDocente']
+                'id_docente' => $docenteData['idDocente'],
+                'modulos' => $docenteData['permisos_modulos'] ?? 'horarios,pendientes,grupos'
+            ]);
+
+            return redirect('/home');
+        }
+    }
+
+    // 3. Intentar autenticar como Personal en MySQL
+    $urlPersonal = config('services.api.base_url') . '/personal/by-username/' . urlencode($usernameInput);
+    $resPersonal = Http::get($urlPersonal);
+
+    if ($resPersonal->successful()) {
+        $personalData = $resPersonal->json()['data'] ?? null;
+
+        if ($personalData) {
+            if (($personalData['status'] ?? '') !== 'ACTIVO') {
+                return back()->with('error', 'La cuenta de personal se encuentra inactiva');
+            }
+
+            if (empty($personalData['password'])) {
+                return back()->with('error', 'Esta cuenta aún no tiene contraseña asignada');
+            }
+
+            if (!Hash::check($request->password, $personalData['password'])) {
+                return back()->with('error', 'Contraseña incorrecta');
+            }
+
+            session([
+                'usuario_id' => $personalData['idPersonal'],
+                'usuario' => $personalData['usuario'],
+                'nombre' => $personalData['nombre'],
+                'rol' => 'PERSONAL',
+                'rol_nombre' => $personalData['rol'],
+                'modulos' => $personalData['permisos_modulos'] ?? 'inicio,notificaciones,alumnos,docentes,grupos,materias,planes,formatos,generaciones'
             ]);
 
             return redirect('/home');

@@ -18,7 +18,7 @@
     </div>
 
     <!-- Barra de Selección de Grupo -->
-    <div class="card border-0 mb-4 shadow-sm" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important;">
+    <div class="card border-0 mb-4 shadow-sm" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important; position: relative; z-index: 100;">
         <div class="card-body p-4 d-flex flex-column flex-md-row align-items-center gap-3">
             <div class="d-flex align-items-center gap-2 flex-grow-1 w-100">
                 <label class="text-muted fw-semibold mb-0" style="font-size: 0.88rem; min-width: 140px;">Seleccionar Grupo:</label>
@@ -65,7 +65,7 @@
         <!-- VISTA 2: HISTORIAL POR ALUMNO -->
         <div id="vista-alumnos" class="d-none">
             <!-- Barra de Selección de Alumno -->
-            <div class="card border-0 mb-4 shadow-sm" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important;">
+            <div class="card border-0 mb-4 shadow-sm" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important; position: relative; z-index: 100;">
                 <div class="card-body p-4 d-flex flex-column flex-md-row align-items-center gap-3">
                     <div class="d-flex align-items-center gap-2 flex-grow-1 w-100">
                         <label class="text-muted fw-semibold mb-0" style="font-size: 0.88rem; min-width: 140px;">Seleccionar Alumno:</label>
@@ -189,6 +189,11 @@
         border-radius: 50%;
         background-color: rgb(49, 125, 146);
         border: 2px solid white;
+    }
+
+    /* Asegurar que el menú de TomSelect siempre esté al frente */
+    .ts-dropdown {
+        z-index: 1050 !important;
     }
 </style>
 

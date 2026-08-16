@@ -164,11 +164,18 @@ public function guardarCredenciales(Request $request, $id)
 {
     $request->validate([
         'usuario' => 'required|string|max:100',
-        'password' => 'nullable|string|min:4'
+        'password' => 'nullable|string|min:4',
+        'permisos_modulos' => 'nullable|array'
     ]);
 
+    $modulosList = '';
+    if ($request->has('permisos_modulos') && is_array($request->permisos_modulos)) {
+        $modulosList = implode(',', $request->permisos_modulos);
+    }
+
     $payload = [
-        'usuario' => trim($request->usuario)
+        'usuario' => trim($request->usuario),
+        'permisos_modulos' => $modulosList
     ];
 
     if ($request->filled('password')) {

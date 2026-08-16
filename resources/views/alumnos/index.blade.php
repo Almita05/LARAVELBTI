@@ -23,10 +23,12 @@
             Listado de alumnos
         </h3>
 
+        @if(has_perm('alumnos_list', 'crear'))
         <button class="btn btn-azul" onclick="abrirModalAlumno()">
             <i class="fa-solid fa-plus me-2"></i>
             Alta alumno
         </button>
+        @endif
     </div>
 
     <div class="glass-card">
@@ -226,6 +228,10 @@
 let modoAlumno = 'crear';
 let idAlumnoActual = null;
 let grupoId = @json($grupoId ?? null);
+const canCreateAlumno = @json(has_perm('alumnos_list', 'crear'));
+const canEditAlumno = @json(has_perm('alumnos_list', 'crear'));
+const canDeleteAlumno = @json(has_perm('alumnos_list', 'eliminar'));
+const canConsultAlumno = @json(has_perm('alumnos_list', 'consultar'));
 
 // Lógica para mostrar/ocultar campos del Certificado según el Estado del Alumno
 window.actualizarVistaCertificado = function() {
@@ -1976,18 +1982,24 @@ document.addEventListener("DOMContentLoaded", function() {
             <td>Generación ${alumno.nombreGeneracionTexto || 'N/A'}</td>
             <td>${getStatusBadge(alumno.statusAlumno)}</td>
             <td class="text-center">
+                ${canConsultAlumno ? `
                 <button class="btn btn-info text-white btn-sm btn-action" onclick="abrirKardexAlumno(${alumno.idAlumno})" title="Ver Kárdex / Calificaciones">
                     <i class="fa-solid fa-graduation-cap"></i>
                 </button>
                 <button class="btn btn-secondary btn-sm btn-action" onclick="verAlumno(${alumno.idAlumno})" title="Ver detalles">
                     <i class="fa-solid fa-eye"></i>
                 </button>
+                ` : ''}
+                ${canEditAlumno ? `
                 <button class="btn btn-warning btn-sm btn-action" onclick="editarAlumno(${alumno.idAlumno})" title="Editar">
                     <i class="fa-solid fa-pen"></i>
                 </button>
+                ` : ''}
+                ${canDeleteAlumno ? `
                 <button class="btn btn-danger btn-sm btn-action btnEliminar" data-id="${alumno.idAlumno}" title="Eliminar">
                     <i class="fa-solid fa-trash"></i>
                 </button>
+                ` : ''}
             </td>
         </tr>
         `;

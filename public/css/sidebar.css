@@ -313,7 +313,7 @@
 
 
 .sidebar.sidebar-hidden .accordion-button i {
-    margin: 0;
+    margin: 0 !important;
     font-size: 18px;
 }
 
@@ -384,6 +384,14 @@
     gap: 8px;
 }
 
+.sidebar.sidebar-hidden .usuario-nombre {
+    display: none !important;
+}
+
+.sidebar.sidebar-hidden .accordion-button span:not(.badge) {
+    display: none !important;
+}
+
 
 .sidebar.sidebar-hidden .toggle-sidebar {
     margin-left: 0;
@@ -396,19 +404,13 @@
 
 .main-content {
     margin-left: 270px;
-    transition: margin-left 0.3s ease;
+    transition: margin-left 0.3s ease, width 0.3s ease;
 }
 
 
 body.sidebar-hidden .main-content {
     margin-left: 75px;
-}
-
-
-/* Cuando sidebar está oculto */
-
-body.sidebar-hidden .main-content {
-    margin-left: 0;
+    width: calc(100% - 75px);
 }
 
 /* =========================================

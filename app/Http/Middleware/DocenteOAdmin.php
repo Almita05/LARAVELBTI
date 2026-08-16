@@ -15,7 +15,7 @@ class DocenteOAdmin
 
     $rol = strtoupper(trim(session('rol')));
 
-    if (!in_array($rol, ['ADMIN', 'DOCENTE'])) {
+    if (!in_array($rol, ['ADMIN', 'DOCENTE', 'PERSONAL'])) {
         abort(403, 'No tienes permisos para acceder.');
     }
 

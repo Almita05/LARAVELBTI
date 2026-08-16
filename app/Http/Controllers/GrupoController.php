@@ -13,6 +13,12 @@ class GrupoController extends Controller
         return view('grupos.index');
     }
 
+    public function busqueda()
+    {
+        $niveles = DB::table('tb_niveles_academicos')->orderBy('id', 'asc')->get();
+        return view('grupos.busqueda', compact('niveles'));
+    }
+
     public function capturaCalificaciones()
     {
         return view('grupos.captura_calificaciones');
@@ -403,6 +409,9 @@ class GrupoController extends Controller
         }
         if ($request->filled('dia')) {
             $params['dia'] = $request->dia;
+        }
+        if ($request->filled('id_nivel_academico')) {
+            $params['idNivelAcademico'] = $request->id_nivel_academico;
         }
 
         $response = Http::get($url, $params);

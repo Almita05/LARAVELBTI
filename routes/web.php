@@ -22,6 +22,9 @@ use App\Http\Controllers\HorariosController;
 use App\Http\Controllers\KardexCBgneController;
 use App\Http\Controllers\AsistenciaDocenteController;
 use App\Http\Controllers\PermisosCapturaController;
+use App\Http\Controllers\PersonalController;
+
+
 
 
 
@@ -160,6 +163,14 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::put('/docentes/{id}', [DocenteController::class, 'update']);
     Route::delete('/docentes/{id}', [DocenteController::class, 'destroy']);
 
+    // Personal (Administración de Cuentas de Personal)
+    Route::get('/personal', [PersonalController::class, 'index'])->name('personal');
+    Route::get('/personal/lista', [PersonalController::class, 'lista']);
+    Route::post('/personal', [PersonalController::class, 'store']);
+    Route::get('/personal/{id}', [PersonalController::class, 'show']);
+    Route::put('/personal/{id}', [PersonalController::class, 'update']);
+    Route::delete('/personal/{id}', [PersonalController::class, 'destroy']);
+
     // Materias
     Route::get('/materias', [MateriaController::class, 'index'])->name('materias');
     Route::get('/materias/lista', [MateriaController::class, 'lista']);
@@ -170,6 +181,7 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
 
     // Grupos
     Route::get('/grupos', [GrupoController::class, 'index'])->name('grupos');
+    Route::get('/busqueda-grupos', [GrupoController::class, 'busqueda'])->name('busqueda_grupos');
     Route::get('/grupos/captura_calificaciones', [GrupoController::class, 'capturaCalificaciones'])->name('grupos.captura_calificaciones');
     Route::get('/grupos/{id_grupo}/calificaciones-materia', [GrupoController::class, 'getCalificacionesGrupoMateria']);
     Route::post('/grupos/{id_grupo}/calificaciones-materia/{id_materia}', [GrupoController::class, 'saveCalificacionesGrupoMateria']);
@@ -227,3 +239,4 @@ Route::post('/calificaciones/guardar',
     Route::put('/generaciones/{id}', [GeneracionController::class, 'update'])->name('generaciones.update');
     Route::delete('/generaciones/{id}', [GeneracionController::class, 'destroy'])->name('generaciones.destroy');
 
+Route::get('/reportes/lista-asistencia-test', [App\Http\Controllers\ListasAsistenciasController::class, 'generarPdfAttendance'])->name('reporte.asistencia.test');
