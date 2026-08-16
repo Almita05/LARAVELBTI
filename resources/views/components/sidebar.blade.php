@@ -91,7 +91,7 @@ $modulosValidos = array_map('trim', $modulosValidos);
                 @if(has_perm('alumnos_list', 'ver'))
                 <div class="accordion-body">
                     <a href="{{ route('alumnos') }}">
-                        -Alumnos
+                        -Listado Alumnos
                     </a>
                 </div>
                 @endif
@@ -182,7 +182,7 @@ $modulosValidos = array_map('trim', $modulosValidos);
                 <div class="accordion-body">
                     @if(has_perm('grupos_list', 'ver'))
                     <a href="{{ route('grupos') }}">
-                        -Inicio Grupos
+                        -Listado Grupos
                     </a>
                     @endif
                     @if(has_perm('grupos_calificaciones', 'ver'))
@@ -192,7 +192,7 @@ $modulosValidos = array_map('trim', $modulosValidos);
                     @endif
                     @if(has_perm('grupos_horarios', 'ver'))
                     <a href="{{ route('horarios') }}">
-                        -Horarios
+                        -Armado Horarios
                     </a>
                     @endif
                 </div>
@@ -212,7 +212,7 @@ $modulosValidos = array_map('trim', $modulosValidos);
             <div id="menu-Materias" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
                 <div class="accordion-body">
                     <a href="{{ route('materias') }}">
-                        -Materias
+                        -Listado Materias
                     </a>
                 </div>
             </div>
