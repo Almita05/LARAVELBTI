@@ -406,6 +406,26 @@ $rol = strtoupper(session('rol'));
 </style>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Lógica para colapsar/ocultar el sidebar
+    const sidebar = document.getElementById('sidebar');
+    const toggleButton = document.getElementById('toggleSidebar');
+    if (toggleButton && sidebar) {
+        const icon = toggleButton.querySelector('i');
+        toggleButton.addEventListener('click', function() {
+            sidebar.classList.toggle('sidebar-hidden');
+            document.body.classList.toggle('sidebar-hidden');
+
+            if (sidebar.classList.contains('sidebar-hidden')) {
+                icon.classList.remove('fa-chevron-left');
+                icon.classList.add('fa-chevron-right');
+            } else {
+                icon.classList.remove('fa-chevron-right');
+                icon.classList.add('fa-chevron-left');
+            }
+        });
+    }
+
+    // Obtener cantidad de notificaciones
     fetch('/notificaciones/count')
         .then(response => response.json())
         .then(data => {
