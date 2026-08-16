@@ -186,3 +186,8 @@
 }
 
 
+/* SweetAlert2 siempre encima de modales Bootstrap */
+.swal2-container {
+    z-index: 99999 !important;
+}
+
