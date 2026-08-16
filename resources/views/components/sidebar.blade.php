@@ -145,11 +145,7 @@ $modulosValidos = array_map('trim', $modulosValidos);
                 </div>
                 @endif
                 @if(has_perm('docentes_list', 'ver') || has_perm('docentes_permisos_captura', 'ver'))
-                <div class="accordion-body">
-                    <a href="javascript:void(0)" onclick="alert('Este módulo se encuentra en proceso de diseño.')" style="opacity: 0.65; cursor: not-allowed;">
-                        -Captura Calificaciones <span class="badge bg-warning text-dark ms-1" style="font-size: 0.63rem;">Proceso</span>
-                    </a>
-                </div>
+                
                 @endif
                 @if(has_perm('docentes_horarios', 'ver'))
                 <div class="accordion-body">
