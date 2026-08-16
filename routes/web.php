@@ -21,10 +21,15 @@ use App\Http\Controllers\CalificacionesController;
 use App\Http\Controllers\HorariosController;
 use App\Http\Controllers\KardexCBgneController;
 use App\Http\Controllers\AsistenciaDocenteController;
+<<<<<<< HEAD
 use App\Http\Controllers\PermisosCapturaController;
 use App\Http\Controllers\PersonalController;
 
 
+=======
+use App\Http\Controllers\EstadoCuentaController;
+use App\Http\Controllers\QrpController;
+>>>>>>> feature/RamaAlma
 
 
 
@@ -59,15 +64,13 @@ Route::middleware('auth.session')->group(function () {
     Route::get('/planesBTI', [PlanEstudioController::class, 'bti'])->name('planesBTI');
     Route::get('/planesBGNE', [PlanEstudioController::class, 'bgne'])->name('planesBGNE');
 
-    // Notificaciones
-    Route::get('/notificaciones', [\App\Http\Controllers\NotificacionController::class, 'index'])->name('notificaciones');
-    Route::get('/notificaciones/count', [\App\Http\Controllers\NotificacionController::class, 'count']);
+   // Analizador de Estados de Cuenta QRP
+Route::get('/analizar-estado-cuenta',[QrpController::class, 'index'])->name('analizar-estado-cuenta');
+    Route::post('/analizar-estado-cuenta',[QrpController::class, 'analizar'])->name('estado_cuenta.analizar');
 
 });
 
 Route::middleware(['auth.session', 'docente.admin'])->group(function () {
-
-
  // Actas
     Route::get('/actas_calificaciones', [ActasCalificacionesController::class, 'index'])->name('actas_calificaciones');
     Route::get('/actas_calificacionesBTI', [ActasCalificacionesController::class, 'bti'])->name('actas_calificacionesBTI');
