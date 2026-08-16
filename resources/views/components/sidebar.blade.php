@@ -298,15 +298,16 @@ $rol = strtoupper(session('rol'));
 
     <div class="accordion-item menu-title">
         <h2 class="accordion-header">
+            
             <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#menu-Otros"
-                aria-expanded="false" aria-controls="flush-collapseOne">
-                Otros
+                aria-expanded="false" aria-controls="flush-collapseOne"><i class="fa-solid fa-dollar-sign"></i>
+                Estados de cuenta
             </button>
         </h2>
         <div id="menu-Otros" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-            <a href="{{ route('planesBTI') }}">
-                <i class="fa-solid fa-book-open"></i>
-                -Otros
+            <a href="{{ route('analizar-estado-cuenta') }}">
+                <i class="fa-solid fa-dollar-sign"></i>
+                -Calcular estado de cuenta
             </a>
         </div>
     </div>
