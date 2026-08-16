@@ -9,7 +9,6 @@
 </head>
 
 <div class="page-container">
-
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <a href="{{ url()->previous() }}" class="btn btn-regresar">

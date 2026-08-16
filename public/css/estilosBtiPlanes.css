@@ -187,3 +187,50 @@
 }
 
 
+
+    .materia-card {
+        background: rgba(255, 255, 255, 0.10);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 16px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: black;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+
+    .materia-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.16);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.20);
+    }
+
+    .materia-card .card-body {
+        padding: 25px;
+    }
+
+    .materia-card .card-title {
+        color: #000000;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .materia-card .card-text {
+        color: rgba(8, 0, 0, 0.8);
+        margin-bottom: 20px;
+    }
+
+    .materia-card .btn-primary {
+        background: rgb(49, 125, 146);
+        border-color: rgb(49, 125, 146);
+        border-radius: 10px;
+    }
+
+    .materia-card .btn-primary:hover {
+        background: #6BC7E8;
+        border-color: #6BC7E8;
+        color: #0F2E6D;
+    }
+
+
