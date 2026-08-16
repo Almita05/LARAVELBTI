@@ -59,6 +59,10 @@ Route::middleware('auth.session')->group(function () {
     Route::get('/planesBTI', [PlanEstudioController::class, 'bti'])->name('planesBTI');
     Route::get('/planesBGNE', [PlanEstudioController::class, 'bgne'])->name('planesBGNE');
 
+    // Notificaciones
+    Route::get('/notificaciones', [\App\Http\Controllers\NotificacionController::class, 'index'])->name('notificaciones');
+    Route::get('/notificaciones/count', [\App\Http\Controllers\NotificacionController::class, 'count']);
+
    // Analizador de Estados de Cuenta QRP
 Route::get('/analizar-estado-cuenta',[QrpController::class, 'index'])->name('analizar-estado-cuenta');
     Route::post('/analizar-estado-cuenta',[QrpController::class, 'analizar'])->name('estado_cuenta.analizar');
