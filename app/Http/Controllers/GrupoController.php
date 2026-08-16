@@ -15,7 +15,18 @@ class GrupoController extends Controller
 
     public function busqueda()
     {
-        $niveles = DB::table('tb_niveles_academicos')->orderBy('id', 'asc')->get();
+        $url = config('services.api.base_url') . '/getNivelAcademico';
+        $response = Http::get($url);
+
+        if ($response->failed()) {
+            $niveles = [];
+        } else {
+            // Convertir array asociativo a objetos stdClass para compatibilidad con la vista
+            $niveles = array_map(function ($nivel) {
+                return (object)$nivel;
+            }, $response->json());
+        }
+
         return view('grupos.busqueda', compact('niveles'));
     }
 
