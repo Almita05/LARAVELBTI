@@ -72,16 +72,8 @@ class AsistenciaAlumnoController extends Controller
         $materias = $attendanceData['materias'] ?? [];
         $selected_materia_id = $attendanceData['selected_materia_id'] ?? null;
 
-        // Obtener nivel académico activo del grupo para filtrar materias y fechas correspondientes
-        $activeLevel = \Illuminate\Support\Facades\DB::table('tb_grupo_periodos_captura')
-            ->where('id_grupo', $id_grupo)
-            ->value('id_nivel_academico');
-
-        if (is_null($activeLevel)) {
-            $activeLevel = \Illuminate\Support\Facades\DB::table('tb_grupos')
-                ->where('id', $id_grupo)
-                ->value('id_nivel_academico');
-        }
+        // Obtener nivel académico activo del grupo de la respuesta API de Python
+        $activeLevel = $grupo['active_level'] ?? null;
 
         if ($activeLevel) {
             // Filtrar materias del nivel activo o nivel común/nulo
