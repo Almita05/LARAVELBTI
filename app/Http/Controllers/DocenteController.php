@@ -238,116 +238,17 @@ public function getPendingItems()
         ]);
     }
 
-    $hoy = date('Y-m-d');
-    $proximos15Dias = date('Y-m-d', strtotime('+15 days'));
+    $url = config('services.api.base_url') . '/docentes/' . $idDocente . '/pendientes';
+    $response = Http::get($url);
 
-    // 1. Prórrogas activas
-    $prorrogas = DB::table('tb_docente_permisos_captura as p')
-        ->join('tb_grupos as g', 'p.id_grupo', '=', 'g.id')
-        ->join('tb_materias as m', 'p.id_materia', '=', 'm.id')
-        ->join('tb_horarios as h', function($join) {
-            $join->on('p.id_grupo', '=', 'h.id_grupo')
-                 ->on('p.id_materia', '=', 'h.id_materia')
-                 ->on('p.id_docente', '=', 'h.id_docente');
-        })
-        ->select(
-            'p.*',
-            'g.clave as clave_grupo',
-            'm.nombreMateria as nombre_materia',
-            'm.clave as clave_materia',
-            DB::raw("DATEDIFF(p.fecha_limite, '$hoy') as dias_restantes")
-        )
-        ->where('p.id_docente', $idDocente)
-        ->where('p.habilitado', 1)
-        ->where('p.fecha_limite', '>=', $hoy)
-        ->orderBy('p.fecha_limite', 'asc')
-        ->get();
-
-    // 2. Grupos por finalizar (próximos 15 días)
-    $porFinalizar = DB::table('tb_horarios as h')
-        ->join('tb_grupos as g', 'h.id_grupo', '=', 'g.id')
-        ->select(
-            'g.id',
-            'g.clave as clave_grupo',
-            'g.fechaFin as fecha_fin',
-            DB::raw("DATEDIFF(g.fechaFin, '$hoy') as dias_restantes")
-        )
-        ->where('h.id_docente', $idDocente)
-        ->where('g.statusGrupo', 'ACTIVO')
-        ->where('g.fechaFin', '>=', $hoy)
-        ->where('g.fechaFin', '<=', $proximos15Dias)
-        ->distinct()
-        ->orderBy('g.fechaFin', 'asc')
-        ->get();
-
-    // 3. Calificaciones pendientes por capturar
-    $clases = DB::table('tb_horarios as h')
-        ->join('tb_grupos as g', 'h.id_grupo', '=', 'g.id')
-        ->join('tb_materias as m', 'h.id_materia', '=', 'm.id')
-        ->select(
-            'g.id as id_grupo',
-            'g.clave as clave_grupo',
-            'm.id as id_materia',
-            'm.nombreMateria as nombre_materia',
-            'm.clave as clave_materia'
-        )
-        ->where('h.id_docente', $idDocente)
-        ->where('g.statusGrupo', 'ACTIVO')
-        ->where(function($q) {
-            $q->whereNull('m.id_nivel_academico')
-              ->orWhereColumn('m.id_nivel_academico', 'g.id_nivel_academico');
-        })
-        ->distinct()
-        ->get();
-
-    $calificacionesPendientes = [];
-
-    foreach ($clases as $clase) {
-        $alumnos = DB::table('tb_alumnogrupo as ag')
-            ->join('tb_alumnos as a', 'ag.idAlumno', '=', 'a.idAlumno')
-            ->where('ag.idGrupo', $clase->id_grupo)
-            ->where('ag.estado', 'ACTIVO')
-            ->where('a.statusAlumno', 'ACTIVO')
-            ->select('a.idAlumno')
-            ->get();
-
-        if ($alumnos->isEmpty()) {
-            continue;
-        }
-
-        $alumnosIds = $alumnos->pluck('idAlumno')->toArray();
-
-        $calificadosCount = DB::table('tb_calificaciones')
-            ->where('idMateria', $clase->id_materia)
-            ->where('idGrupo', $clase->id_grupo)
-            ->whereIn('idAlumno', $alumnosIds)
-            ->whereNotNull('calificacion')
-            ->count();
-
-        $totalAlumnos = count($alumnosIds);
-        $faltantes = $totalAlumnos - $calificadosCount;
-
-        if ($faltantes > 0) {
-            $permissionResult = app(GrupoController::class)->checkCapturaPermission($clase->id_grupo, $clase->id_materia);
-            
-            $calificacionesPendientes[] = [
-                'id_grupo' => $clase->id_grupo,
-                'clave_grupo' => $clase->clave_grupo,
-                'id_materia' => $clase->id_materia,
-                'nombre_materia' => $clase->nombre_materia,
-                'clave_materia' => $clase->clave_materia,
-                'alumnos_totales' => $totalAlumnos,
-                'alumnos_faltantes' => $faltantes,
-                'bloqueado' => !$permissionResult['allowed'],
-                'motivo_bloqueo' => $permissionResult['reason']
-            ];
-        }
+    if ($response->failed()) {
+        return response()->json([
+            'prorrogas' => [],
+            'por_finalizar' => [],
+            'calificaciones_pendientes' => []
+        ], $response->status());
     }
 
-    return response()->json([
-        'prorrogas' => $prorrogas,
-        'por_finalizar' => $porFinalizar,
-        'calificaciones_pendientes' => $calificacionesPendientes
-    ]);
+    return response()->json($response->json());
 }
 }
