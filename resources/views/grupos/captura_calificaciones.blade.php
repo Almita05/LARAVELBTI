@@ -1546,7 +1546,7 @@ function guardarCalificacionesMateriaSeleccionada() {
         // Mostrar SweetAlert pidiendo confirmación definitiva
         Swal.fire({
             title: '¿Confirmar y enviar calificaciones?',
-            text: "Una vez enviadas, las calificaciones quedarán registradas de manera definitiva y no podrá volver a editarlas. Solo el administrador podrá realizar modificaciones posteriores.",
+            text: "Una vez enviadas, las calificaciones quedarán registradas de manera definitiva.",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: 'rgb(49, 125, 146)',
@@ -1638,8 +1638,8 @@ function enviarPeticionGuardar(finalizar) {
         if (resp.success) {
             Swal.fire({
                 icon: 'success',
-                title: finalizar ? '¡Enviado y Bloqueado!' : '¡Guardado!',
-                text: finalizar ? 'Calificaciones enviadas y guardadas exitosamente. Captura bloqueada.' : 'Calificaciones de la materia registradas en borrador.',
+                title: finalizar ? '¡Enviado!' : '¡Guardado!',
+                text: finalizar ? 'Calificaciones enviadas y guardadas exitosamente.' : 'Calificaciones de la materia registradas en borrador.',
                 confirmButtonColor: 'rgb(49, 125, 146)'
             });
             // Recargar modal para actualizar estado de solo lectura y ver los cambios reflejados
