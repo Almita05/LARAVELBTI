@@ -1211,7 +1211,32 @@ function renderDatosControlOficial(data) {
     recalcularEstadisticasMateria();
 }
 
+function validarRangoInput(inputEl) {
+    if (!inputEl) return true;
+    const cctId = datosGrupoMateriaActual && datosGrupoMateriaActual.grupo ? datosGrupoMateriaActual.grupo.id_centroTrabajo : null;
+    const enforceRange = (cctId === 2 || cctId === 3);
+    if (!enforceRange) return true;
+
+    if (inputEl.value === "") {
+        inputEl.style.borderColor = '';
+        inputEl.style.backgroundColor = '';
+        return true;
+    }
+
+    const val = parseFloat(inputEl.value);
+    if (isNaN(val) || val < 0.0 || val > 10.0) {
+        inputEl.style.borderColor = '#dc2626';
+        inputEl.style.backgroundColor = '#fef2f2';
+        return false;
+    } else {
+        inputEl.style.borderColor = '';
+        inputEl.style.backgroundColor = '';
+        return true;
+    }
+}
+
 function recalcularFilaSemestral(inputEl) {
+    validarRangoInput(inputEl);
     const tr = inputEl.closest('tr');
     if (!tr) return;
 
@@ -1325,6 +1350,7 @@ function recalcularFilaSemestral(inputEl) {
 }
 
 function recalcularFilaOficial(inputEl) {
+    validarRangoInput(inputEl);
     const tr = inputEl.closest('tr');
     const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
     if (isEquiv) return;
@@ -1488,6 +1514,71 @@ function guardarCalificacionesMateriaSeleccionada() {
         return;
     }
 
+    // 1. Validar rango de calificaciones antes de continuar
+    const rows = document.querySelectorAll('#tbodyAlumnosCalificacionesMateria tr');
+    let valid = true;
+    
+    rows.forEach(tr => {
+        const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
+        if (isEquiv) return;
+
+        const inputs = tr.querySelectorAll('.input-calif-celda');
+        inputs.forEach(inp => {
+            if (!validarRangoInput(inp)) {
+                valid = false;
+            }
+        });
+    });
+
+    if (!valid) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Valores Inválidos',
+            text: 'Existen calificaciones fuera del rango permitido (0 a 10). Por favor corríjalas antes de guardar.',
+            confirmButtonColor: 'rgb(49, 125, 146)'
+        });
+        return;
+    }
+
+    const isDocente = '{{ session("rol") }}' === 'DOCENTE';
+
+    if (isDocente) {
+        // Mostrar SweetAlert pidiendo confirmación definitiva
+        Swal.fire({
+            title: '¿Confirmar y enviar calificaciones?',
+            text: "Una vez enviadas, las calificaciones quedarán registradas de manera definitiva y no podrá volver a editarlas. Solo el administrador podrá realizar modificaciones posteriores.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: 'rgb(49, 125, 146)',
+            cancelButtonColor: '#dc3545',
+            confirmButtonText: '<i class="fa-solid fa-paper-plane me-1"></i> Sí, confirmar y enviar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                enviarPeticionGuardar(true);
+            }
+        });
+    } else {
+        // Es Administrador: Guardar con confirmación simple sin bloqueo
+        Swal.fire({
+            title: '¿Guardar calificaciones?',
+            text: "Se guardarán las calificaciones modificadas en la asignatura.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: 'rgb(49, 125, 146)',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, guardar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                enviarPeticionGuardar(false);
+            }
+        });
+    }
+}
+
+function enviarPeticionGuardar(finalizar) {
+    const idMateria = datosGrupoMateriaActual.idMateriaSeleccionada;
     const btn = document.getElementById('btnGuardarCalifsMateria');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...';
@@ -1499,7 +1590,6 @@ function guardarCalificacionesMateriaSeleccionada() {
         const idAlumno = tr.getAttribute('data-alumno-id');
         const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
         
-        // Omitir el guardado para alumnos que tienen equivalencia en este periodo
         if (isEquiv) return;
 
         const p1Inp = tr.querySelector('.inp-p1');
@@ -1538,22 +1628,27 @@ function guardarCalificacionesMateriaSeleccionada() {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
-        body: JSON.stringify({ calificaciones: calificaciones })
+        body: JSON.stringify({ 
+            calificaciones: calificaciones,
+            finalizar: finalizar
+        })
     })
     .then(res => res.json())
     .then(resp => {
         if (resp.success) {
             Swal.fire({
                 icon: 'success',
-                title: '¡Guardado!',
-                text: 'Calificaciones de la materia registradas exitosamente.',
+                title: finalizar ? '¡Enviado y Bloqueado!' : '¡Guardado!',
+                text: finalizar ? 'Calificaciones enviadas y guardadas exitosamente. Captura bloqueada.' : 'Calificaciones de la materia registradas en borrador.',
                 confirmButtonColor: 'rgb(49, 125, 146)'
             });
+            // Recargar modal para actualizar estado de solo lectura y ver los cambios reflejados
+            abrirCapturaGrupoMateria(grupoCapturaActualId, idMateria);
         } else {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: resp.message || 'No se pudieron guardar las calificaciones.',
+                text: resp.error || resp.message || 'No se pudieron guardar las calificaciones.',
                 confirmButtonColor: 'rgb(49, 125, 146)'
             });
         }
