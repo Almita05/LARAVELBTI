@@ -2016,7 +2016,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         const confirmResult = await Swal.fire({
                             icon: 'warning',
                             title: 'Conflicto de Horario',
-                            html: `El docente <strong>${docName}</strong> ya tiene clases en este horario en otro grupo para la materia <strong>${matName}</strong>.<br><br>¿Deseas asignarlo de todas formas?`,
+                            html: `El docente <strong>${docName}</strong> ya tiene una clase asignada en el grupo <strong>${valData.grupo_clave || '—'}</strong> en el horario <strong>${valData.dia_nombre || '—'} de ${valData.hora_inicio || '—'} a ${valData.hora_fin || '—'}</strong> para la materia <strong>${valData.materia_nombre || '—'}</strong>.<br><br>¿Deseas asignarlo de todas formas?`,
                             showCancelButton: true,
                             confirmButtonColor: 'rgb(38, 104, 123)',
                             cancelButtonColor: '#cbd5e1',
@@ -2542,7 +2542,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         const confirmResult = await Swal.fire({
                             icon: 'warning',
                             title: 'Conflicto de Horario',
-                            html: `El docente <strong>${docName}</strong> ya tiene clases en este horario en otro grupo para la materia <strong>${matName}</strong>.<br><br>¿Deseas asignarlo de todas formas?`,
+                            html: `El docente <strong>${docName}</strong> ya tiene una clase asignada en el grupo <strong>${valData.grupo_clave || '—'}</strong> en el horario <strong>${valData.dia_nombre || '—'} de ${valData.hora_inicio || '—'} a ${valData.hora_fin || '—'}</strong> para la materia <strong>${valData.materia_nombre || '—'}</strong>.<br><br>¿Deseas asignarlo de todas formas?`,
                             showCancelButton: true,
                             confirmButtonColor: 'rgb(38, 104, 123)',
                             cancelButtonColor: '#cbd5e1',
