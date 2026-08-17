@@ -148,7 +148,13 @@
 
                             <!-- Nivel Académico (Semestre / Trimestre) -->
                             <div class="col-md-6">
-                                <label class="form-label" id="labelNivelMateria">Semestre / Periodo <span class="text-danger">*</span></label>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label mb-0" id="labelNivelMateria">Semestre / Periodo <span class="text-danger">*</span></label>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" id="chkMultiplesPeriodos" name="multiples_periodos">
+                                        <label class="form-check-label small text-muted" for="chkMultiplesPeriodos">Múltiples</label>
+                                    </div>
+                                </div>
                                 <select
                                     class="form-select form-select-premium"
                                     name="id_nivel_academico"
@@ -350,7 +356,13 @@ document.addEventListener("DOMContentLoaded", function() {
         if (form.clave) form.clave.disabled = disabled;
         form.estatusMateria.disabled = disabled;
         if (form.idCentroTrabajo) form.idCentroTrabajo.disabled = disabled;
-        if (form.id_nivel_academico) form.id_nivel_academico.disabled = disabled;
+        
+        const chkMulti = document.getElementById('chkMultiplesPeriodos');
+        if (chkMulti) chkMulti.disabled = disabled;
+        
+        if (form.id_nivel_academico) {
+            form.id_nivel_academico.disabled = disabled || (chkMulti && chkMulti.checked);
+        }
         document.querySelectorAll('.docenteCheck').forEach(cb => cb.disabled = disabled);
     }
 
@@ -367,6 +379,18 @@ document.addEventListener("DOMContentLoaded", function() {
                 selectNivel.innerHTML = '<option value="">-- Primero seleccione un Centro de Trabajo --</option>';
             }
             document.getElementById('docentesSeleccionados').innerHTML = '';
+            
+            const chkMulti = document.getElementById('chkMultiplesPeriodos');
+            if (chkMulti) {
+                chkMulti.checked = false;
+                if (selectNivel) {
+                    selectNivel.disabled = false;
+                    selectNivel.setAttribute('required', 'required');
+                }
+                const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
+                if (labelSpan) labelSpan.style.display = 'inline';
+            }
+            
             setFormDisabled(false);
             document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
             document.querySelector('#modalMateria .modal-title').innerHTML =
@@ -395,6 +419,30 @@ document.addEventListener("DOMContentLoaded", function() {
 
                     // Cargar niveles académicos correspondientes y auto-seleccionar
                     filtrarPeriodosPorCct(m.idCentroTrabajo, m.id_nivel_academico);
+
+                    // Configurar checkbox de múltiples periodos
+                    const isMulti = !m.id_nivel_academico;
+                    const chkMulti = document.getElementById('chkMultiplesPeriodos');
+                    if (chkMulti) {
+                        chkMulti.checked = isMulti;
+                        const selectNivel = document.getElementById('selectNivelMateria');
+                        if (isMulti) {
+                            if (selectNivel) {
+                                selectNivel.disabled = true;
+                                selectNivel.removeAttribute('required');
+                                selectNivel.value = "";
+                            }
+                            const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
+                            if (labelSpan) labelSpan.style.display = 'none';
+                        } else {
+                            if (selectNivel) {
+                                selectNivel.disabled = false;
+                                selectNivel.setAttribute('required', 'required');
+                            }
+                            const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
+                            if (labelSpan) labelSpan.style.display = 'inline';
+                        }
+                    }
 
                     document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
                     const checkIds = m.docentes ? m.docentes.map(d => d.idDocente) : [];
@@ -449,6 +497,30 @@ document.addEventListener("DOMContentLoaded", function() {
 
                     // Cargar niveles académicos correspondientes y auto-seleccionar
                     filtrarPeriodosPorCct(m.idCentroTrabajo, m.id_nivel_academico);
+
+                    // Configurar checkbox de múltiples periodos
+                    const isMulti = !m.id_nivel_academico;
+                    const chkMulti = document.getElementById('chkMultiplesPeriodos');
+                    if (chkMulti) {
+                        chkMulti.checked = isMulti;
+                        const selectNivel = document.getElementById('selectNivelMateria');
+                        if (isMulti) {
+                            if (selectNivel) {
+                                selectNivel.disabled = true;
+                                selectNivel.removeAttribute('required');
+                                selectNivel.value = "";
+                            }
+                            const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
+                            if (labelSpan) labelSpan.style.display = 'none';
+                        } else {
+                            if (selectNivel) {
+                                selectNivel.disabled = false;
+                                selectNivel.setAttribute('required', 'required');
+                            }
+                            const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
+                            if (labelSpan) labelSpan.style.display = 'inline';
+                        }
+                    }
 
                     document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
                     const checkIds = m.docentes ? m.docentes.map(d => d.idDocente) : [];
@@ -695,6 +767,29 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     cargarDocentes();
+
+    // Listener para checkbox de múltiples periodos
+    const chkMultiplesPeriodos = document.getElementById('chkMultiplesPeriodos');
+    if (chkMultiplesPeriodos) {
+        chkMultiplesPeriodos.addEventListener('change', function() {
+            const selectNivel = document.getElementById('selectNivelMateria');
+            const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
+            if (this.checked) {
+                if (selectNivel) {
+                    selectNivel.disabled = true;
+                    selectNivel.removeAttribute('required');
+                    selectNivel.value = "";
+                }
+                if (labelSpan) labelSpan.style.display = 'none';
+            } else {
+                if (selectNivel) {
+                    selectNivel.disabled = false;
+                    selectNivel.setAttribute('required', 'required');
+                }
+                if (labelSpan) labelSpan.style.display = 'inline';
+            }
+        });
+    }
 
 });
 </script>
