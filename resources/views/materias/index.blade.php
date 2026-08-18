@@ -327,17 +327,21 @@ document.addEventListener("DOMContentLoaded", function() {
         return fetch(`/catalogos/niveles-academicos?idCentroTrabajo=${idCentroTrabajo}`)
             .then(res => res.json())
             .then(niveles => {
-                selectNivel.innerHTML = '<option value="">-- Seleccionar Nivel --</option>';
+                let html = '<option value="">-- Seleccionar Nivel --</option>';
                 if (Array.isArray(niveles)) {
                     niveles.forEach(n => {
-                        const opt = document.createElement('option');
-                        opt.value = n.id;
-                        opt.textContent = n.nombre;
-                        if (selectedNivelId && String(n.id) === String(selectedNivelId)) {
-                            opt.selected = true;
-                        }
-                        selectNivel.appendChild(opt);
+                        const selectedAttr = (selectedNivelId && String(n.id) === String(selectedNivelId)) ? 'selected' : '';
+                        html += `<option value="${n.id}" ${selectedAttr}>${n.nombre}</option>`;
                     });
+                }
+                
+                const chkMulti = document.getElementById('chkMultiplesPeriodos');
+                if (chkMulti && chkMulti.checked) {
+                    selectNivel.dataset.oldHtml = html;
+                    selectNivel.innerHTML = '<option value="" selected>Disponible en todos los periodos</option>';
+                    selectNivel.value = "";
+                } else {
+                    selectNivel.innerHTML = html;
                     if (selectedNivelId) {
                         selectNivel.value = selectedNivelId;
                     }
@@ -430,6 +434,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             if (selectNivel) {
                                 selectNivel.disabled = true;
                                 selectNivel.removeAttribute('required');
+                                selectNivel.dataset.oldHtml = selectNivel.innerHTML;
+                                selectNivel.innerHTML = '<option value="" selected>Disponible en todos los periodos</option>';
                                 selectNivel.value = "";
                             }
                             const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
@@ -508,6 +514,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             if (selectNivel) {
                                 selectNivel.disabled = true;
                                 selectNivel.removeAttribute('required');
+                                selectNivel.dataset.oldHtml = selectNivel.innerHTML;
+                                selectNivel.innerHTML = '<option value="" selected>Disponible en todos los periodos</option>';
                                 selectNivel.value = "";
                             }
                             const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
@@ -778,6 +786,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (selectNivel) {
                     selectNivel.disabled = true;
                     selectNivel.removeAttribute('required');
+                    selectNivel.dataset.oldHtml = selectNivel.innerHTML;
+                    selectNivel.innerHTML = '<option value="" selected>Disponible en todos los periodos</option>';
                     selectNivel.value = "";
                 }
                 if (labelSpan) labelSpan.style.display = 'none';
@@ -785,6 +795,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (selectNivel) {
                     selectNivel.disabled = false;
                     selectNivel.setAttribute('required', 'required');
+                    if (selectNivel.dataset.oldHtml) {
+                        selectNivel.innerHTML = selectNivel.dataset.oldHtml;
+                    } else {
+                        const cctVal = document.getElementById('selectCctMateria').value;
+                        filtrarPeriodosPorCct(cctVal);
+                    }
                 }
                 if (labelSpan) labelSpan.style.display = 'inline';
             }
