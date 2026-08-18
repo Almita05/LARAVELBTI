@@ -559,6 +559,11 @@
     font-size: 3rem;
     color: #cbd5e1;
 }
+
+/* Fix TomSelect width inside initially hidden containers */
+.ts-wrapper, .ts-control {
+    width: 100% !important;
+}
 </style>
 
 <div class="horarios-page-wrapper">
@@ -987,11 +992,21 @@ document.addEventListener("DOMContentLoaded", function() {
             multipleMateriaContainer.style.display = "block";
             formMateriaSelect.removeAttribute("required");
             formMateriaSelectMultiple.setAttribute("required", "required");
+            
+            if (materiaSelectMultipleInstance) {
+                materiaSelectMultipleInstance.sync();
+                materiaSelectMultipleInstance.refreshOptions(false);
+            }
         } else {
             singleMateriaContainer.style.display = "block";
             multipleMateriaContainer.style.display = "none";
             formMateriaSelect.setAttribute("required", "required");
             formMateriaSelectMultiple.removeAttribute("required");
+            
+            if (materiaSelectInstance) {
+                materiaSelectInstance.sync();
+                materiaSelectInstance.refreshOptions(false);
+            }
         }
     });
 
