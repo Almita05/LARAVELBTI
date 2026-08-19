@@ -1,0 +1,9 @@
+.alumno-card {
+    border-left: 4px solid #317d92 !important;
+}
+
+.alumno-card .text-muted {
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}

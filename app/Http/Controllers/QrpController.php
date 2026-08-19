@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class QrpController extends Controller
 {
@@ -29,12 +28,17 @@ class QrpController extends Controller
             'archivo_qrp' => [
                 'required',
                 'file',
-                'max:51200', // 50 MB
+                'max:51200',
             ],
         ], [
-            'archivo_qrp.required' => 'Debes seleccionar un archivo QRP.',
-            'archivo_qrp.file' => 'El archivo seleccionado no es válido.',
-            'archivo_qrp.max' => 'El archivo no puede superar los 50 MB.',
+            'archivo_qrp.required' =>
+                'Debes seleccionar un archivo QRP.',
+
+            'archivo_qrp.file' =>
+                'El archivo seleccionado no es válido.',
+
+            'archivo_qrp.max' =>
+                'El archivo no puede superar los 50 MB.',
         ]);
 
 
@@ -57,10 +61,10 @@ class QrpController extends Controller
 
             return back()
                 ->withErrors([
-                    'archivo_qrp' => 'El archivo debe tener extensión .QRP.'
+                    'archivo_qrp' =>
+                        'El archivo debe tener extensión .QRP.'
                 ])
                 ->withInput();
-
         }
 
 
@@ -82,7 +86,7 @@ class QrpController extends Controller
 
 
         // ============================================
-        // 5. UBICACIÓN DEL SCRIPT PYTHON
+        // 5. SCRIPT PYTHON
         // ============================================
 
         $scriptPython = base_path(
@@ -91,7 +95,7 @@ class QrpController extends Controller
 
 
         // ============================================
-        // 6. VERIFICAR QUE EXISTA PYTHON
+        // 6. VERIFICAR PYTHON
         // ============================================
 
         if (!file_exists($scriptPython)) {
@@ -102,12 +106,11 @@ class QrpController extends Controller
                         'No se encontró el archivo Python: '
                         . $scriptPython
                 ]);
-
         }
 
 
         // ============================================
-        // 7. VERIFICAR QUE EXISTA EL QRP
+        // 7. VERIFICAR QRP
         // ============================================
 
         if (!file_exists($rutaCompleta)) {
@@ -117,7 +120,6 @@ class QrpController extends Controller
                     'archivo_qrp' =>
                         'No se pudo encontrar el archivo QRP temporal.'
                 ]);
-
         }
 
 
@@ -127,22 +129,7 @@ class QrpController extends Controller
 
         try {
 
-            /*
-             * En Windows normalmente funciona:
-             *
-             *     python
-             *
-             * Si posteriormente Laravel no encuentra Python,
-             * podremos colocar aquí la ruta completa de python.exe.
-             */
-
             $python = 'python';
-
-
-            /*
-             * Escapamos las rutas para evitar problemas
-             * con espacios en nombres de carpetas.
-             */
 
             $comando =
                 $python
@@ -151,8 +138,6 @@ class QrpController extends Controller
                 . ' '
                 . escapeshellarg($rutaCompleta);
 
-
-            // Ejecutar Python
 
             $salida = [];
 
@@ -165,17 +150,15 @@ class QrpController extends Controller
             );
 
 
-            // Convertir salida de consola a texto
+            // ========================================
+            // 9. OBTENER RESPUESTA DE PYTHON
+            // ========================================
 
             $resultadoPython = implode(
                 PHP_EOL,
                 $salida
             );
 
-
-            // ========================================
-            // 9. REGISTRAR RESPUESTA DE PYTHON
-            // ========================================
 
             Log::info(
                 'Respuesta del parser QRP',
@@ -187,7 +170,7 @@ class QrpController extends Controller
 
 
             // ========================================
-            // 10. VERIFICAR ERROR DE PYTHON
+            // 10. ERROR DE PYTHON
             // ========================================
 
             if ($codigoSalida !== 0) {
@@ -198,12 +181,31 @@ class QrpController extends Controller
                             'Python devolvió un error: '
                             . $resultadoPython
                     ]);
-
             }
 
 
             // ========================================
-            // 11. CONVERTIR JSON
+            // 11. LIMPIAR RESPUESTA
+            // ========================================
+            //
+            // Python debe devolver solamente JSON.
+            // Eliminamos espacios/BOM que puedan venir
+            // al principio o final de la respuesta.
+            //
+
+            $resultadoPython = trim(
+                $resultadoPython
+            );
+
+            $resultadoPython = preg_replace(
+                '/^\xEF\xBB\xBF/',
+                '',
+                $resultadoPython
+            );
+
+
+            // ========================================
+            // 12. CONVERTIR JSON
             // ========================================
 
             $resultado = json_decode(
@@ -213,25 +215,36 @@ class QrpController extends Controller
 
 
             // ========================================
-            // 12. VALIDAR JSON
+            // 13. VALIDAR JSON
             // ========================================
 
-            if (json_last_error() !== JSON_ERROR_NONE) {
+            if (
+                json_last_error() !== JSON_ERROR_NONE
+            ) {
+
+                Log::error(
+                    'JSON inválido recibido desde Python',
+                    [
+                        'error' =>
+                            json_last_error_msg(),
+
+                        'respuesta' =>
+                            $resultadoPython
+                    ]
+                );
 
                 return back()
                     ->withErrors([
                         'archivo_qrp' =>
-                            'Python no devolvió un JSON válido.'
-                            . PHP_EOL
-                            . 'Respuesta recibida: '
-                            . $resultadoPython
+                            'Python no devolvió un JSON válido. '
+                            . 'Error JSON: '
+                            . json_last_error_msg()
                     ]);
-
             }
 
 
             // ========================================
-            // 13. VALIDAR SUCCESS
+            // 14. VALIDAR SUCCESS
             // ========================================
 
             if (
@@ -239,58 +252,61 @@ class QrpController extends Controller
                 || $resultado['success'] !== true
             ) {
 
-                $mensaje = $resultado['message']
+                $mensaje =
+                    $resultado['message']
                     ?? 'No se pudo procesar el archivo QRP.';
 
                 return back()
                     ->withErrors([
                         'archivo_qrp' => $mensaje
                     ]);
-
             }
 
 
             // ========================================
-            // 14. OBTENER DATOS
+            // 15. OBTENER DATOS
             // ========================================
 
-            $movimientos = $resultado['movimientos']
+            $movimientos =
+                $resultado['movimientos']
                 ?? [];
 
-            $resumen = $resultado['resumen']
+            $resumen =
+                $resultado['resumen']
                 ?? [];
 
 
             // ========================================
-            // 15. TOTAL DE MOVIMIENTOS
+            // 16. TOTAL DE MOVIMIENTOS
             // ========================================
 
-            $totalMovimientos = $resultado[
-                'total_movimientos'
-            ] ?? count($movimientos);
+            $totalMovimientos =
+                $resultado['total_movimientos']
+                ?? count($movimientos);
 
 
             // ========================================
-            // 16. ELIMINAR ARCHIVO TEMPORAL
+            // 17. ELIMINAR ARCHIVO TEMPORAL
             // ========================================
 
             if (file_exists($rutaCompleta)) {
 
                 unlink($rutaCompleta);
-
             }
 
 
             // ========================================
-            // 17. REGRESAR A LA VISTA
+            // 18. REGRESAR A LA VISTA
             // ========================================
 
             return view(
                 'qrp.analizar',
                 [
-                    'movimientos' => $movimientos,
+                    'movimientos' =>
+                        $movimientos,
 
-                    'resumen' => $resumen,
+                    'resumen' =>
+                        $resumen,
 
                     'totalMovimientos' =>
                         $totalMovimientos,
@@ -298,7 +314,8 @@ class QrpController extends Controller
                     'archivoProcesado' =>
                         $archivo->getClientOriginalName(),
 
-                    'procesado' => true,
+                    'procesado' =>
+                        true,
                 ]
             );
 
@@ -306,7 +323,7 @@ class QrpController extends Controller
         } catch (\Throwable $e) {
 
             // ========================================
-            // ELIMINAR TEMPORAL SI OCURRIÓ ERROR
+            // ELIMINAR TEMPORAL
             // ========================================
 
             if (
@@ -315,7 +332,6 @@ class QrpController extends Controller
             ) {
 
                 unlink($rutaCompleta);
-
             }
 
 
@@ -326,7 +342,9 @@ class QrpController extends Controller
             Log::error(
                 'Error procesando archivo QRP',
                 [
-                    'error' => $e->getMessage(),
+                    'error' =>
+                        $e->getMessage(),
+
                     'archivo' =>
                         $archivo->getClientOriginalName()
                 ]
@@ -343,7 +361,6 @@ class QrpController extends Controller
                         'Ocurrió un error al procesar el QRP: '
                         . $e->getMessage()
                 ]);
-
         }
     }
 }

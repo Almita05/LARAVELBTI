@@ -23,6 +23,7 @@ use App\Http\Controllers\KardexCBgneController;
 use App\Http\Controllers\AsistenciaDocenteController;
 use App\Http\Controllers\PermisosCapturaController;
 use App\Http\Controllers\PersonalController;
+use App\Http\Controllers\QrpController;
 
 
 

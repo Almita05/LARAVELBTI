@@ -4,10 +4,6 @@ import json
 from decimal import Decimal
 
 
-# ============================================================
-# CONFIGURACIÓN
-# ============================================================
-
 PALABRAS_COLEGIATURA = [
     "COLEGIATURA",
     "PAGO DE COLEGIATURA",
@@ -17,9 +13,97 @@ PALABRAS_COLEGIATURA = [
 
 PALABRAS_EXAMEN = [
     "EXAMEN",
-    "EXTRAORDINARIO",
     "ORDINARIO",
 ]
+
+
+# ============================================================
+# LIMPIEZA DE TEXTOS QRP
+# ============================================================
+
+def limpiar_texto_qrp(texto):
+    """
+    Limpia caracteres extraños que pueden aparecer
+    al extraer texto UTF-16LE de archivos QRP.
+
+    Ejemplos:
+
+        angy !ð !ð
+            -> angy
+
+        Alma !� !�
+            -> Alma
+
+        toño !� colegiatura !�
+            -> toño colegiatura
+
+        ANGY !ð !ð 19
+            -> ANGY 19
+    """
+
+    if texto is None:
+        return ""
+
+    texto = str(texto)
+
+    # --------------------------------------------------------
+    # Reemplazar caracteres de reemplazo Unicode
+    # --------------------------------------------------------
+
+    texto = texto.replace("\ufffd", " ")
+
+    # --------------------------------------------------------
+    # Eliminar patrones conocidos de basura
+    #
+    # !ð
+    # !� 
+    # etc.
+    # --------------------------------------------------------
+
+    texto = re.sub(
+        r"!\s*[\ufffdðÐ�]+",
+        " ",
+        texto,
+        flags=re.IGNORECASE
+    )
+
+    # --------------------------------------------------------
+    # Eliminar caracteres de control
+    # --------------------------------------------------------
+
+    texto = "".join(
+        caracter
+        for caracter in texto
+        if caracter.isprintable()
+        or caracter in "\n\t"
+    )
+
+    # --------------------------------------------------------
+    # Eliminar caracteres extraños que suelen venir
+    # de la codificación del QRP.
+    #
+    # Conservamos letras, números, espacios y puntuación
+    # normal.
+    # --------------------------------------------------------
+
+    texto = re.sub(
+        r"[^\w\sÁÉÍÓÚÜÑáéíóúüñ.,;:/()\-#$%]",
+        " ",
+        texto,
+        flags=re.UNICODE
+    )
+
+    # --------------------------------------------------------
+    # Quitar espacios repetidos
+    # --------------------------------------------------------
+
+    texto = re.sub(
+        r"\s+",
+        " ",
+        texto
+    ).strip()
+
+    return texto
 
 
 # ============================================================
@@ -27,14 +111,14 @@ PALABRAS_EXAMEN = [
 # ============================================================
 
 def es_recibo(valor):
-    """
-    Un recibo normalmente tiene entre 4 y 6 dígitos.
-    """
 
     valor = str(valor).strip()
 
     return bool(
-        re.fullmatch(r"\d{4,6}", valor)
+        re.fullmatch(
+            r"\d{4,6}",
+            valor
+        )
     )
 
 
@@ -63,15 +147,6 @@ def es_hora(valor):
 
 
 def es_importe(valor):
-    """
-    Reconoce:
-
-        200.00
-        800.00
-        0.00
-        1,200.00
-        $200.00
-    """
 
     valor = str(valor).strip()
 
@@ -93,30 +168,46 @@ def convertir_decimal(valor):
     return Decimal(valor)
 
 
+def es_semana(valor):
+
+    texto = str(valor).strip().upper()
+
+    texto = texto.replace(
+        "SEMANA",
+        ""
+    )
+
+    texto = texto.replace(
+        ":",
+        ""
+    )
+
+    texto = texto.replace(
+        " ",
+        ""
+    )
+
+    if not texto.isdigit():
+        return False
+
+    numero = int(texto)
+
+    return 1 <= numero <= 52
+
+
 # ============================================================
-# EXTRAER STRINGS DEL QRP
+# EXTRAER STRINGS
 # ============================================================
 
 def extraer_strings_qrp(data):
     """
-    Extrae textos legibles del QRP.
+    Extrae cadenas legibles del archivo QRP.
 
-    Conserva:
-
-    - textos normales
-    - importes
-    - fechas
-    - horas
-    - recibos
-    - números del 1 al 52
-
-    El QRP contiene mucho texto interno de formato,
-    por eso se eliminan cadenas de un solo carácter
-    que no sean números del 1 al 52.
+    Intenta localizar textos almacenados como UTF-16LE.
     """
 
     patron = re.compile(
-        rb'(?:[\x20-\x7e]\x00){1,}'
+        rb'(?:[\x20-\x7e\xC0-\xFF]\x00){2,}'
     )
 
     resultado = []
@@ -125,32 +216,71 @@ def extraer_strings_qrp(data):
 
         try:
 
-            texto = (
-                m.group()
-                .decode("utf-16le")
-                .strip()
-            )
+            texto = m.group().decode(
+                "utf-16le",
+                errors="ignore"
+            ).strip()
 
-            if not texto:
-                continue
+        except Exception:
 
-            if len(texto) >= 2:
+            continue
 
-                resultado.append(texto)
+        if not texto:
+            continue
 
-                continue
+        if len(texto) > 200:
+            continue
 
-            if texto.isdigit():
+        # ----------------------------------------------------
+        # Limpiar texto inmediatamente
+        # ----------------------------------------------------
+
+        texto = limpiar_texto_qrp(texto)
+
+        if not texto:
+            continue
+
+        # ----------------------------------------------------
+        # NÚMEROS
+        # ----------------------------------------------------
+
+        if texto.isdigit():
+
+            try:
 
                 numero = int(texto)
 
-                if 1 <= numero <= 52:
+            except ValueError:
 
-                    resultado.append(texto)
+                continue
 
-        except UnicodeDecodeError:
+            # Semanas 1-52
+            if 1 <= numero <= 52:
 
-            pass
+                resultado.append(texto)
+                continue
+
+            # Recibos
+            if 4 <= len(texto) <= 6:
+
+                resultado.append(texto)
+                continue
+
+            # Matrículas
+            if 6 <= len(texto) <= 12:
+
+                resultado.append(texto)
+                continue
+
+            continue
+
+        # ----------------------------------------------------
+        # TEXTOS
+        # ----------------------------------------------------
+
+        if len(texto) >= 2:
+
+            resultado.append(texto)
 
     return resultado
 
@@ -160,55 +290,56 @@ def extraer_strings_qrp(data):
 # ============================================================
 
 def contar_colegiaturas(concepto):
-    """
-    Cuenta cuántas colegiaturas representa el concepto.
 
-    Ejemplos:
-
-        "1"              -> 1
-        "23"             -> 1
-        "52"             -> 1
-        "23,24"          -> 2
-        "23, 24"         -> 2
-        "23,24,25"       -> 3
-        "23, 24, 25, 26" -> 4
-        "1,2,3"          -> 3
-        "Colegiatura"    -> 1
-        "Mensualidad"    -> 1
-    """
-
-    texto = str(concepto).strip().upper()
+    texto = str(
+        concepto
+    ).strip().upper()
 
     if not texto:
-
         return 0
 
     for palabra in PALABRAS_COLEGIATURA:
 
         if palabra in texto:
-
             return 1
 
-    texto = texto.replace(";", ",")
-    texto = texto.replace("/", ",")
-    texto = texto.replace(" ", "")
+    texto = texto.replace(
+        "SEMANA",
+        ""
+    )
 
-    if not re.fullmatch(
-        r"\d+(,\d+)*",
+    texto = texto.replace(
+        ":",
+        " "
+    )
+
+    texto = texto.replace(
+        ";",
+        " "
+    )
+
+    texto = texto.replace(
+        "/",
+        " "
+    )
+
+    numeros = re.findall(
+        r"\d+",
         texto
-    ):
+    )
 
+    if not numeros:
         return 0
-
-    partes = texto.split(",")
 
     cantidad = 0
 
-    for parte in partes:
+    for numero_texto in numeros:
 
         try:
 
-            numero = int(parte)
+            numero = int(
+                numero_texto
+            )
 
         except ValueError:
 
@@ -222,100 +353,88 @@ def contar_colegiaturas(concepto):
 
 
 # ============================================================
-# CLASIFICAR CONCEPTO
+# CLASIFICAR
 # ============================================================
 
 def clasificar(concepto):
-    """
-    Clasifica el concepto como:
 
-        Colegiatura
-        Examen
-        Otros
-        Sin concepto
-    """
-
-    texto = str(concepto).strip().upper()
+    texto = str(
+        concepto
+    ).strip().upper()
 
     if not texto:
-
         return "Sin concepto"
 
-    # --------------------------------------------------------
-    # COLEGIATURA POR PALABRA
-    # --------------------------------------------------------
+    if "EXTRAORDINARIO" in texto:
+        return "Otros"
 
     for palabra in PALABRAS_COLEGIATURA:
 
         if palabra in texto:
-
             return "Colegiatura"
 
-    # --------------------------------------------------------
-    # COLEGIATURA POR NÚMEROS
-    # --------------------------------------------------------
+    if "EXAMEN" in texto:
+        return "Examen"
+
+    if "ORDINARIO" in texto:
+        return "Examen"
 
     texto_normalizado = texto
 
     texto_normalizado = texto_normalizado.replace(
+        "SEMANA",
+        ""
+    )
+
+    texto_normalizado = texto_normalizado.replace(
+        ":",
+        " "
+    )
+
+    texto_normalizado = texto_normalizado.replace(
         ";",
-        ","
+        " "
     )
 
     texto_normalizado = texto_normalizado.replace(
         "/",
-        ","
+        " "
     )
 
-    texto_normalizado = texto_normalizado.replace(
-        " ",
-        ""
-    )
-
-    if re.fullmatch(
-        r"\d+(,\d+)*",
+    numeros = re.findall(
+        r"\d+",
         texto_normalizado
-    ):
+    )
 
-        partes = texto_normalizado.split(",")
+    if not numeros:
+        return "Otros"
 
-        numeros_validos = True
+    numeros_validos = []
 
-        for parte in partes:
+    for numero_texto in numeros:
 
-            try:
+        try:
 
-                numero = int(parte)
+            numero = int(
+                numero_texto
+            )
 
-            except ValueError:
+        except ValueError:
 
-                numeros_validos = False
+            continue
 
-                break
+        if 1 <= numero <= 52:
 
-            if not 1 <= numero <= 52:
+            numeros_validos.append(
+                numero
+            )
 
-                numeros_validos = False
+        else:
 
-                break
+            return "Otros"
 
-        if numeros_validos:
-
-            return "Colegiatura"
-
-    # --------------------------------------------------------
-    # EXAMEN
-    # --------------------------------------------------------
-
-    for palabra in PALABRAS_EXAMEN:
-
-        if palabra in texto:
-
-            return "Examen"
-
-    # --------------------------------------------------------
-    # OTROS
-    # --------------------------------------------------------
+    if numeros_validos:
+        return "Colegiatura"
 
     return "Otros"
 
@@ -325,117 +444,165 @@ def clasificar(concepto):
 # ============================================================
 
 def extraer_movimientos(strings):
-    """
-    Extrae los movimientos reales del QRP.
-
-    Estructura observada:
-
-        No. Rcbo.
-        Fecha Pago
-        Colegiatura
-        Recargo
-        usuario
-        Semana / Mes / Concepto
-        Total
-        Hora Pago
-    """
 
     movimientos = []
 
     i = 0
 
+    def siguiente_valido(
+        posicion,
+        funcion,
+        limite=30
+    ):
+
+        fin = min(
+            posicion + limite,
+            len(strings)
+        )
+
+        j = posicion
+
+        while j < fin:
+
+            valor = str(
+                strings[j]
+            ).strip()
+
+            if funcion(valor):
+
+                return j
+
+            j += 1
+
+        return None
+
     while i < len(strings):
 
-        # ----------------------------------------------------
+        # ====================================================
         # RECIBO
-        # ----------------------------------------------------
+        # ====================================================
 
         if not es_recibo(strings[i]):
 
             i += 1
-
             continue
 
         recibo = strings[i]
 
-        # ----------------------------------------------------
+        # ====================================================
         # FECHA
-        # ----------------------------------------------------
+        # ====================================================
 
-        if i + 1 >= len(strings):
+        posicion_fecha = siguiente_valido(
+            i + 1,
+            es_fecha,
+            20
+        )
+
+        if posicion_fecha is None:
 
             i += 1
-
             continue
 
-        if not es_fecha(strings[i + 1]):
+        fecha = strings[
+            posicion_fecha
+        ]
 
-            i += 1
-
-            continue
-
-        fecha = strings[i + 1]
-
-        # ----------------------------------------------------
+        # ====================================================
         # IMPORTE
-        # ----------------------------------------------------
+        # ====================================================
 
-        if i + 2 >= len(strings):
+        posicion_importe = siguiente_valido(
+            posicion_fecha + 1,
+            es_importe,
+            15
+        )
 
-            i += 1
-
-            continue
-
-        importe = strings[i + 2]
-
-        if not es_importe(importe):
+        if posicion_importe is None:
 
             i += 1
-
             continue
 
-        # ----------------------------------------------------
+        importe = strings[
+            posicion_importe
+        ]
+
+        # ====================================================
         # RECARGO
-        # ----------------------------------------------------
+        # ====================================================
 
-        if i + 3 >= len(strings):
+        posicion_recargo = siguiente_valido(
+            posicion_importe + 1,
+            es_importe,
+            15
+        )
 
-            i += 1
-
-            continue
-
-        recargo = strings[i + 3]
-
-        if not es_importe(recargo):
+        if posicion_recargo is None:
 
             i += 1
-
             continue
 
-        # ----------------------------------------------------
+        recargo = strings[
+            posicion_recargo
+        ]
+
+        # ====================================================
         # USUARIO
-        # ----------------------------------------------------
+        # ====================================================
 
-        if i + 4 >= len(strings):
+        posicion_usuario = None
+
+        j = posicion_recargo + 1
+
+        limite_usuario = min(
+            posicion_recargo + 15,
+            len(strings)
+        )
+
+        while j < limite_usuario:
+
+            valor = str(
+                strings[j]
+            ).strip()
+
+            valor_limpio = limpiar_texto_qrp(
+                valor
+            )
+
+            if (
+                valor_limpio
+                and not es_fecha(valor)
+                and not es_hora(valor)
+                and not es_importe(valor)
+                and not valor.isdigit()
+            ):
+
+                posicion_usuario = j
+
+                break
+
+            j += 1
+
+        if posicion_usuario is None:
 
             i += 1
-
             continue
 
-        usuario = strings[i + 4]
+        usuario = limpiar_texto_qrp(
+            strings[posicion_usuario]
+        )
 
-        # ----------------------------------------------------
-        # BUSCAR HORA
-        # ----------------------------------------------------
-
-        j = i + 5
-
-        hora = None
+        # ====================================================
+        # BUSCAR TOTAL Y HORA
+        # ====================================================
 
         posicion_hora = None
+        posicion_total = None
+
+        j = posicion_usuario + 1
 
         limite = min(
-            i + 15,
+            posicion_usuario + 40,
             len(strings)
         )
 
@@ -443,9 +610,19 @@ def extraer_movimientos(strings):
 
             if es_hora(strings[j]):
 
-                hora = strings[j]
-
                 posicion_hora = j
+
+                k = j - 1
+
+                while k > posicion_usuario:
+
+                    if es_importe(strings[k]):
+
+                        posicion_total = k
+
+                        break
+
+                    k -= 1
 
                 break
 
@@ -454,77 +631,73 @@ def extraer_movimientos(strings):
         if posicion_hora is None:
 
             i += 1
-
             continue
 
-        # ----------------------------------------------------
-        # TOTAL
-        # ----------------------------------------------------
-
-        posicion_total = posicion_hora - 1
-
-        if posicion_total < i + 5:
+        if posicion_total is None:
 
             i += 1
-
             continue
 
-        total = strings[posicion_total]
-
-        if not es_importe(total):
-
-            i += 1
-
-            continue
-
-        # ----------------------------------------------------
-        # CONCEPTO
-        # ----------------------------------------------------
-
-        concepto_partes = strings[
-            i + 5:posicion_total
+        total = strings[
+            posicion_total
         ]
 
-        concepto_validos = []
+        # ====================================================
+        # CONCEPTO
+        # ====================================================
 
-        for parte in concepto_partes:
+        concepto_partes = strings[
+            posicion_usuario + 1:
+            posicion_total
+        ]
 
-            parte = str(parte).strip()
+        conceptos_texto = []
+        semanas = []
+
+        k = 0
+
+        while k < len(concepto_partes):
+
+            parte = limpiar_texto_qrp(
+                concepto_partes[k]
+            )
 
             if not parte:
 
+                k += 1
                 continue
 
-            # ----------------------------------------------
-            # NÚMERO INDIVIDUAL
-            # ----------------------------------------------
+            normalizado = (
+                parte
+                .upper()
+                .replace(
+                    "SEMANA",
+                    ""
+                )
+                .replace(
+                    ":",
+                    ""
+                )
+                .replace(
+                    " ",
+                    ""
+                )
+            )
 
-            if parte.isdigit():
-
-                numero_concepto = int(parte)
-
-                if 1 <= numero_concepto <= 52:
-
-                    concepto_validos.append(parte)
-
-                    continue
-
-            # ----------------------------------------------
-            # VARIOS NÚMEROS SEPARADOS POR COMAS
-            # ----------------------------------------------
+            # =================================================
+            # VARIOS NÚMEROS
+            # =================================================
 
             if re.fullmatch(
                 r"\d+(,\d+)+",
-                parte
+                normalizado
             ):
 
-                numeros_validos = []
-
-                for numero_texto in parte.split(","):
+                for numero_texto in normalizado.split(","):
 
                     try:
 
-                        numero_concepto = int(
+                        numero = int(
                             numero_texto
                         )
 
@@ -532,65 +705,214 @@ def extraer_movimientos(strings):
 
                         continue
 
-                    if 1 <= numero_concepto <= 52:
+                    if 1 <= numero <= 52:
 
-                        numeros_validos.append(
-                            numero_texto
+                        semanas.append(
+                            str(numero)
                         )
 
-                if numeros_validos:
+                k += 1
+                continue
 
-                    concepto_validos.append(
-                        ",".join(numeros_validos)
+            # =================================================
+            # NÚMERO
+            # =================================================
+
+            if normalizado.isdigit():
+
+                numero = int(
+                    normalizado
+                )
+
+                if 10 <= numero <= 52:
+
+                    semanas.append(
+                        str(numero)
                     )
 
+                    k += 1
                     continue
 
-            # ----------------------------------------------
+                if 1 <= numero <= 9:
+
+                    candidato = None
+
+                    if k + 1 < len(concepto_partes):
+
+                        siguiente = limpiar_texto_qrp(
+                            concepto_partes[k + 1]
+                        )
+
+                        siguiente_normalizado = (
+                            siguiente
+                            .upper()
+                            .replace(
+                                "SEMANA",
+                                ""
+                            )
+                            .replace(
+                                ":",
+                                ""
+                            )
+                            .replace(
+                                " ",
+                                ""
+                            )
+                        )
+
+                        if (
+                            siguiente_normalizado.isdigit()
+                            and len(
+                                siguiente_normalizado
+                            ) == 1
+                        ):
+
+                            candidato_texto = (
+                                str(numero)
+                                +
+                                siguiente_normalizado
+                            )
+
+                            candidato = int(
+                                candidato_texto
+                            )
+
+                    if (
+                        candidato is not None
+                        and
+                        10 <= candidato <= 52
+                    ):
+
+                        semanas.append(
+                            str(candidato)
+                        )
+
+                        k += 2
+                        continue
+
+                    semanas.append(
+                        str(numero)
+                    )
+
+                    k += 1
+                    continue
+
+            # =================================================
             # TEXTO NORMAL
-            # ----------------------------------------------
+            # =================================================
 
-            if len(parte) >= 2:
+            parte_limpia = limpiar_texto_qrp(
+                parte
+            )
 
-                concepto_validos.append(parte)
+            if len(parte_limpia) >= 2:
 
-        concepto = " ".join(
-            concepto_validos
-        ).strip()
+                conceptos_texto.append(
+                    parte_limpia
+                )
 
-        # ----------------------------------------------------
-        # GUARDAR MOVIMIENTO
-        # ----------------------------------------------------
+            k += 1
 
-        movimientos.append({
+        # ====================================================
+        # FILTRAR SEMANAS
+        # ====================================================
 
-            "recibo": recibo,
+        semanas_10_52 = []
+        semanas_1_9 = []
 
-            "fecha": fecha,
+        for semana in semanas:
 
-            "importe": convertir_decimal(
-                importe
-            ),
+            try:
 
-            "recargo": convertir_decimal(
-                recargo
-            ),
+                numero = int(
+                    semana
+                )
 
-            "usuario": usuario,
+            except ValueError:
 
-            "concepto": concepto,
+                continue
 
-            "total": convertir_decimal(
-                total
-            ),
+            if 10 <= numero <= 52:
 
-            "hora": hora,
+                semanas_10_52.append(
+                    str(numero)
+                )
 
-        })
+            elif 1 <= numero <= 9:
 
-        # ----------------------------------------------------
-        # CONTINUAR DESPUÉS DE LA HORA
-        # ----------------------------------------------------
+                semanas_1_9.append(
+                    str(numero)
+                )
+
+        if semanas_10_52:
+
+            semanas_finales = semanas_10_52
+
+        else:
+
+            semanas_finales = semanas_1_9
+
+        concepto_partes_finales = []
+
+        concepto_partes_finales.extend(
+            conceptos_texto
+        )
+
+        concepto_partes_finales.extend(
+            semanas_finales
+        )
+
+        concepto = limpiar_texto_qrp(
+            " ".join(
+                concepto_partes_finales
+            )
+        )
+
+        # ====================================================
+        # MOVIMIENTO
+        # ====================================================
+
+        movimiento = {
+
+            "recibo":
+                recibo,
+
+            "fecha":
+                fecha,
+
+            "importe":
+                convertir_decimal(
+                    importe
+                ),
+
+            "recargo":
+                convertir_decimal(
+                    recargo
+                ),
+
+            "usuario":
+                limpiar_texto_qrp(
+                    usuario
+                ),
+
+            "concepto":
+                concepto,
+
+            "total":
+                convertir_decimal(
+                    total
+                ),
+
+            "hora":
+                strings[
+                    posicion_hora
+                ]
+
+        }
+
+        movimientos.append(
+            movimiento
+        )
 
         i = posicion_hora + 1
 
@@ -598,7 +920,7 @@ def extraer_movimientos(strings):
 
 
 # ============================================================
-# ANALIZAR MOVIMIENTOS
+# ANALIZAR
 # ============================================================
 
 def analizar(movimientos):
@@ -606,48 +928,40 @@ def analizar(movimientos):
     resumen = {
 
         "Colegiatura": {
-
             "cantidad": 0,
-
             "importe": Decimal("0.00")
-
         },
 
         "Examen": {
-
             "cantidad": 0,
-
             "importe": Decimal("0.00")
-
         },
 
         "Otros": {
-
             "cantidad": 0,
-
             "importe": Decimal("0.00")
-
         },
 
         "Sin concepto": {
-
             "cantidad": 0,
-
             "importe": Decimal("0.00")
-
         }
 
     }
 
     for movimiento in movimientos:
 
-        concepto = movimiento["concepto"]
+        concepto = movimiento[
+            "concepto"
+        ]
 
         categoria = clasificar(
             concepto
         )
 
-        movimiento["categoria"] = categoria
+        movimiento[
+            "categoria"
+        ] = categoria
 
         if categoria == "Colegiatura":
 
@@ -661,7 +975,9 @@ def analizar(movimientos):
 
             resumen[
                 "Colegiatura"
-            ]["cantidad"] += cantidad
+            ][
+                "cantidad"
+            ] += cantidad
 
         else:
 
@@ -671,40 +987,57 @@ def analizar(movimientos):
 
             resumen[
                 categoria
-            ]["cantidad"] += 1
+            ][
+                "cantidad"
+            ] += 1
 
         resumen[
             categoria
-        ]["importe"] += movimiento["total"]
+        ][
+            "importe"
+        ] += movimiento[
+            "total"
+        ]
 
     return resumen
 
 
 # ============================================================
-# CONVERTIR DECIMAL A JSON
+# DECIMAL A JSON
 # ============================================================
 
 def decimal_a_json(obj):
-    """
-    Convierte Decimal y estructuras anidadas
-    a valores compatibles con JSON.
-    """
 
-    if isinstance(obj, Decimal):
+    if isinstance(
+        obj,
+        Decimal
+    ):
 
-        return float(obj)
+        return float(
+            obj
+        )
 
-    if isinstance(obj, dict):
+    if isinstance(
+        obj,
+        dict
+    ):
 
         return {
-            clave: decimal_a_json(valor)
+            clave: decimal_a_json(
+                valor
+            )
             for clave, valor in obj.items()
         }
 
-    if isinstance(obj, list):
+    if isinstance(
+        obj,
+        list
+    ):
 
         return [
-            decimal_a_json(valor)
+            decimal_a_json(
+                valor
+            )
             for valor in obj
         ]
 
@@ -712,16 +1045,12 @@ def decimal_a_json(obj):
 
 
 # ============================================================
-# PROCESAR ARCHIVO QRP
+# PROCESAR ARCHIVO
 # ============================================================
 
 def procesar_archivo(ruta):
 
     try:
-
-        # ----------------------------------------------------
-        # LEER ARCHIVO
-        # ----------------------------------------------------
 
         with open(
             ruta,
@@ -730,17 +1059,9 @@ def procesar_archivo(ruta):
 
             data = f.read()
 
-        # ----------------------------------------------------
-        # EXTRAER STRINGS
-        # ----------------------------------------------------
-
         strings = extraer_strings_qrp(
             data
         )
-
-        # ----------------------------------------------------
-        # EXTRAER MOVIMIENTOS
-        # ----------------------------------------------------
 
         movimientos = extraer_movimientos(
             strings
@@ -762,17 +1083,9 @@ def procesar_archivo(ruta):
 
             }
 
-        # ----------------------------------------------------
-        # ANALIZAR
-        # ----------------------------------------------------
-
         resumen = analizar(
             movimientos
         )
-
-        # ----------------------------------------------------
-        # RESULTADO
-        # ----------------------------------------------------
 
         resultado = {
 
@@ -813,14 +1126,10 @@ def procesar_archivo(ruta):
 
 
 # ============================================================
-# PUNTO DE ENTRADA
+# MAIN
 # ============================================================
 
 if __name__ == "__main__":
-
-    # --------------------------------------------------------
-    # VALIDAR ARGUMENTOS
-    # --------------------------------------------------------
 
     if len(sys.argv) < 2:
 
@@ -846,36 +1155,38 @@ if __name__ == "__main__":
 
         sys.exit(1)
 
-    # --------------------------------------------------------
-    # RUTA DEL ARCHIVO
-    # --------------------------------------------------------
-
     ruta = sys.argv[1]
-
-    # --------------------------------------------------------
-    # PROCESAR
-    # --------------------------------------------------------
 
     resultado = procesar_archivo(
         ruta
     )
 
-    # --------------------------------------------------------
-    # DEVOLVER JSON A LARAVEL
-    # --------------------------------------------------------
+    # ========================================================
+    # IMPORTANTE:
+    #
+    # UTF-8 explícito para que PHP/Laravel reciba
+    # correctamente el JSON.
+    # ========================================================
 
-    print(
-        json.dumps(
-            resultado,
-            ensure_ascii=False
+    salida_json = json.dumps(
+        resultado,
+        ensure_ascii=False
+    )
+
+    sys.stdout.buffer.write(
+        salida_json.encode(
+            "utf-8"
         )
     )
 
-    # --------------------------------------------------------
-    # CÓDIGO DE SALIDA
-    # --------------------------------------------------------
+    sys.stdout.buffer.write(
+        b"\n"
+    )
 
-    if not resultado.get("success", False):
+    if not resultado.get(
+        "success",
+        False
+    ):
 
         sys.exit(1)
 
