@@ -7,7 +7,7 @@ if (!function_exists('has_perm')) {
             return true;
         }
         if ($rol === 'DOCENTE') {
-            return true;
+            return false;
         }
         $modulosValidos = session('modulos', []);
         if (is_string($modulosValidos)) {
