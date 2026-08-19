@@ -129,7 +129,7 @@ class QrpController extends Controller
 
         try {
 
-            $python = 'python';
+            $python = 'python3';
 
             $comando =
                 $python

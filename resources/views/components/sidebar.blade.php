@@ -330,7 +330,7 @@ $modulosValidos = array_map('trim', $modulosValidos);
     @endif
 
     {{-- Menú Unificado: Otros --}}
-    @if($rol=='ADMIN' || $rol=='DOCENTE' || has_perm('planes_bti', 'ver') || has_perm('planes_bgne', 'ver') ||
+    @if($rol=='ADMIN' || has_perm('planes_bti', 'ver') || has_perm('planes_bgne', 'ver') ||
     has_perm('generaciones', 'ver') || has_perm('busqueda_grupos', 'ver'))
     <div class="accordion-item menu-title">
         <h2 class="accordion-header">
@@ -344,19 +344,19 @@ $modulosValidos = array_map('trim', $modulosValidos);
             <div class="accordion-body">
 
                 {{-- Sub-Módulo: Planes de Estudio --}}
-                @if($rol=='ADMIN' || $rol=='DOCENTE' || has_perm('planes_bti', 'ver') || has_perm('planes_bgne', 'ver'))
+                @if($rol=='ADMIN' || has_perm('planes_bti', 'ver') || has_perm('planes_bgne', 'ver'))
                 <div class="mb-3 border-bottom pb-2">
                     <span class="text-white opacity-75 fw-bold" style="font-size: 0.8rem; letter-spacing: 0.5px;">
                         <i class="fa-regular fa-newspaper me-1"></i> Planes de Estudio
                     </span>
                     <div class="ms-2 mt-1 d-flex flex-column gap-1">
-                        @if($rol=='ADMIN' || $rol=='DOCENTE' || has_perm('planes_bti', 'ver'))
+                        @if($rol=='ADMIN' || has_perm('planes_bti', 'ver'))
                         <a href="{{ route('planesBTI') }}" class="text-white opacity-75 text-decoration-none"
                             style="font-size: 0.8rem;">
                             - Planes BTI
                         </a>
                         @endif
-                        @if($rol=='ADMIN' || $rol=='DOCENTE' || has_perm('planes_bgne', 'ver'))
+                        @if($rol=='ADMIN' || has_perm('planes_bgne', 'ver'))
                         <a href="{{ route('planesBGNE') }}" class="text-white opacity-75 text-decoration-none"
                             style="font-size: 0.8rem;">
                             - Planes BGNE
@@ -406,10 +406,10 @@ $modulosValidos = array_map('trim', $modulosValidos);
         <div id="menu-EstadoCuenta" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
             <div class="accordion-body">
 
-                @if($rol=='ADMIN' || $rol=='DOCENTE' || has_perm('planes_bti', 'ver') || has_perm('planes_bgne', 'ver'))
+                @if($rol=='ADMIN' || has_perm('planes_bti', 'ver') || has_perm('planes_bgne', 'ver'))
                 <div class="mb-3 border-bottom pb-2">
                     <div class="ms-2 mt-1 d-flex flex-column gap-1">
-                        @if($rol=='ADMIN' || $rol=='DOCENTE' || has_perm('planes_bti', 'ver'))
+                        @if($rol=='ADMIN' || has_perm('planes_bti', 'ver'))
                         <a href="{{ route('analizar-estado-cuenta') }}" class="text-white opacity-75 text-decoration-none"
                             style="font-size: 0.8rem;">
                             - Verificar estados de cuenta
