@@ -934,6 +934,12 @@ document.addEventListener("DOMContentLoaded", function() {
         formMateriaSelect.innerHTML = '<option value="">Seleccione Materia</option>';
         formMateriaSelectMultiple.innerHTML = '';
         const filteredMaterias = materias.filter(mat => {
+            // Filtrar por el Centro de Trabajo (CCT) del grupo activo
+            if (activeGroup && activeGroup.id_centroTrabajo) {
+                if (mat.idCentroTrabajo !== undefined && mat.idCentroTrabajo !== null && String(mat.idCentroTrabajo) !== String(activeGroup.id_centroTrabajo)) {
+                    return false;
+                }
+            }
             if (!selectedPeriodNivel) return true;
             const matLvl = mat.id_nivel_academico;
             return matLvl === null || matLvl === undefined || String(matLvl) === String(selectedPeriodNivel);
