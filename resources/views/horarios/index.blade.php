@@ -559,6 +559,11 @@
     font-size: 3rem;
     color: #cbd5e1;
 }
+
+/* Fix TomSelect width inside initially hidden containers */
+.ts-wrapper, .ts-control {
+    width: 100% !important;
+}
 </style>
 
 <div class="horarios-page-wrapper">
@@ -929,6 +934,12 @@ document.addEventListener("DOMContentLoaded", function() {
         formMateriaSelect.innerHTML = '<option value="">Seleccione Materia</option>';
         formMateriaSelectMultiple.innerHTML = '';
         const filteredMaterias = materias.filter(mat => {
+            // Filtrar por el Centro de Trabajo (CCT) del grupo activo
+            if (activeGroup && activeGroup.id_centroTrabajo) {
+                if (mat.idCentroTrabajo !== undefined && mat.idCentroTrabajo !== null && String(mat.idCentroTrabajo) !== String(activeGroup.id_centroTrabajo)) {
+                    return false;
+                }
+            }
             if (!selectedPeriodNivel) return true;
             const matLvl = mat.id_nivel_academico;
             return matLvl === null || matLvl === undefined || String(matLvl) === String(selectedPeriodNivel);
@@ -987,11 +998,21 @@ document.addEventListener("DOMContentLoaded", function() {
             multipleMateriaContainer.style.display = "block";
             formMateriaSelect.removeAttribute("required");
             formMateriaSelectMultiple.setAttribute("required", "required");
+            
+            if (materiaSelectMultipleInstance) {
+                materiaSelectMultipleInstance.sync();
+                materiaSelectMultipleInstance.refreshOptions(false);
+            }
         } else {
             singleMateriaContainer.style.display = "block";
             multipleMateriaContainer.style.display = "none";
             formMateriaSelect.setAttribute("required", "required");
             formMateriaSelectMultiple.removeAttribute("required");
+            
+            if (materiaSelectInstance) {
+                materiaSelectInstance.sync();
+                materiaSelectInstance.refreshOptions(false);
+            }
         }
     });
 
@@ -2016,7 +2037,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         const confirmResult = await Swal.fire({
                             icon: 'warning',
                             title: 'Conflicto de Horario',
-                            html: `El docente <strong>${docName}</strong> ya tiene clases en este horario en otro grupo para la materia <strong>${matName}</strong>.<br><br>¿Deseas asignarlo de todas formas?`,
+                            html: `El docente <strong>${docName}</strong> ya tiene una clase asignada en el grupo <strong>${valData.grupo_clave || '—'}</strong> en el horario <strong>${valData.dia_nombre || '—'} de ${valData.hora_inicio || '—'} a ${valData.hora_fin || '—'}</strong> para la materia <strong>${valData.materia_nombre || '—'}</strong>.<br><br>¿Deseas asignarlo de todas formas?`,
                             showCancelButton: true,
                             confirmButtonColor: 'rgb(38, 104, 123)',
                             cancelButtonColor: '#cbd5e1',
@@ -2542,7 +2563,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         const confirmResult = await Swal.fire({
                             icon: 'warning',
                             title: 'Conflicto de Horario',
-                            html: `El docente <strong>${docName}</strong> ya tiene clases en este horario en otro grupo para la materia <strong>${matName}</strong>.<br><br>¿Deseas asignarlo de todas formas?`,
+                            html: `El docente <strong>${docName}</strong> ya tiene una clase asignada en el grupo <strong>${valData.grupo_clave || '—'}</strong> en el horario <strong>${valData.dia_nombre || '—'} de ${valData.hora_inicio || '—'} a ${valData.hora_fin || '—'}</strong> para la materia <strong>${valData.materia_nombre || '—'}</strong>.<br><br>¿Deseas asignarlo de todas formas?`,
                             showCancelButton: true,
                             confirmButtonColor: 'rgb(38, 104, 123)',
                             cancelButtonColor: '#cbd5e1',

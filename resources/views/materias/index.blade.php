@@ -148,7 +148,13 @@
 
                             <!-- Nivel Académico (Semestre / Trimestre) -->
                             <div class="col-md-6">
-                                <label class="form-label" id="labelNivelMateria">Semestre / Periodo <span class="text-danger">*</span></label>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label mb-0" id="labelNivelMateria">Semestre / Periodo <span class="text-danger">*</span></label>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" id="chkMultiplesPeriodos" name="multiples_periodos">
+                                        <label class="form-check-label small text-muted" for="chkMultiplesPeriodos">Múltiples</label>
+                                    </div>
+                                </div>
                                 <select
                                     class="form-select form-select-premium"
                                     name="id_nivel_academico"
@@ -156,6 +162,9 @@
                                     required>
                                     <option value="">-- Primero seleccione un Centro de Trabajo --</option>
                                 </select>
+                                <div id="contenedorNivelesCheckboxes" class="border rounded p-2 text-black bg-white" style="display: none; max-height: 120px; overflow-y: auto;">
+                                    <!-- Populated dynamically -->
+                                </div>
                             </div>
 
                             <!-- Docentes -->
@@ -322,6 +331,11 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(res => res.json())
             .then(niveles => {
                 selectNivel.innerHTML = '<option value="">-- Seleccionar Nivel --</option>';
+                const containerCheckboxes = document.getElementById('contenedorNivelesCheckboxes');
+                if (containerCheckboxes) {
+                    containerCheckboxes.innerHTML = '';
+                }
+
                 if (Array.isArray(niveles)) {
                     niveles.forEach(n => {
                         const opt = document.createElement('option');
@@ -331,6 +345,18 @@ document.addEventListener("DOMContentLoaded", function() {
                             opt.selected = true;
                         }
                         selectNivel.appendChild(opt);
+
+                        if (containerCheckboxes) {
+                            const div = document.createElement('div');
+                            div.className = 'form-check';
+                            div.innerHTML = `
+                                <input class="form-check-input nivelCheck" type="checkbox" value="${n.id}" id="nivel_${n.id}">
+                                <label class="form-check-label text-dark fw-normal ms-1" for="nivel_${n.id}">
+                                    ${n.nombre}
+                                </label>
+                            `;
+                            containerCheckboxes.appendChild(div);
+                        }
                     });
                     if (selectedNivelId) {
                         selectNivel.value = selectedNivelId;
@@ -350,8 +376,15 @@ document.addEventListener("DOMContentLoaded", function() {
         if (form.clave) form.clave.disabled = disabled;
         form.estatusMateria.disabled = disabled;
         if (form.idCentroTrabajo) form.idCentroTrabajo.disabled = disabled;
-        if (form.id_nivel_academico) form.id_nivel_academico.disabled = disabled;
+        
+        const chkMulti = document.getElementById('chkMultiplesPeriodos');
+        if (chkMulti) chkMulti.disabled = disabled;
+        
+        if (form.id_nivel_academico) {
+            form.id_nivel_academico.disabled = disabled || (chkMulti && chkMulti.checked);
+        }
         document.querySelectorAll('.docenteCheck').forEach(cb => cb.disabled = disabled);
+        document.querySelectorAll('.nivelCheck').forEach(cb => cb.disabled = disabled);
     }
 
     // Reset modal to create mode when Alta button is clicked
@@ -367,6 +400,24 @@ document.addEventListener("DOMContentLoaded", function() {
                 selectNivel.innerHTML = '<option value="">-- Primero seleccione un Centro de Trabajo --</option>';
             }
             document.getElementById('docentesSeleccionados').innerHTML = '';
+            
+            const chkMulti = document.getElementById('chkMultiplesPeriodos');
+            if (chkMulti) {
+                chkMulti.checked = false;
+                if (selectNivel) {
+                    selectNivel.disabled = false;
+                    selectNivel.style.display = 'block';
+                    selectNivel.setAttribute('required', 'required');
+                }
+                const containerCheckboxes = document.getElementById('contenedorNivelesCheckboxes');
+                if (containerCheckboxes) {
+                    containerCheckboxes.style.display = 'none';
+                    containerCheckboxes.innerHTML = '';
+                }
+                const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
+                if (labelSpan) labelSpan.style.display = 'inline';
+            }
+            
             setFormDisabled(false);
             document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
             document.querySelector('#modalMateria .modal-title').innerHTML =
@@ -395,6 +446,37 @@ document.addEventListener("DOMContentLoaded", function() {
 
                     // Cargar niveles académicos correspondientes y auto-seleccionar
                     filtrarPeriodosPorCct(m.idCentroTrabajo, m.id_nivel_academico);
+
+                    // Configurar checkbox de múltiples periodos
+                    const isMulti = !m.id_nivel_academico;
+                    const chkMulti = document.getElementById('chkMultiplesPeriodos');
+                    if (chkMulti) {
+                        chkMulti.checked = isMulti;
+                        const selectNivel = document.getElementById('selectNivelMateria');
+                        const containerCheckboxes = document.getElementById('contenedorNivelesCheckboxes');
+                        const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
+                        if (isMulti) {
+                            if (selectNivel) {
+                                selectNivel.style.display = 'none';
+                                selectNivel.removeAttribute('required');
+                            }
+                            if (containerCheckboxes) {
+                                containerCheckboxes.style.display = 'block';
+                            }
+                            const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
+                            if (labelSpan) labelSpan.style.display = 'none';
+                        } else {
+                            if (selectNivel) {
+                                selectNivel.style.display = 'block';
+                                selectNivel.setAttribute('required', 'required');
+                            }
+                            if (containerCheckboxes) {
+                                containerCheckboxes.style.display = 'none';
+                            }
+                            const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
+                            if (labelSpan) labelSpan.style.display = 'inline';
+                        }
+                    }
 
                     document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
                     const checkIds = m.docentes ? m.docentes.map(d => d.idDocente) : [];
@@ -449,6 +531,37 @@ document.addEventListener("DOMContentLoaded", function() {
 
                     // Cargar niveles académicos correspondientes y auto-seleccionar
                     filtrarPeriodosPorCct(m.idCentroTrabajo, m.id_nivel_academico);
+
+                    // Configurar checkbox de múltiples periodos
+                    const isMulti = !m.id_nivel_academico;
+                    const chkMulti = document.getElementById('chkMultiplesPeriodos');
+                    if (chkMulti) {
+                        chkMulti.checked = isMulti;
+                        const selectNivel = document.getElementById('selectNivelMateria');
+                        const containerCheckboxes = document.getElementById('contenedorNivelesCheckboxes');
+                        const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
+                        if (isMulti) {
+                            if (selectNivel) {
+                                selectNivel.style.display = 'none';
+                                selectNivel.removeAttribute('required');
+                            }
+                            if (containerCheckboxes) {
+                                containerCheckboxes.style.display = 'block';
+                            }
+                            const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
+                            if (labelSpan) labelSpan.style.display = 'none';
+                        } else {
+                            if (selectNivel) {
+                                selectNivel.style.display = 'block';
+                                selectNivel.setAttribute('required', 'required');
+                            }
+                            if (containerCheckboxes) {
+                                containerCheckboxes.style.display = 'none';
+                            }
+                            const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
+                            if (labelSpan) labelSpan.style.display = 'inline';
+                        }
+                    }
 
                     document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
                     const checkIds = m.docentes ? m.docentes.map(d => d.idDocente) : [];
@@ -642,6 +755,20 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const docentes = Array.from(document.querySelectorAll('.docenteCheck:checked'))
             .map(check => Number(check.value));
+        const chkMulti = document.getElementById('chkMultiplesPeriodos');
+        const checkedNiveles = Array.from(document.querySelectorAll('.nivelCheck:checked'))
+            .map(check => Number(check.value));
+
+        if (chkMulti && chkMulti.checked && checkedNiveles.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Faltan Semestres / Periodos',
+                text: 'Debes seleccionar al menos un semestre o periodo.',
+                confirmButtonColor: 'rgb(38, 104, 123)'
+            });
+            return;
+        }
+
         const data = {
             nombreMateria: this.nombreMateria.value,
             descripcionMateria: this.descripcionMateria.value,
@@ -652,6 +779,123 @@ document.addEventListener("DOMContentLoaded", function() {
             docentes: docentes
         };
 
+        // Alta Múltiple
+        if (modoMateria === 'crear' && chkMulti && chkMulti.checked) {
+            const promises = checkedNiveles.map(nivelId => {
+                const payload = { ...data, id_nivel_academico: nivelId };
+                return fetch('/materias', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(payload)
+                }).then(res => res.json());
+            });
+
+            Promise.all(promises)
+                .then(responses => {
+                    const allSuccess = responses.every(r => r.success);
+                    if (allSuccess) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: "Materias guardadas correctamente para todos los periodos seleccionados.",
+                            confirmButtonColor: 'rgb(38, 104, 123)'
+                        });
+                        bootstrap.Modal.getInstance(document.getElementById('modalMateria')).hide();
+                        this.reset();
+                        contenedorSeleccionados.innerHTML = '';
+                        cargarMaterias();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al guardar algunas materias.',
+                            confirmButtonColor: 'rgb(38, 104, 123)'
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error("Error al guardar múltiples materias:", err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Ocurrió un error inesperado al guardar.',
+                        confirmButtonColor: 'rgb(38, 104, 123)'
+                    });
+                });
+            return;
+        }
+
+        // Editar Múltiple (Actualizar la actual con el primer periodo y crear nuevas para los demás)
+        if (modoMateria === 'editar' && chkMulti && chkMulti.checked) {
+            const firstNivelId = checkedNiveles[0];
+            const firstPayload = { ...data, id_nivel_academico: firstNivelId };
+            
+            const promises = [];
+            promises.push(
+                fetch(`/materias/${idMateriaActual}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(firstPayload)
+                }).then(res => res.json())
+            );
+
+            for (let i = 1; i < checkedNiveles.length; i++) {
+                const nextNivelId = checkedNiveles[i];
+                const nextPayload = { ...data, id_nivel_academico: nextNivelId };
+                promises.push(
+                    fetch('/materias', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify(nextPayload)
+                    }).then(res => res.json())
+                );
+            }
+
+            Promise.all(promises)
+                .then(responses => {
+                    const allSuccess = responses.every(r => r.success);
+                    if (allSuccess) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: "Materia actualizada y nuevos periodos agregados correctamente.",
+                            confirmButtonColor: 'rgb(38, 104, 123)'
+                        });
+                        bootstrap.Modal.getInstance(document.getElementById('modalMateria')).hide();
+                        this.reset();
+                        contenedorSeleccionados.innerHTML = '';
+                        cargarMaterias();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al actualizar la materia o agregar nuevos periodos.',
+                            confirmButtonColor: 'rgb(38, 104, 123)'
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error("Error al editar múltiples materias:", err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Ocurrió un error inesperado al guardar.',
+                        confirmButtonColor: 'rgb(38, 104, 123)'
+                    });
+                });
+            return;
+        }
+
+        // Caso normal (Único periodo - Crear o Editar)
         const url = modoMateria === 'editar' ? `/materias/${idMateriaActual}` : '/materias';
         const method = modoMateria === 'editar' ? 'PUT' : 'POST';
 
@@ -665,7 +909,6 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(res => res.json())
             .then(resp => {
-
                 if (resp.success) {
                     Swal.fire({
                         icon: 'success',
@@ -677,10 +920,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     });
 
                     bootstrap.Modal.getInstance(document.getElementById('modalMateria')).hide();
-
                     this.reset();
                     contenedorSeleccionados.innerHTML = '';
-
                     cargarMaterias();
                 } else {
                     Swal.fire({
@@ -691,10 +932,45 @@ document.addEventListener("DOMContentLoaded", function() {
                     });
                 }
             });
-
     });
 
     cargarDocentes();
+
+    // Listener para checkbox de múltiples periodos
+    const chkMultiplesPeriodos = document.getElementById('chkMultiplesPeriodos');
+    if (chkMultiplesPeriodos) {
+        chkMultiplesPeriodos.addEventListener('change', function() {
+            const selectNivel = document.getElementById('selectNivelMateria');
+            const containerCheckboxes = document.getElementById('contenedorNivelesCheckboxes');
+            const labelSpan = document.querySelector('#labelNivelMateria .text-danger');
+            
+            if (this.checked) {
+                const currentVal = selectNivel ? selectNivel.value : "";
+                if (selectNivel) {
+                    selectNivel.style.display = 'none';
+                    selectNivel.removeAttribute('required');
+                }
+                if (containerCheckboxes) {
+                    containerCheckboxes.style.display = 'block';
+                    if (currentVal) {
+                        const cb = containerCheckboxes.querySelector(`#nivel_${currentVal}`);
+                        if (cb) cb.checked = true;
+                    }
+                }
+                if (labelSpan) labelSpan.style.display = 'none';
+            } else {
+                if (selectNivel) {
+                    selectNivel.style.display = 'block';
+                    selectNivel.setAttribute('required', 'required');
+                }
+                if (containerCheckboxes) {
+                    containerCheckboxes.style.display = 'none';
+                    containerCheckboxes.querySelectorAll('.nivelCheck').forEach(cb => cb.checked = false);
+                }
+                if (labelSpan) labelSpan.style.display = 'inline';
+            }
+        });
+    }
 
 });
 </script>

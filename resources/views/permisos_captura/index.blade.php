@@ -981,9 +981,14 @@ function filtrarTablaPermisos() {
 
     let html = '';
     filtrados.forEach((p, index) => {
-        const estadoBadge = p.habilitado == 1 
-            ? '<span class="permiso-status-badge badge-active"><i class="fa-solid fa-circle-check"></i> Activo</span>'
-            : '<span class="permiso-status-badge badge-inactive"><i class="fa-solid fa-circle-xmark"></i> Inactivo</span>';
+        let estadoBadge = '';
+        if (p.finalizado == 1 || p.finalizado === true) {
+            estadoBadge = '<span class="permiso-status-badge badge-inactive" style="background-color: rgba(100, 116, 139, 0.12); color: #475569; border: 1.5px solid rgba(100, 116, 139, 0.3);"><i class="fa-solid fa-lock"></i> Entregado</span>';
+        } else if (p.habilitado == 1) {
+            estadoBadge = '<span class="permiso-status-badge badge-active"><i class="fa-solid fa-circle-check"></i> Activo</span>';
+        } else {
+            estadoBadge = '<span class="permiso-status-badge badge-inactive"><i class="fa-solid fa-circle-xmark"></i> Inactivo</span>';
+        }
 
         const pasadosBadge = p.permitir_modificar_pasados == 1
             ? '<span class="badge bg-warning text-dark"><i class="fa-solid fa-clock-rotate-left me-1"></i> Autorizado</span>'
