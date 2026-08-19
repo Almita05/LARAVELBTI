@@ -184,11 +184,17 @@
         border-radius: 6px;
         padding: 6px;
         text-align: left;
-        height: 100%;
+        height: auto;
+        min-height: 52px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         transition: all 0.2s ease;
+        margin-bottom: 4px;
+    }
+
+    .class-block:last-child {
+        margin-bottom: 0;
     }
 
     .class-block:hover {
@@ -950,6 +956,10 @@ function imprimirReporteHorario() {
                         border-left: 2px solid rgb(38, 104, 123);
                         padding-left: 4px;
                         text-align: left;
+                        margin-bottom: 4px;
+                    }
+                    .class-block:last-child {
+                        margin-bottom: 0;
                     }
                     .class-materia {
                         font-weight: 700;
