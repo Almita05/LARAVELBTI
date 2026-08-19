@@ -125,6 +125,7 @@
 
     .calendar-table {
         width: 100%;
+        table-layout: fixed;
         border-collapse: collapse;
         background: #ffffff;
         border-radius: 8px;
@@ -150,7 +151,6 @@
         text-align: center;
         background: #ffffff !important;
         height: 70px;
-        width: 17%;
     }
 
     .time-col {
