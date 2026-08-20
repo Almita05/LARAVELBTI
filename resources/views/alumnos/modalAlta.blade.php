@@ -204,6 +204,19 @@
             </div>
 
             <div class="modal-body p-4">
+                <!-- Opción de Registro Histórico -->
+                <div class="card p-3 border rounded-3 mb-3 bg-light" style="border-color: #cbd5e1 !important; border-radius: 16px !important;">
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="chkRegistroHistorico" name="registro_historico" value="1">
+                        <label class="form-check-label fw-bold text-dark" for="chkRegistroHistorico" style="font-size: 0.95rem; cursor: pointer;">
+                            <i class="bi bi-clock-history me-1 text-warning"></i> Registro de Alumno Histórico
+                        </label>
+                        <small class="text-muted d-block mt-1" style="font-size: 0.82rem;">
+                            Active esta opción si está registrando un alumno de ciclos anteriores con información incompleta. Se relajarán las validaciones y se permitirá seleccionar cualquier grupo (incluso inactivos o terminados).
+                        </small>
+                    </div>
+                </div>
+
                 <div class="accordion" id="accordionAlumno">
 
                     <!-- 1. DATOS PERSONALES -->
@@ -221,15 +234,15 @@
                                         <input type="text" name="nombre" class="form-control form-control-premium" placeholder="Ej. Juan" required>
                                     </div>
                                     <div class="col-md-4 mb-3">
-                                        <label class="form-label">Apellido Paterno <span class="text-danger">*</span></label>
-                                        <input type="text" name="apPaterno" class="form-control form-control-premium" placeholder="Ej. Pérez" required>
+                                        <label class="form-label">Apellido Paterno <span class="text-danger requerido-normal">*</span></label>
+                                        <input type="text" name="apPaterno" id="inputApPaterno" class="form-control form-control-premium" placeholder="Ej. Pérez" required>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">Apellido Materno</label>
                                         <input type="text" name="apMaterno" class="form-control form-control-premium" placeholder="Ej. López">
                                     </div>
                                     <div class="col-md-4 mb-3">
-                                        <label class="form-label">Fecha de nacimiento <span class="text-danger">*</span></label>
+                                        <label class="form-label">Fecha de nacimiento <span class="text-danger requerido-normal">*</span></label>
                                         <input type="date" name="fechaNacimiento" id="inputFechaNacimiento" class="form-control form-control-premium" required>
                                         <small id="txtEdadCalculada" class="text-muted d-block mt-1" style="font-size:0.78rem;"></small>
                                     </div>
@@ -257,8 +270,8 @@
                             <div class="accordion-body">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label">Celular del Alumno <span class="text-danger">*</span></label>
-                                        <input type="tel" name="celularAlumno" class="form-control form-control-premium" placeholder="10 dígitos" required>
+                                        <label class="form-label">Celular del Alumno <span class="text-danger requerido-normal">*</span></label>
+                                        <input type="tel" name="celularAlumno" id="inputCelularAlumno" class="form-control form-control-premium" placeholder="10 dígitos" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Correo Electrónico</label>
@@ -406,7 +419,18 @@
 
                                     <!-- TARJETA: GRUPOS COMPATIBLES Y RECOMENDACIÓN -->
                                     <div class="card p-3 border-0 bg-light rounded-3 mb-3">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <!-- SELECCIÓN DIRECTA DE GRUPO (SÓLO PARA REGISTRO HISTÓRICO) -->
+                                        <div id="boxGrupoDirectoHistorico" style="display: none;" class="mb-3">
+                                            <label class="form-label fw-bold text-dark">Grupo Histórico / Directo <span class="text-danger">*</span></label>
+                                            <select id="selectGrupoHistorico" class="form-select form-select-premium">
+                                                <option value="">-- Seleccione cualquier grupo (activo/inactivo) --</option>
+                                            </select>
+                                            <small class="text-muted d-block mt-1" style="font-size: 0.78rem;">
+                                                Aquí se muestran todos los grupos del CCT seleccionado (incluidos inactivos y terminados).
+                                            </small>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center mb-2 box-compatibles-cabecera">
                                             <h6 class="fw-bold mb-0 text-dark">
                                                 <i class="bi bi-diagram-3-fill me-1 text-primary"></i> Grupos compatibles
                                             </h6>

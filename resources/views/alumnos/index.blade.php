@@ -592,7 +592,16 @@ function actualizarResumenYSemaforo() {
             pendientes.push(textoTray);
         }
 
-        if (pendientes.length > 0) {
+        const chkHistorico = form.querySelector('#chkRegistroHistorico');
+        const esHistorico = chkHistorico && chkHistorico.checked;
+
+        if (esHistorico) {
+            listaPendientes.innerHTML = '<div class="text-success fw-bold">• Registro Histórico. Sin validaciones obligatorias requeridas.</div>';
+            if (badgeEstadoGeneral) {
+                badgeEstadoGeneral.className = 'badge bg-success';
+                badgeEstadoGeneral.textContent = 'HISTÓRICO';
+            }
+        } else if (pendientes.length > 0) {
             listaPendientes.innerHTML = pendientes.join('');
             if (badgeEstadoGeneral) {
                 badgeEstadoGeneral.className = 'badge bg-secondary';
@@ -876,6 +885,41 @@ document.addEventListener('change', function(e) {
     const form = e.target.closest('form') || document.getElementById('formAlumno');
     if (!form) return;
 
+    // 0. Cambio en Registro Histórico
+    if (e.target.id === 'chkRegistroHistorico') {
+        toggleRegistroHistorico(form, e.target.checked);
+    }
+    
+    // 0.1 Cambio en Grupo Histórico / Directo
+    if (e.target.id === 'selectGrupoHistorico') {
+        const selectGrupoHistorico = e.target;
+        const inputGrupo = form.querySelector('#inputGrupoSeleccionado');
+        const txtElegido = form.querySelector('#txtNombreGrupoElegido');
+        const badgeElegido = form.querySelector('#badgeGrupoElegidoFinal');
+
+        if (selectGrupoHistorico.value) {
+            const opt = selectGrupoHistorico.options[selectGrupoHistorico.selectedIndex];
+            if (inputGrupo) {
+                inputGrupo.value = selectGrupoHistorico.value;
+                inputGrupo.dataset.modalidad = opt.dataset.modalidad || '';
+                inputGrupo.dataset.fechaInicio = opt.dataset.fechaInicio || '';
+            }
+            if (txtElegido) {
+                txtElegido.textContent = opt.text.split(' - ')[0];
+            }
+            if (badgeElegido) badgeElegido.style.display = 'block';
+        } else {
+            if (inputGrupo) {
+                inputGrupo.value = '';
+                inputGrupo.dataset.modalidad = '';
+                inputGrupo.dataset.fechaInicio = '';
+            }
+            if (txtElegido) txtElegido.textContent = 'Ninguno';
+            if (badgeElegido) badgeElegido.style.display = 'none';
+        }
+        actualizarResumenYSemaforo();
+    }
+
     // 1. Cambio de CCT
     if (e.target.id === 'selectCCT' || e.target.name === 'id_centroTrabajo') {
         const cctId = e.target.value;
@@ -989,7 +1033,12 @@ document.addEventListener('change', function(e) {
         }
 
         verificarEdadBGNE();
-        buscarYRecomendarGrupos();
+        const chkHistorico = form.querySelector('#chkRegistroHistorico');
+        if (chkHistorico && chkHistorico.checked) {
+            cargarGruposHistoricos(form);
+        } else {
+            buscarYRecomendarGrupos();
+        }
     }
 
     // 2. Cambio de Periodo / Nivel Académico
@@ -1013,12 +1062,20 @@ document.addEventListener('change', function(e) {
             if (accordionEquiv) accordionEquiv.style.display = 'none';
         }
 
-        buscarYRecomendarGrupos();
+        const chkHistorico = form.querySelector('#chkRegistroHistorico');
+        if (chkHistorico && chkHistorico.checked) {
+            // No buscar recomendados, la lista directa ya se cargó o se carga con CCT
+        } else {
+            buscarYRecomendarGrupos();
+        }
     }
 
     // 3. Cambio de Día o Jornada
     if (e.target.id === 'selectDiaAsistencia' || e.target.id === 'selectJornada') {
-        buscarYRecomendarGrupos();
+        const chkHistorico = form.querySelector('#chkRegistroHistorico');
+        if (!chkHistorico || !chkHistorico.checked) {
+            buscarYRecomendarGrupos();
+        }
     }
 
     // 4. Cambio de Procedencia
@@ -1157,6 +1214,107 @@ document.addEventListener('change', function(e) {
 
     actualizarResumenYSemaforo();
 });
+
+function toggleRegistroHistorico(form, isHistorico) {
+    const fieldsToRelax = ['apPaterno', 'fechaNacimiento', 'celularAlumno'];
+    
+    // 1. Mostrar/ocultar asteriscos y required
+    fieldsToRelax.forEach(fieldName => {
+        const input = form.querySelector(`[name="${fieldName}"]`);
+        if (input) {
+            if (isHistorico) {
+                input.removeAttribute('required');
+            } else {
+                input.setAttribute('required', 'required');
+            }
+        }
+    });
+
+    const asteriscos = form.querySelectorAll('.requerido-normal');
+    asteriscos.forEach(ast => {
+        ast.style.display = isHistorico ? 'none' : 'inline';
+    });
+
+    // 2. Mostrar selector directo de grupo o flujo compatible
+    const boxHistorico = form.querySelector('#boxGrupoDirectoHistorico');
+    const boxCompatiblesCabecera = form.querySelector('.box-compatibles-cabecera');
+    const alertaBuscando = form.querySelector('#alertaBuscandoGrupo');
+    const boxRecomendado = form.querySelector('#boxGrupoRecomendado');
+    const boxTabla = form.querySelector('#boxTablaOtrosGrupos');
+    const alertaSinGrupo = form.querySelector('#alertaSinGrupo');
+
+    // Campos de filtrado normal
+    const selectDia = form.querySelector('#selectDiaAsistencia');
+    const selectJornada = form.querySelector('#selectJornada');
+
+    if (isHistorico) {
+        if (boxHistorico) boxHistorico.style.display = 'block';
+        if (boxCompatiblesCabecera) boxCompatiblesCabecera.style.setProperty('display', 'none', 'important');
+        if (alertaBuscando) alertaBuscando.style.setProperty('display', 'none', 'important');
+        if (boxRecomendado) boxRecomendado.style.setProperty('display', 'none', 'important');
+        if (boxTabla) boxTabla.style.setProperty('display', 'none', 'important');
+        if (alertaSinGrupo) alertaSinGrupo.style.setProperty('display', 'none', 'important');
+
+        if (selectDia) selectDia.disabled = true;
+        if (selectJornada) selectJornada.disabled = true;
+
+        cargarGruposHistoricos(form);
+    } else {
+        if (boxHistorico) boxHistorico.style.display = 'none';
+        if (boxCompatiblesCabecera) boxCompatiblesCabecera.style.setProperty('display', 'flex', 'important');
+        
+        if (selectDia) selectDia.disabled = false;
+        if (selectJornada) selectJornada.disabled = false;
+
+        const selectGrupoHistorico = form.querySelector('#selectGrupoHistorico');
+        if (selectGrupoHistorico) selectGrupoHistorico.value = '';
+
+        if (typeof buscarYRecomendarGrupos === 'function') {
+            buscarYRecomendarGrupos();
+        }
+    }
+    
+    actualizarResumenYSemaforo();
+}
+
+function cargarGruposHistoricos(form) {
+    const selectCCT = form.querySelector('#selectCCT');
+    const selectGrupoHistorico = form.querySelector('#selectGrupoHistorico');
+    const inputGrupo = form.querySelector('#inputGrupoSeleccionado');
+    if (!selectCCT || !selectGrupoHistorico) return;
+
+    const cctId = selectCCT.value;
+    if (!cctId) {
+        selectGrupoHistorico.innerHTML = '<option value="">-- Primero seleccione CCT --</option>';
+        return;
+    }
+
+    const valorActual = inputGrupo ? inputGrupo.value : '';
+
+    selectGrupoHistorico.innerHTML = '<option value="">Cargando grupos...</option>';
+
+    fetch(`/catalogos/grupos?idCentroTrabajo=${cctId}`)
+        .then(r => r.json())
+        .then(resp => {
+            const grupos = resp.data || (Array.isArray(resp) ? resp : []);
+            selectGrupoHistorico.innerHTML = '<option value="">-- Seleccione un grupo --</option>';
+            if (Array.isArray(grupos)) {
+                grupos.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.textContent = `${g.clave} - ${g.nombre_nivel || ''} (${g.modalidadHorario || 'General'}) [${g.statusGrupo || 'ACTIVO'}]`;
+                    if (valorActual && String(g.id) === String(valorActual)) {
+                        opt.selected = true;
+                    }
+                    selectGrupoHistorico.appendChild(opt);
+                });
+            }
+        })
+        .catch(err => {
+            console.error('Error al cargar grupos históricos:', err);
+            selectGrupoHistorico.innerHTML = '<option value="">Error al cargar grupos</option>';
+        });
+}
 
 // Función central para inicializar el modal dinámico en Crear, Editar o Ver
 window.initModalAlumnoDinamico = function(al) {
@@ -1596,12 +1754,15 @@ window.verAlumno = function(id) {
                             }
                         });
 
-                        // Procesar boleta parcial
+                        // Procesar boleta parcial e histórico
                         let obs = al.observaciones || '';
                         let traeBoleta = 'NO';
                         if (obs.includes('[BOLETA_PARCIAL]')) {
                             traeBoleta = 'SI';
                             obs = obs.replace('[BOLETA_PARCIAL]', '').trim();
+                        }
+                        if (obs.includes('[REGISTRO_HISTORICO]')) {
+                            obs = obs.replace('[REGISTRO_HISTORICO]', '').trim();
                         }
                         const selectTraeBoleta = form.querySelector('#selectTraeBoleta');
                         if (selectTraeBoleta) selectTraeBoleta.value = traeBoleta;
@@ -1671,12 +1832,15 @@ window.editarAlumno = function(id) {
                             }
                         });
 
-                        // Procesar boleta parcial
+                        // Procesar boleta parcial e histórico
                         let obs = al.observaciones || '';
                         let traeBoleta = 'NO';
                         if (obs.includes('[BOLETA_PARCIAL]')) {
                             traeBoleta = 'SI';
                             obs = obs.replace('[BOLETA_PARCIAL]', '').trim();
+                        }
+                        if (obs.includes('[REGISTRO_HISTORICO]')) {
+                            obs = obs.replace('[REGISTRO_HISTORICO]', '').trim();
                         }
                         const selectTraeBoleta = form.querySelector('#selectTraeBoleta');
                         if (selectTraeBoleta) selectTraeBoleta.value = traeBoleta;
@@ -2138,8 +2302,12 @@ document.addEventListener("DOMContentLoaded", function() {
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
 
-        // Procesar flag de boleta parcial en observaciones
+        // Procesar flag de boleta parcial e histórico en observaciones
         let obsValue = data.observaciones || '';
+        const chkHistorico = e.target.querySelector('#chkRegistroHistorico');
+        if (chkHistorico && chkHistorico.checked) {
+            obsValue = `[REGISTRO_HISTORICO] ${obsValue}`.trim();
+        }
         if (data.traeBoleta === 'SI') {
             obsValue = `[BOLETA_PARCIAL] ${obsValue}`.trim();
         }

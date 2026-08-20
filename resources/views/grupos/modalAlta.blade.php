@@ -175,6 +175,9 @@
                         <select name="id_nivel_academico" class="form-select form-select-premium" required>
                             <option value="">Seleccione primero un centro de trabajo</option>
                         </select>
+                        <small class="text-muted d-block mt-1" style="font-size: 0.76rem; line-height: 1.2;">
+                            * Para grupos históricos o ya finalizados, seleccione el periodo de inicio habitual (ej. 1er Trimestre).
+                        </small>
                     </div>
 
                     <!-- Modalidad de Horario -->
