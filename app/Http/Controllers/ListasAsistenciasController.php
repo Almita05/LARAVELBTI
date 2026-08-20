@@ -26,6 +26,12 @@ public function bgneD()
     return view('listas_asistencias.bgneD');
 }
 
+public function moduloImprimir()
+{
+    return view('reportes.imprimir');
+}
+
+
 
     public function generarPdfAttendance()
     {

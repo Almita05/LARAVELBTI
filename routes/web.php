@@ -24,6 +24,7 @@ use App\Http\Controllers\AsistenciaDocenteController;
 use App\Http\Controllers\PermisosCapturaController;
 use App\Http\Controllers\PersonalController;
 use App\Http\Controllers\QrpController;
+use App\Http\Controllers\ReporteIndisciplinaController;
 
 
 
@@ -82,6 +83,8 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::get('/listas_asistenciasBTI', [ListasAsistenciasController::class, 'bti'])->name('listas_asistenciasBTI');
     Route::get('/listas_asistenciasBGNES', [ListasAsistenciasController::class, 'bgneS'])->name('listas_asistenciasBGNES');
     Route::get('/listas_asistenciasBGNED', [ListasAsistenciasController::class, 'bgneD'])->name('listas_asistenciasBGNED');
+    Route::get('/modulo-imprimir', [ListasAsistenciasController::class, 'moduloImprimir'])->name('reportes.imprimir');
+
 
     // Extraordinarios
     Route::get('/boleta_calificaciones_extraordinarios', [BoletasBGNEExtraController::class, 'index'])
@@ -135,6 +138,13 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::get('/permisos-captura/cct/{cct_id}/grupos', [PermisosCapturaController::class, 'getGruposPorCct']);
     Route::get('/permisos-captura/grupo-config/{grupo_id}', [PermisosCapturaController::class, 'getGrupoConfig']);
     Route::post('/permisos-captura/grupo-config/{grupo_id}', [PermisosCapturaController::class, 'saveGrupoConfig']);
+
+    // Reportes de Indisciplina
+    Route::get('/reportes-indisciplina-view', [ReporteIndisciplinaController::class, 'indexView'])->name('reportes_indisciplina.index_view');
+    Route::get('/reportes-indisciplina', [ReporteIndisciplinaController::class, 'index'])->name('reportes_indisciplina.index');
+    Route::post('/reportes-indisciplina', [ReporteIndisciplinaController::class, 'store'])->name('reportes_indisciplina.store');
+    Route::delete('/reportes-indisciplina/{id}', [ReporteIndisciplinaController::class, 'destroy'])->name('reportes_indisciplina.destroy');
+    Route::get('/alumnos/{id}/reportes-conteo', [ReporteIndisciplinaController::class, 'getStudentReportsCount']);
 });
 
 
