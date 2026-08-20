@@ -2,6 +2,8 @@
 
 @section('content')
 
+<link rel="stylesheet" href="{{ asset('css/estilosQrp.css') }}">
+
 <div class="container-fluid py-4">
 
     {{-- ============================================
@@ -12,7 +14,6 @@
 
         <div>
             <h2 class="fw-bold mb-1">
-                <i class="fa-solid fa-file-invoice-dollar me-2"></i>
                 Analizar Estado de Cuenta
             </h2>
 

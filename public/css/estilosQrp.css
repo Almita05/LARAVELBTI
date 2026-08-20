@@ -1,0 +1,193 @@
+
+.page-container {
+    padding: 30px;
+    min-height: 100vh;
+}
+
+
+.page-title {
+    color:rgb(7, 101, 136);
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, .08);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, .15);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
+    padding: .5%;
+}
+
+
+.glass-footer {
+    border-top: 1px solid rgba(255, 255, 255, .15);
+}
+
+.table-head{
+    background: rgb(49, 125, 146) !important;
+    color: rgb(8, 0, 0) !important;
+}
+
+
+
+.btn-regresar {
+     background: rgb(49, 125, 146) !important;
+    border: none;
+    font-weight: 600;
+    color: white;
+}
+
+
+.btn-regresar:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
+}
+
+.btn-azul {
+     background: rgb(49, 125, 146) !important;
+    border: none;
+    font-weight: 600;
+}
+
+.btn-azul:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
+}
+
+.textoDocentes{
+    color:white;
+}
+
+
+.card {
+    background: transparent !important;
+}
+
+.btn-ver {
+    background: #00BCD4;
+    color: white;
+    border: none;
+}
+
+.btn-ver:hover {
+    background: #0097A7;
+    color: white;
+}
+
+.btn-editar {
+    background: #FF9800;
+    color: white;
+    border: none;
+}
+
+.btn-editar:hover {
+    background: #F57C00;
+    color: white;
+}
+
+.btn-eliminar {
+    background: #E53935;
+    color: white;
+    border: none;
+}
+
+.btn-eliminar:hover {
+    background: #C62828;
+    color: white;
+}
+
+
+/* Modal */
+.modal-content {
+    border: none;
+}
+
+.modal-header {
+     background: rgb(49, 125, 146) !important;
+    color: white;
+}
+
+.glass-modal {
+    border: 1px solid rgba(255, 255, 255, .15);
+    border-radius: 20px;
+    overflow: hidden;
+    color: white;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
+}
+
+.glass-modal .modal-header {
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
+    color: #fff;
+}
+
+.glass-modal .modal-body {
+    background: white;
+}
+
+
+.accordion-item {
+    background: rgba(255, 255, 255, .06);
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.accordion-button,
+.accordion-button.collapsed,
+.accordion-button:not(.collapsed) {
+    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
+    color: #fff !important;
+    font-weight: 600;
+    box-shadow: none !important;
+    border: none;
+}
+
+.accordion-button:focus {
+    box-shadow: none !important;
+}
+
+.accordion-button::after {
+    filter: brightness(0) invert(1);
+}
+
+.accordion-body {
+    background: white;
+}
+
+.form-label {
+    font-weight: 500;
+    color: black;
+}
+
+.form-control-premium,
+.form-select-premium {
+    background: #fff;
+    color: #212529;
+    min-height: 48px;
+}
+
+.form-control-premium:hover,
+.form-select-premium:hover {
+    border-color: rgb(49, 125, 146) !important;
+}
+
+.form-control-premium:focus,
+.form-select-premium:focus {
+    border-color: rgb(49, 125, 146) !important;
+    box-shadow:
+        0 0 0 3px rgba(102, 201, 255, .20),
+        inset 0 1px 2px rgba(0, 0, 0, .04);
+}
+
+
+/* SweetAlert2 siempre encima de modales Bootstrap */
+.swal2-container {
+    z-index: 99999 !important;
+}
+
