@@ -684,7 +684,7 @@ function renderCalendars() {
                                 <div class="class-block">
                                     <div class="class-materia" title="${mc.materia_nombre}">${mc.materia_nombre}</div>
                                     <div>
-                                        <span class="class-grupo">${mc.grupo_clave}</span>
+                                        <span class="class-grupo">${mc.grupo_clave} ${mc.nivel_nombre ? `(${mc.nivel_nombre})` : ''}</span>
                                         <span class="class-aula"><i class="fa-solid fa-location-dot me-1"></i>${mc.aula}</span>
                                     </div>
                                 </div>
@@ -743,7 +743,7 @@ function renderCalendars() {
                             <div class="class-block" style="background: rgba(13, 148, 136, 0.08); border-left-color: rgb(13, 148, 136); border-color: rgba(13, 148, 136, 0.25);">
                                 <div class="class-materia" title="${mc.materia_nombre}">${mc.materia_nombre}</div>
                                 <div>
-                                    <span class="class-grupo" style="color: rgb(13, 148, 136);">${mc.grupo_clave}</span>
+                                    <span class="class-grupo" style="color: rgb(13, 148, 136);">${mc.grupo_clave} ${mc.nivel_nombre ? `(${mc.nivel_nombre})` : ''}</span>
                                     <span class="class-aula"><i class="fa-solid fa-location-dot me-1"></i>${mc.aula}</span>
                                 </div>
                             </div>

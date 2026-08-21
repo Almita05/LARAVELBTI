@@ -2034,6 +2034,21 @@
     window.imprimirBoletaBTISemestre = function(data, idNivelSemestre, reportesCounts) {
         const al = data.alumno;
         const repCounts = reportesCounts || { 1: 0, 2: 0, 3: 0 };
+        const totalReportes = (repCounts[1] || 0) + (repCounts[2] || 0) + (repCounts[3] || 0);
+        let boxReportesHtml = '';
+        if (totalReportes > 0) {
+            boxReportesHtml = `
+                <!-- Box Reportes de Indisciplina -->
+                <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: -10px;">
+                    <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">REPORTES POR CONDUCTA</span>
+                    <span style="font-size: 8pt; font-weight: 800; padding: 8px 5px; color: #0f172a; display: block; word-spacing: 3px;">
+                        P1: <strong style="color: #1e6fa8; font-size: 9pt;">${repCounts[1] || 0}</strong> &nbsp;|&nbsp; 
+                        P2: <strong style="color: #1e6fa8; font-size: 9pt;">${repCounts[2] || 0}</strong> &nbsp;|&nbsp; 
+                        P3: <strong style="color: #1e6fa8; font-size: 9pt;">${repCounts[3] || 0}</strong>
+                    </span>
+                </div>
+            `;
+        }
         const periodos = data.periodos || [];
         const p = periodos.find(x => x.idNivel === idNivelSemestre);
         const materias = p ? p.materias || [] : [];
@@ -2253,15 +2268,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Box Reportes de Indisciplina -->
-                                <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: -10px;">
-                                    <span style="font-size: 6.8pt; font-weight: 800; background: #c2410c; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">REPORTES POR DISCIPLINA</span>
-                                    <span style="font-size: 8pt; font-weight: 800; padding: 8px 5px; color: #0f172a; display: block; word-spacing: 3px;">
-                                        PARCIAL 1: <strong style="color: #c2410c; font-size: 9pt;">${repCounts[1] || 0}</strong> &nbsp;|&nbsp; 
-                                        PARCIAL 2: <strong style="color: #c2410c; font-size: 9pt;">${repCounts[2] || 0}</strong> &nbsp;|&nbsp; 
-                                        PARCIAL 3: <strong style="color: #c2410c; font-size: 9pt;">${repCounts[3] || 0}</strong>
-                                    </span>
-                                </div>
+                                ${boxReportesHtml}
 
                                 <!-- Director Signature -->
                                 <div style="margin-top: 15px; width: 100%; text-align: center;">
@@ -2342,7 +2349,27 @@
         }).then((semResult) => {
             if (semResult.isConfirmed) {
                 const idNivelSemestre = parseInt(semResult.value);
-                imprimirBoletaBTISemestre(datosKardexActual, idNivelSemestre);
+                const alId = datosKardexActual.alumno.idAlumno;
+                Swal.fire({
+                    title: 'Preparando boleta...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch(`/alumnos/${alId}/reportes-conteo`)
+                    .then(r => r.json())
+                    .then(resp => {
+                        Swal.close();
+                        const counts = resp.success && resp.counts ? resp.counts : { 1: 0, 2: 0, 3: 0 };
+                        imprimirBoletaBTISemestre(datosKardexActual, idNivelSemestre, counts);
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.close();
+                        imprimirBoletaBTISemestre(datosKardexActual, idNivelSemestre, { 1: 0, 2: 0, 3: 0 });
+                    });
             }
         });
     }
@@ -2888,7 +2915,7 @@
                         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
                         @page {
                             size: letter portrait;
-                            margin: 6mm 10mm 6mm 10mm;
+                            margin: 15mm 15mm 15mm 15mm;
                         }
                         html, body {
                             font-family: Arial, Helvetica, sans-serif;
@@ -2901,43 +2928,10 @@
                             width: 100%;
                             margin: 0 auto;
                         }
-                        .separator {
-                            text-align: center;
-                            font-size: 9pt;
-                            font-weight: bold;
-                            color: #64748b;
-                            margin: 15px 0;
-                            border-top: 1px dashed #64748b;
-                            padding-top: 15px;
-                            position: relative;
-                        }
-                        .separator-icon {
-                            position: absolute;
-                            top: -10px;
-                            left: 50%;
-                            transform: translateX(-50%);
-                            background: #fff;
-                            padding: 0 10px;
-                        }
                     </style>
                 </head>
                 <body>
                     <div class="container">
-                        <!-- TALÓN 1 (Escuela) -->
-                        <div style="font-size: 7.5pt; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;">
-                            Talón 1 - Expediente Escolar
-                        </div>
-                        ${renderBloque(rep)}
-
-                        <!-- Divisor de Corte -->
-                        <div class="separator">
-                            <span class="separator-icon">✂ Cortar aquí</span>
-                        </div>
-
-                        <!-- TALÓN 2 (Tutor) -->
-                        <div style="font-size: 7.5pt; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; margin-top: 5px;">
-                            Talón 2 - Para el Padre / Tutor
-                        </div>
                         ${renderBloque(rep)}
                     </div>
                 </body>

@@ -4,6 +4,9 @@
 <head>
     <link rel="stylesheet" href="{{ asset('css/estilos.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Tom Select CSS and JS -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 </head>
 
 <div class="page-container">
@@ -1216,7 +1219,7 @@ document.addEventListener('change', function(e) {
 });
 
 function toggleRegistroHistorico(form, isHistorico) {
-    const fieldsToRelax = ['apPaterno', 'fechaNacimiento', 'celularAlumno'];
+    const fieldsToRelax = ['apPaterno', 'fechaNacimiento', 'celularAlumno', 'id_centroTrabajo', 'id_nivel_academico'];
     
     // 1. Mostrar/ocultar asteriscos y required
     fieldsToRelax.forEach(fieldName => {
@@ -1267,7 +1270,12 @@ function toggleRegistroHistorico(form, isHistorico) {
         if (selectJornada) selectJornada.disabled = false;
 
         const selectGrupoHistorico = form.querySelector('#selectGrupoHistorico');
-        if (selectGrupoHistorico) selectGrupoHistorico.value = '';
+        if (selectGrupoHistorico) {
+            if (selectGrupoHistorico.tomselect) {
+                selectGrupoHistorico.tomselect.destroy();
+            }
+            selectGrupoHistorico.value = '';
+        }
 
         if (typeof buscarYRecomendarGrupos === 'function') {
             buscarYRecomendarGrupos();
@@ -1283,9 +1291,18 @@ function cargarGruposHistoricos(form) {
     const inputGrupo = form.querySelector('#inputGrupoSeleccionado');
     if (!selectCCT || !selectGrupoHistorico) return;
 
+    if (selectGrupoHistorico.tomselect) {
+        selectGrupoHistorico.tomselect.destroy();
+    }
+
     const cctId = selectCCT.value;
     if (!cctId) {
         selectGrupoHistorico.innerHTML = '<option value="">-- Primero seleccione CCT --</option>';
+        new TomSelect(selectGrupoHistorico, {
+            create: false,
+            placeholder: "-- Primero seleccione CCT --",
+            allowEmptyOption: true
+        });
         return;
     }
 
@@ -1296,6 +1313,9 @@ function cargarGruposHistoricos(form) {
     fetch(`/catalogos/grupos?idCentroTrabajo=${cctId}`)
         .then(r => r.json())
         .then(resp => {
+            if (selectGrupoHistorico.tomselect) {
+                selectGrupoHistorico.tomselect.destroy();
+            }
             const grupos = resp.data || (Array.isArray(resp) ? resp : []);
             selectGrupoHistorico.innerHTML = '<option value="">-- Seleccione un grupo --</option>';
             if (Array.isArray(grupos)) {
@@ -1303,16 +1323,34 @@ function cargarGruposHistoricos(form) {
                     const opt = document.createElement('option');
                     opt.value = g.id;
                     opt.textContent = `${g.clave} - ${g.nombre_nivel || ''} (${g.modalidadHorario || 'General'}) [${g.statusGrupo || 'ACTIVO'}]`;
+                    opt.dataset.modalidad = g.modalidadHorario || '';
+                    opt.dataset.fechaInicio = g.fechaInicio || '';
                     if (valorActual && String(g.id) === String(valorActual)) {
                         opt.selected = true;
                     }
                     selectGrupoHistorico.appendChild(opt);
                 });
             }
+            new TomSelect(selectGrupoHistorico, {
+                create: false,
+                placeholder: "-- Seleccione un grupo --",
+                allowEmptyOption: true,
+                onChange: function(value) {
+                    selectGrupoHistorico.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
         })
         .catch(err => {
-            console.error('Error al cargar grupos históricos:', err);
+            console.error('Error al cargar grupos:', err);
+            if (selectGrupoHistorico.tomselect) {
+                selectGrupoHistorico.tomselect.destroy();
+            }
             selectGrupoHistorico.innerHTML = '<option value="">Error al cargar grupos</option>';
+            new TomSelect(selectGrupoHistorico, {
+                create: false,
+                placeholder: "Error al cargar grupos",
+                allowEmptyOption: true
+            });
         });
 }
 
@@ -1754,20 +1792,28 @@ window.verAlumno = function(id) {
                             }
                         });
 
-                        // Procesar boleta parcial e histórico
+                                                // Procesar boleta parcial e histórico
                         let obs = al.observaciones || '';
                         let traeBoleta = 'NO';
+                        let esHistorico = false;
                         if (obs.includes('[BOLETA_PARCIAL]')) {
                             traeBoleta = 'SI';
                             obs = obs.replace('[BOLETA_PARCIAL]', '').trim();
                         }
                         if (obs.includes('[REGISTRO_HISTORICO]')) {
+                            esHistorico = true;
                             obs = obs.replace('[REGISTRO_HISTORICO]', '').trim();
                         }
                         const selectTraeBoleta = form.querySelector('#selectTraeBoleta');
                         if (selectTraeBoleta) selectTraeBoleta.value = traeBoleta;
                         const textareaObs = form.querySelector('[name="observaciones"]');
                         if (textareaObs) textareaObs.value = obs;
+
+                        const chkHistorico = form.querySelector('#chkRegistroHistorico');
+                        if (chkHistorico) {
+                            chkHistorico.checked = esHistorico;
+                            toggleRegistroHistorico(form, esHistorico);
+                        }
 
                         if (typeof window.initModalAlumnoDinamico === 'function') {
                             window.initModalAlumnoDinamico(al);
@@ -1832,20 +1878,28 @@ window.editarAlumno = function(id) {
                             }
                         });
 
-                        // Procesar boleta parcial e histórico
+                                                // Procesar boleta parcial e histórico
                         let obs = al.observaciones || '';
                         let traeBoleta = 'NO';
+                        let esHistorico = false;
                         if (obs.includes('[BOLETA_PARCIAL]')) {
                             traeBoleta = 'SI';
                             obs = obs.replace('[BOLETA_PARCIAL]', '').trim();
                         }
                         if (obs.includes('[REGISTRO_HISTORICO]')) {
+                            esHistorico = true;
                             obs = obs.replace('[REGISTRO_HISTORICO]', '').trim();
                         }
                         const selectTraeBoleta = form.querySelector('#selectTraeBoleta');
                         if (selectTraeBoleta) selectTraeBoleta.value = traeBoleta;
                         const textareaObs = form.querySelector('[name="observaciones"]');
                         if (textareaObs) textareaObs.value = obs;
+
+                        const chkHistorico = form.querySelector('#chkRegistroHistorico');
+                        if (chkHistorico) {
+                            chkHistorico.checked = esHistorico;
+                            toggleRegistroHistorico(form, esHistorico);
+                        }
 
                         if (typeof window.initModalAlumnoDinamico === 'function') {
                             window.initModalAlumnoDinamico(al);
@@ -2496,7 +2550,27 @@ window.abrirKardexAlumno = function(idAlumno) {
                         }).then((semResult) => {
                             if (semResult.isConfirmed) {
                                 const idNivelSemestre = parseInt(semResult.value); // 7 a 12
-                                imprimirBoletaBTISemestre(data, idNivelSemestre);
+                                const alId = data.alumno.idAlumno;
+                                Swal.fire({
+                                    title: 'Preparando boleta...',
+                                    allowOutsideClick: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();
+                                    }
+                                });
+
+                                fetch(`/alumnos/${alId}/reportes-conteo`)
+                                    .then(r => r.json())
+                                    .then(resp => {
+                                        Swal.close();
+                                        const counts = resp.success && resp.counts ? resp.counts : { 1: 0, 2: 0, 3: 0 };
+                                        imprimirBoletaBTISemestre(data, idNivelSemestre, counts);
+                                    })
+                                    .catch(err => {
+                                        console.error(err);
+                                        Swal.close();
+                                        imprimirBoletaBTISemestre(data, idNivelSemestre, { 1: 0, 2: 0, 3: 0 });
+                                    });
                             }
                         });
                     }
@@ -2721,8 +2795,24 @@ function mostrarKardexConDatos(data) {
     calcularPromediosKardex();
 }
 
-function imprimirBoletaBTISemestre(data, idNivelSemestre) {
+function imprimirBoletaBTISemestre(data, idNivelSemestre, reportesCounts) {
     const al = data.alumno;
+    const repCounts = reportesCounts || { 1: 0, 2: 0, 3: 0 };
+    const totalReportes = (repCounts[1] || 0) + (repCounts[2] || 0) + (repCounts[3] || 0);
+    let boxReportesHtml = '';
+    if (totalReportes > 0) {
+        boxReportesHtml = `
+            <!-- Box Reportes de Indisciplina -->
+            <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: -10px;">
+                <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">REPORTES POR CONDUCTA</span>
+                <span style="font-size: 8pt; font-weight: 800; padding: 8px 5px; color: #0f172a; display: block; word-spacing: 3px;">
+                    P1: <strong style="color: #1e6fa8; font-size: 9pt;">${repCounts[1] || 0}</strong> &nbsp;|&nbsp; 
+                    P2: <strong style="color: #1e6fa8; font-size: 9pt;">${repCounts[2] || 0}</strong> &nbsp;|&nbsp; 
+                    P3: <strong style="color: #1e6fa8; font-size: 9pt;">${repCounts[3] || 0}</strong>
+                </span>
+            </div>
+        `;
+    }
     const periodos = data.periodos || [];
     const p = periodos.find(x => x.idNivel === idNivelSemestre);
     const materias = p ? p.materias || [] : [];
@@ -2941,6 +3031,8 @@ function imprimirBoletaBTISemestre(data, idNivelSemestre) {
                                     <span style="font-size: 13pt; font-weight: 900; padding: 10px 5px; color: #1e3a8a; display: block;">${finalAvg}</span>
                                 </div>
                             </div>
+
+                            ${boxReportesHtml}
 
                             <!-- Director Signature -->
                             <div style="margin-top: 15px; width: 100%; text-align: center;">

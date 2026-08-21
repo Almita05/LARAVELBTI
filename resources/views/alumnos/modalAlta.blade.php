@@ -319,7 +319,7 @@
                                 <div class="row mb-3">
                                     <!-- CCT -->
                                     <div class="col-md-4 mb-3">
-                                        <label class="form-label">CCT (Centro de Trabajo) <span class="text-danger">*</span></label>
+                                        <label class="form-label">CCT (Centro de Trabajo) <span class="text-danger requerido-normal">*</span></label>
                                         <select name="id_centroTrabajo" id="selectCCT" class="form-select form-select-premium" required>
                                             <option value="">-- Seleccione CCT --</option>
                                             @if(isset($centrosTrabajo) && count($centrosTrabajo) > 0)
@@ -336,7 +336,7 @@
 
                                     <!-- Periodo / Nivel -->
                                     <div class="col-md-4 mb-3">
-                                        <label class="form-label">Periodo de incorporación <span class="text-danger">*</span></label>
+                                        <label class="form-label">Periodo de incorporación <span class="text-danger requerido-normal">*</span></label>
                                         <select name="id_nivel_academico" id="selectNivelAcademico" class="form-select form-select-premium" required>
                                             <option value="">-- Seleccione Periodo --</option>
                                         </select>
@@ -421,7 +421,7 @@
                                     <div class="card p-3 border-0 bg-light rounded-3 mb-3">
                                         <!-- SELECCIÓN DIRECTA DE GRUPO (SÓLO PARA REGISTRO HISTÓRICO) -->
                                         <div id="boxGrupoDirectoHistorico" style="display: none;" class="mb-3">
-                                            <label class="form-label fw-bold text-dark">Grupo Histórico / Directo <span class="text-danger">*</span></label>
+                                            <label class="form-label fw-bold text-dark">Grupo Histórico / Directo</label>
                                             <select id="selectGrupoHistorico" class="form-select form-select-premium">
                                                 <option value="">-- Seleccione cualquier grupo (activo/inactivo) --</option>
                                             </select>

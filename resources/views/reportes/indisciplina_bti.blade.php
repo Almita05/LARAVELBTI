@@ -570,7 +570,7 @@
                         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
                         @page {
                             size: letter portrait;
-                            margin: 6mm 10mm 6mm 10mm;
+                            margin: 15mm 15mm 15mm 15mm;
                         }
                         html, body {
                             font-family: Arial, Helvetica, sans-serif;
@@ -583,43 +583,10 @@
                             width: 100%;
                             margin: 0 auto;
                         }
-                        .separator {
-                            text-align: center;
-                            font-size: 9pt;
-                            font-weight: bold;
-                            color: #64748b;
-                            margin: 15px 0;
-                            border-top: 1px dashed #64748b;
-                            padding-top: 15px;
-                            position: relative;
-                        }
-                        .separator-icon {
-                            position: absolute;
-                            top: -10px;
-                            left: 50%;
-                            transform: translateX(-50%);
-                            background: #fff;
-                            padding: 0 10px;
-                        }
                     </style>
                 </head>
                 <body>
                     <div class="container">
-                        <!-- TALÓN 1 (Escuela) -->
-                        <div style="font-size: 7.5pt; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;">
-                            Talón 1 - Expediente Escolar
-                        </div>
-                        ${renderBloque(rep)}
-
-                        <!-- Divisor de Corte -->
-                        <div class="separator">
-                            <span class="separator-icon">✂ Cortar aquí</span>
-                        </div>
-
-                        <!-- TALÓN 2 (Tutor) -->
-                        <div style="font-size: 7.5pt; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; margin-top: 5px;">
-                            Talón 2 - Para el Padre / Tutor
-                        </div>
                         ${renderBloque(rep)}
                     </div>
                 </body>

@@ -45,54 +45,65 @@ class ReporteIndisciplinaController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'id_alumno' => 'required|integer',
-            'alumno_nombre' => 'required|string',
-            'incidente' => 'required|string',
-            'parcial' => 'required|integer|in:1,2,3',
-            'tutor_nombre' => 'nullable|string'
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'id_alumno' => 'required|integer',
+                'alumno_nombre' => 'required|string',
+                'incidente' => 'required|string',
+                'parcial' => 'required|integer|in:1,2,3',
+                'tutor_nombre' => 'nullable|string'
+            ]);
 
-        if ($validator->fails()) {
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Datos inválidos',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Autogenerate Folio: REP-YYYY-XXXX (e.g. REP-2026-0001)
+            $year = date('Y');
+            $prefix = "REP-{$year}-";
+
+            $lastReport = ReporteIndisciplina::where('folio', 'like', "{$prefix}%")
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($lastReport) {
+                $lastNumber = intval(substr($lastReport->folio, strlen($prefix)));
+                $nextNumber = $lastNumber + 1;
+            } else {
+                $nextNumber = 1;
+            }
+
+            $folio = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+            $reporte = ReporteIndisciplina::create([
+                'folio' => $folio,
+                'id_alumno' => $request->id_alumno,
+                'alumno_nombre' => $request->alumno_nombre,
+                'tutor_nombre' => $request->tutor_nombre ?: 'S/N',
+                'fecha' => date('Y-m-d'),
+                'incidente' => $request->incidente,
+                'parcial' => $request->parcial
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Reporte de indisciplina registrado correctamente.',
+                'data' => $reporte
+            ], 201);
+        } catch (\Exception $e) {
+            \Log::error('Error al guardar reporte de indisciplina: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'payload' => $request->all()
+            ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Datos inválidos',
-                'errors' => $validator->errors()
-            ], 422);
+                'message' => 'Error interno del servidor: ' . $e->getMessage()
+            ], 500);
         }
-
-        // Autogenerate Folio: REP-YYYY-XXXX (e.g. REP-2026-0001)
-        $year = date('Y');
-        $prefix = "REP-{$year}-";
-
-        $lastReport = ReporteIndisciplina::where('folio', 'like', "{$prefix}%")
-            ->orderBy('id', 'desc')
-            ->first();
-
-        if ($lastReport) {
-            $lastNumber = intval(substr($lastReport->folio, strlen($prefix)));
-            $nextNumber = $lastNumber + 1;
-        } else {
-            $nextNumber = 1;
-        }
-
-        $folio = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
-
-        $reporte = ReporteIndisciplina::create([
-            'folio' => $folio,
-            'id_alumno' => $request->id_alumno,
-            'alumno_nombre' => $request->alumno_nombre,
-            'tutor_nombre' => $request->tutor_nombre ?: 'S/N',
-            'fecha' => date('Y-m-d'),
-            'incidente' => $request->incidente,
-            'parcial' => $request->parcial
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Reporte de indisciplina registrado correctamente.',
-            'data' => $reporte
-        ], 201);
     }
 
     /**
