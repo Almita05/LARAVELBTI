@@ -9,7 +9,7 @@
             Regresar
         </a>
         <h3 class="page-title mb-0">
-            <i class="fa-solid fa-triangle-exclamation text-warning me-2"></i>REPORTES DE INDISCIPLINA (BTI)
+            <i class="fa-solid fa-triangle-exclamation text-primary me-2"></i>REPORTES DE INDISCIPLINA (BTI)
         </h3>
     </div>
 
@@ -88,7 +88,7 @@
 <div class="modal fade" id="modalReportesIndisciplina" tabindex="-1" aria-labelledby="modalReportesLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background: #ffffff;">
-            <div class="modal-header py-3 px-4 d-flex justify-content-between align-items-center" style="background: #c2410c !important; color: #ffffff !important;">
+            <div class="modal-header py-3 px-4 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important; color: #ffffff !important;">
                 <h5 class="modal-title fw-bold text-white mb-0" id="modalReportesLabel">
                     <i class="fa-solid fa-triangle-exclamation text-white me-2"></i> Reportes de Indisciplina - Detalle
                 </h5>
@@ -99,7 +99,7 @@
                     <!-- Registrar Reporte -->
                     <div class="col-12 col-lg-5 border-end">
                         <h6 class="fw-bold text-slate-800 mb-3 border-bottom pb-2">
-                            <i class="fa-solid fa-circle-plus text-danger me-2"></i>Registrar Nuevo Reporte
+                            <i class="fa-solid fa-circle-plus text-primary me-2"></i>Registrar Nuevo Reporte
                         </h6>
                         <form id="formAlumnoReporte" onsubmit="guardarReporteAlumno(event)">
                             <input type="hidden" id="rep_id_alumno">
@@ -130,7 +130,7 @@
                                 <textarea id="rep_incidente" class="form-control" rows="4" placeholder="Describa la indisciplina cometida detalladamente..." required></textarea>
                             </div>
 
-                            <button type="submit" class="btn btn-danger w-100 fw-bold py-2 shadow-sm">
+                            <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm" style="background: linear-gradient(135deg, rgb(73, 164, 190) 0%, #1E6FA8 100%); border: none;">
                                 <i class="fa-solid fa-floppy-disk me-2"></i>Registrar y Generar Formato
                             </button>
                         </form>
@@ -258,7 +258,7 @@
                         <td class="text-start font-semibold">${fullName.toUpperCase()}</td>
                         <td><span class="badge ${alumno.statusAlumno === 'ACTIVO' ? 'bg-success' : 'bg-secondary'}">${alumno.statusAlumno}</span></td>
                         <td>
-                            <button class="btn btn-danger text-white btn-sm px-3 shadow-sm d-inline-flex align-items-center gap-2" onclick="abrirReportesIndisciplinaAlumno(${alumno.idAlumno}, '${fullName.replace(/'/g, "\\'")}', '${(alumno.tutor || '').replace(/'/g, "\\'")}', '${alumno.numeroControl || alumno.idAlumno}')" style="background-color: #c2410c; border-color: #c2410c;">
+                            <button class="btn btn-primary text-white btn-sm px-3 shadow-sm d-inline-flex align-items-center gap-2" onclick="abrirReportesIndisciplinaAlumno(${alumno.idAlumno}, '${fullName.replace(/'/g, "\\'")}', '${(alumno.tutor || '').replace(/'/g, "\\'")}', '${alumno.numeroControl || alumno.idAlumno}')" style="background-color: #1e6fa8; border-color: #1e6fa8;">
                                 <i class="fa-solid fa-triangle-exclamation"></i> Gestionar Reportes
                             </button>
                         </td>
@@ -318,7 +318,7 @@
         const tbody = document.getElementById('tabla-rep-alumno-historial');
         if (!tbody) return;
 
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4"><div class="spinner-border spinner-border-sm text-danger"></div> Cargando historial...</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div> Cargando historial...</td></tr>`;
 
         fetch(`/reportes-indisciplina?id_alumno=${idAlumno}`)
             .then(r => r.json())
@@ -337,7 +337,7 @@
                         tr.innerHTML = `
                             <td><strong class="text-slate-800">${rep.folio}</strong></td>
                             <td>${rep.tutor_nombre}</td>
-                            <td><span class="badge bg-warning-subtle text-warning-emphasis fw-bold">${rep.parcial}° Parcial</span></td>
+                            <td><span class="badge bg-info-subtle text-info-emphasis fw-bold">${rep.parcial}° Parcial</span></td>
                             <td>${new Date(rep.fecha + 'T00:00:00').toLocaleDateString('es-MX')}</td>
                             <td class="text-center">
                                 <div class="d-flex gap-1 justify-content-center">
@@ -402,7 +402,7 @@
                     icon: 'success',
                     title: 'Reporte registrado',
                     text: 'El reporte de indisciplina se guardó correctamente.',
-                    confirmButtonColor: '#c2410c'
+                    confirmButtonColor: '#0284c7'
                 }).then(() => {
                     document.getElementById('rep_incidente').value = '';
                     cargarHistorialReportesAlumno(idAlumno);
