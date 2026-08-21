@@ -468,7 +468,8 @@ const BTI_HOURS = [
     { start: "10:00", end: "10:30", type: "receso" },
     { start: "10:30", end: "11:20", type: "class" },
     { start: "11:20", end: "12:10", type: "class" },
-    { start: "12:10", end: "13:00", type: "class" }
+    { start: "12:10", end: "13:00", type: "class" },
+    { start: "13:00", end: "13:50", type: "class" }
 ];
 
 document.addEventListener("DOMContentLoaded", function() {
