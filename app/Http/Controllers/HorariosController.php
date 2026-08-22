@@ -102,6 +102,8 @@ class HorariosController extends Controller
             'horaInicio' => $request->input('horaInicio'),
             'horaFin' => $request->input('horaFin'),
             'es_prehorario' => $request->input('es_prehorario', 0),
+            'aula' => $request->input('aula'),
+            'exclude_ids' => $request->input('exclude_ids', []),
         ]);
 
         if ($response->failed()) {
