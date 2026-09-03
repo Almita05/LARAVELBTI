@@ -11,6 +11,12 @@ class AuthSession
     public function handle(Request $request, Closure $next): Response
     {
         if (!session()->has('usuario_id')) {
+            if ($request->expectsJson() || $request->is('*/calificaciones*') || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tu sesión ha expirado. Por favor inicia sesión de nuevo.'
+                ], 401);
+            }
             return redirect()->route('login');
         }
 

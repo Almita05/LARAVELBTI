@@ -1596,15 +1596,30 @@
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
 
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
         fetch(`/alumnos/${idAlumnoKardexActual}/calificaciones`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
             },
             body: JSON.stringify({ calificaciones: calificaciones })
         })
-        .then(r => r.json())
+        .then(async r => {
+            const data = await r.json().catch(() => null);
+            if (!r.ok) {
+                if (r.status === 419) {
+                    throw new Error('La sesión ha expirado (Error 419). Por favor recarga la página con F5.');
+                }
+                if (r.status === 401) {
+                    throw new Error('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+                }
+                throw new Error((data && (data.error || data.message)) || `Error en el servidor (${r.status})`);
+            }
+            return data;
+        })
         .then(resp => {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Guardar Calificaciones';

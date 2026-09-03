@@ -1626,6 +1626,7 @@ function enviarPeticionGuardar(finalizar) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
         body: JSON.stringify({ 
@@ -1633,7 +1634,19 @@ function enviarPeticionGuardar(finalizar) {
             finalizar: finalizar
         })
     })
-    .then(res => res.json())
+    .then(async res => {
+        const resp = await res.json().catch(() => null);
+        if (!res.ok) {
+            if (res.status === 419) {
+                throw new Error('La sesión ha expirado (Error 419). Por favor recarga la página con F5.');
+            }
+            if (res.status === 401) {
+                throw new Error('Tu sesión ha finalizado. Por favor vuelve a iniciar sesión.');
+            }
+            throw new Error((resp && (resp.error || resp.message)) || `Error en el servidor (${res.status})`);
+        }
+        return resp;
+    })
     .then(resp => {
         if (resp.success) {
             Swal.fire({
