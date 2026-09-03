@@ -108,47 +108,36 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label text-dark fw-bold">Rol de Personal *</label>
-                        <select class="form-select form-control-premium text-dark" id="altaRol" name="rol" required style="color: #000 !important; font-weight: 600;">
-                            <option value="" disabled selected>Selecciona un rol...</option>
-                            <option value="Control Escolar">Control Escolar</option>
-                            <option value="Administrativo">Administrativo</option>
-                            <option value="Subdirector">Subdirector</option>
-                            <option value="Director">Director</option>
-                            <option value="Prefecto">Prefecto</option>
-                            <option value="Servicio Social">Servicio Social</option>
-                        </select>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-dark fw-bold">Rol de Personal *</label>
+                            <select class="form-select form-control-premium text-dark" id="altaRol" name="rol" required style="color: #000 !important; font-weight: 600;">
+                                <option value="" disabled selected>Selecciona un rol...</option>
+                                <option value="Control Escolar">Control Escolar</option>
+                                <option value="Administrativo">Administrativo</option>
+                                <option value="Subdirector">Subdirector</option>
+                                <option value="Director">Director</option>
+                                <option value="Prefecto">Prefecto</option>
+                                <option value="Servicio Social">Servicio Social</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-dark fw-bold">ID en Reloj Checador (Biométrico)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fa-solid fa-fingerprint text-primary"></i></span>
+                                <input type="text" class="form-control form-control-premium text-dark" name="idBiometrico" id="altaIdBiometrico" placeholder="Ej. 45" style="color: #000 !important; font-weight: 600;">
+                            </div>
+                            <small class="text-muted">Número con el que checa en el reloj biométrico.</small>
+                        </div>
                     </div>
 
-                    <!-- Configuración de Asistencia y Servicio Social -->
-                    <div class="p-3 mb-3 rounded border" style="background-color: #f8fafc; border-color: #cbd5e1 !important;">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="form-label fw-bold mb-0 text-dark" style="font-size: 0.9rem;">
-                                <i class="fa-solid fa-fingerprint me-1 text-primary"></i> Asistencia y Servicio Social
-                            </label>
-                            <div class="form-check form-switch mb-0">
-                                <input class="form-check-input" type="checkbox" name="es_servicio_social" value="1" id="altaEsServicioSocial" style="cursor: pointer;">
-                                <label class="form-check-label fw-bold text-primary fs-7" for="altaEsServicioSocial" style="cursor: pointer;">¿Realiza Servicio Social?</label>
-                            </div>
+                    <div class="mb-3 p-2 px-3 rounded border bg-light d-flex align-items-center justify-content-between" style="border-color: #cbd5e1 !important;">
+                        <div>
+                            <span class="fw-bold text-dark fs-7"><i class="fa-solid fa-graduation-cap me-1 text-primary"></i> ¿Esta persona realiza Servicio Social?</span>
+                            <div class="text-muted" style="font-size: 0.75rem;">Sus horas se calcularán por tiempo efectivo (primer marcaje a último marcaje).</div>
                         </div>
-                        <div class="row g-2">
-                            <div class="col-md-6">
-                                <label class="form-label text-muted fs-7 mb-1">ID en Reloj Checador (Biométrico)</label>
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text bg-white"><i class="fa-solid fa-id-badge text-primary"></i></span>
-                                    <input type="text" class="form-control" name="idBiometrico" id="altaIdBiometrico" placeholder="Ej. 45" style="font-weight: 600;">
-                                </div>
-                                <small class="text-muted" style="font-size: 0.72rem;">Número asignado en el reloj checador.</small>
-                            </div>
-                            <div class="col-md-6" id="altaContenedorHoras">
-                                <label class="form-label text-muted fs-7 mb-1">Horas a Cumplir (Objetivo)</label>
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text bg-white"><i class="fa-solid fa-clock text-warning"></i></span>
-                                    <input type="number" class="form-control" name="horas_objetivo" id="altaHorasObjetivo" placeholder="Ej. 480" min="1" style="font-weight: 600;">
-                                </div>
-                                <small class="text-muted" style="font-size: 0.72rem;">Total de horas de servicio a liberar.</small>
-                            </div>
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" name="es_servicio_social" value="1" id="altaEsServicioSocial" style="cursor: pointer; width: 2.3em; height: 1.25em;">
                         </div>
                     </div>
 
@@ -440,7 +429,7 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label text-dark fw-bold">Rol de Personal *</label>
                             <select class="form-select form-control-premium text-dark" id="editRol" name="rol" required style="color: #000 !important; font-weight: 600;">
                                 <option value="Control Escolar">Control Escolar</option>
@@ -451,43 +440,30 @@
                                 <option value="Servicio Social">Servicio Social</option>
                             </select>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label text-dark fw-bold">Estatus *</label>
                             <select class="form-select form-control-premium text-dark" id="editStatus" name="status" required style="color: #000 !important; font-weight: 600;">
                                 <option value="ACTIVO">ACTIVO</option>
                                 <option value="INACTIVO">INACTIVO</option>
                             </select>
                         </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-dark fw-bold">ID Checador</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fa-solid fa-fingerprint text-primary"></i></span>
+                                <input type="text" class="form-control form-control-premium text-dark" name="idBiometrico" id="editIdBiometrico" placeholder="Ej. 45" style="color: #000 !important; font-weight: 600;">
+                            </div>
+                            <small class="text-muted" style="font-size: 0.72rem;">En reloj checador.</small>
+                        </div>
                     </div>
 
-                    <!-- Configuración de Asistencia y Servicio Social -->
-                    <div class="p-3 mb-3 rounded border" style="background-color: #f8fafc; border-color: #cbd5e1 !important;">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="form-label fw-bold mb-0 text-dark" style="font-size: 0.9rem;">
-                                <i class="fa-solid fa-fingerprint me-1 text-primary"></i> Asistencia y Servicio Social
-                            </label>
-                            <div class="form-check form-switch mb-0">
-                                <input class="form-check-input" type="checkbox" name="es_servicio_social" value="1" id="editEsServicioSocial" style="cursor: pointer;">
-                                <label class="form-check-label fw-bold text-primary fs-7" for="editEsServicioSocial" style="cursor: pointer;">¿Realiza Servicio Social?</label>
-                            </div>
+                    <div class="mb-3 p-2 px-3 rounded border bg-light d-flex align-items-center justify-content-between" style="border-color: #cbd5e1 !important;">
+                        <div>
+                            <span class="fw-bold text-dark fs-7"><i class="fa-solid fa-graduation-cap me-1 text-primary"></i> ¿Esta persona realiza Servicio Social?</span>
+                            <div class="text-muted" style="font-size: 0.75rem;">Sus horas se calcularán por tiempo efectivo (primer marcaje a último marcaje).</div>
                         </div>
-                        <div class="row g-2">
-                            <div class="col-md-6">
-                                <label class="form-label text-muted fs-7 mb-1">ID en Reloj Checador (Biométrico)</label>
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text bg-white"><i class="fa-solid fa-id-badge text-primary"></i></span>
-                                    <input type="text" class="form-control" name="idBiometrico" id="editIdBiometrico" placeholder="Ej. 45" style="font-weight: 600;">
-                                </div>
-                                <small class="text-muted" style="font-size: 0.72rem;">Número asignado en el reloj checador.</small>
-                            </div>
-                            <div class="col-md-6" id="editContenedorHoras">
-                                <label class="form-label text-muted fs-7 mb-1">Horas a Cumplir (Objetivo)</label>
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text bg-white"><i class="fa-solid fa-clock text-warning"></i></span>
-                                    <input type="number" class="form-control" name="horas_objetivo" id="editHorasObjetivo" placeholder="Ej. 480" min="1" style="font-weight: 600;">
-                                </div>
-                                <small class="text-muted" style="font-size: 0.72rem;">Total de horas de servicio a liberar.</small>
-                            </div>
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" name="es_servicio_social" value="1" id="editEsServicioSocial" style="cursor: pointer; width: 2.3em; height: 1.25em;">
                         </div>
                     </div>
 
@@ -808,7 +784,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const esSS = item.es_servicio_social == 1 || item.rol === 'Servicio Social';
-            const badgeSS = esSS ? `<div class="mt-1"><span class="badge text-white" style="background-color: #6366f1; font-size: 0.72rem;"><i class="fa-solid fa-graduation-cap me-1"></i>Servicio Social${item.horas_objetivo ? ` (${item.horas_objetivo}h)` : ''}</span></div>` : '';
+            const badgeSS = esSS ? `<div class="mt-1"><span class="badge text-white" style="background-color: #6366f1; font-size: 0.72rem;"><i class="fa-solid fa-graduation-cap me-1"></i>Servicio Social</span></div>` : '';
             const badgeBio = item.idBiometrico ? `<div class="mt-1 text-muted" style="font-size: 0.72rem;"><i class="fa-solid fa-fingerprint text-primary me-1"></i>Checador: <strong>#${item.idBiometrico}</strong></div>` : '';
 
             tbody.innerHTML += `
@@ -923,7 +899,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('editPassword').value = '';
                     document.getElementById('editIdBiometrico').value = data.idBiometrico || '';
                     document.getElementById('editEsServicioSocial').checked = (data.es_servicio_social == 1 || data.rol === 'Servicio Social');
-                    document.getElementById('editHorasObjetivo').value = data.horas_objetivo || '';
 
                     // Desmarcar todos los checkboxes de permisos
                     const checkboxes = document.querySelectorAll('#formEditarPersonal input[type="checkbox"]');
@@ -1083,37 +1058,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Auto-completar servicio social al seleccionar el rol
+    // Auto-activar servicio social al seleccionar el rol
     document.getElementById('altaRol')?.addEventListener('change', function() {
-        if (this.value === 'Servicio Social') {
-            const chk = document.getElementById('altaEsServicioSocial');
-            if (chk) chk.checked = true;
-            const h = document.getElementById('altaHorasObjetivo');
-            if (h && !h.value) h.value = 480;
-        }
+        const chk = document.getElementById('altaEsServicioSocial');
+        if (chk) chk.checked = (this.value === 'Servicio Social');
     });
 
     document.getElementById('editRol')?.addEventListener('change', function() {
-        if (this.value === 'Servicio Social') {
-            const chk = document.getElementById('editEsServicioSocial');
-            if (chk) chk.checked = true;
-            const h = document.getElementById('editHorasObjetivo');
-            if (h && !h.value) h.value = 480;
-        }
-    });
-
-    document.getElementById('altaEsServicioSocial')?.addEventListener('change', function() {
-        const h = document.getElementById('altaHorasObjetivo');
-        if (this.checked && h && !h.value) {
-            h.value = 480;
-        }
-    });
-
-    document.getElementById('editEsServicioSocial')?.addEventListener('change', function() {
-        const h = document.getElementById('editHorasObjetivo');
-        if (this.checked && h && !h.value) {
-            h.value = 480;
-        }
+        const chk = document.getElementById('editEsServicioSocial');
+        if (chk) chk.checked = (this.value === 'Servicio Social');
     });
 
     // Carga inicial
