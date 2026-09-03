@@ -160,7 +160,7 @@
                 <select id="selectFiltroCct" class="form-select shadow-sm" style="border-radius: 12px; font-weight: 500;" onchange="setFiltroCct(this.value)">
                     <option value="" selected>Todos los CCT</option>
                     <option value="3">BGNE (Bachillerato No Escolarizado)</option>
-                    <option value="2">BTI (Bachillerato Tecnológico)</option>
+                    <option value="2">BTI (Bachillerato Tecnológico Interamericano)</option>
                     <option value="1">INF (Informática y Computación)</option>
                 </select>
             </div>

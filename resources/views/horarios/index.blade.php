@@ -2430,8 +2430,37 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    function darkenColor(hex, percent) {
+        if (!hex || hex === '#FFFFFF') return '#cbd5e1';
+        hex = hex.replace(/^\s*#|\s*$/g, '');
+        if (hex.length === 3) {
+            hex = hex.replace(/(.)/g, '$1$1');
+        }
+        let r = parseInt(hex.substr(0, 2), 16),
+            g = parseInt(hex.substr(2, 2), 16),
+            b = parseInt(hex.substr(4, 2), 16);
+
+        r = Math.max(0, Math.min(255, r - (r * (percent / 100))));
+        g = Math.max(0, Math.min(255, g - (g * (percent / 100))));
+        b = Math.max(0, Math.min(255, b - (b * (percent / 100))));
+
+        return '#' + 
+            ('0' + Math.round(r).toString(16)).slice(-2) + 
+            ('0' + Math.round(g).toString(16)).slice(-2) + 
+            ('0' + Math.round(b).toString(16)).slice(-2);
+    }
+
     function renderClassCardInCell(cellElement, data) {
-        let html = '<div class="class-card" draggable="true">';
+        const firstClaseColor = (data.clases[0] && data.clases[0].docente_color) || data.docente_color || '';
+        
+        let cardStyle = '';
+        if (firstClaseColor && firstClaseColor !== '#FFFFFF') {
+            const darkBorder = darkenColor(firstClaseColor, 12);
+            const leftBorder = darkenColor(firstClaseColor, 35);
+            cardStyle = `style="background-color: ${firstClaseColor} !important; border-color: ${darkBorder} !important; border-left-color: ${leftBorder} !important;"`;
+        }
+        
+        let html = `<div class="class-card" draggable="true" ${cardStyle}>`;
         data.clases.forEach((clase, idx) => {
             if (idx > 0) {
                 html += '<hr style="margin: 4px 0; opacity: 0.15; border-color: rgb(38, 104, 123);">';
@@ -2439,12 +2468,18 @@ document.addEventListener("DOMContentLoaded", function() {
             const teacherName = clase.docente_nombre || data.docente_nombre || '';
             const aula = clase.aula || data.aula || '';
             const aulaBadge = aula ? ` <span style="font-size: 0.65rem; background-color: #f1f5f9; color: #475569; padding: 2px 4px; border-radius: 4px; border: 1px solid #e2e8f0; font-weight: 600; margin-left: 4px; display: inline-flex; align-items: center; gap: 2px;"><i class="fa-solid fa-door-open" style="font-size: 0.58rem;"></i> ${aula}</span>` : '';
+            
+            // If the card has a custom color, force readable dark colors for text
+            const subjectStyle = firstClaseColor && firstClaseColor !== '#FFFFFF' ? 'style="font-size: 0.85rem; font-weight: 700; line-height: 1.2; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px; color: #0f172a !important;"' : 'style="font-size: 0.85rem; font-weight: 700; line-height: 1.2; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;"';
+            const detailStyle = firstClaseColor && firstClaseColor !== '#FFFFFF' ? 'style="font-size: 0.72rem; color: #334155 !important; line-height: 1.2; margin-top: 2px;"' : 'style="font-size: 0.72rem; color: #475569; line-height: 1.2; margin-top: 2px;"';
+            const iconStyle = firstClaseColor && firstClaseColor !== '#FFFFFF' ? 'style="color: #475569 !important;"' : '';
+            
             html += `
-                <div class="class-subject" style="font-size: 0.85rem; font-weight: 700; line-height: 1.2; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+                <div class="class-subject" ${subjectStyle}>
                     <span>${clase.materia_nombre}</span>
                     ${aulaBadge}
                 </div>
-                <div class="class-detail" style="font-size: 0.72rem; color: #475569; line-height: 1.2; margin-top: 2px;"><i class="fa-solid fa-user-tie"></i> ${teacherName}</div>
+                <div class="class-detail" ${detailStyle}><i class="fa-solid fa-user-tie" ${iconStyle}></i> ${teacherName}</div>
             `;
         });
         html += '</div>';

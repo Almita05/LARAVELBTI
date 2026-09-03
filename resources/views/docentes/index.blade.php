@@ -155,6 +155,16 @@
                             </div>
                         </div>
 
+                        <div class="col-md-6">
+                            <label class="form-label">Color Exclusivo (Pastel)</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <div id="pastelColorPalette" class="d-flex flex-wrap gap-1 align-items-center" style="max-width: 280px;"></div>
+                                <div class="position-relative" style="width: 38px; height: 38px;">
+                                    <input type="color" class="form-control form-control-color" name="colorDocente" id="formDocenteColor" value="#FFFFFF" style="width: 100%; height: 100%; padding: 0; border-radius: 50%; cursor: pointer; border: 2px solid #cbd5e1; background: none;" title="Color personalizado">
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="col-12">
                             <label class="form-label">Observaciones</label>
                             <textarea class="form-control form-control-premium" name="observacionesDocente"
@@ -272,6 +282,9 @@
 document.addEventListener("DOMContentLoaded", function() {
 
     cargarDocentes();
+    if (typeof initPastelPalette === 'function') {
+        initPastelPalette();
+    }
 
     // =========================
     // LISTAR DOCENTES
@@ -326,11 +339,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 userBadge = `<small class="text-muted d-block mt-1" style="font-size: 0.74rem;"><i class="fa-solid fa-user-slash me-1"></i>Sin usuario</small>`;
             }
 
+            const colorCircle = `<span class="badge-color-dot" style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background-color: ${docente.colorDocente || '#FFFFFF'}; border: 1px solid #cbd5e1; margin-right: 8px; vertical-align: middle;" title="Color del Docente"></span>`;
+
             html += `
                 <tr>
                     <td>${docente.idDocente}</td>
                     <td>
-                        <strong>${docente.nombreDocente} ${docente.apPaternoDocente ?? ''} ${docente.apMaternoDocente ?? ''}</strong>
+                        ${colorCircle}<strong>${docente.nombreDocente} ${docente.apPaternoDocente ?? ''} ${docente.apMaternoDocente ?? ''}</strong>
                         ${userBadge}
                     </td>
                     <td>${docente.correoDocente}</td>
@@ -403,6 +418,7 @@ document.addEventListener("DOMContentLoaded", function() {
         form.idBiometrico.disabled = disabled;
         form.usuario.disabled = disabled;
         form.password.disabled = disabled;
+        if (form.colorDocente) form.colorDocente.disabled = disabled;
         const btnTogglePass = document.getElementById('btnToggleFormDocentePassword');
         if (btnTogglePass) btnTogglePass.disabled = disabled;
     }
@@ -416,6 +432,10 @@ document.addEventListener("DOMContentLoaded", function() {
             const form = document.getElementById('formDocente');
             form.reset();
             setFormDisabled(false);
+            if (typeof selectPastelColor === 'function') {
+                const randomPastel = pastelColors[Math.floor(Math.random() * pastelColors.length)];
+                selectPastelColor(randomPastel);
+            }
             document.getElementById('lblFormDocentePassword').textContent = 'Contraseña';
             form.password.placeholder = 'Ingrese contraseña';
             document.querySelector('.modal-title').textContent = 'Alta Docente';
@@ -449,6 +469,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     form.password.value = '';
                     document.getElementById('lblFormDocentePassword').textContent = 'Contraseña';
                     form.password.placeholder = 'No asignada';
+                    form.colorDocente.value = d.colorDocente || '#FFFFFF';
+                    if (typeof selectPastelColor === 'function') {
+                        selectPastelColor(d.colorDocente || '#FFFFFF');
+                    }
 
                     setFormDisabled(true);
 
@@ -501,6 +525,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     form.password.value = '';
                     document.getElementById('lblFormDocentePassword').textContent = 'Nueva Contraseña';
                     form.password.placeholder = 'Dejar en blanco para conservar actual';
+                    form.colorDocente.value = d.colorDocente || '#FFFFFF';
+                    if (typeof selectPastelColor === 'function') {
+                        selectPastelColor(d.colorDocente || '#FFFFFF');
+                    }
 
                     setFormDisabled(false);
 
@@ -599,7 +627,8 @@ document.addEventListener("DOMContentLoaded", function() {
             fechaNacimiento: this.fechaNacimiento.value,
             idBiometrico: this.idBiometrico.value,
             usuario: this.usuario.value,
-            password: this.password.value
+            password: this.password.value,
+            colorDocente: this.colorDocente.value
         };
 
         const url = modoDocente === 'editar' ? `/docentes/${idDocenteActual}` : '/docentes';
@@ -654,6 +683,75 @@ document.addEventListener("DOMContentLoaded", function() {
                     confirmButtonColor: 'rgb(38, 104, 123)'
                 });
             });
+    });
+
+    
+    // ==========================================
+    // GESTIÓN DE COLORES PASTEL DE DOCENTES
+    // ==========================================
+    const pastelColors = [
+        '#FFD6D6', '#D6E4FF', '#D4EDDA', '#F3E5F5', '#FFF3CD', 
+        '#FFE8D6', '#D1ECF1', '#FAD2E1', '#E8F5E9', '#ECEFF1', 
+        '#C5D3E8', '#E8DFF5'
+    ];
+
+    window.initPastelPalette = function() {
+        const palette = document.getElementById('pastelColorPalette');
+        if (!palette) return;
+        palette.innerHTML = '';
+        
+        pastelColors.forEach(color => {
+            const bubble = document.createElement('div');
+            bubble.className = 'color-bubble';
+            bubble.style.width = '24px';
+            bubble.style.height = '24px';
+            bubble.style.borderRadius = '50%';
+            bubble.style.backgroundColor = color;
+            bubble.style.cursor = 'pointer';
+            bubble.style.border = '1px solid #cbd5e1';
+            bubble.style.transition = 'all 0.2s';
+            bubble.title = color;
+            
+            bubble.addEventListener('click', () => {
+                const form = document.getElementById('formDocente');
+                if (form.nombreDocente.disabled) return; // View mode, disabled
+                selectPastelColor(color);
+            });
+            
+            palette.appendChild(bubble);
+        });
+    }
+
+    window.selectPastelColor = function(color) {
+        const input = document.getElementById('formDocenteColor');
+        if (input) {
+            input.value = color;
+        }
+        
+        const bubbles = document.querySelectorAll('#pastelColorPalette .color-bubble');
+        bubbles.forEach(b => {
+            if (b.title.toUpperCase() === color.toUpperCase()) {
+                b.style.border = '2.5px solid #26687b';
+                b.style.transform = 'scale(1.15)';
+            } else {
+                b.style.border = '1px solid #cbd5e1';
+                b.style.transform = 'scale(1)';
+            }
+        });
+    }
+
+    document.getElementById('formDocenteColor')?.addEventListener('input', function() {
+        const color = this.value;
+        const bubbles = document.querySelectorAll('#pastelColorPalette .color-bubble');
+        bubbles.forEach(b => {
+            if (b.title.toUpperCase() === color.toUpperCase()) {
+                b.style.border = '2.5px solid #26687b';
+                b.style.transform = 'scale(1.15)';
+            } else {
+                b.style.border = '1px solid #cbd5e1';
+                b.style.transform = 'scale(1)';
+            }
+        });
     });
 
     // ==========================================

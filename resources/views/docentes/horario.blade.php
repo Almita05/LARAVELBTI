@@ -776,7 +776,7 @@ function imprimirReporteHorario() {
     let btiTableHtml = "";
     if (btiClasses.length > 0) {
         btiTableHtml = `
-            <h3 class="seccion-titulo">I. Horario de Bachillerato Tecnológico Industrial (BTI) - Escolarizado</h3>
+            <h3 class="seccion-titulo">I. Horario de Bachillerato Tecnológico Interamericano (BTI) - Escolarizado</h3>
             <table class="report-table">
                 <thead>
                     <tr>
@@ -795,7 +795,7 @@ function imprimirReporteHorario() {
         `;
     } else {
         btiTableHtml = `
-            <h3 class="seccion-titulo">I. Horario de Bachillerato Tecnológico Industrial (BTI) - Escolarizado</h3>
+            <h3 class="seccion-titulo">I. Horario de Bachillerato Tecnológico Interamericano (BTI) - Escolarizado</h3>
             <p class="no-classes">El docente no cuenta con carga horaria en el plantel BTI.</p>
         `;
     }

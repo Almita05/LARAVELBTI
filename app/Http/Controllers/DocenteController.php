@@ -43,7 +43,8 @@ class DocenteController extends Controller
         "nivelEstudios" => $request->nivelEstudios,
         "fechaNacimiento" => $request->fechaNacimiento,
         "idBiometrico" => $request->idBiometrico,
-        "usuario" => $request->usuario ? trim($request->usuario) : null
+        "usuario" => $request->usuario ? trim($request->usuario) : null,
+        "colorDocente" => $request->colorDocente
     ];
 
     if ($request->filled('password')) {
@@ -115,7 +116,8 @@ public function update(Request $request, $id)
         "nivelEstudios" => $request->nivelEstudios,
         "fechaNacimiento" => $request->fechaNacimiento,
         "idBiometrico" => $request->idBiometrico,
-        "usuario" => $request->usuario ? trim($request->usuario) : null
+        "usuario" => $request->usuario ? trim($request->usuario) : null,
+        "colorDocente" => $request->colorDocente
     ];
 
     if ($request->filled('password')) {
