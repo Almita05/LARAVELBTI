@@ -913,9 +913,12 @@
             button.setAttribute('role', 'tab');
             button.innerHTML = `<i class="fa-solid ${sub.icon}"></i> ${sub.nombre}`;
             
-            button.addEventListener('click', () => {
-                // Si cambiamos de pestaña, resetear inputs
-                document.querySelectorAll('input').forEach(input => input.value = '');
+            button.addEventListener('click', (e) => {
+                if (window.bootstrap && bootstrap.Tab) {
+                    bootstrap.Tab.getOrCreateInstance(button).show();
+                }
+                // Si cambiamos de pestaña, resetear inputs visibles
+                document.querySelectorAll('#submodulos-tab-content input:not([type="hidden"])').forEach(input => input.value = '');
                 document.querySelectorAll('.list-group').forEach(list => list.style.display = 'none');
                 
                 if (sub.id === 'reporte_indisciplina') {
@@ -2756,7 +2759,9 @@
                         return;
                     }
                     
+                    window.reportesCache = window.reportesCache || {};
                     list.forEach(rep => {
+                        window.reportesCache[rep.id] = rep;
                         const tr = document.createElement('tr');
                         tr.className = 'fs-8';
                         tr.innerHTML = `
@@ -2770,7 +2775,7 @@
                             <td>${new Date(rep.fecha + 'T00:00:00').toLocaleDateString('es-MX')}</td>
                             <td class="text-center">
                                 <div class="d-flex gap-1 justify-content-center">
-                                    <button class="btn btn-sm btn-light text-primary border" onclick="imprimirFormatoReporte(${JSON.stringify(rep).replace(/"/g, '&quot;')})" title="Imprimir Formato">
+                                    <button class="btn btn-sm btn-light text-primary border" onclick="imprimirFormatoReporte(window.reportesCache[${rep.id}])" title="Imprimir Formato">
                                         <i class="fa-solid fa-print"></i>
                                     </button>
                                     <button class="btn btn-sm btn-light text-danger border" onclick="eliminarReporte(${rep.id})" title="Eliminar">
@@ -2959,7 +2964,6 @@
             win.close();
         }, 400);
     };
-    }
 </script>
 
 @endsection
