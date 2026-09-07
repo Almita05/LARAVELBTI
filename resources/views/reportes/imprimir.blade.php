@@ -475,8 +475,14 @@
                                     <option value="">Seleccione Docente</option>
                                     @if(isset($docentes))
                                         @foreach($docentes as $d)
-                                            <option value="{{ $d->idDocente }}">
-                                                {{ $d->nombreDocente }} {{ $d->apPaternoDocente }} {{ $d->apMaternoDocente }}
+                                            @php
+                                                $dId = is_array($d) ? ($d['idDocente'] ?? $d['id'] ?? '') : ($d->idDocente ?? $d->id ?? '');
+                                                $dNom = is_array($d) ? ($d['nombreDocente'] ?? $d['nombre'] ?? '') : ($d->nombreDocente ?? $d->nombre ?? '');
+                                                $dPat = is_array($d) ? ($d['apPaternoDocente'] ?? $d['apPaterno'] ?? '') : ($d->apPaternoDocente ?? $d->apPaterno ?? '');
+                                                $dMat = is_array($d) ? ($d['apMaternoDocente'] ?? $d['apMaterno'] ?? '') : ($d->apMaternoDocente ?? $d->apMaterno ?? '');
+                                            @endphp
+                                            <option value="{{ $dId }}">
+                                                {{ trim("$dNom $dPat $dMat") }}
                                             </option>
                                         @endforeach
                                     @endif
@@ -900,7 +906,10 @@
         select.innerHTML = '<option value="">Seleccione Grupo</option>';
 
         const targetCentroId = cct === 'BTI' ? 2 : (cct === 'BGNE' ? 3 : 1);
-        const filtered = (window.gruposDb || []).filter(g => g.id_centroTrabajo == targetCentroId);
+        const filtered = (window.gruposDb || []).filter(g => {
+            const cid = g.id_centroTrabajo ?? g.idCentroTrabajo ?? g.id_centro_trabajo;
+            return cid == targetCentroId;
+        });
 
         filtered.forEach(g => {
             const opt = document.createElement('option');
@@ -911,6 +920,65 @@
 
         const previewCard = document.getElementById('asistencia-preview-card');
         if (previewCard) previewCard.style.display = 'none';
+
+        asegurarCatalogosAsistencia();
+    }
+
+    let isFetchingCatalogos = false;
+    async function asegurarCatalogosAsistencia() {
+        if (isFetchingCatalogos) return;
+        if (!window.gruposDb || window.gruposDb.length === 0 || !window.docentesDb || window.docentesDb.length === 0) {
+            isFetchingCatalogos = true;
+            try {
+                const [gRes, dRes] = await Promise.all([
+                    fetch('/grupos/lista?limit=1000').then(r => r.json()).catch(() => ({ data: [] })),
+                    fetch('/docentes/lista').then(r => r.json()).catch(() => ({ data: [] }))
+                ]);
+                if ((!window.gruposDb || window.gruposDb.length === 0) && gRes.data) {
+                    window.gruposDb = gRes.data;
+                    if (cctSeleccionado) {
+                        const select = document.getElementById('asistenciaGrupoSelect');
+                        if (select && select.options.length <= 1) {
+                            const targetCentroId = cctSeleccionado === 'BTI' ? 2 : (cctSeleccionado === 'BGNE' ? 3 : 1);
+                            const filtered = (window.gruposDb || []).filter(g => {
+                                const cid = g.id_centroTrabajo ?? g.idCentroTrabajo ?? g.id_centro_trabajo;
+                                return cid == targetCentroId;
+                            });
+                            filtered.forEach(g => {
+                                const opt = document.createElement('option');
+                                opt.value = g.id;
+                                opt.textContent = `${g.clave} (${g.modalidadHorario || 'General'})`;
+                                select.appendChild(opt);
+                            });
+                        }
+                    }
+                }
+                if (!window.docentesDb || window.docentesDb.length === 0) {
+                    const rawDoc = dRes.data || (Array.isArray(dRes) ? dRes : []);
+                    window.docentesDb = rawDoc;
+                    poblarSelectDocentes(rawDoc);
+                }
+            } catch (err) {
+                console.warn('Carga diferida catálogos:', err);
+            } finally {
+                isFetchingCatalogos = false;
+            }
+        }
+    }
+
+    function poblarSelectDocentes(lista) {
+        const sel = document.getElementById('asistenciaDocenteSelect');
+        if (!sel || sel.options.length > 1) return;
+        lista.forEach(d => {
+            const id = d.idDocente || d.id;
+            const nom = d.nombreDocente || d.nombre || '';
+            const pat = d.apPaternoDocente || d.apPaterno || '';
+            const mat = d.apMaternoDocente || d.apMaterno || '';
+            const opt = document.createElement('option');
+            opt.value = id;
+            opt.textContent = `${nom} ${pat} ${mat}`.trim();
+            sel.appendChild(opt);
+        });
     }
 
     function resetSubmodulosState() {
@@ -2660,6 +2728,12 @@
             return;
         }
 
+        const grupo = (window.gruposDb || []).find(g => g.id == grupoId) || {};
+        const clave = grupo.clave || '';
+        const cctId = grupo.id_centroTrabajo ?? grupo.idCentroTrabajo ?? '';
+        const modalidad = grupo.modalidadHorario || '';
+        const fechaIni = grupo.fechaInicio || '';
+
         const docenteSelect = document.getElementById('asistenciaDocenteSelect');
         const docenteId = docenteSelect ? docenteSelect.value : '';
         const docenteNombre = docenteSelect && docenteSelect.selectedIndex > 0 ? docenteSelect.options[docenteSelect.selectedIndex].text.trim() : '';
@@ -2668,7 +2742,7 @@
         const matchTrim = ciclo.match(/\d+/);
         const trimestreNum = matchTrim ? matchTrim[0] : '1';
 
-        const url = `/reportes/asistencia-pdf?id_grupo=${encodeURIComponent(grupoId)}&id_docente=${encodeURIComponent(docenteId)}&docente_nombre=${encodeURIComponent(docenteNombre)}&materia=${encodeURIComponent(materia)}&trimestre=${encodeURIComponent(trimestreNum)}`;
+        const url = `/reportes/asistencia-pdf?id_grupo=${encodeURIComponent(grupoId)}&clave_grupo=${encodeURIComponent(clave)}&id_centro_trabajo=${encodeURIComponent(cctId)}&modalidad=${encodeURIComponent(modalidad)}&fecha_inicio=${encodeURIComponent(fechaIni)}&id_docente=${encodeURIComponent(docenteId)}&docente_nombre=${encodeURIComponent(docenteNombre)}&materia=${encodeURIComponent(materia)}&trimestre=${encodeURIComponent(trimestreNum)}`;
         
         window.open(url, '_blank');
     }
@@ -3131,6 +3205,12 @@
             win.close();
         }, 400);
     };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof asegurarCatalogosAsistencia === 'function') {
+            asegurarCatalogosAsistencia();
+        }
+    });
 </script>
 
 @endsection
