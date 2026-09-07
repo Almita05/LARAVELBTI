@@ -84,7 +84,8 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::get('/listas_asistenciasBGNES', [ListasAsistenciasController::class, 'bgneS'])->name('listas_asistenciasBGNES');
     Route::get('/listas_asistenciasBGNED', [ListasAsistenciasController::class, 'bgneD'])->name('listas_asistenciasBGNED');
     Route::get('/modulo-imprimir', [ListasAsistenciasController::class, 'moduloImprimir'])->name('reportes.imprimir');
-
+    Route::get('/reportes/asistencia-pdf', [ListasAsistenciasController::class, 'generarPdfAsistencia'])->name('reportes.asistencia_pdf');
+    Route::get('/reportes/grupo/{id}/alumnos', [ListasAsistenciasController::class, 'getAlumnosGrupo'])->name('reportes.grupo_alumnos');
 
     // Extraordinarios
     Route::get('/boleta_calificaciones_extraordinarios', [BoletasBGNEExtraController::class, 'index'])

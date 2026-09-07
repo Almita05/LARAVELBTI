@@ -460,50 +460,58 @@
                             <p class="text-muted mb-0">Seleccione los criterios para generar la lista de asistencia del trimestre/semestre correspondiente.</p>
                         </div>
 
-                        <!-- Selección de Docente, Grupo y Trimestre/Semestre -->
+                        <!-- Selección de Grupo, Docente, Asignatura y Trimestre/Semestre -->
                         <div class="row g-3 mb-4">
-                            <div class="col-md-5">
-                                <label class="form-label fw-semibold">Docente</label>
-                                <select id="asistenciaDocenteSelect" class="form-select" onchange="actualizarAsistenciaPreview()">
-                                    <option value="">Seleccione Docente</option>
-                                    <option value="Ing. Juan Carlos Pérez Gómez">Ing. Juan Carlos Pérez Gómez</option>
-                                    <option value="Lic. María Elena Rojas Ortiz">Lic. María Elena Rojas Ortiz</option>
-                                    <option value="Dr. Alejandro Silva Montes">Dr. Alejandro Silva Montes</option>
-                                    <option value="Mtra. Laura Patricia Jiménez">Mtra. Laura Patricia Jiménez</option>
-                                    <option value="Ing. Roberto Torres Medina">Ing. Roberto Torres Medina</option>
-                                    <option value="Lic. Silvia Elena Castro">Lic. Silvia Elena Castro</option>
-                                </select>
-                            </div>
                             <div class="col-md-3">
-                                <label class="form-label fw-semibold">Grupo</label>
-                                <select id="asistenciaGrupoSelect" class="form-select" onchange="actualizarAsistenciaPreview()">
-                                    <option value="Grupo A">Grupo A</option>
-                                    <option value="Grupo B">Grupo B</option>
-                                    <option value="Grupo C">Grupo C</option>
+                                <label class="form-label fw-semibold text-slate-700">Grupo</label>
+                                <select id="asistenciaGrupoSelect" class="form-select shadow-sm" onchange="onAsistenciaGrupoChange()">
+                                    <option value="">Seleccione Grupo</option>
+                                    <!-- Se puebla según el CCT seleccionado -->
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold" id="lbl-asistencia-ciclo-label">Trimestre o Semestre</label>
-                                <select id="asistenciaCicloSelect" class="form-select" onchange="actualizarAsistenciaPreview()">
+                                <label class="form-label fw-semibold text-slate-700">Docente</label>
+                                <select id="asistenciaDocenteSelect" class="form-select shadow-sm" onchange="onAsistenciaDocenteChange()">
+                                    <option value="">Seleccione Docente</option>
+                                    @if(isset($docentes))
+                                        @foreach($docentes as $d)
+                                            <option value="{{ $d->idDocente }}">
+                                                {{ $d->nombreDocente }} {{ $d->apPaternoDocente }} {{ $d->apMaternoDocente }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold text-slate-700">Asignatura</label>
+                                <input type="text" id="asistenciaMateriaInput" class="form-control shadow-sm" placeholder="Escriba o seleccione materia..." oninput="actualizarAsistenciaPreview()">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold text-slate-700" id="lbl-asistencia-ciclo-label">Trimestre</label>
+                                <select id="asistenciaCicloSelect" class="form-select shadow-sm" onchange="onAsistenciaCicloChange()">
                                     <!-- Cargado dinámicamente por JS (Semestres para BTI, Trimestres para BGNE) -->
                                 </select>
                             </div>
                         </div>
 
                         <div class="col-12 mt-4" id="asistencia-preview-card" style="display: none;">
-                            <div class="card p-4 border-0 bg-light shadow-sm" style="border-radius: 12px;">
-                                <div class="d-flex justify-content-between align-items-center">
+                            <div class="card p-4 border-0 bg-light shadow-sm" style="border-radius: 16px; border-left: 5px solid #0284c7 !important;">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                                     <div>
                                         <h5 class="fw-bold mb-1 text-slate-800" id="lbl-asistencia-preview-docente"></h5>
                                         <div class="fs-8 mt-2 text-slate-700">
-                                            <span class="d-block">Materia Asignada: <strong id="lbl-asistencia-preview-materia"></strong></span>
+                                            <span class="d-block">Asignatura: <strong id="lbl-asistencia-preview-materia" class="text-primary"></strong></span>
                                             <span class="d-block">Grupo: <strong id="lbl-asistencia-preview-grupo"></strong></span>
-                                            <span class="d-block" id="lbl-asistencia-preview-ciclo-texto">Semestre/Trimestre: <strong id="lbl-asistencia-preview-term"></strong></span>
+                                            <span class="d-block" id="lbl-asistencia-preview-ciclo-texto">Periodo: <strong id="lbl-asistencia-preview-term"></strong></span>
+                                            <span class="d-block text-muted" id="lbl-asistencia-preview-fechas-line">Fechas estimadas: <strong id="lbl-asistencia-preview-fechas-val" class="text-dark"></strong></span>
+                                            <div class="mt-2">
+                                                <span class="badge bg-success-subtle text-success fw-bold px-2 py-1" id="lbl-asistencia-preview-alumnos">0 alumnos inscritos</span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="text-end">
-                                        <button class="btn btn-primary fw-bold py-2.5 px-4 shadow-sm" onclick="printDoc('Lista de Asistencia', document.getElementById('lbl-asistencia-preview-docente').innerText, `${document.getElementById('lbl-asistencia-preview-materia').innerText} (${document.getElementById('lbl-asistencia-preview-grupo').innerText})`)">
-                                            <i class="fa-solid fa-print me-2"></i> Generar Lista (PDF)
+                                        <button type="button" class="btn btn-primary fw-bold py-2.5 px-4 shadow-sm" onclick="generarListaAsistenciaOficialPdf()">
+                                            <i class="fa-solid fa-file-pdf me-2"></i> Generar Lista (PDF)
                                         </button>
                                     </div>
                                 </div>
@@ -517,8 +525,13 @@
     </div>
 </div>
 
-<!-- MOCK DATA COMPARTIDA (JS) -->
+<!-- DATOS COMPARTIDOS (JS) -->
 <script>
+    window.gruposDb = @json($grupos ?? []);
+    window.docentesDb = @json($docentes ?? []);
+    window.horariosDb = @json($horarios ?? []);
+    window.materiasDb = @json($materias ?? []);
+
     const mockAlumnos = [
         { matricula: '20260001', nombre: 'Pérez López Juan', plan: 'BTI - Tecnologías de la Información' },
         { matricula: '20260002', nombre: 'Gómez García María', plan: 'BGNE - Tronco Común' },
@@ -871,11 +884,33 @@
             }
         }
 
+        // Cargar los grupos del CCT seleccionado
+        actualizarGruposPorCCT(cct);
+
         // Resetear vistas previas de sugerencias y búsquedas
         resetSubmodulosState();
 
         // Cargar los submódulos (tabs) condicionalmente en la barra lateral
         cargarSubmodulosNav(cct);
+    }
+
+    function actualizarGruposPorCCT(cct) {
+        const select = document.getElementById('asistenciaGrupoSelect');
+        if (!select) return;
+        select.innerHTML = '<option value="">Seleccione Grupo</option>';
+
+        const targetCentroId = cct === 'BTI' ? 2 : (cct === 'BGNE' ? 3 : 1);
+        const filtered = (window.gruposDb || []).filter(g => g.id_centroTrabajo == targetCentroId);
+
+        filtered.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g.id;
+            opt.textContent = `${g.clave} (${g.modalidadHorario || 'General'})`;
+            select.appendChild(opt);
+        });
+
+        const previewCard = document.getElementById('asistencia-preview-card');
+        if (previewCard) previewCard.style.display = 'none';
     }
 
     function resetSubmodulosState() {
@@ -889,11 +924,13 @@
         const asistCard = document.getElementById('asistencia-preview-card');
         if (asistCard) asistCard.style.display = 'none';
         
-        // Limpiar selects de Asistencia
+        // Limpiar controles de Asistencia
         const docenteSelect = document.getElementById('asistenciaDocenteSelect');
         const grupoSelect = document.getElementById('asistenciaGrupoSelect');
+        const materiaInput = document.getElementById('asistenciaMateriaInput');
         if (docenteSelect) docenteSelect.value = '';
-        if (grupoSelect) grupoSelect.value = 'Grupo A';
+        if (grupoSelect) grupoSelect.value = '';
+        if (materiaInput) materiaInput.value = '';
     }
 
     // Carga dinámica de la barra de navegación lateral según el CCT seleccionado
@@ -2465,45 +2502,175 @@
         if (lblM) lblM.innerText = materia;
     }
 
-    const mockMateriaDocente = {
-        "Ing. Juan Carlos Pérez Gómez": "Programación Orientada a Objetos",
-        "Lic. María Elena Rojas Ortiz": "Administración I",
-        "Dr. Alejandro Silva Montes": "Cálculo Diferencial",
-        "Mtra. Laura Patricia Jiménez": "Inglés Técnico I",
-        "Ing. Roberto Torres Medina": "Base de Datos I",
-        "Lic. Silvia Elena Castro": "Derecho Mercantil"
-    };
+    let alumnosGrupoActual = [];
 
-    function actualizarAsistenciaPreview() {
-        const docente = document.getElementById('asistenciaDocenteSelect').value;
-        const grupo = document.getElementById('asistenciaGrupoSelect').value;
-        const ciclo = document.getElementById('asistenciaCicloSelect').value;
-
+    function onAsistenciaGrupoChange() {
+        const grupoSelect = document.getElementById('asistenciaGrupoSelect');
+        const grupoId = grupoSelect ? grupoSelect.value : '';
         const card = document.getElementById('asistencia-preview-card');
 
-        if (!docente) {
+        if (!grupoId) {
             if (card) card.style.display = 'none';
             return;
         }
 
-        const materia = mockMateriaDocente[docente] || "Materia General";
+        const grupo = (window.gruposDb || []).find(g => g.id == grupoId);
+        if (!grupo) return;
+
+        // Auto-seleccionar docente y materia si existen en tb_horarios
+        const asignaciones = (window.horariosDb || []).filter(h => h.id_grupo == grupoId);
+        const docenteSelect = document.getElementById('asistenciaDocenteSelect');
+        const materiaInput = document.getElementById('asistenciaMateriaInput');
+
+        if (asignaciones.length > 0) {
+            if (docenteSelect && !docenteSelect.value) {
+                docenteSelect.value = asignaciones[0].id_docente;
+            }
+            if (materiaInput && !materiaInput.value) {
+                const match = asignaciones.find(a => a.id_docente == docenteSelect.value);
+                materiaInput.value = match ? match.nombreMateria : asignaciones[0].nombreMateria;
+            }
+        }
+
+        // Auto-seleccionar trimestre/semestre según id_nivel_academico del grupo
+        const cicloSelect = document.getElementById('asistenciaCicloSelect');
+        if (cicloSelect && grupo.id_nivel_academico) {
+            const isBti = grupo.id_centroTrabajo == 2;
+            const num = isBti ? (grupo.id_nivel_academico - 6) : grupo.id_nivel_academico;
+            const targetVal = isBti ? `${num}° Semestre` : `${num}° Trimestre`;
+            for (let opt of cicloSelect.options) {
+                if (opt.value === targetVal) {
+                    cicloSelect.value = targetVal;
+                    break;
+                }
+            }
+        }
+
+        // Consultar alumnos reales asignados al grupo
+        fetch(`/reportes/grupo/${grupoId}/alumnos`)
+            .then(r => r.json())
+            .then(resp => {
+                if (resp.success) {
+                    alumnosGrupoActual = resp.data || [];
+                    const badge = document.getElementById('lbl-asistencia-preview-alumnos');
+                    if (badge) {
+                        badge.innerText = `${resp.total} alumnos inscritos en este grupo`;
+                    }
+                }
+                actualizarAsistenciaPreview();
+            })
+            .catch(err => {
+                console.error('Error al consultar alumnos:', err);
+                actualizarAsistenciaPreview();
+            });
+    }
+
+    function onAsistenciaDocenteChange() {
+        const grupoId = document.getElementById('asistenciaGrupoSelect').value;
+        const docenteId = document.getElementById('asistenciaDocenteSelect').value;
+        const materiaInput = document.getElementById('asistenciaMateriaInput');
+
+        if (grupoId && docenteId && materiaInput) {
+            const match = (window.horariosDb || []).find(h => h.id_grupo == grupoId && h.id_docente == docenteId);
+            if (match) {
+                materiaInput.value = match.nombreMateria;
+            }
+        }
+        actualizarAsistenciaPreview();
+    }
+
+    function onAsistenciaCicloChange() {
+        actualizarAsistenciaPreview();
+    }
+
+    function calcularFechasTrimestrePreview(grupo, trimestreNum) {
+        if (!grupo || !grupo.fechaInicio) return 'Fechas por definir';
+
+        // Parse UTC de fechaInicio (ej. 2026-02-08)
+        const parts = grupo.fechaInicio.split('-');
+        if (parts.length < 3) return 'Fechas por definir';
+        const startDate = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
+
+        // Cada trimestre dura exactamente 13 semanas (mismo algoritmo oficial de horarios)
+        const weeksOffset = (trimestreNum - 1) * 13;
+        const periodStart = new Date(startDate.getTime() + (weeksOffset * 7 * 24 * 60 * 60 * 1000));
+        const periodEnd = new Date(periodStart.getTime() + (12 * 7 * 24 * 60 * 60 * 1000));
+
+        const pad = (n) => String(n).padStart(2, '0');
+        const fmt = (d) => `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
+
+        return `${fmt(periodStart)} al ${fmt(periodEnd)} (13 semanas)`;
+    }
+
+    function actualizarAsistenciaPreview() {
+        const grupoSelect = document.getElementById('asistenciaGrupoSelect');
+        const docenteSelect = document.getElementById('asistenciaDocenteSelect');
+        const materiaInput = document.getElementById('asistenciaMateriaInput');
+        const cicloSelect = document.getElementById('asistenciaCicloSelect');
+        const card = document.getElementById('asistencia-preview-card');
+
+        if (!grupoSelect || !grupoSelect.value) {
+            if (card) card.style.display = 'none';
+            return;
+        }
+
+        const grupoId = grupoSelect.value;
+        const grupo = (window.gruposDb || []).find(g => g.id == grupoId);
+        if (!grupo) {
+            if (card) card.style.display = 'none';
+            return;
+        }
+
+        const docenteNombre = docenteSelect && docenteSelect.selectedIndex > 0 
+            ? docenteSelect.options[docenteSelect.selectedIndex].text.trim() 
+            : 'Docente no seleccionado (general)';
+            
+        const materiaNombre = (materiaInput && materiaInput.value.trim()) ? materiaInput.value.trim() : 'Materia General';
+        const ciclo = cicloSelect ? cicloSelect.value : '1° Periodo';
+
+        const matchTrim = ciclo.match(/\d+/);
+        const trimNum = matchTrim ? parseInt(matchTrim[0]) : 1;
 
         const lblD = document.getElementById('lbl-asistencia-preview-docente');
         const lblM = document.getElementById('lbl-asistencia-preview-materia');
         const lblG = document.getElementById('lbl-asistencia-preview-grupo');
         const lblT = document.getElementById('lbl-asistencia-preview-term');
-        const lblC = document.getElementById('lbl-asistencia-preview-ciclo-texto');
+        const lblFechas = document.getElementById('lbl-asistencia-preview-fechas-val');
 
-        if (lblD) lblD.innerText = docente;
-        if (lblM) lblM.innerText = materia;
-        if (lblG) lblG.innerText = grupo;
+        if (lblD) lblD.innerText = docenteNombre;
+        if (lblM) lblM.innerText = materiaNombre;
+        if (lblG) lblG.innerText = `${grupo.clave} (${grupo.modalidadHorario || ''})`;
         if (lblT) lblT.innerText = ciclo;
-        
-        if (lblC) {
-            lblC.innerHTML = `${cctSeleccionado === 'BTI' ? 'Semestre' : 'Trimestre'}: <strong>${ciclo}</strong>`;
-        }
+        if (lblFechas) lblFechas.innerText = calcularFechasTrimestrePreview(grupo, trimNum);
 
         if (card) card.style.display = 'block';
+    }
+
+    function generarListaAsistenciaOficialPdf() {
+        const grupoSelect = document.getElementById('asistenciaGrupoSelect');
+        const grupoId = grupoSelect ? grupoSelect.value : '';
+
+        if (!grupoId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Seleccione un grupo',
+                text: 'Por favor, elija un grupo para generar la lista de asistencia.',
+                confirmButtonColor: '#0284c7'
+            });
+            return;
+        }
+
+        const docenteSelect = document.getElementById('asistenciaDocenteSelect');
+        const docenteId = docenteSelect ? docenteSelect.value : '';
+        const docenteNombre = docenteSelect && docenteSelect.selectedIndex > 0 ? docenteSelect.options[docenteSelect.selectedIndex].text.trim() : '';
+        const materia = (document.getElementById('asistenciaMateriaInput') ? document.getElementById('asistenciaMateriaInput').value.trim() : '');
+        const ciclo = document.getElementById('asistenciaCicloSelect') ? document.getElementById('asistenciaCicloSelect').value : '';
+        const matchTrim = ciclo.match(/\d+/);
+        const trimestreNum = matchTrim ? matchTrim[0] : '1';
+
+        const url = `/reportes/asistencia-pdf?id_grupo=${encodeURIComponent(grupoId)}&id_docente=${encodeURIComponent(docenteId)}&docente_nombre=${encodeURIComponent(docenteNombre)}&materia=${encodeURIComponent(materia)}&trimestre=${encodeURIComponent(trimestreNum)}`;
+        
+        window.open(url, '_blank');
     }
 
     // ==========================================
