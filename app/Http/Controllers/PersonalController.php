@@ -44,7 +44,10 @@ class PersonalController extends Controller
             'usuario' => 'required|string|max:100',
             'password' => 'required|string|min:4',
             'rol' => 'required|string|max:100',
-            'permisos_modulos' => 'nullable|array'
+            'permisos_modulos' => 'nullable|array',
+            'idBiometrico' => 'nullable|string|max:50',
+            'es_servicio_social' => 'nullable',
+            'horas_objetivo' => 'nullable|numeric'
         ]);
 
         $modulosList = '';
@@ -58,7 +61,10 @@ class PersonalController extends Controller
             'password' => Hash::make($request->password),
             'rol' => $request->rol,
             'permisos_modulos' => $modulosList,
-            'status' => 'ACTIVO'
+            'status' => 'ACTIVO',
+            'idBiometrico' => $request->filled('idBiometrico') ? trim($request->idBiometrico) : null,
+            'es_servicio_social' => ($request->boolean('es_servicio_social') || $request->es_servicio_social == '1' || $request->rol === 'Servicio Social') ? 1 : 0,
+            'horas_objetivo' => $request->filled('horas_objetivo') ? (int)$request->horas_objetivo : null
         ];
 
         $url = config('services.api.base_url') . '/personal';
@@ -103,7 +109,10 @@ class PersonalController extends Controller
             'rol' => 'required|string|max:100',
             'status' => 'required|string|max:20',
             'permisos_modulos' => 'nullable|array',
-            'password' => 'nullable|string|min:4'
+            'password' => 'nullable|string|min:4',
+            'idBiometrico' => 'nullable|string|max:50',
+            'es_servicio_social' => 'nullable',
+            'horas_objetivo' => 'nullable|numeric'
         ]);
 
         $modulosList = '';
@@ -116,7 +125,10 @@ class PersonalController extends Controller
             'usuario' => trim($request->usuario),
             'rol' => $request->rol,
             'permisos_modulos' => $modulosList,
-            'status' => $request->status
+            'status' => $request->status,
+            'idBiometrico' => $request->filled('idBiometrico') ? trim($request->idBiometrico) : null,
+            'es_servicio_social' => ($request->boolean('es_servicio_social') || $request->es_servicio_social == '1' || $request->rol === 'Servicio Social') ? 1 : 0,
+            'horas_objetivo' => $request->filled('horas_objetivo') ? (int)$request->horas_objetivo : null
         ];
 
         if ($request->filled('password')) {

@@ -69,7 +69,21 @@ class GrupoController extends Controller
         $payload['rol'] = session('rol');
 
         $url = config('services.api.base_url') . '/grupos/' . $id_grupo . '/calificaciones-materia/' . $id_materia;
-        $response = Http::post($url, $payload);
+        $response = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json'
+        ])->post($url, $payload);
+
+        if ($response->failed()) {
+            $errorData = $response->json();
+            $errorMsg = is_array($errorData) ? ($errorData['error'] ?? $errorData['message'] ?? $response->body()) : $response->body();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al guardar calificaciones.',
+                'error' => $errorMsg
+            ], $response->status() ?: 500);
+        }
+
         return response()->json($response->json(), $response->status());
     }
 

@@ -468,7 +468,8 @@ const BTI_HOURS = [
     { start: "10:00", end: "10:30", type: "receso" },
     { start: "10:30", end: "11:20", type: "class" },
     { start: "11:20", end: "12:10", type: "class" },
-    { start: "12:10", end: "13:00", type: "class" }
+    { start: "12:10", end: "13:00", type: "class" },
+    { start: "13:00", end: "13:50", type: "class" }
 ];
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -684,7 +685,7 @@ function renderCalendars() {
                                 <div class="class-block">
                                     <div class="class-materia" title="${mc.materia_nombre}">${mc.materia_nombre}</div>
                                     <div>
-                                        <span class="class-grupo">${mc.grupo_clave}</span>
+                                        <span class="class-grupo">${mc.grupo_clave} ${mc.nivel_nombre ? `(${mc.nivel_nombre})` : ''}</span>
                                         <span class="class-aula"><i class="fa-solid fa-location-dot me-1"></i>${mc.aula}</span>
                                     </div>
                                 </div>
@@ -743,7 +744,7 @@ function renderCalendars() {
                             <div class="class-block" style="background: rgba(13, 148, 136, 0.08); border-left-color: rgb(13, 148, 136); border-color: rgba(13, 148, 136, 0.25);">
                                 <div class="class-materia" title="${mc.materia_nombre}">${mc.materia_nombre}</div>
                                 <div>
-                                    <span class="class-grupo" style="color: rgb(13, 148, 136);">${mc.grupo_clave}</span>
+                                    <span class="class-grupo" style="color: rgb(13, 148, 136);">${mc.grupo_clave} ${mc.nivel_nombre ? `(${mc.nivel_nombre})` : ''}</span>
                                     <span class="class-aula"><i class="fa-solid fa-location-dot me-1"></i>${mc.aula}</span>
                                 </div>
                             </div>
@@ -775,7 +776,7 @@ function imprimirReporteHorario() {
     let btiTableHtml = "";
     if (btiClasses.length > 0) {
         btiTableHtml = `
-            <h3 class="seccion-titulo">I. Horario de Bachillerato Tecnológico Industrial (BTI) - Escolarizado</h3>
+            <h3 class="seccion-titulo">I. Horario de Bachillerato Tecnológico Interamericano (BTI) - Escolarizado</h3>
             <table class="report-table">
                 <thead>
                     <tr>
@@ -794,7 +795,7 @@ function imprimirReporteHorario() {
         `;
     } else {
         btiTableHtml = `
-            <h3 class="seccion-titulo">I. Horario de Bachillerato Tecnológico Industrial (BTI) - Escolarizado</h3>
+            <h3 class="seccion-titulo">I. Horario de Bachillerato Tecnológico Interamericano (BTI) - Escolarizado</h3>
             <p class="no-classes">El docente no cuenta con carga horaria en el plantel BTI.</p>
         `;
     }

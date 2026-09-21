@@ -4,6 +4,9 @@
 <head>
     <link rel="stylesheet" href="{{ asset('css/estilos.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Tom Select CSS and JS -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 </head>
 
 <div class="page-container">
@@ -220,6 +223,8 @@
             </div>
         </div>
     </div>
+
+
 
 </div>
 @endsection
@@ -590,7 +595,16 @@ function actualizarResumenYSemaforo() {
             pendientes.push(textoTray);
         }
 
-        if (pendientes.length > 0) {
+        const chkHistorico = form.querySelector('#chkRegistroHistorico');
+        const esHistorico = chkHistorico && chkHistorico.checked;
+
+        if (esHistorico) {
+            listaPendientes.innerHTML = '<div class="text-success fw-bold">• Registro Histórico. Sin validaciones obligatorias requeridas.</div>';
+            if (badgeEstadoGeneral) {
+                badgeEstadoGeneral.className = 'badge bg-success';
+                badgeEstadoGeneral.textContent = 'HISTÓRICO';
+            }
+        } else if (pendientes.length > 0) {
             listaPendientes.innerHTML = pendientes.join('');
             if (badgeEstadoGeneral) {
                 badgeEstadoGeneral.className = 'badge bg-secondary';
@@ -874,6 +888,41 @@ document.addEventListener('change', function(e) {
     const form = e.target.closest('form') || document.getElementById('formAlumno');
     if (!form) return;
 
+    // 0. Cambio en Registro Histórico
+    if (e.target.id === 'chkRegistroHistorico') {
+        toggleRegistroHistorico(form, e.target.checked);
+    }
+    
+    // 0.1 Cambio en Grupo Histórico / Directo
+    if (e.target.id === 'selectGrupoHistorico') {
+        const selectGrupoHistorico = e.target;
+        const inputGrupo = form.querySelector('#inputGrupoSeleccionado');
+        const txtElegido = form.querySelector('#txtNombreGrupoElegido');
+        const badgeElegido = form.querySelector('#badgeGrupoElegidoFinal');
+
+        if (selectGrupoHistorico.value) {
+            const opt = selectGrupoHistorico.options[selectGrupoHistorico.selectedIndex];
+            if (inputGrupo) {
+                inputGrupo.value = selectGrupoHistorico.value;
+                inputGrupo.dataset.modalidad = opt.dataset.modalidad || '';
+                inputGrupo.dataset.fechaInicio = opt.dataset.fechaInicio || '';
+            }
+            if (txtElegido) {
+                txtElegido.textContent = opt.text.split(' - ')[0];
+            }
+            if (badgeElegido) badgeElegido.style.display = 'block';
+        } else {
+            if (inputGrupo) {
+                inputGrupo.value = '';
+                inputGrupo.dataset.modalidad = '';
+                inputGrupo.dataset.fechaInicio = '';
+            }
+            if (txtElegido) txtElegido.textContent = 'Ninguno';
+            if (badgeElegido) badgeElegido.style.display = 'none';
+        }
+        actualizarResumenYSemaforo();
+    }
+
     // 1. Cambio de CCT
     if (e.target.id === 'selectCCT' || e.target.name === 'id_centroTrabajo') {
         const cctId = e.target.value;
@@ -987,7 +1036,12 @@ document.addEventListener('change', function(e) {
         }
 
         verificarEdadBGNE();
-        buscarYRecomendarGrupos();
+        const chkHistorico = form.querySelector('#chkRegistroHistorico');
+        if (chkHistorico && chkHistorico.checked) {
+            cargarGruposHistoricos(form);
+        } else {
+            buscarYRecomendarGrupos();
+        }
     }
 
     // 2. Cambio de Periodo / Nivel Académico
@@ -1011,12 +1065,20 @@ document.addEventListener('change', function(e) {
             if (accordionEquiv) accordionEquiv.style.display = 'none';
         }
 
-        buscarYRecomendarGrupos();
+        const chkHistorico = form.querySelector('#chkRegistroHistorico');
+        if (chkHistorico && chkHistorico.checked) {
+            // No buscar recomendados, la lista directa ya se cargó o se carga con CCT
+        } else {
+            buscarYRecomendarGrupos();
+        }
     }
 
     // 3. Cambio de Día o Jornada
     if (e.target.id === 'selectDiaAsistencia' || e.target.id === 'selectJornada') {
-        buscarYRecomendarGrupos();
+        const chkHistorico = form.querySelector('#chkRegistroHistorico');
+        if (!chkHistorico || !chkHistorico.checked) {
+            buscarYRecomendarGrupos();
+        }
     }
 
     // 4. Cambio de Procedencia
@@ -1155,6 +1217,142 @@ document.addEventListener('change', function(e) {
 
     actualizarResumenYSemaforo();
 });
+
+function toggleRegistroHistorico(form, isHistorico) {
+    const fieldsToRelax = ['apPaterno', 'fechaNacimiento', 'celularAlumno', 'id_centroTrabajo', 'id_nivel_academico'];
+    
+    // 1. Mostrar/ocultar asteriscos y required
+    fieldsToRelax.forEach(fieldName => {
+        const input = form.querySelector(`[name="${fieldName}"]`);
+        if (input) {
+            if (isHistorico) {
+                input.removeAttribute('required');
+            } else {
+                input.setAttribute('required', 'required');
+            }
+        }
+    });
+
+    const asteriscos = form.querySelectorAll('.requerido-normal');
+    asteriscos.forEach(ast => {
+        ast.style.display = isHistorico ? 'none' : 'inline';
+    });
+
+    // 2. Mostrar selector directo de grupo o flujo compatible
+    const boxHistorico = form.querySelector('#boxGrupoDirectoHistorico');
+    const boxCompatiblesCabecera = form.querySelector('.box-compatibles-cabecera');
+    const alertaBuscando = form.querySelector('#alertaBuscandoGrupo');
+    const boxRecomendado = form.querySelector('#boxGrupoRecomendado');
+    const boxTabla = form.querySelector('#boxTablaOtrosGrupos');
+    const alertaSinGrupo = form.querySelector('#alertaSinGrupo');
+
+    // Campos de filtrado normal
+    const selectDia = form.querySelector('#selectDiaAsistencia');
+    const selectJornada = form.querySelector('#selectJornada');
+
+    if (isHistorico) {
+        if (boxHistorico) boxHistorico.style.display = 'block';
+        if (boxCompatiblesCabecera) boxCompatiblesCabecera.style.setProperty('display', 'none', 'important');
+        if (alertaBuscando) alertaBuscando.style.setProperty('display', 'none', 'important');
+        if (boxRecomendado) boxRecomendado.style.setProperty('display', 'none', 'important');
+        if (boxTabla) boxTabla.style.setProperty('display', 'none', 'important');
+        if (alertaSinGrupo) alertaSinGrupo.style.setProperty('display', 'none', 'important');
+
+        if (selectDia) selectDia.disabled = true;
+        if (selectJornada) selectJornada.disabled = true;
+
+        cargarGruposHistoricos(form);
+    } else {
+        if (boxHistorico) boxHistorico.style.display = 'none';
+        if (boxCompatiblesCabecera) boxCompatiblesCabecera.style.setProperty('display', 'flex', 'important');
+        
+        if (selectDia) selectDia.disabled = false;
+        if (selectJornada) selectJornada.disabled = false;
+
+        const selectGrupoHistorico = form.querySelector('#selectGrupoHistorico');
+        if (selectGrupoHistorico) {
+            if (selectGrupoHistorico.tomselect) {
+                selectGrupoHistorico.tomselect.destroy();
+            }
+            selectGrupoHistorico.value = '';
+        }
+
+        if (typeof buscarYRecomendarGrupos === 'function') {
+            buscarYRecomendarGrupos();
+        }
+    }
+    
+    actualizarResumenYSemaforo();
+}
+
+function cargarGruposHistoricos(form) {
+    const selectCCT = form.querySelector('#selectCCT');
+    const selectGrupoHistorico = form.querySelector('#selectGrupoHistorico');
+    const inputGrupo = form.querySelector('#inputGrupoSeleccionado');
+    if (!selectCCT || !selectGrupoHistorico) return;
+
+    if (selectGrupoHistorico.tomselect) {
+        selectGrupoHistorico.tomselect.destroy();
+    }
+
+    const cctId = selectCCT.value;
+    if (!cctId) {
+        selectGrupoHistorico.innerHTML = '<option value="">-- Primero seleccione CCT --</option>';
+        new TomSelect(selectGrupoHistorico, {
+            create: false,
+            placeholder: "-- Primero seleccione CCT --",
+            allowEmptyOption: true
+        });
+        return;
+    }
+
+    const valorActual = inputGrupo ? inputGrupo.value : '';
+
+    selectGrupoHistorico.innerHTML = '<option value="">Cargando grupos...</option>';
+
+    fetch(`/catalogos/grupos?idCentroTrabajo=${cctId}`)
+        .then(r => r.json())
+        .then(resp => {
+            if (selectGrupoHistorico.tomselect) {
+                selectGrupoHistorico.tomselect.destroy();
+            }
+            const grupos = resp.data || (Array.isArray(resp) ? resp : []);
+            selectGrupoHistorico.innerHTML = '<option value="">-- Seleccione un grupo --</option>';
+            if (Array.isArray(grupos)) {
+                grupos.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.textContent = `${g.clave} - ${g.nombre_nivel || ''} (${g.modalidadHorario || 'General'}) [${g.statusGrupo || 'ACTIVO'}]`;
+                    opt.dataset.modalidad = g.modalidadHorario || '';
+                    opt.dataset.fechaInicio = g.fechaInicio || '';
+                    if (valorActual && String(g.id) === String(valorActual)) {
+                        opt.selected = true;
+                    }
+                    selectGrupoHistorico.appendChild(opt);
+                });
+            }
+            new TomSelect(selectGrupoHistorico, {
+                create: false,
+                placeholder: "-- Seleccione un grupo --",
+                allowEmptyOption: true,
+                onChange: function(value) {
+                    selectGrupoHistorico.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+        })
+        .catch(err => {
+            console.error('Error al cargar grupos:', err);
+            if (selectGrupoHistorico.tomselect) {
+                selectGrupoHistorico.tomselect.destroy();
+            }
+            selectGrupoHistorico.innerHTML = '<option value="">Error al cargar grupos</option>';
+            new TomSelect(selectGrupoHistorico, {
+                create: false,
+                placeholder: "Error al cargar grupos",
+                allowEmptyOption: true
+            });
+        });
+}
 
 // Función central para inicializar el modal dinámico en Crear, Editar o Ver
 window.initModalAlumnoDinamico = function(al) {
@@ -1594,17 +1792,28 @@ window.verAlumno = function(id) {
                             }
                         });
 
-                        // Procesar boleta parcial
+                                                // Procesar boleta parcial e histórico
                         let obs = al.observaciones || '';
                         let traeBoleta = 'NO';
+                        let esHistorico = false;
                         if (obs.includes('[BOLETA_PARCIAL]')) {
                             traeBoleta = 'SI';
                             obs = obs.replace('[BOLETA_PARCIAL]', '').trim();
+                        }
+                        if (obs.includes('[REGISTRO_HISTORICO]')) {
+                            esHistorico = true;
+                            obs = obs.replace('[REGISTRO_HISTORICO]', '').trim();
                         }
                         const selectTraeBoleta = form.querySelector('#selectTraeBoleta');
                         if (selectTraeBoleta) selectTraeBoleta.value = traeBoleta;
                         const textareaObs = form.querySelector('[name="observaciones"]');
                         if (textareaObs) textareaObs.value = obs;
+
+                        const chkHistorico = form.querySelector('#chkRegistroHistorico');
+                        if (chkHistorico) {
+                            chkHistorico.checked = esHistorico;
+                            toggleRegistroHistorico(form, esHistorico);
+                        }
 
                         if (typeof window.initModalAlumnoDinamico === 'function') {
                             window.initModalAlumnoDinamico(al);
@@ -1669,17 +1878,28 @@ window.editarAlumno = function(id) {
                             }
                         });
 
-                        // Procesar boleta parcial
+                                                // Procesar boleta parcial e histórico
                         let obs = al.observaciones || '';
                         let traeBoleta = 'NO';
+                        let esHistorico = false;
                         if (obs.includes('[BOLETA_PARCIAL]')) {
                             traeBoleta = 'SI';
                             obs = obs.replace('[BOLETA_PARCIAL]', '').trim();
+                        }
+                        if (obs.includes('[REGISTRO_HISTORICO]')) {
+                            esHistorico = true;
+                            obs = obs.replace('[REGISTRO_HISTORICO]', '').trim();
                         }
                         const selectTraeBoleta = form.querySelector('#selectTraeBoleta');
                         if (selectTraeBoleta) selectTraeBoleta.value = traeBoleta;
                         const textareaObs = form.querySelector('[name="observaciones"]');
                         if (textareaObs) textareaObs.value = obs;
+
+                        const chkHistorico = form.querySelector('#chkRegistroHistorico');
+                        if (chkHistorico) {
+                            chkHistorico.checked = esHistorico;
+                            toggleRegistroHistorico(form, esHistorico);
+                        }
 
                         if (typeof window.initModalAlumnoDinamico === 'function') {
                             window.initModalAlumnoDinamico(al);
@@ -2136,8 +2356,12 @@ document.addEventListener("DOMContentLoaded", function() {
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData.entries());
 
-        // Procesar flag de boleta parcial en observaciones
+        // Procesar flag de boleta parcial e histórico en observaciones
         let obsValue = data.observaciones || '';
+        const chkHistorico = e.target.querySelector('#chkRegistroHistorico');
+        if (chkHistorico && chkHistorico.checked) {
+            obsValue = `[REGISTRO_HISTORICO] ${obsValue}`.trim();
+        }
         if (data.traeBoleta === 'SI') {
             obsValue = `[BOLETA_PARCIAL] ${obsValue}`.trim();
         }
@@ -2326,7 +2550,27 @@ window.abrirKardexAlumno = function(idAlumno) {
                         }).then((semResult) => {
                             if (semResult.isConfirmed) {
                                 const idNivelSemestre = parseInt(semResult.value); // 7 a 12
-                                imprimirBoletaBTISemestre(data, idNivelSemestre);
+                                const alId = data.alumno.idAlumno;
+                                Swal.fire({
+                                    title: 'Preparando boleta...',
+                                    allowOutsideClick: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();
+                                    }
+                                });
+
+                                fetch(`/alumnos/${alId}/reportes-conteo`)
+                                    .then(r => r.json())
+                                    .then(resp => {
+                                        Swal.close();
+                                        const counts = resp.success && resp.counts ? resp.counts : { 1: 0, 2: 0, 3: 0 };
+                                        imprimirBoletaBTISemestre(data, idNivelSemestre, counts);
+                                    })
+                                    .catch(err => {
+                                        console.error(err);
+                                        Swal.close();
+                                        imprimirBoletaBTISemestre(data, idNivelSemestre, { 1: 0, 2: 0, 3: 0 });
+                                    });
                             }
                         });
                     }
@@ -2551,8 +2795,24 @@ function mostrarKardexConDatos(data) {
     calcularPromediosKardex();
 }
 
-function imprimirBoletaBTISemestre(data, idNivelSemestre) {
+function imprimirBoletaBTISemestre(data, idNivelSemestre, reportesCounts) {
     const al = data.alumno;
+    const repCounts = reportesCounts || { 1: 0, 2: 0, 3: 0 };
+    const totalReportes = (repCounts[1] || 0) + (repCounts[2] || 0) + (repCounts[3] || 0);
+    let boxReportesHtml = '';
+    if (totalReportes > 0) {
+        boxReportesHtml = `
+            <!-- Box Reportes de Indisciplina -->
+            <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: -10px;">
+                <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">REPORTES POR CONDUCTA</span>
+                <span style="font-size: 8pt; font-weight: 800; padding: 8px 5px; color: #0f172a; display: block; word-spacing: 3px;">
+                    P1: <strong style="color: #1e6fa8; font-size: 9pt;">${repCounts[1] || 0}</strong> &nbsp;|&nbsp; 
+                    P2: <strong style="color: #1e6fa8; font-size: 9pt;">${repCounts[2] || 0}</strong> &nbsp;|&nbsp; 
+                    P3: <strong style="color: #1e6fa8; font-size: 9pt;">${repCounts[3] || 0}</strong>
+                </span>
+            </div>
+        `;
+    }
     const periodos = data.periodos || [];
     const p = periodos.find(x => x.idNivel === idNivelSemestre);
     const materias = p ? p.materias || [] : [];
@@ -2771,6 +3031,8 @@ function imprimirBoletaBTISemestre(data, idNivelSemestre) {
                                     <span style="font-size: 13pt; font-weight: 900; padding: 10px 5px; color: #1e3a8a; display: block;">${finalAvg}</span>
                                 </div>
                             </div>
+
+                            ${boxReportesHtml}
 
                             <!-- Director Signature -->
                             <div style="margin-top: 15px; width: 100%; text-align: center;">
@@ -3081,20 +3343,35 @@ window.guardarCalificacionesKardex = function() {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
 
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
     fetch(`/alumnos/${idAlumnoKardexActual}/calificaciones`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
         },
         body: JSON.stringify({ calificaciones: calificaciones })
     })
-    .then(r => r.json())
+    .then(async r => {
+        const data = await r.json().catch(() => null);
+        if (!r.ok) {
+            if (r.status === 419) {
+                throw new Error('La sesión ha expirado (Error 419). Por favor recarga la página con F5.');
+            }
+            if (r.status === 401) {
+                throw new Error('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+            }
+            throw new Error((data && (data.error || data.message)) || `Error en el servidor (${r.status})`);
+        }
+        return data;
+    })
     .then(resp => {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Guardar Calificaciones';
 
-        if (resp.success) {
+        if (resp && resp.success) {
             Swal.fire({
                 icon: 'success',
                 title: 'Kárdex Actualizado',
@@ -3105,8 +3382,8 @@ window.guardarCalificacionesKardex = function() {
         } else {
             Swal.fire({
                 icon: 'error',
-                title: 'Error',
-                text: resp.error || resp.message || 'Error al guardar calificaciones'
+                title: 'Error al Guardar',
+                text: (resp && (resp.error || resp.message)) || 'Error al guardar calificaciones'
             });
         }
     })
@@ -3116,8 +3393,8 @@ window.guardarCalificacionesKardex = function() {
         console.error(err);
         Swal.fire({
             icon: 'error',
-            title: 'Error',
-            text: 'Error de comunicación al guardar calificaciones'
+            title: 'Error al Guardar',
+            text: err.message || 'Error de comunicación al guardar calificaciones'
         });
     });
 };

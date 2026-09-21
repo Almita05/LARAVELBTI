@@ -121,6 +121,13 @@ $modulosValidos = array_map('trim', $modulosValidos);
                 </a>
             </div>
             @endif
+            @if(has_perm('alumnos_list', 'ver'))
+            <div class="accordion-body">
+                <a href="{{ route('reportes_indisciplina.index_view') }}">
+                    -Reportes de Indisciplina
+                </a>
+            </div>
+            @endif
         </div>
     </div>
     @endif
@@ -284,10 +291,22 @@ $modulosValidos = array_map('trim', $modulosValidos);
 
 
     @if($rol=='ADMIN' || $rol=='PERSONAL')
+    {{-- Nuevo Módulo: Imprimir --}}
+    <div class="accordion-item menu-title">
+        <h2 class="accordion-header">
+            <a href="{{ route('reportes.imprimir') }}"
+                class="accordion-button no-chevron d-flex align-items-center text-white" style="text-decoration: none;">
+                <i class="fa-solid fa-file-invoice me-2" style="font-size: 18px;"></i>
+                <span class="menu-text">Imprimir</span>
+            </a>
+        </h2>
+    </div>
+
     @if($rol=='ADMIN' || has_perm('formatos_boletas_bti', 'ver') || has_perm('formatos_kardex_bgne', 'ver') ||
     has_perm('formatos_actas_extraordinarios', 'ver') || has_perm('formatos_listas_asistencia', 'ver') ||
     has_perm('formatos_actas_ordinarios', 'ver'))
     <div class="accordion-item menu-title">
+
         <h2 class="accordion-header">
             <button class="accordion-button" type="button" data-bs-toggle="collapse"
                 data-bs-target="#menu-ImprimirFormatos" aria-expanded="false" aria-controls="menu-ImprimirFormatos">

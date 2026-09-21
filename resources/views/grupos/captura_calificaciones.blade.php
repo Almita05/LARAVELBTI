@@ -160,7 +160,7 @@
                 <select id="selectFiltroCct" class="form-select shadow-sm" style="border-radius: 12px; font-weight: 500;" onchange="setFiltroCct(this.value)">
                     <option value="" selected>Todos los CCT</option>
                     <option value="3">BGNE (Bachillerato No Escolarizado)</option>
-                    <option value="2">BTI (Bachillerato Tecnológico)</option>
+                    <option value="2">BTI (Bachillerato Tecnológico Interamericano)</option>
                     <option value="1">INF (Informática y Computación)</option>
                 </select>
             </div>
@@ -366,7 +366,8 @@
                         <small class="text-muted">
                             Total Alumnos: <strong id="statTotalAlumnos">0</strong> | 
                             Aprobados: <strong class="text-success" id="statAprobados">0</strong> | 
-                            Reprobados: <strong class="text-danger" id="statReprobados">0</strong>
+                            Reprobados: <strong class="text-danger" id="statReprobados">0</strong> |
+                            Equivalencias: <strong class="text-warning" id="statEquivalencias">0</strong>
                         </small>
                         <span class="badge bg-primary px-3 py-2" id="statPromedioMateria">Promedio Materia: 0.0</span>
                     </div>
@@ -545,25 +546,48 @@ function formatearFecha(fecha) {
     }
 }
 
-// Convertidor de número a letra para calificaciones escolares
+// Convertidor de número a letra para calificaciones escolares (Enteros del 1 al 10 o EQUIVALENCIA)
 function numeroALetrasCalificacion(num) {
-    if (num === null || num === undefined || isNaN(num) || num === '') return '—';
-    const n = parseFloat(num);
-    if (isNaN(n)) return '—';
-
-    const entero = Math.floor(n);
-    const decimal = Math.round((n - entero) * 10);
+    if (num === 'EQUIV' || num === 'EQUIVALENCIA') return 'EQUIVALENCIA';
+    if (num === null || num === undefined || num === '' || isNaN(num)) return '—';
+    const n = parseInt(num, 10);
+    if (isNaN(n) || n < 1 || n > 10) return '—';
 
     const nombres = {
-        0: 'CERO', 1: 'UNO', 2: 'DOS', 3: 'TRES', 4: 'CUATRO',
+        1: 'UNO', 2: 'DOS', 3: 'TRES', 4: 'CUATRO',
         5: 'CINCO', 6: 'SEIS', 7: 'SIETE', 8: 'OCHO', 9: 'NUEVE', 10: 'DIEZ'
     };
 
-    let texto = nombres[entero] || String(entero);
-    if (decimal > 0 && decimal <= 9) {
-        texto += ` PUNTO ${nombres[decimal] || decimal}`;
+    return nombres[n] || String(n);
+}
+
+// Prevención estricta de decimales en teclas (solo enteros 1 al 10 o conmutación por tecla 'E')
+function prevenirDecimales(event) {
+    const allowedKeys = ['Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'Delete'];
+    if (allowedKeys.includes(event.key)) return;
+    if (event.ctrlKey || event.metaKey) return;
+
+    // Si presiona 'e' o 'E', permitir conmutar a modo EQUIV
+    if (event.key === 'e' || event.key === 'E') {
+        event.preventDefault();
+        const tr = event.target.closest('tr');
+        if (tr) {
+            conmutarEquivalenciaFila(tr, true);
+        }
+        return;
     }
-    return texto;
+
+    // Bloquear punto '.', coma ',', '-', '+', etc.
+    if (['.', ',', '-', '+', 'e', 'E'].includes(event.key)) {
+        event.preventDefault();
+        return;
+    }
+
+    // Solo permitir dígitos 0 al 9
+    if (!/^\d$/.test(event.key)) {
+        event.preventDefault();
+        return;
+    }
 }
 
 // ==========================================
@@ -1124,16 +1148,37 @@ function renderDatosControlOficial(data) {
             semInput = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
             extInput = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
             asistInput = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
-            finalInput = `<span class="badge bg-warning text-dark px-3 py-2 fw-bold d-inline-block">EQUIV.</span>
-                          <input type="hidden" class="inp-calif-final" value="0.0">`;
+            finalInput = `
+                <div class="d-flex align-items-center justify-content-center gap-1">
+                    <span class="badge bg-warning text-dark px-2 py-1 fw-bold d-inline-block shadow-sm" style="font-size: 0.82rem;">EQUIV.</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 border-0" title="Cambiar a calificación numérica" onclick="conmutarEquivalenciaFila(this.closest('tr'), false)" ${disAttr}>
+                        <i class="fa-solid fa-pen-to-square text-muted"></i>
+                    </button>
+                    <input type="hidden" class="inp-calif-final" value="EQUIV">
+                </div>
+            `;
         } else {
             if (isSemestral) {
-                p1Input = `<input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-p1" value="${a.parcial1 !== null && a.parcial1 !== undefined ? a.parcial1 : ''}" oninput="recalcularFilaSemestral(this)" ${disP1}>`;
-                p2Input = `<input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-p2" value="${a.parcial2 !== null && a.parcial2 !== undefined ? a.parcial2 : ''}" oninput="recalcularFilaSemestral(this)" ${disP2}>`;
-                p3Input = `<input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-p3" value="${a.parcial3 !== null && a.parcial3 !== undefined ? a.parcial3 : ''}" oninput="recalcularFilaSemestral(this)" ${disP3}>`;
-                semInput = `<input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-semestral" value="${a.semestral !== null && a.semestral !== undefined ? a.semestral : ''}" oninput="recalcularFilaSemestral(this)" ${disSem}>`;
-                extInput = `<input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="${a.extraordinario !== null && a.extraordinario !== undefined ? a.extraordinario : ''}" oninput="recalcularFilaSemestral(this)" ${disExt}>`;
-                finalInput = `<input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="${calif}" readonly style="background-color: #f1f5f9;" ${disAttr}>`;
+                const intP1 = (a.parcial1 !== null && a.parcial1 !== undefined && a.parcial1 !== '') ? parseInt(a.parcial1) : '';
+                const intP2 = (a.parcial2 !== null && a.parcial2 !== undefined && a.parcial2 !== '') ? parseInt(a.parcial2) : '';
+                const intP3 = (a.parcial3 !== null && a.parcial3 !== undefined && a.parcial3 !== '') ? parseInt(a.parcial3) : '';
+                const intSem = (a.semestral !== null && a.semestral !== undefined && a.semestral !== '') ? parseInt(a.semestral) : '';
+                const intExtSem = (a.extraordinario !== null && a.extraordinario !== undefined && a.extraordinario !== '') ? parseInt(a.extraordinario) : '';
+                const intFinalSem = (calif !== '' && !isNaN(calif)) ? parseInt(calif) : '';
+
+                p1Input = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p1" value="${intP1}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP1}>`;
+                p2Input = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p2" value="${intP2}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP2}>`;
+                p3Input = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p3" value="${intP3}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP3}>`;
+                semInput = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-semestral" value="${intSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disSem}>`;
+                extInput = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-extraordinario" value="${intExtSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disExt}>`;
+                finalInput = `
+                    <div class="d-flex align-items-center justify-content-center gap-1">
+                        <input type="number" step="1" min="1" max="10" class="input-calif-celda inp-calif-final fw-bold" value="${intFinalSem}" readonly style="background-color: #f1f5f9;" ${disAttr}>
+                        <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-1 fw-bold shadow-sm" title="Marcar como Equivalencia (alumno transferido)" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" style="font-size: 0.68rem; line-height: 1.2;" ${disAttr}>
+                            EQUIV
+                        </button>
+                    </div>
+                `;
                 
                 const aVal = a.asistencias !== null && a.asistencias !== undefined ? a.asistencias : '';
                 const tVal = a.total_asistencias !== null && a.total_asistencias !== undefined ? a.total_asistencias : '';
@@ -1145,9 +1190,18 @@ function renderDatosControlOficial(data) {
                     </div>
                 `;
             } else {
-                // For BGNE, we only have final grade (which uses disP1) and extraordinary grade
-                finalInput = `<input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="${calif}" oninput="recalcularFilaOficial(this)" placeholder="0.0" ${disP1}>`;
-                extInput = `<input type="number" step="0.1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="${a.extraordinario !== null && a.extraordinario !== undefined ? a.extraordinario : ''}" oninput="recalcularFilaOficial(this)" placeholder="0.0" ${disExt}>`;
+                // Para BGNE: Solo Final y Extraordinario (enteros del 1 al 10)
+                const intCalif = (calif !== '' && !isNaN(calif)) ? parseInt(calif) : '';
+                const intExt = (a.extraordinario !== null && a.extraordinario !== undefined && a.extraordinario !== '' && !isNaN(a.extraordinario)) ? parseInt(a.extraordinario) : '';
+                finalInput = `
+                    <div class="d-flex align-items-center justify-content-center gap-1">
+                        <input type="number" step="1" min="1" max="10" class="input-calif-celda inp-calif-final fw-bold" value="${intCalif}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="1-10" ${disP1}>
+                        <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-1 fw-bold shadow-sm" title="Marcar alumno con EQUIVALENCIA" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" style="font-size: 0.68rem; line-height: 1.2;" ${disP1}>
+                            EQUIV
+                        </button>
+                    </div>
+                `;
+                extInput = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-extraordinario" value="${intExt}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="1-10" ${disExt}>`;
             }
         }
 
@@ -1211,6 +1265,118 @@ function renderDatosControlOficial(data) {
     recalcularEstadisticasMateria();
 }
 
+// ==========================================
+// CONMUTACIÓN MANUAL DE EQUIVALENCIA
+// ==========================================
+function conmutarEquivalenciaFila(tr, aEquiv) {
+    if (!tr) return;
+    const isSoloLectura = datosGrupoMateriaActual && datosGrupoMateriaActual.solo_lectura === true;
+    if (isSoloLectura) return;
+
+    const isSemestral = datosGrupoMateriaActual && datosGrupoMateriaActual.grupo && (
+        datosGrupoMateriaActual.grupo.id_tipoPeriodo === 1 ||
+        datosGrupoMateriaActual.grupo.id_centroTrabajo === 2 ||
+        datosGrupoMateriaActual.grupo.id_centroTrabajo === 1
+    );
+
+    const cctConfig = (datosGrupoMateriaActual && datosGrupoMateriaActual.cct_config) ? datosGrupoMateriaActual.cct_config : {
+        captura_p1: true, captura_p2: true, captura_p3: true, captura_semestral: true, captura_extraordinario: true
+    };
+    const isDocente = '{{ session("rol") }}' === 'DOCENTE';
+    const disP1 = (isSoloLectura || (isDocente && !cctConfig.captura_p1)) ? 'disabled' : '';
+    const disExt = (isSoloLectura || (isDocente && !cctConfig.captura_extraordinario)) ? 'disabled' : '';
+    const disAttr = isSoloLectura ? 'disabled' : '';
+
+    const tdLetra = tr.querySelector('.td-calif-letra');
+    const inpObs = tr.querySelector('.inp-obs');
+
+    if (aEquiv) {
+        tr.setAttribute('data-is-equivalencia', 'true');
+        
+        if (isSemestral) {
+            tr.children[4].innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
+            tr.children[5].innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
+            tr.children[6].innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
+            tr.children[7].innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
+            tr.children[8].innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
+            tr.children[9].innerHTML = `
+                <div class="d-flex align-items-center justify-content-center gap-1">
+                    <span class="badge bg-warning text-dark px-2 py-1 fw-bold d-inline-block shadow-sm">EQUIV.</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 border-0" title="Cambiar a calificación numérica" onclick="conmutarEquivalenciaFila(this.closest('tr'), false)" ${disAttr}>
+                        <i class="fa-solid fa-pen-to-square text-muted"></i>
+                    </button>
+                    <input type="hidden" class="inp-calif-final" value="EQUIV">
+                </div>
+            `;
+            if (tr.children[11]) {
+                tr.children[11].innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
+            }
+        } else {
+            // BGNE (children[4] es Final, children[5] es Extraordinario)
+            tr.children[4].innerHTML = `
+                <div class="d-flex align-items-center justify-content-center gap-1">
+                    <span class="badge bg-warning text-dark px-2 py-1 fw-bold d-inline-block shadow-sm" style="font-size: 0.82rem;">EQUIV.</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 border-0" title="Cambiar a calificación numérica" onclick="conmutarEquivalenciaFila(this.closest('tr'), false)" ${disAttr}>
+                        <i class="fa-solid fa-pen-to-square text-muted"></i>
+                    </button>
+                    <input type="hidden" class="inp-calif-final" value="EQUIV">
+                </div>
+            `;
+            tr.children[5].innerHTML = `<span class="text-muted fw-bold">—</span><input type="hidden" class="inp-extraordinario" value="">`;
+        }
+
+        if (tdLetra) {
+            tdLetra.textContent = 'EQUIVALENCIA';
+            tdLetra.className = 'text-center fw-bold text-warning td-calif-letra';
+        }
+    } else {
+        tr.setAttribute('data-is-equivalencia', 'false');
+
+        if (isSemestral) {
+            tr.children[4].innerHTML = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p1" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP1}>`;
+            tr.children[5].innerHTML = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p2" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP1}>`;
+            tr.children[6].innerHTML = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p3" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP1}>`;
+            tr.children[7].innerHTML = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-semestral" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disAttr}>`;
+            tr.children[8].innerHTML = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-extraordinario" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disExt}>`;
+            tr.children[9].innerHTML = `
+                <div class="d-flex align-items-center justify-content-center gap-1">
+                    <input type="number" step="1" min="1" max="10" class="input-calif-celda inp-calif-final fw-bold" value="" readonly style="background-color: #f1f5f9;" ${disAttr}>
+                    <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-1 fw-bold shadow-sm" title="Marcar como Equivalencia (alumno transferido)" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" style="font-size: 0.68rem; line-height: 1.2;" ${disAttr}>
+                        EQUIV
+                    </button>
+                </div>
+            `;
+            if (tr.children[11]) {
+                tr.children[11].innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center gap-1">
+                        <input type="number" min="0" class="input-calif-celda inp-asistencias" value="" style="width: 45px;" placeholder="0" oninput="recalcularEstadisticasMateria()" ${disAttr}>
+                        <span class="text-muted">/</span>
+                        <input type="number" min="0" class="input-calif-celda inp-total-asistencias" value="" style="width: 45px;" placeholder="0" oninput="recalcularEstadisticasMateria()" ${disAttr}>
+                    </div>
+                `;
+            }
+        } else {
+            tr.children[4].innerHTML = `
+                <div class="d-flex align-items-center justify-content-center gap-1">
+                    <input type="number" step="1" min="1" max="10" class="input-calif-celda inp-calif-final fw-bold" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="1-10" ${disP1}>
+                    <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-1 fw-bold shadow-sm" title="Marcar alumno con EQUIVALENCIA" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" style="font-size: 0.68rem; line-height: 1.2;" ${disP1}>
+                        EQUIV
+                    </button>
+                </div>
+            `;
+            tr.children[5].innerHTML = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-extraordinario" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="1-10" ${disExt}>`;
+        }
+
+        if (tdLetra) {
+            tdLetra.textContent = '—';
+            tdLetra.className = 'text-center fw-bold text-secondary td-calif-letra';
+        }
+    }
+
+    if (inpObs) inpObs.disabled = isSoloLectura;
+    recalcularEstadisticasMateria();
+}
+
 function validarRangoInput(inputEl) {
     if (!inputEl) return true;
     const cctId = datosGrupoMateriaActual && datosGrupoMateriaActual.grupo ? datosGrupoMateriaActual.grupo.id_centroTrabajo : null;
@@ -1224,7 +1390,8 @@ function validarRangoInput(inputEl) {
     }
 
     const val = parseFloat(inputEl.value);
-    if (isNaN(val) || val < 0.0 || val > 10.0) {
+    // Solo enteros del 1 al 10
+    if (isNaN(val) || val < 1.0 || val > 10.0 || !Number.isInteger(val)) {
         inputEl.style.borderColor = '#dc2626';
         inputEl.style.backgroundColor = '#fef2f2';
         return false;
@@ -1248,9 +1415,9 @@ function recalcularFilaSemestral(inputEl) {
     const pFinalInp = tr.querySelector('.inp-calif-final');
     const tdLetra = tr.querySelector('.td-calif-letra');
 
-    const v1 = parseFloat(p1Inp.value);
-    const v2 = parseFloat(p2Inp.value);
-    const v3 = parseFloat(p3Inp.value);
+    const v1 = parseFloat(p1Inp ? p1Inp.value : NaN);
+    const v2 = parseFloat(p2Inp ? p2Inp.value : NaN);
+    const v3 = parseFloat(p3Inp ? p3Inp.value : NaN);
 
     const config = (datosGrupoMateriaActual && datosGrupoMateriaActual.cct_config) ? datosGrupoMateriaActual.cct_config : {
         captura_p1: true,
@@ -1269,55 +1436,63 @@ function recalcularFilaSemestral(inputEl) {
         const sumPartials = v1 + v2 + v3;
         if (sumPartials < 18) {
             // No tiene derecho a semestral. Va directamente a extraordinario
-            semInp.value = "";
-            semInp.disabled = true;
-            semInp.placeholder = "N/A";
+            if (semInp) {
+                semInp.value = "";
+                semInp.disabled = true;
+                semInp.placeholder = "N/A";
+            }
             
-            extInp.disabled = isSoloLectura || (isDocente && !config.captura_extraordinario);
-            extInp.placeholder = "0.0";
+            if (extInp) {
+                extInp.disabled = isSoloLectura || (isDocente && !config.captura_extraordinario);
+                extInp.placeholder = "1-10";
+            }
             
-            const extVal = parseFloat(extInp.value);
-            if (!isNaN(extVal)) {
-                // Promedio final = extraordinario capped at 7.0
-                pFinalInp.value = Math.min(extVal, 7.0).toFixed(1);
-            } else {
+            const extVal = extInp ? parseFloat(extInp.value) : NaN;
+            if (!isNaN(extVal) && pFinalInp) {
+                // Promedio final = extraordinario capped at 7 entero
+                pFinalInp.value = Math.min(Math.round(extVal), 7);
+            } else if (pFinalInp) {
                 pFinalInp.value = "";
             }
         } else {
             // Habilitar semestral, deshabilitar extraordinario
-            semInp.disabled = isSoloLectura || (isDocente && !config.captura_semestral);
-            semInp.placeholder = "0.0";
+            if (semInp) {
+                semInp.disabled = isSoloLectura || (isDocente && !config.captura_semestral);
+                semInp.placeholder = "1-10";
+            }
             
-            extInp.value = "";
-            extInp.disabled = true;
-            extInp.placeholder = "N/A";
+            if (extInp) {
+                extInp.value = "";
+                extInp.disabled = true;
+                extInp.placeholder = "N/A";
+            }
 
-            const semVal = parseFloat(semInp.value);
-            if (!isNaN(semVal)) {
-                // Promedio final = (P1 + P2 + P3 + Semestral) / 4
-                pFinalInp.value = ((v1 + v2 + v3 + semVal) / 4).toFixed(1);
-            } else {
+            const semVal = semInp ? parseFloat(semInp.value) : NaN;
+            if (!isNaN(semVal) && pFinalInp) {
+                // Promedio final = (P1 + P2 + P3 + Semestral) / 4 redondeado a entero
+                pFinalInp.value = Math.round((v1 + v2 + v3 + semVal) / 4);
+            } else if (pFinalInp) {
                 pFinalInp.value = "";
             }
         }
     } else {
         // Parciales incompletos, habilitar según calendario y calcular promedio provisional de parciales
-        semInp.disabled = isSoloLectura || (isDocente && !config.captura_semestral);
-        extInp.disabled = isSoloLectura || (isDocente && !config.captura_extraordinario);
+        if (semInp) semInp.disabled = isSoloLectura || (isDocente && !config.captura_semestral);
+        if (extInp) extInp.disabled = isSoloLectura || (isDocente && !config.captura_extraordinario);
         
         let vals = [];
         if (!isNaN(v1)) vals.push(v1);
         if (!isNaN(v2)) vals.push(v2);
         if (!isNaN(v3)) vals.push(v3);
         
-        if (vals.length > 0) {
-            pFinalInp.value = (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1);
-        } else {
+        if (vals.length > 0 && pFinalInp) {
+            pFinalInp.value = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+        } else if (pFinalInp) {
             pFinalInp.value = "";
         }
     }
 
-    // Color rojo en notas menores a 6.0
+    // Color rojo en notas menores a 6
     const checkRed = (inp) => {
         if (!inp) return;
         const v = parseFloat(inp.value);
@@ -1338,12 +1513,14 @@ function recalcularFilaSemestral(inputEl) {
     checkRed(pFinalInp);
 
     // Actualizar Calificación con Letra
-    const finalVal = pFinalInp.value;
-    tdLetra.textContent = numeroALetrasCalificacion(finalVal);
-    if (parseFloat(finalVal) < 6.0) {
-        tdLetra.className = 'text-center fw-bold text-danger td-calif-letra';
-    } else {
-        tdLetra.className = 'text-center fw-bold text-secondary td-calif-letra';
+    const finalVal = pFinalInp ? pFinalInp.value : '';
+    if (tdLetra) {
+        tdLetra.textContent = numeroALetrasCalificacion(finalVal);
+        if (parseFloat(finalVal) < 6.0) {
+            tdLetra.className = 'text-center fw-bold text-danger td-calif-letra';
+        } else {
+            tdLetra.className = 'text-center fw-bold text-secondary td-calif-letra';
+        }
     }
 
     recalcularEstadisticasMateria();
@@ -1372,8 +1549,8 @@ function recalcularFilaOficial(inputEl) {
         if (!isNaN(v2)) vals.push(v2);
         if (!isNaN(v3)) vals.push(v3);
 
-        if (vals.length > 0) {
-            const prom = (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1);
+        if (vals.length > 0 && pFinalInp) {
+            const prom = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
             pFinalInp.value = prom;
         }
     }
@@ -1398,15 +1575,17 @@ function recalcularFilaOficial(inputEl) {
     checkRed(pFinalInp);
 
     // Actualizar Calificación con Letra
-    let finalVal = pFinalInp.value;
+    let finalVal = pFinalInp ? pFinalInp.value : '';
     if (extInp && extInp.value !== "") {
         finalVal = extInp.value;
     }
-    tdLetra.textContent = numeroALetrasCalificacion(finalVal);
-    if (parseFloat(finalVal) < 6.0) {
-        tdLetra.className = 'text-center fw-bold text-danger td-calif-letra';
-    } else {
-        tdLetra.className = 'text-center fw-bold text-secondary td-calif-letra';
+    if (tdLetra) {
+        tdLetra.textContent = numeroALetrasCalificacion(finalVal);
+        if (parseFloat(finalVal) < 6.0) {
+            tdLetra.className = 'text-center fw-bold text-danger td-calif-letra';
+        } else {
+            tdLetra.className = 'text-center fw-bold text-secondary td-calif-letra';
+        }
     }
 
     recalcularEstadisticasMateria();
@@ -1466,6 +1645,8 @@ function recalcularEstadisticasMateria() {
     document.getElementById('statTotalAlumnos').textContent = total + totalEquiv;
     document.getElementById('statAprobados').textContent = aprobados;
     document.getElementById('statReprobados').textContent = reprobados;
+    const elEq = document.getElementById('statEquivalencias');
+    if (elEq) elEq.textContent = totalEquiv;
 
     const prom = finalVals.length > 0 ? (finalVals.reduce((a, b) => a + b, 0) / finalVals.length).toFixed(1) : '0.0';
     document.getElementById('statPromedioMateria').textContent = `Promedio Materia: ${prom}`;
@@ -1534,7 +1715,7 @@ function guardarCalificacionesMateriaSeleccionada() {
         Swal.fire({
             icon: 'error',
             title: 'Valores Inválidos',
-            text: 'Existen calificaciones fuera del rango permitido (0 a 10). Por favor corríjalas antes de guardar.',
+            text: 'Existen calificaciones fuera del rango permitido (números enteros del 1 al 10). Por favor corríjalas antes de guardar.',
             confirmButtonColor: 'rgb(49, 125, 146)'
         });
         return;
@@ -1589,8 +1770,19 @@ function enviarPeticionGuardar(finalizar) {
     rows.forEach(tr => {
         const idAlumno = tr.getAttribute('data-alumno-id');
         const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
+        const obs = tr.querySelector('.inp-obs') ? tr.querySelector('.inp-obs').value : '';
         
-        if (isEquiv) return;
+        if (isEquiv) {
+            if (idAlumno) {
+                calificaciones.push({
+                    idAlumno: parseInt(idAlumno),
+                    calificacion: 0.0,
+                    tipoAcreditacion: 'EQUIVALENCIA',
+                    observaciones: obs
+                });
+            }
+            return;
+        }
 
         const p1Inp = tr.querySelector('.inp-p1');
         const p2Inp = tr.querySelector('.inp-p2');
@@ -1600,23 +1792,24 @@ function enviarPeticionGuardar(finalizar) {
         const asistInp = tr.querySelector('.inp-asistencias');
         const totAsistInp = tr.querySelector('.inp-total-asistencias');
 
-        const califFinal = tr.querySelector('.inp-calif-final').value;
-        const obs = tr.querySelector('.inp-obs').value;
+        const califFinalInp = tr.querySelector('.inp-calif-final');
+        const califFinal = califFinalInp ? califFinalInp.value : '';
 
-        if (idAlumno && califFinal !== '') {
+        if (idAlumno && califFinal !== '' && califFinal !== 'EQUIV') {
             const dataObj = {
                 idAlumno: parseInt(idAlumno),
-                calificacion: parseFloat(califFinal),
+                calificacion: parseInt(califFinal, 10),
+                tipoAcreditacion: 'ORDINARIO',
                 observaciones: obs
             };
             
-            if (p1Inp) dataObj.parcial1 = p1Inp.value !== "" ? parseFloat(p1Inp.value) : null;
-            if (p2Inp) dataObj.parcial2 = p2Inp.value !== "" ? parseFloat(p2Inp.value) : null;
-            if (p3Inp) dataObj.parcial3 = p3Inp.value !== "" ? parseFloat(p3Inp.value) : null;
-            if (semInp) dataObj.semestral = semInp.value !== "" ? parseFloat(semInp.value) : null;
-            if (extInp) dataObj.extraordinario = extInp.value !== "" ? parseFloat(extInp.value) : null;
-            if (asistInp) dataObj.asistencias = asistInp.value !== "" ? parseInt(asistInp.value) : null;
-            if (totAsistInp) dataObj.total_asistencias = totAsistInp.value !== "" ? parseInt(totAsistInp.value) : null;
+            if (p1Inp) dataObj.parcial1 = p1Inp.value !== "" ? parseInt(p1Inp.value, 10) : null;
+            if (p2Inp) dataObj.parcial2 = p2Inp.value !== "" ? parseInt(p2Inp.value, 10) : null;
+            if (p3Inp) dataObj.parcial3 = p3Inp.value !== "" ? parseInt(p3Inp.value, 10) : null;
+            if (semInp) dataObj.semestral = semInp.value !== "" ? parseInt(semInp.value, 10) : null;
+            if (extInp) dataObj.extraordinario = extInp.value !== "" ? parseInt(extInp.value, 10) : null;
+            if (asistInp) dataObj.asistencias = asistInp.value !== "" ? parseInt(asistInp.value, 10) : null;
+            if (totAsistInp) dataObj.total_asistencias = totAsistInp.value !== "" ? parseInt(totAsistInp.value, 10) : null;
 
             calificaciones.push(dataObj);
         }
@@ -1626,6 +1819,7 @@ function enviarPeticionGuardar(finalizar) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
         body: JSON.stringify({ 
@@ -1633,7 +1827,19 @@ function enviarPeticionGuardar(finalizar) {
             finalizar: finalizar
         })
     })
-    .then(res => res.json())
+    .then(async res => {
+        const resp = await res.json().catch(() => null);
+        if (!res.ok) {
+            if (res.status === 419) {
+                throw new Error('La sesión ha expirado (Error 419). Por favor recarga la página con F5.');
+            }
+            if (res.status === 401) {
+                throw new Error('Tu sesión ha finalizado. Por favor vuelve a iniciar sesión.');
+            }
+            throw new Error((resp && (resp.error || resp.message)) || `Error en el servidor (${res.status})`);
+        }
+        return resp;
+    })
     .then(resp => {
         if (resp.success) {
             Swal.fire({

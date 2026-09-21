@@ -158,6 +158,23 @@
     box-shadow: 0 0 0 2px rgba(38, 104, 123, 0.15) !important;
 }
 
+.filter-select-custom {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.5rem !important;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.filter-select-custom:focus {
+    background: #ffffff !important;
+    border-color: rgb(38, 104, 123) !important;
+    box-shadow: 0 0 0 2px rgba(38, 104, 123, 0.15) !important;
+}
+
 /* Groups List */
 .group-list {
     overflow-y: auto;
@@ -607,9 +624,21 @@
                     <h4 class="sidebar-title">Seleccionar Grupo</h4>
                     
                     <!-- Search Input -->
-                    <div class="search-container">
+                    <div class="search-container mb-2">
                         <i class="fa-solid fa-magnifying-glass search-icon"></i>
                         <input type="text" id="groupSearchInput" class="form-control search-input-custom" placeholder="Buscar grupo o alumno...">
+                    </div>
+
+                    <!-- Filters Row -->
+                    <div class="d-flex gap-2 mb-3">
+                        <select id="filterStatus" class="form-select form-select-sm filter-select-custom w-50">
+                            <option value="ACTIVO" selected>Activos</option>
+                            <option value="INACTIVO">Inactivos</option>
+                            <option value="ALL">Todos</option>
+                        </select>
+                        <select id="filterCct" class="form-select form-select-sm filter-select-custom w-50">
+                            <option value="ALL" selected>Todos CCT</option>
+                        </select>
                     </div>
 
 
@@ -869,6 +898,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const groupListContainer = document.getElementById("groupListContainer");
     const groupListSpinner = document.getElementById("groupListSpinner");
     const groupSearchInput = document.getElementById("groupSearchInput");
+    const filterStatus = document.getElementById("filterStatus");
+    const filterCct = document.getElementById("filterCct");
     const selectedGroupName = document.getElementById("selectedGroupName");
     const selectedGroupNivel = document.getElementById("selectedGroupNivel");
     const calendarEmptyState = document.getElementById("calendarEmptyState");
@@ -901,18 +932,31 @@ document.addEventListener("DOMContentLoaded", function() {
 
     async function initDashboard() {
         try {
-            const [groupsRes, docentesRes, materiasRes] = await Promise.all([
+            const [groupsRes, docentesRes, materiasRes, centrosRes] = await Promise.all([
                 fetch('/grupos/lista?limit=1000').then(r => r.json()).catch(() => ({ data: [] })),
                 fetch('/docentes/lista').then(r => r.json()).catch(() => ({ data: [] })),
-                fetch('/materias/lista').then(r => r.json()).catch(() => ({ data: [] }))
+                fetch('/materias/lista').then(r => r.json()).catch(() => ({ data: [] })),
+                fetch('/catalogos/centros-trabajo').then(r => r.json()).catch(() => [])
             ]);
 
             groups = groupsRes.data || [];
             docentes = docentesRes.data || [];
             materias = materiasRes.data || [];
+            const centros = centrosRes || [];
+
+            // Populate CCT select
+            if (filterCct) {
+                filterCct.innerHTML = '<option value="ALL">Todos CCT</option>';
+                centros.forEach(c => {
+                    const opt = document.createElement("option");
+                    opt.value = c.id;
+                    opt.textContent = c.nombreCentroTrabajo || c.claveCentroTrabajo || c.nombre || `CCT ${c.id}`;
+                    filterCct.appendChild(opt);
+                });
+            }
 
             populateDropdowns();
-            renderGroupsList(groups);
+            applyFilters();
 
         } catch (error) {
             console.error("Error loading dashboard data:", error);
@@ -1199,32 +1243,65 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    groupSearchInput.addEventListener("input", function(e) {
-        const query = e.target.value.toLowerCase().trim();
-        clearTimeout(searchDebounceTimeout);
+    function applyFilters() {
+        const query = groupSearchInput.value.toLowerCase().trim();
+        const statusFilter = filterStatus ? filterStatus.value : 'ACTIVO';
+        const cctFilter = filterCct ? filterCct.value : 'ALL';
 
-        // 1. Filtrar grupos locales de inmediato de forma segura (evitando nulos en clave)
+        // Filter groups locally
         const filteredGroups = groups.filter(g => {
+            // 1. Search query filter
             const clave = g.clave ? String(g.clave).toLowerCase() : '';
-            return clave.includes(query);
+            if (query && !clave.includes(query)) {
+                return false;
+            }
+
+            // 2. Status filter (ACTIVO, INACTIVO)
+            if (statusFilter !== 'ALL') {
+                const groupStatus = g.statusGrupo ? String(g.statusGrupo).toUpperCase() : 'ACTIVO';
+                if (groupStatus !== statusFilter) {
+                    return false;
+                }
+            }
+
+            // 3. CCT filter (id_centroTrabajo)
+            if (cctFilter !== 'ALL') {
+                const gCct = g.id_centroTrabajo || g.idCentroTrabajo;
+                if (String(gCct) !== String(cctFilter)) {
+                    return false;
+                }
+            }
+
+            return true;
         });
+
         renderGroupsList(filteredGroups);
 
-        // 2. Si tiene 3 o más caracteres, buscar alumnos con debounce
+        // If query length >= 3, search students with debounce
         if (query.length >= 3) {
+            clearTimeout(searchDebounceTimeout);
             searchDebounceTimeout = setTimeout(() => {
                 fetch(`/alumnos/lista?limit=5&search=${encodeURIComponent(query)}`)
                     .then(res => res.json())
                     .then(resp => {
                         const students = resp.data || [];
                         if (students.length > 0) {
-                            // Extraer los IDs de grupo de los alumnos encontrados
                             const studentGroupIds = students.map(s => s.idGrupo || s.id_Grupo).filter(Boolean);
                             
-                            // Buscar qué grupos coinciden con esos alumnos
-                            const matchedGroupsByStudents = groups.filter(g => studentGroupIds.includes(g.id));
+                            // Find groups matching the students and applying the active filters
+                            const matchedGroupsByStudents = groups.filter(g => {
+                                if (statusFilter !== 'ALL') {
+                                    const groupStatus = g.statusGrupo ? String(g.statusGrupo).toUpperCase() : 'ACTIVO';
+                                    if (groupStatus !== statusFilter) return false;
+                                }
+                                if (cctFilter !== 'ALL') {
+                                    const gCct = g.id_centroTrabajo || g.idCentroTrabajo;
+                                    if (String(gCct) !== String(cctFilter)) return false;
+                                }
+                                return studentGroupIds.includes(g.id);
+                            });
                             
-                            // Combinar con los grupos filtrados por clave (evitando duplicados)
+                            // Combine with filteredGroups (avoiding duplicates)
                             const combinedGroups = [...filteredGroups];
                             matchedGroupsByStudents.forEach(mg => {
                                 if (!combinedGroups.some(cg => cg.id === mg.id)) {
@@ -1238,7 +1315,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     .catch(err => console.error("Error al buscar alumnos en horarios:", err));
             }, 300);
         }
-    });
+    }
+
+    if (groupSearchInput) groupSearchInput.addEventListener("input", applyFilters);
+    if (filterStatus) filterStatus.addEventListener("change", applyFilters);
+    if (filterCct) filterCct.addEventListener("change", applyFilters);
 
     function generateTableHeader(days) {
         const headerRow = document.createElement("tr");
@@ -2006,6 +2087,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
         btnSaveClass.disabled = true;
 
+        const groupData = schedulesData[activeGroup.clave] || {};
+        const cellKey = `${selectedCell.day}-${selectedCell.timeIdx}`;
+        const existingClass = groupData[cellKey];
+        const excludeIds = (existingClass && existingClass.clases)
+            ? existingClass.clases.map(c => c.id_horario).filter(Boolean)
+            : [];
+
         try {
             // Validar disponibilidad del docente para cada materia en el backend
             for (let matId of materiasList) {
@@ -2022,22 +2110,19 @@ document.addEventListener("DOMContentLoaded", function() {
                         diaSemana: dayNumbers[selectedCell.day],
                         horaInicio: horaInicio,
                         horaFin: horaFin,
-                        es_prehorario: currentPrehorarioMode
+                        es_prehorario: currentPrehorarioMode,
+                        aula: aula,
+                        exclude_ids: excludeIds
                     })
                 });
 
                 if (valRes.ok) {
                     const valData = await valRes.json();
                     if (valData.success === false) {
-                        const matObj = materias.find(m => (m.id_materia || m.id) == matId);
-                        const docObj = docentes.find(d => (d.idDocente || d.id_docente || d.id) == parseInt(docenteId));
-                        const matName = matObj ? matObj.nombreMateria : "Materia";
-                        const docName = docObj ? getTeacherFullName(docObj) : "Docente";
-
                         const confirmResult = await Swal.fire({
                             icon: 'warning',
                             title: 'Conflicto de Horario',
-                            html: `El docente <strong>${docName}</strong> ya tiene una clase asignada en el grupo <strong>${valData.grupo_clave || '—'}</strong> en el horario <strong>${valData.dia_nombre || '—'} de ${valData.hora_inicio || '—'} a ${valData.hora_fin || '—'}</strong> para la materia <strong>${valData.materia_nombre || '—'}</strong>.<br><br>¿Deseas asignarlo de todas formas?`,
+                            html: `${valData.mensaje}<br><br>¿Deseas asignarlo de todas formas?`,
                             showCancelButton: true,
                             confirmButtonColor: 'rgb(38, 104, 123)',
                             cancelButtonColor: '#cbd5e1',
@@ -2052,10 +2137,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 }
             }
-
-            const groupData = schedulesData[activeGroup.clave] || {};
-            const cellKey = `${selectedCell.day}-${selectedCell.timeIdx}`;
-            const existingClass = groupData[cellKey];
 
             // If it exists in backend, delete all previous classes first
             if (existingClass && existingClass.clases && existingClass.clases.length > 0) {
@@ -2349,8 +2430,37 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    function darkenColor(hex, percent) {
+        if (!hex || hex === '#FFFFFF') return '#cbd5e1';
+        hex = hex.replace(/^\s*#|\s*$/g, '');
+        if (hex.length === 3) {
+            hex = hex.replace(/(.)/g, '$1$1');
+        }
+        let r = parseInt(hex.substr(0, 2), 16),
+            g = parseInt(hex.substr(2, 2), 16),
+            b = parseInt(hex.substr(4, 2), 16);
+
+        r = Math.max(0, Math.min(255, r - (r * (percent / 100))));
+        g = Math.max(0, Math.min(255, g - (g * (percent / 100))));
+        b = Math.max(0, Math.min(255, b - (b * (percent / 100))));
+
+        return '#' + 
+            ('0' + Math.round(r).toString(16)).slice(-2) + 
+            ('0' + Math.round(g).toString(16)).slice(-2) + 
+            ('0' + Math.round(b).toString(16)).slice(-2);
+    }
+
     function renderClassCardInCell(cellElement, data) {
-        let html = '<div class="class-card" draggable="true">';
+        const firstClaseColor = (data.clases[0] && data.clases[0].docente_color) || data.docente_color || '';
+        
+        let cardStyle = '';
+        if (firstClaseColor && firstClaseColor !== '#FFFFFF') {
+            const darkBorder = darkenColor(firstClaseColor, 12);
+            const leftBorder = darkenColor(firstClaseColor, 35);
+            cardStyle = `style="background-color: ${firstClaseColor} !important; border-color: ${darkBorder} !important; border-left-color: ${leftBorder} !important;"`;
+        }
+        
+        let html = `<div class="class-card" draggable="true" ${cardStyle}>`;
         data.clases.forEach((clase, idx) => {
             if (idx > 0) {
                 html += '<hr style="margin: 4px 0; opacity: 0.15; border-color: rgb(38, 104, 123);">';
@@ -2358,12 +2468,18 @@ document.addEventListener("DOMContentLoaded", function() {
             const teacherName = clase.docente_nombre || data.docente_nombre || '';
             const aula = clase.aula || data.aula || '';
             const aulaBadge = aula ? ` <span style="font-size: 0.65rem; background-color: #f1f5f9; color: #475569; padding: 2px 4px; border-radius: 4px; border: 1px solid #e2e8f0; font-weight: 600; margin-left: 4px; display: inline-flex; align-items: center; gap: 2px;"><i class="fa-solid fa-door-open" style="font-size: 0.58rem;"></i> ${aula}</span>` : '';
+            
+            // If the card has a custom color, force readable dark colors for text
+            const subjectStyle = firstClaseColor && firstClaseColor !== '#FFFFFF' ? 'style="font-size: 0.85rem; font-weight: 700; line-height: 1.2; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px; color: #0f172a !important;"' : 'style="font-size: 0.85rem; font-weight: 700; line-height: 1.2; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;"';
+            const detailStyle = firstClaseColor && firstClaseColor !== '#FFFFFF' ? 'style="font-size: 0.72rem; color: #334155 !important; line-height: 1.2; margin-top: 2px;"' : 'style="font-size: 0.72rem; color: #475569; line-height: 1.2; margin-top: 2px;"';
+            const iconStyle = firstClaseColor && firstClaseColor !== '#FFFFFF' ? 'style="color: #475569 !important;"' : '';
+            
             html += `
-                <div class="class-subject" style="font-size: 0.85rem; font-weight: 700; line-height: 1.2; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+                <div class="class-subject" ${subjectStyle}>
                     <span>${clase.materia_nombre}</span>
                     ${aulaBadge}
                 </div>
-                <div class="class-detail" style="font-size: 0.72rem; color: #475569; line-height: 1.2; margin-top: 2px;"><i class="fa-solid fa-user-tie"></i> ${teacherName}</div>
+                <div class="class-detail" ${detailStyle}><i class="fa-solid fa-user-tie" ${iconStyle}></i> ${teacherName}</div>
             `;
         });
         html += '</div>';
@@ -2510,6 +2626,9 @@ document.addEventListener("DOMContentLoaded", function() {
         // 2. Validar disponibilidad del docente en el nuevo horario
         const materiasList = sourceData.clases.map(c => parseInt(c.id_materia));
         const docenteId = sourceData.id_docente || (sourceData.clases[0] ? sourceData.clases[0].id_docente : null);
+        const excludeIds = (sourceData && sourceData.clases)
+            ? sourceData.clases.map(c => c.id_horario).filter(Boolean)
+            : [];
         
         if (!docenteId) {
             Swal.fire({
@@ -2546,7 +2665,9 @@ document.addEventListener("DOMContentLoaded", function() {
                         diaSemana: dayNumbers[targetDay],
                         horaInicio: horaInicio,
                         horaFin: horaFin,
-                        es_prehorario: currentPrehorarioMode
+                        es_prehorario: currentPrehorarioMode,
+                        aula: sourceData.aula || "",
+                        exclude_ids: excludeIds
                     })
                 });
 
@@ -2555,15 +2676,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     if (valData.success === false) {
                         Swal.close();
                         
-                        const matObj = materias.find(m => (m.id_materia || m.id) == matId);
-                        const docObj = docentes.find(d => (d.idDocente || d.id_docente || d.id) == parseInt(docenteId));
-                        const matName = matObj ? matObj.nombreMateria : "Materia";
-                        const docName = docObj ? getTeacherFullName(docObj) : "Docente";
-
                         const confirmResult = await Swal.fire({
                             icon: 'warning',
                             title: 'Conflicto de Horario',
-                            html: `El docente <strong>${docName}</strong> ya tiene una clase asignada en el grupo <strong>${valData.grupo_clave || '—'}</strong> en el horario <strong>${valData.dia_nombre || '—'} de ${valData.hora_inicio || '—'} a ${valData.hora_fin || '—'}</strong> para la materia <strong>${valData.materia_nombre || '—'}</strong>.<br><br>¿Deseas asignarlo de todas formas?`,
+                            html: `${valData.mensaje}<br><br>¿Deseas asignarlo de todas formas?`,
                             showCancelButton: true,
                             confirmButtonColor: 'rgb(38, 104, 123)',
                             cancelButtonColor: '#cbd5e1',

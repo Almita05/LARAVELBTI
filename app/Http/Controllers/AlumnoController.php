@@ -310,10 +310,12 @@ public function guardarCalificaciones(Request $request, $id)
     ])->post($url, $payload);
 
     if ($response->failed()) {
+        $errorData = $response->json();
+        $errorMsg = is_array($errorData) ? ($errorData['error'] ?? $errorData['message'] ?? $response->body()) : $response->body();
         return response()->json([
             'success' => false,
             'message' => 'Error al guardar calificaciones.',
-            'error' => $response->body()
+            'error' => $errorMsg
         ], $response->status() ?: 500);
     }
 
