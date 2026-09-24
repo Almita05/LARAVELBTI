@@ -843,7 +843,8 @@ function renderDatosControlOficial(data) {
     const grupo = data.grupo || {};
     const materias = data.materias || [];
     const matSel = data.materiaSeleccionada || {};
-    const alumnos = data.alumnos || [];
+    const rawAlumnos = data.alumnos || [];
+    const alumnos = rawAlumnos.filter(a => !a.statusAlumno || a.statusAlumno.toUpperCase() === 'ACTIVO');
 
     const isSoloLectura = data.solo_lectura === true;
     const disAttr = isSoloLectura ? 'disabled' : '';
@@ -1120,6 +1121,8 @@ function renderDatosControlOficial(data) {
 
     // Detectar si el grupo es Semestral (BTI o Informatica)
     const isSemestral = (grupo.id_tipoPeriodo === 1 || grupo.id_centroTrabajo === 2 || grupo.id_centroTrabajo === 1);
+    const isBti = (parseInt(grupo.id_centroTrabajo) === 2 || (grupo.nombreCentroTrabajo || '').toUpperCase().includes('BTI'));
+    const mostrarAsistencias = !isBti;
 
     // Ajustar thead dinámicamente
     const thead = document.getElementById('theadCalificacionesOficial');
@@ -1137,7 +1140,7 @@ function renderDatosControlOficial(data) {
                 <th style="width: 80px;">EXTRAORDINARIO</th>
                 <th style="width: 95px;">PROMEDIO FINAL</th>
                 <th style="width: 140px;">Calificación con Letra</th>
-                <th style="width: 120px;">Asistencias</th>
+                ${mostrarAsistencias ? '<th style="width: 120px;">Asistencias</th>' : ''}
                 <th style="min-width: 120px;">Observaciones</th>
             </tr>
         `;
@@ -1159,7 +1162,7 @@ function renderDatosControlOficial(data) {
     // Poblar Tabla de Alumnos
     const tbody = document.getElementById('tbodyAlumnosCalificacionesMateria');
     if (!alumnos.length) {
-        tbody.innerHTML = `<tr><td colspan="${isSemestral ? '13' : '8'}" class="text-center py-4 text-muted">No hay alumnos inscritos en este grupo.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${isSemestral ? (mostrarAsistencias ? 13 : 12) : 8}" class="text-center py-4 text-muted">No hay alumnos inscritos en este grupo.</td></tr>`;
         document.getElementById('statTotalAlumnos').textContent = '0';
         document.getElementById('statAprobados').textContent = '0';
         document.getElementById('statReprobados').textContent = '0';
@@ -1210,9 +1213,9 @@ function renderDatosControlOficial(data) {
                 const intFinalSem = (calif !== '' && !isNaN(calif)) ? parseInt(calif) : '';
 
                 p1Input = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p1" value="${intP1}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP1}>`;
-                p2Input = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p2" value="${intP2}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP2}>`;
-                p3Input = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p3" value="${intP3}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP3}>`;
-                semInput = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-semestral" value="${intSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disSem}>`;
+                p2Input = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p2" value="${intP2}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP1}>`;
+                p3Input = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p3" value="${intP3}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP1}>`;
+                semInput = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-semestral" value="${intSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disAttr}>`;
                 extInput = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-extraordinario" value="${intExtSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disExt}>`;
                 finalInput = `
                     <div class="d-flex align-items-center justify-content-center gap-1">
@@ -1263,7 +1266,7 @@ function renderDatosControlOficial(data) {
                 <td style="background-color: #fffbeb; text-align: center;">${extInput}</td>
                 <td style="background-color: #f1f5f9; text-align: center;">${finalInput}</td>
                 <td class="text-center fw-bold td-calif-letra" style="font-size: 0.78rem;">${califLetra}</td>
-                <td style="background-color: #f8fafc; text-align: center;">${asistInput}</td>
+                ${mostrarAsistencias ? `<td class="td-asistencias" style="background-color: #f8fafc; text-align: center;">${asistInput}</td>` : ''}
                 <td><input type="text" class="input-observaciones-celda inp-obs" value="${obs}" placeholder="Opcional..." ${isEquiv ? 'disabled' : ''} ${disAttr}></td>
             </tr>
             `;
@@ -1331,6 +1334,7 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
     const disAttr = isSoloLectura ? 'disabled' : '';
 
     const tdLetra = tr.querySelector('.td-calif-letra');
+    const tdAsist = tr.querySelector('.td-asistencias');
     const inpObs = tr.querySelector('.inp-obs');
 
     if (aEquiv) {
@@ -1351,8 +1355,8 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
                     <input type="hidden" class="inp-calif-final" value="EQUIV">
                 </div>
             `;
-            if (tr.children[11]) {
-                tr.children[11].innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
+            if (tdAsist) {
+                tdAsist.innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
             }
         } else {
             // BGNE (children[4] es Final, children[5] es Extraordinario)
@@ -1389,8 +1393,8 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
                     </button>
                 </div>
             `;
-            if (tr.children[11]) {
-                tr.children[11].innerHTML = `
+            if (tdAsist) {
+                tdAsist.innerHTML = `
                     <div class="d-flex align-items-center justify-content-center gap-1">
                         <input type="number" min="0" class="input-calif-celda inp-asistencias" value="" style="width: 45px;" placeholder="0" oninput="recalcularEstadisticasMateria()" ${disAttr}>
                         <span class="text-muted">/</span>
@@ -1700,6 +1704,10 @@ function recalcularEstadisticasMateria() {
         const getAvg = (arr) => arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '0.0';
         
         if (isSemestral) {
+            const grupo = (datosGrupoMateriaActual && datosGrupoMateriaActual.grupo) || {};
+            const isBti = (parseInt(grupo.id_centroTrabajo) === 2 || (grupo.nombreCentroTrabajo || '').toUpperCase().includes('BTI'));
+            const mostrarAsistencias = !isBti;
+
             tfoot.innerHTML = `
                 <tr>
                     <td colspan="4" class="text-end pe-3 fw-bold" style="border: 1.2px solid #0f172a; padding: 6px 8px;">PROMEDIO:</td>
@@ -1709,7 +1717,7 @@ function recalcularEstadisticasMateria() {
                     <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; color: ${parseFloat(getAvg(semVals)) < 6.0 ? '#dc2626' : '#0f172a'};">${getAvg(semVals)}</td>
                     <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; color: ${parseFloat(getAvg(extVals)) < 6.0 ? '#dc2626' : '#0f172a'};">${getAvg(extVals)}</td>
                     <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; background-color: #e2e8f0; color: ${parseFloat(prom) < 6.0 ? '#dc2626' : '#0f172a'};">${prom}</td>
-                    <td colspan="3" style="border: 1.2px solid #0f172a;"></td>
+                    <td colspan="${mostrarAsistencias ? 3 : 2}" style="border: 1.2px solid #0f172a;"></td>
                 </tr>
             `;
         } else {

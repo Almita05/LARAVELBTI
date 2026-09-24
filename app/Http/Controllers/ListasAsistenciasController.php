@@ -101,6 +101,10 @@ class ListasAsistenciasController extends Controller
             if ($response->successful()) {
                 $raw = $response->json();
                 $alumnosApi = $raw['data'] ?? $raw ?? [];
+                $alumnosApi = array_values(array_filter($alumnosApi, function($item) {
+                    $st = strtoupper($item['statusAlumno'] ?? $item['status'] ?? 'ACTIVO');
+                    return $st === 'ACTIVO';
+                }));
                 return response()->json([
                     'success' => true,
                     'total' => count($alumnosApi),
@@ -116,7 +120,7 @@ class ListasAsistenciasController extends Controller
                 ->where(function($q) use ($id) {
                     $q->where('a.idGrupo', $id)->orWhere('ag.idGrupo', $id);
                 })
-                ->where('a.statusAlumno', '!=', 'BAJA_DEFINITIVA')
+                ->where('a.statusAlumno', 'ACTIVO')
                 ->select('a.idAlumno', 'a.numeroControl', 'a.nombre', 'a.apPaterno', 'a.apMaterno', 'a.statusAlumno')
                 ->distinct()
                 ->orderBy('a.apPaterno')
@@ -290,6 +294,11 @@ class ListasAsistenciasController extends Controller
             if ($resAlumnos->successful()) {
                 $json = $resAlumnos->json();
                 $rawAlumnos = $json['data'] ?? $json ?? [];
+                $rawAlumnos = array_values(array_filter($rawAlumnos, function($item) {
+                    $itemArr = (array)$item;
+                    $st = strtoupper($itemArr['statusAlumno'] ?? $itemArr['status'] ?? 'ACTIVO');
+                    return $st === 'ACTIVO';
+                }));
             }
         } catch (\Throwable $e) {}
 
@@ -300,7 +309,7 @@ class ListasAsistenciasController extends Controller
                     ->where(function($q) use ($idGrupo) {
                         $q->where('a.idGrupo', $idGrupo)->orWhere('ag.idGrupo', $idGrupo);
                     })
-                    ->where('a.statusAlumno', '!=', 'BAJA_DEFINITIVA')
+                    ->where('a.statusAlumno', 'ACTIVO')
                     ->select('a.idAlumno', 'a.numeroControl', 'a.nombre', 'a.apPaterno', 'a.apMaterno')
                     ->distinct()
                     ->orderBy('a.apPaterno')

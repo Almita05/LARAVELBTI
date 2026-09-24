@@ -68,7 +68,11 @@ class AsistenciaAlumnoController extends Controller
         }
 
         $grupo = $attendanceData['grupo'];
-        $alumnos = $attendanceData['alumnos'];
+        $rawAlumnos = $attendanceData['alumnos'] ?? [];
+        $alumnos = array_values(array_filter($rawAlumnos, function($a) {
+            $st = strtoupper($a['statusAlumno'] ?? $a['estado'] ?? 'ACTIVO');
+            return $st === 'ACTIVO';
+        }));
         $fechas = $attendanceData['fechas'];
         $asistencias = $attendanceData['asistencias'];
         $materias = $attendanceData['materias'] ?? [];
