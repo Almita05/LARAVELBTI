@@ -740,6 +740,7 @@ function abrirCapturaGrupoMateria(idGrupo, idMateria = null) {
 
     const modalEl = document.getElementById('modalCapturaMateriaGrupo');
     const loading = document.getElementById('loadingMateriaGrupo');
+    const content = document.getElementById('contentCapturaMateriaGrupo');
     // Obtener o inicializar la instancia única del Modal
     let modalInstance = bootstrap.Modal.getInstance(modalEl);
     if (!modalInstance) {
@@ -756,8 +757,8 @@ function abrirCapturaGrupoMateria(idGrupo, idMateria = null) {
         document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
         document.body.classList.remove('modal-open');
 
-        loading.style.display = 'block';
-        content.style.display = 'none';
+        if (loading) loading.style.display = 'block';
+        if (content) content.style.display = 'none';
         modalInstance.show();
     } else {
         // Si el modal ya está visible, no colapsamos el diálogo
@@ -811,8 +812,8 @@ function abrirCapturaGrupoMateria(idGrupo, idMateria = null) {
             });
         })
         .finally(() => {
-            loading.style.display = 'none';
-            content.style.display = 'block';
+            if (loading) loading.style.display = 'none';
+            if (content) content.style.display = 'block';
         });
 }
 
