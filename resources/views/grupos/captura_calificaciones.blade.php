@@ -824,8 +824,6 @@ function cambiarMateriaSeleccionada(idMateria) {
 
 function cambiarPeriodoSeleccionado(idPeriodo) {
     if (!grupoCapturaActualId || !datosGrupoMateriaActual) return;
-    const grupo = datosGrupoMateriaActual.grupo || {};
-    if (parseInt(grupo.id_centroTrabajo) === 2) return; // BTI escolarizado no cambia de semestre
     const materias = datosGrupoMateriaActual.materias || [];
     const filtered = materias.filter(m => String(m.id_nivel_academico) === String(idPeriodo));
     if (filtered.length > 0) {
@@ -1013,37 +1011,28 @@ function renderDatosControlOficial(data) {
     const uniqueLevels = [];
     const levelIds = new Set();
 
-    if (isBti && grupo.id_nivel_academico) {
-        // En BTI (escolarizado semestral), el grupo pertenece exclusivamente a su semestre
-        uniqueLevels.push({
-            id: grupo.id_nivel_academico,
-            nombre: grupo.nombreNivel || `Semestre ${grupo.id_nivel_academico}`,
-            numero: 1
-        });
-    } else {
-        materias.forEach(m => {
-            const lvlId = m.id_nivel_academico || grupo.id_nivel_academico;
-            if (lvlId && !levelIds.has(lvlId)) {
-                levelIds.add(lvlId);
-                
-                let lvlNombre = m.nombreNivel;
-                let lvlNumero = m.numeroNivel;
-                if (!m.id_nivel_academico) {
-                    lvlNombre = grupo.nombreNivel || `Nivel ${lvlId}`;
-                    lvlNumero = grupo.id_nivel_academico ? (grupo.id_nivel_academico <= 6 ? grupo.id_nivel_academico : grupo.id_nivel_academico - 6) : 1;
-                }
-                
-                uniqueLevels.push({
-                    id: lvlId,
-                    nombre: lvlNombre || `Nivel ${lvlId}`,
-                    numero: lvlNumero || 1
-                });
+    materias.forEach(m => {
+        const lvlId = m.id_nivel_academico || grupo.id_nivel_academico;
+        if (lvlId && !levelIds.has(lvlId)) {
+            levelIds.add(lvlId);
+            
+            let lvlNombre = m.nombreNivel;
+            let lvlNumero = m.numeroNivel;
+            if (!m.id_nivel_academico) {
+                lvlNombre = grupo.nombreNivel || `Nivel ${lvlId}`;
+                lvlNumero = grupo.id_nivel_academico ? (grupo.id_nivel_academico <= 6 ? grupo.id_nivel_academico : grupo.id_nivel_academico - 6) : 1;
             }
-        });
+            
+            uniqueLevels.push({
+                id: lvlId,
+                nombre: lvlNombre || `Nivel ${lvlId}`,
+                numero: lvlNumero || 1
+            });
+        }
+    });
 
-        // Ordenar periodos por su número secuencial
-        uniqueLevels.sort((a, b) => a.numero - b.numero);
-    }
+    // Ordenar periodos por su número secuencial
+    uniqueLevels.sort((a, b) => a.numero - b.numero);
 
     // Poblar Selector de Periodos
     const selectPeriodo = document.getElementById('selectPeriodoCaptura');
@@ -1063,22 +1052,20 @@ function renderDatosControlOficial(data) {
         });
     }
 
-    if (isBti) {
-        selectPeriodo.value = grupo.id_nivel_academico;
+    if ('{{ session("rol") }}' === 'DOCENTE') {
         selectPeriodo.disabled = true;
     } else {
-        if ('{{ session("rol") }}' !== 'DOCENTE') {
-            selectPeriodo.disabled = false;
-        }
-        // Seleccionar el periodo correspondiente a la materia seleccionada
-        const currentPeriodId = matSel.id_nivel_academico || grupo.id_nivel_academico;
-        if (currentPeriodId) {
-            selectPeriodo.value = currentPeriodId;
-        }
+        selectPeriodo.disabled = false;
     }
 
-    // 2. Filtrar materias pertenecientes al periodo seleccionado (y si es BTI, estrictamente al id_nivel_academico del grupo)
-    const activePeriodId = isBti ? grupo.id_nivel_academico : selectPeriodo.value;
+    // Seleccionar el periodo correspondiente a la materia seleccionada o nivel del grupo
+    const currentPeriodId = matSel.id_nivel_academico || grupo.id_nivel_academico;
+    if (currentPeriodId) {
+        selectPeriodo.value = currentPeriodId;
+    }
+
+    // 2. Filtrar materias pertenecientes al periodo seleccionado
+    const activePeriodId = selectPeriodo.value;
     const filteredMaterias = materias.filter(m => {
         const lvlId = m.id_nivel_academico || grupo.id_nivel_academico;
         return String(lvlId) === String(activePeriodId);
