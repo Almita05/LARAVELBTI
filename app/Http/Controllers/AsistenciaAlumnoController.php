@@ -40,13 +40,15 @@ class AsistenciaAlumnoController extends Controller
     public function grupoGrid(Request $request, $id_grupo)
     {
         $baseApiUrl = config('services.api.base_url');
+        $esDocente = session('rol') === 'DOCENTE';
+        $esGeneral = !$esDocente && (!$request->has('id_materia') || $request->get('id_materia') === 'general');
 
         $params = [];
-        if ($request->has('id_materia')) {
+        if (!$esGeneral && $request->has('id_materia')) {
             $params['id_materia'] = $request->get('id_materia');
         }
 
-        if (session('rol') === 'DOCENTE') {
+        if ($esDocente) {
             $params['id_docente'] = session('id_docente');
         } elseif ($request->has('id_docente')) {
             $params['id_docente'] = $request->get('id_docente');
@@ -85,8 +87,35 @@ class AsistenciaAlumnoController extends Controller
             $fechas = array_values(array_filter($fechas, function($f) use ($activeLevel) {
                 return intval($f['id_nivel_academico']) === intval($activeLevel);
             }));
+        }
 
-            // Si la materia seleccionada por defecto no pertenece al nivel activo y hay materias en dicho nivel, redireccionar
+        // Si es Pase de Lista General (Administradores)
+        if ($esGeneral) {
+            $selected_materia_id = 'general';
+
+            // Consolidar asistencias del grupo para la vista general
+            $asistenciasRaw = \Illuminate\Support\Facades\DB::table('tb_asistencias_alumnos')
+                ->where('id_grupo', $id_grupo)
+                ->select('id_alumno', 'fecha', 'id_nivel_academico', 'estatus', 'observaciones')
+                ->orderBy('updated_at', 'desc')
+                ->get();
+
+            $mapAsistencias = [];
+            foreach ($asistenciasRaw as $ar) {
+                $key = $ar->fecha . '_' . $ar->id_alumno;
+                if (!isset($mapAsistencias[$key])) {
+                    $mapAsistencias[$key] = [
+                        'id_alumno' => $ar->id_alumno,
+                        'fecha' => $ar->fecha,
+                        'id_nivel_academico' => $ar->id_nivel_academico,
+                        'estatus' => $ar->estatus,
+                        'observaciones' => $ar->observaciones
+                    ];
+                }
+            }
+            $asistencias = array_values($mapAsistencias);
+        } else {
+            // Validación para docentes o materias individuales seleccionadas
             if (!empty($materias)) {
                 $materiaIds = array_map(function($m) { return intval($m['idMateria']); }, $materias);
                 if ($selected_materia_id !== null && !in_array(intval($selected_materia_id), $materiaIds)) {
@@ -123,7 +152,70 @@ class AsistenciaAlumnoController extends Controller
             }
         }
 
-        // Proxy de guardado masivo a Flask
+        // Si es Pase de Lista General (guardar para todas las materias del grupo)
+        if (($data['id_materia'] ?? null) === 'general') {
+            $id_grupo = $data['id_grupo'];
+            $asistenciasList = $data['asistencias'] ?? [];
+
+            // Obtener todas las materias y docentes del grupo desde tb_horarios
+            $horarios = \Illuminate\Support\Facades\DB::table('tb_horarios')
+                ->where('id_grupo', $id_grupo)
+                ->select('id_materia', 'id_docente', 'id_nivel_academico')
+                ->get();
+
+            // Si el grupo no tiene horarios configurados, buscar materias asignables al CCT del grupo
+            if ($horarios->isEmpty()) {
+                $grupoInfo = \Illuminate\Support\Facades\DB::table('tb_grupos')->where('id', $id_grupo)->first();
+                $cct = $grupoInfo->id_centroTrabajo ?? 3;
+                $materiasDb = \Illuminate\Support\Facades\DB::table('tb_materias')
+                    ->where(function($q) use ($cct) {
+                        $q->where('idCentroTrabajo', $cct)->orWhereNull('idCentroTrabajo');
+                    })
+                    ->get();
+                $horarios = $materiasDb->map(function($m) {
+                    return (object)[
+                        'id_materia' => $m->id,
+                        'id_docente' => 1,
+                        'id_nivel_academico' => $m->id_nivel_academico
+                    ];
+                });
+            }
+
+            foreach ($asistenciasList as $a) {
+                $idAlumno = $a['id_alumno'];
+                $fecha = $a['fecha'];
+                $estatus = $a['estatus'] ?? null;
+                $obs = $a['observaciones'] ?? null;
+                $idNivel = $a['id_nivel_academico'] ?? null;
+
+                if ($estatus === null) {
+                    \Illuminate\Support\Facades\DB::table('tb_asistencias_alumnos')
+                        ->where('id_grupo', $id_grupo)
+                        ->where('id_alumno', $idAlumno)
+                        ->where('fecha', $fecha)
+                        ->delete();
+                } else {
+                    foreach ($horarios as $h) {
+                        \Illuminate\Support\Facades\DB::table('tb_asistencias_alumnos')->upsert([
+                            'id_alumno' => $idAlumno,
+                            'id_materia' => $h->id_materia,
+                            'id_docente' => $h->id_docente ?: 1,
+                            'id_grupo' => $id_grupo,
+                            'fecha' => $fecha,
+                            'id_nivel_academico' => $idNivel ?: $h->id_nivel_academico,
+                            'estatus' => $estatus,
+                            'observaciones' => $obs,
+                        ], ['id_alumno', 'id_grupo', 'id_materia', 'fecha'], ['estatus', 'id_nivel_academico', 'observaciones', 'id_docente']);
+                    }
+                }
+            }
+
+            return response()->json([
+                'mensaje' => 'Asistencias generales guardadas correctamente en todas las materias del grupo.'
+            ]);
+        }
+
+        // Proxy de guardado masivo a Flask para materia individual
         $response = Http::post($baseApiUrl . '/asistencias/alumnos/guardar', $data);
 
         return response()->json($response->json(), $response->status());

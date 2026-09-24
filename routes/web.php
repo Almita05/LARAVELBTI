@@ -159,6 +159,11 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::put('/alumnos/{id}', [AlumnoController::class, 'update'])->where('id', '[0-9]+');
     Route::get('/alumnos/{id}/kardex', [AlumnoController::class, 'getKardex'])->where('id', '[0-9]+');
     Route::post('/alumnos/{id}/calificaciones', [AlumnoController::class, 'guardarCalificaciones'])->where('id', '[0-9]+');
+    Route::post('/alumnos/{id}/modalidad-online', [AlumnoController::class, 'cambiarModalidadOnline'])->where('id', '[0-9]+');
+    Route::post('/alumnos/{id}/modalidad-presencial', [AlumnoController::class, 'cambiarModalidadPresencial'])->where('id', '[0-9]+');
+    Route::post('/alumnos/{id}/pagos', [AlumnoController::class, 'registrarPago'])->where('id', '[0-9]+');
+    Route::get('/alumnos/{id}/pagos', [AlumnoController::class, 'getPagos'])->where('id', '[0-9]+');
+
     Route::get('/grupos/{id_grupo}/alumnos', [AlumnoController::class, 'alumnosGrupo'])->where('id_grupo', '[0-9]+');
     Route::get('/alumnos/grupo/{id_grupo}', [AlumnoController::class, 'alumnosPorGrupo'])->where('id_grupo', '[0-9]+');
 

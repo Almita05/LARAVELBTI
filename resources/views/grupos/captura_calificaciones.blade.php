@@ -69,6 +69,7 @@
 }
 
 .table-calif-oficial {
+    min-width: 1150px;
     width: 100%;
     border-collapse: collapse;
     font-size: 0.86rem;
@@ -310,7 +311,7 @@
                             {{-- MÓDULO / PERIODO --}}
                             <div class="col-12 col-md-6 col-lg-3">
                                 <div class="d-flex align-items-center gap-2">
-                                    <strong class="text-nowrap">MÓDULO:</strong>
+                                    <strong class="text-nowrap" id="labelPeriodoCaptura">MÓDULO:</strong>
                                     <select id="selectPeriodoCaptura" class="form-select form-select-sm fw-bold border-dark shadow-sm" onchange="cambiarPeriodoSeleccionado(this.value)" {{ session('rol') === 'DOCENTE' ? 'disabled' : '' }}>
                                         {{-- Poblado por JS --}}
                                     </select>
@@ -739,13 +740,40 @@ function abrirCapturaGrupoMateria(idGrupo, idMateria = null) {
 
     const modalEl = document.getElementById('modalCapturaMateriaGrupo');
     const loading = document.getElementById('loadingMateriaGrupo');
-    const content = document.getElementById('contentCapturaMateriaGrupo');
+    // Obtener o inicializar la instancia única del Modal
+    let modalInstance = bootstrap.Modal.getInstance(modalEl);
+    if (!modalInstance) {
+        modalInstance = new bootstrap.Modal(modalEl, {
+            backdrop: 'static',
+            keyboard: true
+        });
+    }
 
-    loading.style.display = 'block';
-    content.style.display = 'none';
+    const yaAbierto = modalEl.classList.contains('show');
 
-    const modal = new bootstrap.Modal(modalEl);
-    modal.show();
+    if (!yaAbierto) {
+        // Limpiar backdrops residuales antes de abrir
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.classList.remove('modal-open');
+
+        loading.style.display = 'block';
+        content.style.display = 'none';
+        modalInstance.show();
+    } else {
+        // Si el modal ya está visible, no colapsamos el diálogo
+        // Mostramos el spinner en el tbody de la tabla para una transición limpia
+        const tbody = document.getElementById('tbodyAlumnosCalificacionesMateria');
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="13" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <div class="text-muted mt-2 fw-semibold">Cargando datos de la asignatura...</div>
+                    </td>
+                </tr>
+            `;
+        }
+    }
 
     const urlParams = new URLSearchParams(window.location.search);
     const idDocente = urlParams.get('id_docente');
@@ -795,6 +823,8 @@ function cambiarMateriaSeleccionada(idMateria) {
 
 function cambiarPeriodoSeleccionado(idPeriodo) {
     if (!grupoCapturaActualId || !datosGrupoMateriaActual) return;
+    const grupo = datosGrupoMateriaActual.grupo || {};
+    if (parseInt(grupo.id_centroTrabajo) === 2) return; // BTI escolarizado no cambia de semestre
     const materias = datosGrupoMateriaActual.materias || [];
     const filtered = materias.filter(m => String(m.id_nivel_academico) === String(idPeriodo));
     if (filtered.length > 0) {
@@ -973,30 +1003,46 @@ function renderDatosControlOficial(data) {
     document.getElementById('badgeClaveGrupoOficial').textContent = grupo.clave || 'GRUPO';
 
     // 1. Obtener periodos únicos de las materias
+    const isBti = parseInt(grupo.id_centroTrabajo) === 2;
+    const labelPeriodo = document.getElementById('labelPeriodoCaptura');
+    if (labelPeriodo) {
+        labelPeriodo.textContent = isBti ? 'SEMESTRE:' : 'MÓDULO:';
+    }
+
     const uniqueLevels = [];
     const levelIds = new Set();
-    materias.forEach(m => {
-        const lvlId = m.id_nivel_academico || grupo.id_nivel_academico;
-        if (lvlId && !levelIds.has(lvlId)) {
-            levelIds.add(lvlId);
-            
-            let lvlNombre = m.nombreNivel;
-            let lvlNumero = m.numeroNivel;
-            if (!m.id_nivel_academico) {
-                lvlNombre = grupo.nombreNivel || `Nivel ${lvlId}`;
-                lvlNumero = grupo.id_nivel_academico ? (grupo.id_nivel_academico <= 6 ? grupo.id_nivel_academico : grupo.id_nivel_academico - 6) : 1;
-            }
-            
-            uniqueLevels.push({
-                id: lvlId,
-                nombre: lvlNombre || `Nivel ${lvlId}`,
-                numero: lvlNumero || 1
-            });
-        }
-    });
 
-    // Ordenar periodos por su número secuencial
-    uniqueLevels.sort((a, b) => a.numero - b.numero);
+    if (isBti && grupo.id_nivel_academico) {
+        // En BTI (escolarizado semestral), el grupo pertenece exclusivamente a su semestre
+        uniqueLevels.push({
+            id: grupo.id_nivel_academico,
+            nombre: grupo.nombreNivel || `Semestre ${grupo.id_nivel_academico}`,
+            numero: 1
+        });
+    } else {
+        materias.forEach(m => {
+            const lvlId = m.id_nivel_academico || grupo.id_nivel_academico;
+            if (lvlId && !levelIds.has(lvlId)) {
+                levelIds.add(lvlId);
+                
+                let lvlNombre = m.nombreNivel;
+                let lvlNumero = m.numeroNivel;
+                if (!m.id_nivel_academico) {
+                    lvlNombre = grupo.nombreNivel || `Nivel ${lvlId}`;
+                    lvlNumero = grupo.id_nivel_academico ? (grupo.id_nivel_academico <= 6 ? grupo.id_nivel_academico : grupo.id_nivel_academico - 6) : 1;
+                }
+                
+                uniqueLevels.push({
+                    id: lvlId,
+                    nombre: lvlNombre || `Nivel ${lvlId}`,
+                    numero: lvlNumero || 1
+                });
+            }
+        });
+
+        // Ordenar periodos por su número secuencial
+        uniqueLevels.sort((a, b) => a.numero - b.numero);
+    }
 
     // Poblar Selector de Periodos
     const selectPeriodo = document.getElementById('selectPeriodoCaptura');
@@ -1016,14 +1062,22 @@ function renderDatosControlOficial(data) {
         });
     }
 
-    // Seleccionar el periodo correspondiente a la materia seleccionada
-    const currentPeriodId = matSel.id_nivel_academico || grupo.id_nivel_academico;
-    if (currentPeriodId) {
-        selectPeriodo.value = currentPeriodId;
+    if (isBti) {
+        selectPeriodo.value = grupo.id_nivel_academico;
+        selectPeriodo.disabled = true;
+    } else {
+        if ('{{ session("rol") }}' !== 'DOCENTE') {
+            selectPeriodo.disabled = false;
+        }
+        // Seleccionar el periodo correspondiente a la materia seleccionada
+        const currentPeriodId = matSel.id_nivel_academico || grupo.id_nivel_academico;
+        if (currentPeriodId) {
+            selectPeriodo.value = currentPeriodId;
+        }
     }
 
-    // 2. Filtrar materias pertenecientes al periodo seleccionado
-    const activePeriodId = selectPeriodo.value;
+    // 2. Filtrar materias pertenecientes al periodo seleccionado (y si es BTI, estrictamente al id_nivel_academico del grupo)
+    const activePeriodId = isBti ? grupo.id_nivel_academico : selectPeriodo.value;
     const filteredMaterias = materias.filter(m => {
         const lvlId = m.id_nivel_academico || grupo.id_nivel_academico;
         return String(lvlId) === String(activePeriodId);
@@ -1031,8 +1085,9 @@ function renderDatosControlOficial(data) {
 
     // Si la materia seleccionada no está dentro de este periodo filtrado, auto-seleccionar la primera y recargar
     if (filteredMaterias.length > 0) {
-        const isCurrentMatInPeriod = filteredMaterias.some(m => String(m.idMateria) === String(data.idMateriaSeleccionada));
-        if (!isCurrentMatInPeriod) {
+        const idMatActual = data.idMateriaSeleccionada || (matSel ? matSel.idMateria : null);
+        const isCurrentMatInPeriod = filteredMaterias.some(m => String(m.idMateria) === String(idMatActual));
+        if (!isCurrentMatInPeriod && filteredMaterias[0]) {
             setTimeout(() => {
                 abrirCapturaGrupoMateria(grupoCapturaActualId, filteredMaterias[0].idMateria);
             }, 0);
@@ -1881,6 +1936,15 @@ document.addEventListener("DOMContentLoaded", function() {
     const modalContainer = document.getElementById('contenedorModal') || document.body;
     if (modal && modal.parentElement !== modalContainer) {
         modalContainer.appendChild(modal);
+    }
+
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function () {
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        });
     }
 
     cargarGruposCaptura();

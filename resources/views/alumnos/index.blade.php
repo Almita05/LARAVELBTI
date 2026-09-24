@@ -87,6 +87,15 @@
                             <option value="BAJA">BAJA</option>
                         </select>
                     </div>
+                    <!-- Modalidad -->
+                    <div class="col-md-2">
+                        <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">Modalidad</label>
+                        <select id="filtroModalidad" class="form-select glass-input w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
+                            <option value="">-- Todas --</option>
+                            <option value="ONLINE">🌐 En Línea (Online)</option>
+                            <option value="PRESENCIAL">🏫 Presencial</option>
+                        </select>
+                    </div>
                     <!-- Ordenación -->
                     <div class="col-md-1">
                         <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">Orden ID</label>
@@ -1905,6 +1914,47 @@ window.editarAlumno = function(id) {
                             window.initModalAlumnoDinamico(al);
                         }
                         
+                        // Datos del alumno para uso en Online / Moodle
+                        window.alumnoEditandoActual = al;
+
+                        // Configurar campos de Modalidad de Estudio y Moodle
+                        const isOnline = (al.modalidad_estudio === 'ONLINE');
+                        const selectModalidad = form.querySelector('#selectModalidadEstudioForm');
+                        const selectDiaPago = form.querySelector('#selectDiaPagoForm');
+                        const badgeModalidad = form.querySelector('#badgeModalidadEstado');
+                        const panelDetalles = form.querySelector('#panelDetallesOnlineForm');
+                        const boxDiaPago = form.querySelector('#boxDiaPagoForm');
+                        const boxAccionRapida = form.querySelector('#boxAccionOnlineRapida');
+                        const txtMoodleUser = form.querySelector('#txtMoodleUsernameDisplay');
+                        const txtSemanaPagada = form.querySelector('#txtSemanaPagadaDisplay');
+                        const txtProximoPago = form.querySelector('#txtProximoPagoDisplay');
+                        const btnHeaderOnline = document.getElementById('btnModalOnlineHeader');
+                        const txtBtnHeader = document.getElementById('txtBtnModalOnlineHeader');
+
+                        if (selectModalidad) selectModalidad.value = al.modalidad_estudio || 'PRESENCIAL';
+                        if (selectDiaPago) selectDiaPago.value = al.dia_pago || 'SABADO';
+                        if (txtMoodleUser) txtMoodleUser.textContent = al.moodle_username || 'Sin crear';
+                        if (txtSemanaPagada) txtSemanaPagada.textContent = `Semana ${al.semana_actual_pagada || 0}`;
+                        if (txtProximoPago) txtProximoPago.textContent = al.fecha_proximo_pago || 'Calculando...';
+
+                        if (badgeModalidad) {
+                            badgeModalidad.textContent = isOnline ? 'ONLINE (MOODLE)' : 'PRESENCIAL';
+                            badgeModalidad.style.backgroundColor = isOnline ? '#7b2cbf' : '#64748b';
+                        }
+                        if (boxDiaPago) boxDiaPago.style.display = isOnline ? 'block' : 'none';
+                        if (boxAccionRapida) boxAccionRapida.style.display = isOnline ? 'block' : 'none';
+                        if (panelDetalles) panelDetalles.style.display = (isOnline && al.moodle_username) ? 'block' : 'none';
+
+                        // Botón en Header del Modal Alta/Editar
+                        if (btnHeaderOnline) {
+                            btnHeaderOnline.style.display = 'inline-flex';
+                            if (txtBtnHeader) {
+                                txtBtnHeader.innerHTML = isOnline
+                                    ? `<i class="fa-solid fa-laptop-code me-1"></i> Online (Sem. ${al.semana_actual_pagada || 0})`
+                                    : `<i class="fa-solid fa-laptop me-1"></i> Pasar a Online`;
+                            }
+                        }
+
                         const modalTitle = document.querySelector('#modalAlumno .modal-title');
                         if (modalTitle) {
                             modalTitle.innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Alumno';
@@ -2108,6 +2158,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
             if (cct) fetchUrl += `&id_centro_trabajo=${cct}`;
             if (status) fetchUrl += `&status_alumno=${status}`;
+            const modalidad = document.getElementById('filtroModalidad') ? document.getElementById('filtroModalidad').value : '';
+            if (modalidad) fetchUrl += `&modalidad_estudio=${modalidad}`;
             if (order) fetchUrl += `&order=${order}`;
         }
 
@@ -2137,6 +2189,9 @@ document.addEventListener("DOMContentLoaded", function() {
             });
     }
 
+    // Exponer globalmente para modales y llamadas externas
+    window.cargarAlumnos = cargarAlumnos;
+
     let timeout = null;
     if (document.getElementById('buscadorAlumnos')) {
         document.getElementById('buscadorAlumnos').addEventListener('input', (e) => {
@@ -2164,6 +2219,9 @@ document.addEventListener("DOMContentLoaded", function() {
         if (document.getElementById('filtroStatus')) {
             document.getElementById('filtroStatus').addEventListener('change', resetAndCargarAlumnos);
         }
+        if (document.getElementById('filtroModalidad')) {
+            document.getElementById('filtroModalidad').addEventListener('change', resetAndCargarAlumnos);
+        }
         if (document.getElementById('filtroOrden')) {
             document.getElementById('filtroOrden').addEventListener('change', resetAndCargarAlumnos);
         }
@@ -2175,6 +2233,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function renderTabla(alumnos) {
+        window.alumnosListaActual = alumnos || [];
         if (!alumnos.length) {
             document.getElementById('tablaAlumnos').innerHTML = `
             <tr>
@@ -2190,6 +2249,11 @@ document.addEventListener("DOMContentLoaded", function() {
         alumnos.forEach(alumno => {
             const fullName = `${alumno.nombre} ${alumno.apPaterno} ${alumno.apMaterno || ''}`;
             
+                        const isOnline = alumno.modalidad_estudio === 'ONLINE';
+            const modalidadBadge = isOnline 
+                ? `<div class="mt-1"><span class="badge" style="background: linear-gradient(135deg, #7b2cbf, #5c248f); color: #fff; font-size: 0.68rem; padding: 3px 7px; border-radius: 6px; font-weight: 700;" title="Cobro cada ${alumno.dia_pago || 'SABADO'}"><i class="fa-solid fa-wifi me-1"></i>ONLINE • ${alumno.dia_pago || 'SÁBADO'}</span><br><span style="font-size: 0.72rem; color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle-check me-1"></i>Sem. ${alumno.semana_actual_pagada || 0}/4</span></div>`
+                : `<div class="mt-1"><span class="badge bg-light text-secondary border" style="font-size: 0.68rem; padding: 2px 6px; border-radius: 6px;">Presencial</span></div>`;
+
             const groupBadge = alumno.nombreGrupoTexto 
                 ? `<span class="badge" style="font-size: 0.75rem; padding: 5px 10px; border-radius: 12px; background-color: #0ea5e9; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.15); font-weight: 700; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">${alumno.nombreGrupoTexto}</span>` 
                 : '<span class="text-muted" style="font-size: 0.85rem;">—</span>';
@@ -2198,7 +2262,7 @@ document.addEventListener("DOMContentLoaded", function() {
         <tr>
             <td>${alumno.idAlumno}</td>
             <td>${fullName}</td>
-            <td>${groupBadge}</td>
+            <td>${groupBadge}${modalidadBadge}</td>
             <td>Generación ${alumno.nombreGeneracionTexto || 'N/A'}</td>
             <td>${getStatusBadge(alumno.statusAlumno)}</td>
             <td class="text-center">
@@ -2215,6 +2279,9 @@ document.addEventListener("DOMContentLoaded", function() {
                     <i class="fa-solid fa-pen"></i>
                 </button>
                 ` : ''}
+                
+
+
                 ${canDeleteAlumno ? `
                 <button class="btn btn-danger btn-sm btn-action btnEliminar" data-id="${alumno.idAlumno}" title="Eliminar">
                     <i class="fa-solid fa-trash"></i>
@@ -3949,4 +4016,651 @@ window.imprimirFichaInscripcion = function() {
         win.close();
     }, 400);
 };
+</script>
+
+<!-- ======================================================== -->
+<!-- MODAL: CONFIGURAR MODALIDAD ONLINE (REGLA DE GRUPO + MOODLE) -->
+<!-- ======================================================== -->
+<div class="modal fade" id="modalConfigurarOnline" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #7b2cbf 0%, #4c1d95 100%); padding: 18px 24px;">
+                <h5 class="modal-title fw-bold fs-6">
+                    <i class="fa-solid fa-laptop-code me-2"></i> Configurar Modalidad de Estudio
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3 p-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                    <div class="text-muted" style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700;">Alumno:</div>
+                    <div class="fw-bold fs-6 text-dark" id="modalOnlineAlumnoNombre">-</div>
+                    <div class="text-muted small mt-1" id="modalOnlineGrupoTexto">Grupo: -</div>
+                </div>
+
+                <!-- ALERTA DE REGLA ESTRICTA DE GRUPO -->
+                <div id="alertaGrupoRequerido" class="alert alert-danger d-flex align-items-center mb-3" style="display: none !important; border-radius: 10px; font-size: 0.85rem;">
+                    <i class="fa-solid fa-triangle-exclamation fs-4 me-3"></i>
+                    <div>
+                        <strong>Grupo Obligatorio:</strong> El alumno debe estar asignado sí o sí a un grupo antes de poder pasar a la Modalidad en Línea. Por favor asigna un grupo primero.
+                    </div>
+                </div>
+
+                <div id="contenedorConfiguracionOnline">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-secondary">Modalidad de Asistencia:</label>
+                        <select id="selectModalidadEstudio" class="form-select" onchange="toggleCamposOnline(this.value)">
+                            <option value="ONLINE">🌐 Modalidad en Línea (Online)</option>
+                            <option value="PRESENCIAL">🏫 Modalidad Presencial</option>
+                        </select>
+                    </div>
+
+                    <div id="seccionDetallesOnline">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-secondary">
+                                <i class="fa-solid fa-calendar-day text-primary me-1"></i> Día de Cobro / Vencimiento de Pagos:
+                            </label>
+                            <select id="selectDiaPagoOnline" class="form-select">
+                                <option value="SABADO">Cada Sábado (Fin de Semana)</option>
+                                <option value="DOMINGO">Cada Domingo (Fin de Semana)</option>
+                                <option value="LUNES">Cada Lunes (Semanal)</option>
+                                <option value="VIERNES">Cada Viernes</option>
+                            </select>
+                            <div class="form-text text-muted" style="font-size: 0.78rem;">
+                                Define la fecha para el cálculo de sus pagos y recordatorios en su tablero.
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded mb-3" style="background: rgba(123, 44, 191, 0.06); border: 1px dashed #7b2cbf;">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fa-solid fa-graduation-cap text-purple me-2" style="color: #7b2cbf;"></i>
+                                <span class="fw-bold small" style="color: #5c248f;">Credenciales Moodle Automáticas</span>
+                            </div>
+                            <p class="text-muted mb-2" style="font-size: 0.78rem; line-height: 1.4;">
+                                Al guardar, el sistema creará o actualizará automáticamente al alumno en <strong>Moodle LMS</strong> y lo enrolará en el curso de su materia.
+                            </p>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label small mb-1 text-muted" style="font-size: 0.72rem;">Usuario Moodle:</label>
+                                    <input type="text" id="inputMoodleUsername" class="form-control form-control-sm" placeholder="Autogenerado" readonly style="background: #ffffff;">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small mb-1 text-muted" style="font-size: 0.72rem;">Contraseña:</label>
+                                    <input type="text" id="inputMoodlePassword" class="form-control form-control-sm" placeholder="Autogenerada (Bti.xxx*)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light p-3">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn text-white btn-sm px-3" id="btnGuardarModalidadOnline" style="background-color: #7b2cbf; border-color: #6a24a6;" onclick="guardarModalidadOnline()">
+                    <i class="fa-solid fa-save me-1"></i> Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- MODAL: REGISTRAR PAGO DE SEMANA Y TICKET (API DIRECTA)   -->
+<!-- ======================================================== -->
+<div class="modal fade" id="modalRegistrarPagoOnline" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); padding: 18px 24px;">
+                <h5 class="modal-title fw-bold fs-6">
+                    <i class="fa-solid fa-receipt me-2"></i> Registrar Pago de Colegiatura Online
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Resumen alumno -->
+                <div class="row g-2 mb-3 p-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                    <div class="col-md-6">
+                        <div class="text-muted" style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Alumno:</div>
+                        <div class="fw-bold fs-6 text-dark" id="modalPagoAlumnoNombre">-</div>
+                        <div class="text-muted small" id="modalPagoGrupoTexto">Grupo: -</div>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="text-muted" style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Situación Actual:</div>
+                        <span class="badge" id="badgeModalSemanaActual" style="background-color: #0284c7; font-size: 0.82rem; padding: 5px 10px;">Semana 0/4 Pagada</span>
+                        <div class="text-muted small mt-1" id="modalPagoDiaCobro">Día habitual: Sábado</div>
+                    </div>
+                </div>
+
+                <!-- Formulario de Pago -->
+                <form id="formRegistroPagoOnline" onsubmit="event.preventDefault(); guardarPagoOnline();">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark">
+                                <i class="fa-solid fa-calendar me-1 text-success"></i> Fecha de Pago: <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" id="pagoFecha" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark">
+                                <i class="fa-solid fa-ticket me-1 text-success"></i> Folio del Ticket / Recibo: <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" id="pagoFolio" class="form-control" placeholder="Ej. TK-10492" required autocomplete="off">
+                            <div class="form-text text-muted" style="font-size: 0.75rem;">Anota el folio impreso en el comprobante del alumno.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark">
+                                <i class="fa-solid fa-unlock-keyhole me-1 text-success"></i> Semana a Acreditar y Desbloquear: <span class="text-danger">*</span>
+                            </label>
+                            <select id="pagoSemana" class="form-select" required>
+                                <option value="1">Semana 1 (Inicio y Diagnóstico)</option>
+                                <option value="2">Semana 2 (Unidad 2)</option>
+                                <option value="3">Semana 3 (Unidad 3)</option>
+                                <option value="4">Semana 4 (Cierre y Examen Final)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark">
+                                <i class="fa-solid fa-dollar-sign me-1 text-success"></i> Monto Cubierto ($):
+                            </label>
+                            <input type="number" id="pagoMonto" class="form-control" placeholder="0.00" step="0.50" min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark">Método de Pago:</label>
+                            <select id="pagoMetodo" class="form-select">
+                                <option value="EFECTIVO">Efectivo en Caja</option>
+                                <option value="TRANSFERENCIA">Transferencia / SPEI</option>
+                                <option value="TARJETA">Tarjeta de Débito / Crédito</option>
+                                <option value="DEPOSITO">Depósito Bancario / OXXO</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark">Observaciones:</label>
+                            <input type="text" id="pagoObservaciones" class="form-control" placeholder="Opcional">
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Historial de Pagos Previos -->
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold small text-secondary text-uppercase" style="letter-spacing: 0.5px;">
+                            <i class="fa-solid fa-clock-rotate-left me-1"></i> Historial de Tickets y Pagos del Alumno
+                        </span>
+                        <span id="contadorPagosHistorial" class="badge bg-secondary" style="font-size: 0.72rem;">0 registros</span>
+                    </div>
+                    <div class="table-responsive rounded border" style="max-height: 180px; overflow-y: auto;">
+                        <table class="table table-sm table-hover mb-0" style="font-size: 0.8rem;">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Folio Ticket</th>
+                                    <th>Semana</th>
+                                    <th>Monto</th>
+                                    <th>Método</th>
+                                    <th>Moodle</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaHistorialPagos">
+                                <tr><td colspan="6" class="text-center text-muted py-2">Sin pagos registrados</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light p-3">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-success btn-sm px-3" id="btnGuardarPagoOnline" onclick="guardarPagoOnline()">
+                    <i class="fa-solid fa-check-circle me-1"></i> Registrar Pago y Desbloquear Semana en Moodle
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========================================================
+// JAVASCRIPT: LÓGICA DE MODALIDAD ONLINE Y PAGOS POR TICKET
+// ========================================================
+let alumnoOnlineActualId = null;
+let alumnoOnlineGrupoId = null;
+
+function escapeJs(str) {
+    if (!str) return '';
+    return String(str).replace(/'/g, "\\'");
+}
+
+function abrirModalOnlinePorId(idAlumno) {
+    const al = (window.alumnosListaActual || []).find(a => a.idAlumno == idAlumno);
+    if (!al) return;
+    const fullName = `${al.nombre} ${al.apPaterno} ${al.apMaterno || ''}`.trim();
+    abrirModalOnline(al.idAlumno, fullName, al.idGrupo, al.nombreGrupoTexto, al.modalidad_estudio, al.dia_pago, al.moodle_username);
+}
+
+function abrirModalPagoPorId(idAlumno) {
+    const al = (window.alumnosListaActual || []).find(a => a.idAlumno == idAlumno);
+    if (!al) return;
+    const fullName = `${al.nombre} ${al.apPaterno} ${al.apMaterno || ''}`.trim();
+    abrirModalPago(al.idAlumno, fullName, al.semana_actual_pagada || 0, al.dia_pago || 'SABADO', al.nombreGrupoTexto);
+}
+
+function abrirModalOnline(idAlumno, nombre, idGrupo, nombreGrupo, modalidad, diaPago, moodleUser) {
+    alumnoOnlineActualId = idAlumno;
+    alumnoOnlineGrupoId = idGrupo;
+
+    document.getElementById('modalOnlineAlumnoNombre').innerText = nombre;
+    document.getElementById('modalOnlineGrupoTexto').innerText = idGrupo ? `Grupo asignado: ${nombreGrupo} (ID #${idGrupo})` : 'Sin grupo asignado';
+    
+    const alertaGrupo = document.getElementById('alertaGrupoRequerido');
+    const btnGuardar = document.getElementById('btnGuardarModalidadOnline');
+    const selectModalidad = document.getElementById('selectModalidadEstudio');
+    const selectDia = document.getElementById('selectDiaPagoOnline');
+    const inputUser = document.getElementById('inputMoodleUsername');
+
+    // REGLA ESTRICTA: Debe estar asignado a un grupo
+    if (!idGrupo || idGrupo === 'null' || idGrupo <= 0) {
+        alertaGrupo.style.setProperty('display', 'flex', 'important');
+        btnGuardar.disabled = true;
+        btnGuardar.classList.add('disabled');
+    } else {
+        alertaGrupo.style.setProperty('display', 'none', 'important');
+        btnGuardar.disabled = false;
+        btnGuardar.classList.remove('disabled');
+    }
+
+    selectModalidad.value = modalidad === 'ONLINE' ? 'ONLINE' : 'ONLINE'; // Default a ONLINE al abrir este modal
+    selectDia.value = diaPago || 'SABADO';
+    inputUser.value = moodleUser || `alu${idAlumno}`;
+
+    toggleCamposOnline(selectModalidad.value);
+
+    const modal = new bootstrap.Modal(document.getElementById('modalConfigurarOnline'));
+    modal.show();
+}
+
+function toggleCamposOnline(val) {
+    const seccion = document.getElementById('seccionDetallesOnline');
+    if (val === 'ONLINE') {
+        seccion.style.display = 'block';
+    } else {
+        seccion.style.display = 'none';
+    }
+}
+
+async function guardarModalidadOnline() {
+    if (!alumnoOnlineActualId) return;
+
+    const selectModalidad = document.getElementById('selectModalidadEstudio').value;
+    const btn = document.getElementById('btnGuardarModalidadOnline');
+
+    // Si elige presencial
+    if (selectModalidad === 'PRESENCIAL') {
+        btn.disabled = true;
+        try {
+            const res = await fetch(`/alumnos/${alumnoOnlineActualId}/modalidad-presencial`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+            });
+            const data = await res.json();
+            bootstrap.Modal.getInstance(document.getElementById('modalConfigurarOnline')).hide();
+            Swal.fire('Actualizado', 'El alumno regresó a modalidad presencial.', 'success');
+
+            if (window.alumnoEditandoActual && window.alumnoEditandoActual.idAlumno == alumnoOnlineActualId) {
+                window.alumnoEditandoActual.modalidad_estudio = 'PRESENCIAL';
+                const form = document.getElementById('formAlumno');
+                if (form) {
+                    const sel = form.querySelector('#selectModalidadEstudioForm');
+                    if (sel) sel.value = 'PRESENCIAL';
+                    const txtBtn = document.getElementById('txtBtnModalOnlineHeader');
+                    if (txtBtn) txtBtn.innerHTML = `<i class="fa-solid fa-laptop me-1"></i> Pasar a Online`;
+                    if (typeof window.toggleModalidadForm === 'function') {
+                        window.toggleModalidadForm('PRESENCIAL');
+                    }
+                }
+            }
+
+            if (typeof window.cargarAlumnos === 'function') {
+                window.cargarAlumnos();
+            }
+        } catch (e) {
+            Swal.fire('Error', e.message, 'error');
+        } finally {
+            btn.disabled = false;
+        }
+        return;
+    }
+
+    // Modalidad Online
+    const diaPago = document.getElementById('selectDiaPagoOnline').value;
+    const password = document.getElementById('inputMoodlePassword').value;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Sincronizando con Moodle...';
+
+    try {
+        const res = await fetch(`/alumnos/${alumnoOnlineActualId}/modalidad-online`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({
+                dia_pago: diaPago,
+                moodle_password: password,
+                idGrupo: alumnoOnlineGrupoId
+            })
+        });
+
+        const data = await res.json();
+        if (!res.ok || data.success === false) {
+            throw new Error(data.error || 'Error al guardar');
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById('modalConfigurarOnline')).hide();
+
+        const creds = data.alumno || {};
+
+        if (window.alumnoEditandoActual && window.alumnoEditandoActual.idAlumno == alumnoOnlineActualId) {
+            window.alumnoEditandoActual.modalidad_estudio = 'ONLINE';
+            window.alumnoEditandoActual.dia_pago = creds.dia_pago || diaPago;
+            window.alumnoEditandoActual.moodle_username = creds.moodle_username || `alu${alumnoOnlineActualId}`;
+            const form = document.getElementById('formAlumno');
+            if (form) {
+                const sel = form.querySelector('#selectModalidadEstudioForm');
+                if (sel) sel.value = 'ONLINE';
+                const selDia = form.querySelector('#selectDiaPagoForm');
+                if (selDia) selDia.value = creds.dia_pago || diaPago;
+                const txtMoodle = form.querySelector('#txtMoodleUsernameDisplay');
+                if (txtMoodle) txtMoodle.textContent = creds.moodle_username || `alu${alumnoOnlineActualId}`;
+                const txtBtn = document.getElementById('txtBtnModalOnlineHeader');
+                if (txtBtn) {
+                    txtBtn.innerHTML = `<i class="fa-solid fa-laptop-code me-1"></i> Online (Sem. ${window.alumnoEditandoActual.semana_actual_pagada || 0})`;
+                }
+                if (typeof window.toggleModalidadForm === 'function') {
+                    window.toggleModalidadForm('ONLINE');
+                }
+            }
+        }
+
+        Swal.fire({
+            title: '¡Modalidad Online Activada!',
+            html: `
+                <div class="text-start p-3 bg-light rounded" style="font-size: 0.9rem;">
+                    <p class="mb-2"><strong>Alumno configurado como estudiante en línea.</strong></p>
+                    <p class="mb-1 text-primary"><strong>Cobro programado:</strong> Cada ${creds.dia_pago || diaPago}</p>
+                    <hr class="my-2">
+                    <p class="mb-1"><strong>Acceso Moodle:</strong></p>
+                    <div>• Usuario: <code>${creds.moodle_username || 'Registrado'}</code></div>
+                    <div>• Contraseña: <code>${creds.moodle_password || 'Asignada'}</code></div>
+                </div>
+            `,
+            icon: 'success'
+        });
+
+        if (typeof window.cargarAlumnos === 'function') {
+            window.cargarAlumnos();
+        }
+    } catch (err) {
+        Swal.fire('Error', err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-save me-1"></i> Guardar Cambios';
+    }
+}
+
+// ----------------------------------------------------
+// PAGO ONLINE POR TICKET
+// ----------------------------------------------------
+let alumnoPagoActualId = null;
+
+function abrirModalPago(idAlumno, nombre, semanaActual, diaPago, nombreGrupo) {
+    alumnoPagoActualId = idAlumno;
+
+    document.getElementById('modalPagoAlumnoNombre').innerText = nombre;
+    document.getElementById('modalPagoGrupoTexto').innerText = `Grupo: ${nombreGrupo || 'N/A'}`;
+    document.getElementById('modalPagoDiaCobro').innerText = `Día habitual de cobro: ${diaPago || 'Sábado'}`;
+    document.getElementById('badgeModalSemanaActual').innerText = `Semana actual: ${semanaActual}/4`;
+
+    // Fecha hoy
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('pagoFecha').value = hoy;
+    document.getElementById('pagoFolio').value = '';
+    document.getElementById('pagoMonto').value = '350.00';
+    document.getElementById('pagoObservaciones').value = '';
+
+    // Sugerir la siguiente semana no cubierta
+    const proximaSemana = Math.min(parseInt(semanaActual || 0) + 1, 4);
+    document.getElementById('pagoSemana').value = proximaSemana;
+
+    cargarHistorialPagos(idAlumno);
+
+    const modal = new bootstrap.Modal(document.getElementById('modalRegistrarPagoOnline'));
+    modal.show();
+}
+
+async function cargarHistorialPagos(idAlumno) {
+    const tbody = document.getElementById('tablaHistorialPagos');
+    const contador = document.getElementById('contadorPagosHistorial');
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-2"><i class="fa-solid fa-spinner fa-spin me-1"></i> Cargando historial...</td></tr>';
+
+    try {
+        const res = await fetch(`/alumnos/${idAlumno}/pagos`);
+        const data = await res.json();
+        const lista = data.data || [];
+
+        contador.innerText = `${lista.length} pagos`;
+
+        if (!lista.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-2">Sin tickets registrados aún.</td></tr>';
+            return;
+        }
+
+        let html = '';
+        lista.forEach(p => {
+            const fechaFmt = p.fecha_pago ? p.fecha_pago.split('T')[0] : '-';
+            const sincronizado = p.sincronizado_moodle 
+                ? '<span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:0.7rem;"><i class="fa-solid fa-check me-1"></i>Desbloqueado</span>'
+                : '<span class="badge bg-secondary-subtle text-secondary" style="font-size:0.7rem;">Local</span>';
+
+            html += `
+                <tr>
+                    <td>${fechaFmt}</td>
+                    <td><strong class="text-dark">${p.folio_ticket}</strong></td>
+                    <td><span class="badge bg-primary" style="font-size:0.72rem;">Semana ${p.semana_cubierta}</span></td>
+                    <td>$${parseFloat(p.monto || 0).toFixed(2)}</td>
+                    <td><small class="text-muted">${p.metodo_pago || 'EFECTIVO'}</small></td>
+                    <td>${sincronizado}</td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-2">Error al cargar historial: ${e.message}</td></tr>`;
+    }
+}
+
+async function guardarPagoOnline() {
+    if (!alumnoPagoActualId) return;
+
+    const fecha = document.getElementById('pagoFecha').value;
+    const folio = document.getElementById('pagoFolio').value.trim();
+    const semana = document.getElementById('pagoSemana').value;
+    const monto = document.getElementById('pagoMonto').value;
+    const metodo = document.getElementById('pagoMetodo').value;
+    const obs = document.getElementById('pagoObservaciones').value;
+
+    if (!folio) {
+        Swal.fire('Atención', 'Por favor ingresa el folio del ticket de pago.', 'warning');
+        return;
+    }
+
+    const btn = document.getElementById('btnGuardarPagoOnline');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Registrando y desbloqueando en Moodle...';
+
+    try {
+        const res = await fetch(`/alumnos/${alumnoPagoActualId}/pagos`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({
+                fecha_pago: fecha,
+                folio_ticket: folio,
+                semana_cubierta: parseInt(semana),
+                monto: parseFloat(monto || 0),
+                metodo_pago: metodo,
+                observaciones: obs
+            })
+        });
+
+        const data = await res.json();
+        if (!res.ok || data.success === false) {
+            throw new Error(data.error || 'Error al registrar pago');
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById('modalRegistrarPagoOnline')).hide();
+
+        if (window.alumnoEditandoActual && window.alumnoEditandoActual.idAlumno == alumnoPagoActualId) {
+            window.alumnoEditandoActual.semana_actual_pagada = parseInt(semana);
+            const form = document.getElementById('formAlumno');
+            if (form) {
+                const txtSemana = form.querySelector('#txtSemanaPagadaDisplay');
+                if (txtSemana) txtSemana.textContent = `Semana ${semana}`;
+                const txtBtn = document.getElementById('txtBtnModalOnlineHeader');
+                if (txtBtn) {
+                    txtBtn.innerHTML = `<i class="fa-solid fa-laptop-code me-1"></i> Online (Sem. ${semana})`;
+                }
+            }
+        }
+
+        Swal.fire({
+            title: '¡Pago Registrado Exitosamente!',
+            html: `
+                <div class="text-start p-3 bg-light rounded" style="font-size: 0.9rem;">
+                    <p class="mb-1 text-success"><strong><i class="fa-solid fa-circle-check me-1"></i> Ticket Folio:</strong> <code>${folio}</code></p>
+                    <p class="mb-1 text-primary"><strong><i class="fa-solid fa-unlock me-1"></i> Semana Desbloqueada:</strong> Semana ${semana} de 4</p>
+                    <p class="mb-0 text-muted" style="font-size: 0.8rem;">El alumno ya puede acceder a las actividades de la semana en su campus virtual.</p>
+                </div>
+            `,
+            icon: 'success'
+        });
+
+        if (typeof window.cargarAlumnos === 'function') {
+            window.cargarAlumnos();
+        }
+    } catch (err) {
+        Swal.fire('Error', err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-check-circle me-1"></i> Registrar Pago y Desbloquear Semana en Moodle';
+    }
+}
+</script>
+
+
+<style>
+/* Estilos para apilamiento limpio de modales secundarios sobre Editar Alumno (#modalAlumno z-index: 1200) */
+#modalConfigurarOnline, #modalRegistrarPagoOnline {
+    z-index: 1300 !important;
+}
+.modal-backdrop.modal-online-backdrop {
+    z-index: 1250 !important;
+}
+</style>
+
+<script>
+window.toggleModalidadForm = function(val) {
+    const boxDiaPago = document.getElementById('boxDiaPagoForm');
+    const panelDetalles = document.getElementById('panelDetallesOnlineForm');
+    const badgeModalidad = document.getElementById('badgeModalidadEstado');
+    const alertaGrupo = document.getElementById('alertaGrupoOnlineForm');
+    const boxAccionRapida = document.getElementById('boxAccionOnlineRapida');
+    const form = document.getElementById('formAlumno');
+    const inputGrupo = form ? (form.querySelector('#inputGrupoSeleccionado') || form.querySelector('input[name="id_Grupo"]')) : null;
+    const grupoId = inputGrupo ? inputGrupo.value : null;
+
+    if (val === 'ONLINE') {
+        if (boxDiaPago) boxDiaPago.style.display = 'block';
+        if (boxAccionRapida) boxAccionRapida.style.display = 'block';
+        if (badgeModalidad) {
+            badgeModalidad.textContent = 'ONLINE (MOODLE)';
+            badgeModalidad.style.backgroundColor = '#7b2cbf';
+        }
+        if (!grupoId || grupoId <= 0) {
+            if (alertaGrupo) alertaGrupo.style.display = 'block';
+        } else {
+            if (alertaGrupo) alertaGrupo.style.display = 'none';
+        }
+        if (window.alumnoEditandoActual && window.alumnoEditandoActual.moodle_username) {
+            if (panelDetalles) panelDetalles.style.display = 'block';
+        }
+    } else {
+        if (boxDiaPago) boxDiaPago.style.display = 'none';
+        if (boxAccionRapida) boxAccionRapida.style.display = 'none';
+        if (panelDetalles) panelDetalles.style.display = 'none';
+        if (alertaGrupo) alertaGrupo.style.display = 'none';
+        if (badgeModalidad) {
+            badgeModalidad.textContent = 'PRESENCIAL';
+            badgeModalidad.style.backgroundColor = '#64748b';
+        }
+    }
+};
+
+window.abrirModalOnlineDesdeEditar = function() {
+    if (!idAlumnoActual) return;
+    const al = window.alumnoEditandoActual || {};
+    const fullName = `${al.nombre || ''} ${al.apPaterno || ''} ${al.apMaterno || ''}`.trim() || 'Alumno';
+    const form = document.getElementById('formAlumno');
+    const inputGrupo = form ? (form.querySelector('#inputGrupoSeleccionado') || form.querySelector('input[name="id_Grupo"]')) : null;
+    const grupoId = (inputGrupo && inputGrupo.value) ? inputGrupo.value : al.idGrupo;
+    const nombreGrupo = (form && form.querySelector('#txtNombreGrupoElegido')) ? form.querySelector('#txtNombreGrupoElegido').textContent : (al.nombreGrupoTexto || 'Grupo');
+    const selectMod = form ? form.querySelector('#selectModalidadEstudioForm') : null;
+    const mod = selectMod ? selectMod.value : (al.modalidad_estudio || 'ONLINE');
+    const selectDia = form ? form.querySelector('#selectDiaPagoForm') : null;
+    const dia = selectDia ? selectDia.value : (al.dia_pago || 'SABADO');
+
+    abrirModalOnline(idAlumnoActual, fullName, grupoId, nombreGrupo, mod, dia, al.moodle_username);
+};
+
+window.abrirModalPagoDesdeEditar = function() {
+    if (!idAlumnoActual) return;
+    const al = window.alumnoEditandoActual || {};
+    const fullName = `${al.nombre || ''} ${al.apPaterno || ''} ${al.apMaterno || ''}`.trim() || 'Alumno';
+    const form = document.getElementById('formAlumno');
+    const nombreGrupo = (form && form.querySelector('#txtNombreGrupoElegido')) ? form.querySelector('#txtNombreGrupoElegido').textContent : (al.nombreGrupoTexto || 'Grupo');
+    abrirModalPago(idAlumnoActual, fullName, al.semana_actual_pagada || 0, al.dia_pago || 'SABADO', nombreGrupo);
+};
+
+// Modal backdrop stacking y control de z-index
+document.addEventListener('DOMContentLoaded', function() {
+    ['modalConfigurarOnline', 'modalRegistrarPagoOnline'].forEach(modalId => {
+        const el = document.getElementById(modalId);
+        if (el) {
+            // Asegurar que el modal esté directamente bajo el body para evitar stacking context
+            if (el.parentElement !== document.body) {
+                document.body.appendChild(el);
+            }
+
+            const ajustarZIndexBackdrops = () => {
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                if (backdrops.length > 1) {
+                    for (let i = 1; i < backdrops.length; i++) {
+                        backdrops[i].classList.add('modal-online-backdrop');
+                        backdrops[i].style.setProperty('z-index', '1250', 'important');
+                    }
+                }
+            };
+
+            el.addEventListener('show.bs.modal', function() {
+                setTimeout(ajustarZIndexBackdrops, 10);
+                setTimeout(ajustarZIndexBackdrops, 50);
+                setTimeout(ajustarZIndexBackdrops, 150);
+            });
+
+            el.addEventListener('shown.bs.modal', function() {
+                ajustarZIndexBackdrops();
+            });
+
+            el.addEventListener('hidden.bs.modal', function() {
+                // Si el modal padre (#modalAlumno u otro) sigue visible, asegurar modal-open en body
+                if (document.querySelector('.modal.show')) {
+                    document.body.classList.add('modal-open');
+                }
+            });
+        }
+    });
+});
 </script>

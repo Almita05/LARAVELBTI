@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
+use App\Services\MoodleService;
 
 class AlumnoController extends Controller
 {
@@ -38,6 +40,9 @@ class AlumnoController extends Controller
        }
        if ($request->filled('status_alumno')) {
            $params['statusAlumno'] = $request->status_alumno;
+       }
+       if ($request->filled('modalidad_estudio')) {
+           $params['modalidad_estudio'] = $request->modalidad_estudio;
        }
        if ($request->filled('order')) {
            $params['order'] = $request->order;
@@ -220,7 +225,9 @@ public function update(Request $request, $id)
         "certificado_incompleto" => $request->certificadoIncompleto ?: null,
         "fecha_entrega_certificado" => $request->fechaEntregaCertificado ?: ($request->fechaEntregaDocumentos ?: null),
         "trae_boleta" => $request->traeBoleta ?: 'SI',
-        "estado_pago_equivalencia" => $request->estadoPagoEquivalencia ?: 'PENDIENTE'
+        "estado_pago_equivalencia" => $request->estadoPagoEquivalencia ?: 'PENDIENTE',
+        "modalidad_estudio" => $request->modalidad_estudio ?: null,
+        "dia_pago" => $request->dia_pago ?: null
     ]);
 
     if ($response->failed()) {
@@ -320,5 +327,87 @@ public function guardarCalificaciones(Request $request, $id)
     }
 
     return response()->json($response->json());
+}
+
+public function cambiarModalidadOnline(Request $request, $id, MoodleService $moodleService)
+{
+    $url = config('services.api.base_url') . '/alumnos/' . $id . '/modalidad-online';
+    $payload = $request->json()->all() ?: $request->all();
+
+    $response = Http::withHeaders([
+        'Accept' => 'application/json',
+        'Content-Type' => 'application/json'
+    ])->post($url, $payload);
+
+    if ($response->failed()) {
+        return response()->json($response->json(), $response->status());
+    }
+
+    $resData = $response->json();
+
+    // Sincronización en vivo con Moodle LMS
+    try {
+        $alumno = DB::table('tb_alumnos')->where('idAlumno', $id)->first();
+        if ($alumno) {
+            $rawPass = $payload['moodle_password'] ?? null;
+            $moodleRes = $moodleService->syncAlumno($alumno, $rawPass);
+
+            if ($moodleRes['success']) {
+                $resData['alumno']['moodle_user_id'] = $moodleRes['moodle_user_id'];
+                $resData['alumno']['moodle_username'] = $moodleRes['moodle_username'];
+                $resData['alumno']['moodle_password'] = $moodleRes['moodle_password'];
+                $resData['moodle_status'] = $moodleRes['action'];
+            } else {
+                \Log::warning("MoodleService no pudo sincronizar alumno {$id}: " . ($moodleRes['error'] ?? ''));
+            }
+        }
+    } catch (\Throwable $e) {
+        \Log::error("Excepción en MoodleService para alumno {$id}: " . $e->getMessage());
+    }
+
+    return response()->json($resData, $response->status());
+}
+
+public function cambiarModalidadPresencial($id, MoodleService $moodleService)
+{
+    $url = config('services.api.base_url') . '/alumnos/' . $id . '/modalidad-presencial';
+
+    $response = Http::withHeaders([
+        'Accept' => 'application/json',
+        'Content-Type' => 'application/json'
+    ])->post($url);
+
+    // Suspender acceso del alumno en Moodle mientras esté en modalidad presencial
+    try {
+        $moodleService->suspenderAlumno($id);
+    } catch (\Throwable $e) {
+        \Log::error("Excepción suspendiendo alumno {$id} en Moodle: " . $e->getMessage());
+    }
+
+    return response()->json($response->json(), $response->status());
+}
+
+public function registrarPago(Request $request, $id)
+{
+    $url = config('services.api.base_url') . '/alumnos/' . $id . '/pagos';
+    $payload = $request->json()->all() ?: $request->all();
+
+    $response = Http::withHeaders([
+        'Accept' => 'application/json',
+        'Content-Type' => 'application/json'
+    ])->post($url, $payload);
+
+    return response()->json($response->json(), $response->status());
+}
+
+public function getPagos($id)
+{
+    $url = config('services.api.base_url') . '/alumnos/' . $id . '/pagos';
+
+    $response = Http::withHeaders([
+        'Accept' => 'application/json'
+    ])->get($url);
+
+    return response()->json($response->json(), $response->status());
 }
 }
