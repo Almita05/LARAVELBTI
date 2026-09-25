@@ -1272,10 +1272,11 @@
         for (const fecha in modifiedState) {
             for (const idAlumno in modifiedState[fecha]) {
                 const rec = modifiedState[fecha][idAlumno];
+                const fObj = fechas.find(fe => fe.fecha === fecha);
                 asistenciasToSend.push({
                     id_alumno: parseInt(idAlumno),
                     fecha: fecha,
-                    id_nivel_academico: fechas.find(fe => fe.fecha === fecha).id_nivel_academico,
+                    id_nivel_academico: fObj ? fObj.id_nivel_academico : null,
                     estatus: rec.estatus,
                     observaciones: rec.observaciones
                 });
