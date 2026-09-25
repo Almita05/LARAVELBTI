@@ -819,7 +819,11 @@ function abrirCapturaGrupoMateria(idGrupo, idMateria = null) {
         .then(res => {
             if (res.success && res.data) {
                 datosGrupoMateriaActual = res.data;
-                renderDatosControlOficial(res.data);
+                try {
+                    renderDatosControlOficial(res.data);
+                } catch (renderErr) {
+                    console.error('Error renderizando datos del grupo/materia:', renderErr);
+                }
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -830,7 +834,7 @@ function abrirCapturaGrupoMateria(idGrupo, idMateria = null) {
             }
         })
         .catch(err => {
-            console.error('Error:', err);
+            console.error('Error de red/servidor al obtener grupo:', err);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -1524,6 +1528,9 @@ function recalcularFilaSemestral(inputEl) {
         }
         extInp.placeholder = "0-10";
     }
+
+    const semVal = semInp && semInp.value !== '' ? parseFloat(semInp.value) : NaN;
+    const extVal = extInp && extInp.value !== '' ? parseFloat(extInp.value) : NaN;
 
     // Cálculo del promedio final
     if (!isNaN(extVal) && pFinalInp) {
