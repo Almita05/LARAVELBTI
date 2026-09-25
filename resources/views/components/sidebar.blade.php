@@ -542,16 +542,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Obtener cantidad de notificaciones
-    fetch('/notificaciones/count')
-        .then(response => response.json())
-        .then(data => {
-            const badge = document.getElementById('sidebar-notificaciones-badge');
-            if (badge && data.total > 0) {
-                badge.textContent = data.total;
-                badge.classList.remove('d-none');
+    // Función global para actualizar el badge del sidebar en tiempo real
+    window.actualizarBadgeSidebarNotificaciones = function(total) {
+        const badge = document.getElementById('sidebar-notificaciones-badge');
+        if (!badge) return;
+        const count = parseInt(total, 10) || 0;
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.classList.remove('d-none');
+        } else {
+            badge.textContent = '0';
+            badge.classList.add('d-none');
+        }
+    };
+
+    // Consultar cantidad de notificaciones con bypass de caché
+    window.recargarConteoNotificacionesSidebar = function() {
+        fetch('/notificaciones/count?_t=' + Date.now(), {
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
             }
         })
-        .catch(err => console.error('Error fetching notification count:', err));
+        .then(response => {
+            if (!response.ok) throw new Error('Status ' + response.status);
+            return response.json();
+        })
+        .then(data => {
+            if (data && typeof data.total !== 'undefined') {
+                window.actualizarBadgeSidebarNotificaciones(data.total);
+            }
+        })
+        .catch(err => console.debug('Error fetching notification count:', err));
+    };
+
+    window.recargarConteoNotificacionesSidebar();
 });
 </script>

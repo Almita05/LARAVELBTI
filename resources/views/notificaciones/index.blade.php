@@ -486,6 +486,22 @@ function actualizarContadores(tipo) {
         badgeHeader.innerText = `${total} alertas`;
     }
 
+    // Actualizar badge del sidebar en tiempo real
+    if (typeof window.actualizarBadgeSidebarNotificaciones === 'function') {
+        window.actualizarBadgeSidebarNotificaciones(total);
+    } else {
+        const sidebarBadge = document.getElementById('sidebar-notificaciones-badge');
+        if (sidebarBadge) {
+            if (total > 0) {
+                sidebarBadge.textContent = total > 99 ? '99+' : total;
+                sidebarBadge.classList.remove('d-none');
+            } else {
+                sidebarBadge.textContent = '0';
+                sidebarBadge.classList.add('d-none');
+            }
+        }
+    }
+
     // Incrementar pill resueltas
     const badgeResueltas = document.getElementById('badge-pill-resueltas');
     if (badgeResueltas) {
@@ -507,5 +523,13 @@ function actualizarContadores(tipo) {
         filaVacia.style.setProperty('display', visibles === 0 ? 'table-row' : 'none', 'important');
     }
 }
+
+// Sincronizar el badge del sidebar inmediatamente con el conteo de la página
+document.addEventListener('DOMContentLoaded', function() {
+    const totalInicial = {{ (int)($notificaciones['totales']['total'] ?? 0) }};
+    if (typeof window.actualizarBadgeSidebarNotificaciones === 'function') {
+        window.actualizarBadgeSidebarNotificaciones(totalInicial);
+    }
+});
 </script>
 @endsection

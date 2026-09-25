@@ -49,14 +49,20 @@ class NotificacionController extends Controller
     {
         $url = config('services.api.base_url') . '/notificaciones';
         try {
-            $response = Http::get($url);
+            $response = Http::timeout(5)->get($url);
             if ($response->successful()) {
                 $data = $response->json();
                 $total = $data['data']['totales']['total'] ?? 0;
-                return response()->json(['total' => $total]);
+                return response()->json(['total' => (int)$total])
+                    ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                    ->header('Pragma', 'no-cache')
+                    ->header('Expires', '0');
             }
         } catch (\Exception $e) {}
-        return response()->json(['total' => 0]);
+        return response()->json(['total' => 0])
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     public function resolver(Request $request)
