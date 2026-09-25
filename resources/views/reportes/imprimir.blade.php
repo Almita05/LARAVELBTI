@@ -1599,7 +1599,7 @@
                 if (!isNaN(extVal)) {
                     pFinalInp.value = Math.min(extVal, 7.0).toFixed(1);
                 } else {
-                    pFinalInp.value = "";
+                    pFinalInp.value = ((v1 + v2 + v3) / 3).toFixed(1);
                 }
             } else {
                 semInp.disabled = false;
@@ -1613,7 +1613,7 @@
                 if (!isNaN(semVal)) {
                     pFinalInp.value = ((v1 + v2 + v3 + semVal) / 4).toFixed(1);
                 } else {
-                    pFinalInp.value = "";
+                    pFinalInp.value = ((v1 + v2 + v3) / 3).toFixed(1);
                 }
             }
         } else {

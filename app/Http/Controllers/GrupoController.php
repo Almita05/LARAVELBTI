@@ -141,18 +141,29 @@ class GrupoController extends Controller
             $params['idNivelAcademico'] = $request->id_nivel_academico;
         }
 
-        $response = Http::get($url, $params);
+        try {
+            $response = Http::timeout(10)->get($url, $params);
 
-        if ($response->failed()) {
+            if ($response->failed()) {
+                return response()->json([
+                    'data' => [],
+                    'total' => 0,
+                    'page' => 1,
+                    'total_pages' => 1
+                ]);
+            }
+
+            return $response->json();
+        } catch (\Throwable $e) {
+            \Log::error("Error de conexión al obtener grupos desde {$url}: " . $e->getMessage());
             return response()->json([
                 'data' => [],
                 'total' => 0,
                 'page' => 1,
-                'total_pages' => 1
-            ]);
+                'total_pages' => 1,
+                'error' => 'No se pudo conectar con el servidor API backend.'
+            ], 500);
         }
-
-        return $response->json();
     }
 
 
