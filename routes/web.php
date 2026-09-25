@@ -64,6 +64,8 @@ Route::middleware('auth.session')->group(function () {
     // Notificaciones
     Route::get('/notificaciones', [\App\Http\Controllers\NotificacionController::class, 'index'])->name('notificaciones');
     Route::get('/notificaciones/count', [\App\Http\Controllers\NotificacionController::class, 'count']);
+    Route::post('/notificaciones/resolver', [\App\Http\Controllers\NotificacionController::class, 'resolver'])->name('notificaciones.resolver');
+    Route::post('/notificaciones/reactivar', [\App\Http\Controllers\NotificacionController::class, 'reactivar'])->name('notificaciones.reactivar');
 
    // Analizador de Estados de Cuenta QRP
 Route::get('/analizar-estado-cuenta',[QrpController::class, 'index'])->name('analizar-estado-cuenta');

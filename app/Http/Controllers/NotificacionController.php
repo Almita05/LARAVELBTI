@@ -58,4 +58,30 @@ class NotificacionController extends Controller
         } catch (\Exception $e) {}
         return response()->json(['total' => 0]);
     }
+
+    public function resolver(Request $request)
+    {
+        $url = config('services.api.base_url') . '/notificaciones/resolver';
+        try {
+            $payload = $request->all();
+            $payload['usuario'] = session('nombre') ?: session('usuario') ?: 'Administrador';
+
+            $response = Http::post($url, $payload);
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al comunicar con el servicio: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function reactivar(Request $request)
+    {
+        $url = config('services.api.base_url') . '/notificaciones/reactivar';
+        try {
+            $payload = $request->all();
+            $response = Http::post($url, $payload);
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al comunicar con el servicio: ' . $e->getMessage()], 500);
+        }
+    }
 }

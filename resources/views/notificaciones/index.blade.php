@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="page-container">
     <!-- Encabezado del Sistema -->
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -14,8 +16,8 @@
             <i class="fa-solid fa-bell me-2"></i>Centro de Avisos y Pendientes
         </h3>
         <div>
-            <span class="badge bg-danger rounded-pill px-3 py-2 fs-6 fw-bold">
-                {{ $notificaciones['totales']['total'] }} alertas
+            <span class="badge bg-danger rounded-pill px-3 py-2 fs-6 fw-bold" id="badge-header-total">
+                {{ $notificaciones['totales']['total'] ?? 0 }} alertas
             </span>
         </div>
     </div>
@@ -33,19 +35,23 @@
         <div class="d-flex flex-wrap gap-2 mb-4">
             <button class="btn btn-premium-pill active" onclick="filtrarAlertas('todos', this)">
                 <i class="bi bi-grid-fill me-1"></i> Todos
-                <span class="badge bg-light text-dark ms-2">{{ $notificaciones['totales']['total'] }}</span>
+                <span class="badge bg-light text-dark ms-2" id="badge-pill-todos">{{ $notificaciones['totales']['total'] ?? 0 }}</span>
             </button>
             <button class="btn btn-premium-pill" onclick="filtrarAlertas('documentos', this)">
                 <i class="bi bi-file-earmark-text-fill me-1"></i> Documentación
-                <span class="badge bg-light text-dark ms-2">{{ $notificaciones['totales']['documentos'] }}</span>
+                <span class="badge bg-light text-dark ms-2" id="badge-pill-documentos">{{ $notificaciones['totales']['documentos'] ?? 0 }}</span>
             </button>
             <button class="btn btn-premium-pill" onclick="filtrarAlertas('equivalencias', this)">
                 <i class="bi bi-folder-symlink-fill me-1"></i> Equivalencias
-                <span class="badge bg-light text-dark ms-2">{{ $notificaciones['totales']['equivalencias'] }}</span>
+                <span class="badge bg-light text-dark ms-2" id="badge-pill-equivalencias">{{ $notificaciones['totales']['equivalencias'] ?? 0 }}</span>
             </button>
             <button class="btn btn-premium-pill" onclick="filtrarAlertas('grupos', this)">
                 <i class="bi bi-calendar-event-fill me-1"></i> Término de Grupos
-                <span class="badge bg-light text-dark ms-2">{{ $notificaciones['totales']['grupos'] }}</span>
+                <span class="badge bg-light text-dark ms-2" id="badge-pill-grupos">{{ $notificaciones['totales']['grupos'] ?? 0 }}</span>
+            </button>
+            <button class="btn btn-premium-pill" onclick="filtrarAlertas('resueltas', this)">
+                <i class="bi bi-check2-all me-1"></i> Resueltas / Omitidas
+                <span class="badge bg-light text-dark ms-2" id="badge-pill-resueltas">{{ $notificaciones['totales']['resueltas'] ?? count($notificaciones['resueltas'] ?? []) }}</span>
             </button>
         </div>
 
@@ -78,7 +84,12 @@
                                     <strong>Grupo:</strong> {{ $doc['grupo'] }}
                                 </td>
                                 <td class="text-center">
-                                    <span class="text-muted">—</span>
+                                    <button type="button" class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1 px-3 py-1.5 shadow-sm btn-resolver-alerta" 
+                                            onclick="abrirModalResolver('documentos', {{ $doc['idAlumno'] }}, '{{ addslashes($doc['nombre']) }}', '{{ addslashes($doc['detalle']) }}', '{{ $doc['subtipo'] ?? 'general' }}', this)"
+                                            title="Marcar como resuelta o descartar advertencia"
+                                            style="border-radius: 10px; font-size: 0.8rem; font-weight: 600; transition: all 0.2s;">
+                                        <i class="bi bi-check-circle-fill"></i> Quitar Alerta
+                                    </button>
                                 </td>
                             </tr>
                         @endforeach
@@ -103,7 +114,12 @@
                                     <strong>Grupo:</strong> {{ $eq['grupo'] }}
                                 </td>
                                 <td class="text-center">
-                                    <span class="text-muted">—</span>
+                                    <button type="button" class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1 px-3 py-1.5 shadow-sm btn-resolver-alerta" 
+                                            onclick="abrirModalResolver('equivalencias', {{ $eq['idAlumno'] }}, '{{ addslashes($eq['nombre']) }}', '{{ addslashes($eq['detalle']) }}', '{{ $eq['subtipo'] ?? 'equivalencia' }}', this)"
+                                            title="Marcar como resuelta o descartar advertencia"
+                                            style="border-radius: 10px; font-size: 0.8rem; font-weight: 600; transition: all 0.2s;">
+                                        <i class="bi bi-check-circle-fill"></i> Quitar Alerta
+                                    </button>
                                 </td>
                             </tr>
                         @endforeach
@@ -131,22 +147,60 @@
                                                 <i class="bi bi-calendar-plus me-1"></i> Armar Pre-Horario
                                             </a>
                                         @endif
+                                        <button type="button" class="btn btn-outline-secondary btn-sm w-100 mt-1 d-inline-flex align-items-center justify-content-center gap-1"
+                                                onclick="abrirModalResolver('grupos', {{ $gp['idGrupo'] }}, 'Grupo: {{ addslashes($gp['clave']) }}', '{{ addslashes($gp['detalle']) }}', 'termino_ciclo', this)"
+                                                style="border-radius: 8px; font-size: 0.75rem;">
+                                            <i class="bi bi-eye-slash"></i> Omitir Aviso
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
                         @endforeach
 
-                        @if($notificaciones['totales']['total'] == 0)
-                            <tr>
-                                <td colspan="5" class="text-center py-5 text-secondary">
-                                    <div class="mb-2">
-                                        <i class="bi bi-shield-check text-success" style="font-size: 3rem;"></i>
-                                    </div>
-                                    <h5 class="fw-bold text-dark">Todo al corriente</h5>
-                                    <p class="mb-0">No se encontraron avisos ni pendientes activos en el sistema.</p>
-                                </td>
-                            </tr>
+                        <!-- SECCIÓN: ALERTAS RESUELTAS / OMITIDAS -->
+                        @if(!empty($notificaciones['resueltas']))
+                            @foreach($notificaciones['resueltas'] as $res)
+                                <tr class="fila-alerta" data-categoria="resueltas" style="display: none;">
+                                    <td>
+                                        @if($res['accion'] == 'resuelto')
+                                            <span class="badge bg-success px-2 py-1 fw-bold text-uppercase" style="font-size: 0.73rem;">
+                                                <i class="bi bi-check2 me-1"></i>Resuelto
+                                            </span>
+                                        @else
+                                            <span class="badge bg-secondary px-2 py-1 fw-bold text-uppercase" style="font-size: 0.73rem;">
+                                                <i class="bi bi-eye-slash me-1"></i>No es Alerta
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="fw-bold text-dark">{{ $res['nombre'] }}</td>
+                                    <td class="text-secondary">
+                                        <span class="text-dark fw-medium">{{ $res['motivo'] }}</span><br>
+                                        <small class="text-muted"><i class="bi bi-person me-1"></i>{{ $res['usuario'] }} • {{ $res['fecha'] }}</small>
+                                    </td>
+                                    <td class="text-secondary">
+                                        <strong>CCT:</strong> {{ $res['cct'] }} <br>
+                                        <strong>Grupo:</strong> {{ $res['grupo'] }}
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 px-2.5 py-1"
+                                                onclick="reactivarAlerta('{{ $res['tipo'] }}', {{ $res['id_referencia'] }}, '{{ $res['subtipo'] }}', '{{ addslashes($res['nombre']) }}', this)"
+                                                style="border-radius: 8px; font-size: 0.78rem; font-weight: 500;">
+                                            <i class="bi bi-arrow-counterclockwise"></i> Reactivar
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
                         @endif
+
+                        <tr id="fila-vacia" style="{{ ($notificaciones['totales']['total'] ?? 0) == 0 ? '' : 'display: none !important;' }}">
+                            <td colspan="5" class="text-center py-5 text-secondary">
+                                <div class="mb-2">
+                                    <i class="bi bi-shield-check text-success" style="font-size: 3rem;"></i>
+                                </div>
+                                <h5 class="fw-bold text-dark" id="texto-vacio-titulo">Todo al corriente</h5>
+                                <p class="mb-0 text-muted" id="texto-vacio-desc">No se encontraron avisos ni pendientes en esta sección.</p>
+                            </td>
+                        </tr>
 
                     </tbody>
                 </table>
@@ -195,23 +249,263 @@
     .glass-table td strong {
         color: #334155 !important;
     }
+
+    .btn-resolver-alerta:hover {
+        background-color: #198754 !important;
+        color: white !important;
+        transform: scale(1.03);
+    }
 </style>
 
 <script>
+let categoriaActual = 'todos';
+
 function filtrarAlertas(categoria, botonElement) {
+    categoriaActual = categoria;
     const botones = document.querySelectorAll('.btn-premium-pill');
     botones.forEach(btn => btn.classList.remove('active'));
     botonElement.classList.add('active');
 
     const filas = document.querySelectorAll('.fila-alerta');
+    let visibles = 0;
+
     filas.forEach(fila => {
         const cat = fila.dataset.categoria;
-        if (categoria === 'todos' || cat === categoria) {
+        let mostrar = false;
+
+        if (categoria === 'todos') {
+            mostrar = (cat !== 'resueltas');
+        } else {
+            mostrar = (cat === categoria);
+        }
+
+        if (mostrar) {
             fila.style.setProperty('display', 'table-row', 'important');
+            visibles++;
         } else {
             fila.style.setProperty('display', 'none', 'important');
         }
     });
+
+    const filaVacia = document.getElementById('fila-vacia');
+    if (filaVacia) {
+        if (visibles === 0) {
+            filaVacia.style.setProperty('display', 'table-row', 'important');
+            const titulo = document.getElementById('texto-vacio-titulo');
+            const desc = document.getElementById('texto-vacio-desc');
+            if (categoria === 'resueltas') {
+                if (titulo) titulo.innerText = 'Sin registros históricos';
+                if (desc) desc.innerText = 'No hay advertencias marcadas como resueltas u omitidas.';
+            } else {
+                if (titulo) titulo.innerText = 'Todo al corriente';
+                if (desc) desc.innerText = 'No se encontraron avisos ni pendientes en esta sección.';
+            }
+        } else {
+            filaVacia.style.setProperty('display', 'none', 'important');
+        }
+    }
+}
+
+function abrirModalResolver(tipo, idReferencia, nombre, detalle, subtipo, btnElement) {
+    Swal.fire({
+        title: '<span style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">Gestionar Advertencia</span>',
+        html: `
+            <div class="text-start p-2" style="font-size: 0.9rem;">
+                <div class="mb-2"><strong>Alumno / Grupo:</strong> <span class="text-primary fw-bold">${nombre}</span></div>
+                <div class="mb-3 text-muted"><strong>Pendiente:</strong> ${detalle}</div>
+                <hr class="my-2">
+                <p class="mb-2 fw-semibold text-dark">¿Cómo deseas clasificar esta advertencia?</p>
+                <div class="form-check mb-2 p-2 rounded" style="background: rgba(25, 135, 84, 0.08); border: 1px solid rgba(25, 135, 84, 0.2);">
+                    <input class="form-check-input ms-1" type="radio" name="swal_accion" id="opt_resuelto" value="resuelto" checked>
+                    <label class="form-check-label fw-bold text-success ms-2" for="opt_resuelto" style="cursor: pointer;">
+                        <i class="bi bi-check-circle-fill me-1"></i> Ya se resolvió / Entregado
+                        <div class="text-muted small fw-normal mt-0.5">El alumno ya entregó el documento o se completó el trámite pendiente.</div>
+                    </label>
+                </div>
+                <div class="form-check mb-3 p-2 rounded" style="background: rgba(108, 117, 125, 0.08); border: 1px solid rgba(108, 117, 125, 0.2);">
+                    <input class="form-check-input ms-1" type="radio" name="swal_accion" id="opt_ignorar" value="ignorar">
+                    <label class="form-check-label fw-bold text-secondary ms-2" for="opt_ignorar" style="cursor: pointer;">
+                        <i class="bi bi-eye-slash-fill me-1"></i> No es alerta / Omitir
+                        <div class="text-muted small fw-normal mt-0.5">No aplica para este caso o se autoriza como excepción permanente.</div>
+                    </label>
+                </div>
+                <div class="mb-1">
+                    <label class="form-label small text-muted mb-1">Nota o motivo (opcional):</label>
+                    <input type="text" id="swal_motivo" class="form-control form-control-sm" placeholder="Ej. Entregó constancia física / Validado por control escolar" style="border-radius: 8px;">
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: '<i class="bi bi-check-lg me-1"></i> Aplicar y Quitar Alerta',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#317d92',
+        cancelButtonColor: '#64748b',
+        reverseButtons: true,
+        focusConfirm: false,
+        preConfirm: () => {
+            const accion = document.querySelector('input[name="swal_accion"]:checked')?.value || 'resuelto';
+            const motivo = document.getElementById('swal_motivo')?.value?.trim() || '';
+            return { accion, motivo };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const { accion, motivo } = result.value;
+            Swal.fire({
+                title: 'Actualizando...',
+                text: 'Guardando estado de la advertencia',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            fetch('/notificaciones/resolver', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    tipo: tipo,
+                    id_referencia: idReferencia,
+                    accion: accion,
+                    subtipo: subtipo,
+                    motivo: motivo
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Advertencia actualizada!',
+                        text: accion === 'resuelto' ? 'Marcada como resuelta exitosamente.' : 'Descartada del panel de pendientes.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+
+                    // Transición y remoción de fila
+                    const tr = btnElement.closest('tr');
+                    if (tr) {
+                        tr.style.transition = 'all 0.35s ease';
+                        tr.style.opacity = '0';
+                        tr.style.transform = 'translateX(25px)';
+                        setTimeout(() => {
+                            tr.remove();
+                            actualizarContadores(tipo);
+                        }, 350);
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.error || 'No se pudo actualizar la advertencia.'
+                    });
+                }
+            })
+            .catch(err => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de red',
+                    text: err.message
+                });
+            });
+        }
+    });
+}
+
+function reactivarAlerta(tipo, idReferencia, subtipo, nombre, btnElement) {
+    Swal.fire({
+        title: '¿Reactivar advertencia?',
+        text: `¿Deseas volver a mostrar la advertencia para "${nombre}" en el panel de pendientes activos?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: '<i class="bi bi-arrow-counterclockwise me-1"></i> Sí, reactivar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#317d92',
+        cancelButtonColor: '#64748b'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Reactivando...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            fetch('/notificaciones/reactivar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    tipo: tipo,
+                    id_referencia: idReferencia,
+                    subtipo: subtipo
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Reactivada',
+                        text: 'La advertencia volverá a mostrarse en los pendientes.',
+                        timer: 1200,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', data.error || 'No se pudo reactivar la advertencia.', 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Error', err.message, 'error');
+            });
+        }
+    });
+}
+
+function actualizarContadores(tipo) {
+    // Actualizar pill de la categoría
+    const badgeCat = document.getElementById(`badge-pill-${tipo}`);
+    if (badgeCat) {
+        let val = parseInt(badgeCat.innerText) || 0;
+        if (val > 0) badgeCat.innerText = val - 1;
+    }
+
+    // Actualizar pill todos y badge principal
+    const badgeTodos = document.getElementById('badge-pill-todos');
+    const badgeHeader = document.getElementById('badge-header-total');
+    let total = 0;
+    if (badgeTodos) {
+        let val = parseInt(badgeTodos.innerText) || 0;
+        total = Math.max(0, val - 1);
+        badgeTodos.innerText = total;
+    }
+    if (badgeHeader) {
+        badgeHeader.innerText = `${total} alertas`;
+    }
+
+    // Incrementar pill resueltas
+    const badgeResueltas = document.getElementById('badge-pill-resueltas');
+    if (badgeResueltas) {
+        let val = parseInt(badgeResueltas.innerText) || 0;
+        badgeResueltas.innerText = val + 1;
+    }
+
+    // Verificar si quedan filas visibles
+    const filasRestantes = document.querySelectorAll('.fila-alerta');
+    let visibles = 0;
+    filasRestantes.forEach(fila => {
+        const cat = fila.dataset.categoria;
+        if (categoriaActual === 'todos' && cat !== 'resueltas') visibles++;
+        else if (categoriaActual === cat) visibles++;
+    });
+
+    const filaVacia = document.getElementById('fila-vacia');
+    if (filaVacia) {
+        filaVacia.style.setProperty('display', visibles === 0 ? 'table-row' : 'none', 'important');
+    }
 }
 </script>
 @endsection
