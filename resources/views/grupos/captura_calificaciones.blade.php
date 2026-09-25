@@ -1030,7 +1030,7 @@ function renderDatosControlOficial(data) {
     document.getElementById('badgeClaveGrupoOficial').textContent = grupo.clave || 'GRUPO';
 
     // 1. Obtener periodos únicos de las materias
-    const isBti = parseInt(grupo.id_centroTrabajo) === 2;
+    const isBti = (parseInt(grupo.id_centroTrabajo) === 2 || (grupo.nombreCentroTrabajo || '').toUpperCase().includes('BTI'));
     const labelPeriodo = document.getElementById('labelPeriodoCaptura');
     if (labelPeriodo) {
         labelPeriodo.textContent = isBti ? 'SEMESTRE:' : 'MÓDULO:';
@@ -1148,7 +1148,6 @@ function renderDatosControlOficial(data) {
 
     // Detectar si el grupo es Semestral (BTI o Informatica)
     const isSemestral = (grupo.id_tipoPeriodo === 1 || grupo.id_centroTrabajo === 2 || grupo.id_centroTrabajo === 1);
-    const isBti = (parseInt(grupo.id_centroTrabajo) === 2 || (grupo.nombreCentroTrabajo || '').toUpperCase().includes('BTI'));
     const mostrarAsistencias = !isBti;
 
     // Ajustar thead dinámicamente
@@ -1968,7 +1967,7 @@ function enviarPeticionGuardar(finalizar) {
 }
 
 // Carga Inicial
-document.addEventListener("DOMContentLoaded", function() {
+function inicializarModuloCaptura() {
     // Mover modales a document.body para evitar stacking context con navbar y sidebar fijos
     const modal = document.getElementById('modalCapturaMateriaGrupo');
     const modalContainer = document.getElementById('contenedorModal') || document.body;
@@ -1996,7 +1995,13 @@ document.addEventListener("DOMContentLoaded", function() {
             abrirCapturaGrupoMateria(parseInt(paramGrupo), paramMateria ? parseInt(paramMateria) : null);
         }, 600);
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener("DOMContentLoaded", inicializarModuloCaptura);
+} else {
+    inicializarModuloCaptura();
+}
 </script>
 
 @endsection
