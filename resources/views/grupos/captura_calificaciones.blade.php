@@ -648,20 +648,21 @@ function aplicarFiltros() {
 
     const filtrados = listaTodosGrupos.filter(g => {
         if (cctFiltro !== '') {
-            if (String(g.id_centroTrabajo) !== String(cctFiltro)) {
+            const idCct = g.id_centroTrabajo ?? g.id_centro_trabajo;
+            if (String(idCct) !== String(cctFiltro)) {
                 return false;
             }
         }
         if (estatusFiltro !== '') {
-            const statusG = (g.statusGrupo || 'ACTIVO').toUpperCase();
+            const statusG = String(g.statusGrupo || g.status_grupo || 'ACTIVO').toUpperCase();
             if (statusG !== estatusFiltro) {
                 return false;
             }
         }
         if (busqueda !== '') {
             const clave = (g.clave || '').toLowerCase();
-            const cct = (g.nombreCentroTrabajo || '').toLowerCase();
-            const nivel = (g.nombre_nivel || '').toLowerCase();
+            const cct = (g.nombreCentroTrabajo || g.nombre_centro_trabajo || '').toLowerCase();
+            const nivel = (g.nombre_nivel || g.nombreNivel || '').toLowerCase();
             if (!clave.includes(busqueda) && !cct.includes(busqueda) && !nivel.includes(busqueda)) {
                 return false;
             }
@@ -677,25 +678,32 @@ function renderTablaGrupos(grupos) {
     const tableWrapper = document.getElementById('contenedorTablaGruposWrapper');
     const emptyState = document.getElementById('emptyStateGrupos');
 
-    if (!grupos.length) {
-        tableWrapper.style.display = 'none';
-        emptyState.style.display = 'block';
+    if (!grupos || !grupos.length) {
+        if (tableWrapper) tableWrapper.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'block';
         return;
     }
 
-    tableWrapper.style.display = 'block';
-    emptyState.style.display = 'none';
+    if (tableWrapper) tableWrapper.style.display = 'block';
+    if (emptyState) emptyState.style.display = 'none';
     let html = '';
 
     grupos.forEach((g, idx) => {
-        const status = (g.statusGrupo || 'ACTIVO').toUpperCase();
+        const status = String(g.statusGrupo || g.status_grupo || 'ACTIVO').toUpperCase();
         const statusBadgeClass = status === 'ACTIVO' ? 'bg-success' : 'bg-danger';
 
-        const cctNombre = g.nombreCentroTrabajo || (g.id_centroTrabajo === 3 ? 'BGNE' : (g.id_centroTrabajo === 2 ? 'BTI' : (g.id_centroTrabajo === 1 ? 'INF. Y COMP.' : '—')));
-        const cctBadgeClass = g.id_centroTrabajo === 3 ? 'cct-badge-bgne' : (g.id_centroTrabajo === 2 ? 'cct-badge-bti' : 'cct-badge-ic');
+        const idCct = parseInt(g.id_centroTrabajo ?? g.id_centro_trabajo, 10);
+        const cctNombre = g.nombreCentroTrabajo || g.nombre_centro_trabajo || (idCct === 3 ? 'BGNE' : (idCct === 2 ? 'BTI' : (idCct === 1 ? 'INF. Y COMP.' : '—')));
+        const cctBadgeClass = idCct === 3 ? 'cct-badge-bgne' : (idCct === 2 ? 'cct-badge-bti' : 'cct-badge-ic');
 
-        const nivelNombre = g.nombre_nivel || (g.id_nivel_academico ? (g.id_nivel_academico <= 6 ? `${g.id_nivel_academico}° Trimestre` : `${g.id_nivel_academico - 6}° Semestre`) : '—');
-        const progreso = calcularProgresoPeriodo(g);
+        const nivelNombre = g.nombre_nivel || g.nombreNivel || (g.id_nivel_academico ? (g.id_nivel_academico <= 6 ? `${g.id_nivel_academico}° Trimestre` : `${g.id_nivel_academico - 6}° Semestre`) : '—');
+        
+        let progreso = { percent: 0, nivelText: 'Periodo', inicioPeriodo: '—', finPeriodo: '—' };
+        try {
+            progreso = calcularProgresoPeriodo(g) || progreso;
+        } catch (eProg) {
+            console.warn('Error calculando progreso para grupo:', g, eProg);
+        }
 
         const fechaIniStr = formatearFecha(g.fechaInicio);
         const fechaFinStr = formatearFecha(g.fechaFin);
@@ -706,7 +714,7 @@ function renderTablaGrupos(grupos) {
             <td>
                 <div class="d-flex align-items-center">
                     <i class="fa-solid fa-users me-2" style="color: rgb(49, 125, 146);"></i>
-                    <strong class="text-dark fs-6">${g.clave}</strong>
+                    <strong class="text-dark fs-6">${g.clave || '—'}</strong>
                 </div>
             </td>
             <td>
@@ -748,7 +756,7 @@ function renderTablaGrupos(grupos) {
         `;
     });
 
-    tbody.innerHTML = html;
+    if (tbody) tbody.innerHTML = html;
 }
 
 // ==========================================
