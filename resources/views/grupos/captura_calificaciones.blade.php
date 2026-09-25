@@ -1924,67 +1924,121 @@ function enviarPeticionGuardar(finalizar) {
         }
     });
 
-    fetch(`/grupos/${grupoCapturaActualId}/calificaciones-materia/${idMateria}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ 
-            calificaciones: calificaciones,
-            finalizar: finalizar
-        })
-    })
-    .then(async res => {
+    function obtenerCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') 
+            || '{{ csrf_token() }}';
+    }
+
+    async function ejecutarPeticionGuardar(token, esReintento = false) {
+        const res = await fetch(`/grupos/${grupoCapturaActualId}/calificaciones-materia/${idMateria}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': token
+            },
+            body: JSON.stringify({ 
+                calificaciones: calificaciones,
+                finalizar: finalizar
+            })
+        });
+
         const resp = await res.json().catch(() => null);
+
         if (!res.ok) {
-            if (res.status === 419) {
-                throw new Error('La sesión ha expirado (Error 419). Por favor recarga la página con F5.');
+            // Manejo de Error 419 (Token CSRF expirado o sesión inactiva)
+            if (res.status === 419 && !esReintento) {
+                console.warn('Token CSRF expirado (419), renovando token automáticamente...');
+                try {
+                    const csrfRes = await fetch('/refresh-csrf', {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (csrfRes.ok) {
+                        const csrfData = await csrfRes.json();
+                        if (csrfData && csrfData.csrf_token) {
+                            const meta = document.querySelector('meta[name="csrf-token"]');
+                            if (meta) meta.setAttribute('content', csrfData.csrf_token);
+                            // Reintentar de forma transparente con el token nuevo sin perder datos capturados
+                            return await ejecutarPeticionGuardar(csrfData.csrf_token, true);
+                        }
+                    }
+                } catch (retryErr) {
+                    console.error('Error al renovar token CSRF:', retryErr);
+                }
+                throw new Error('La sesión de seguridad ha expirado (Error 419). Tus calificaciones siguen seguras en la pantalla: no cierres esta ventana. Puedes abrir otra pestaña, verificar tu sesión y volver a presionar Guardar.');
             }
+
             if (res.status === 401) {
-                throw new Error('Tu sesión ha finalizado. Por favor vuelve a iniciar sesión.');
+                throw new Error('Tu sesión ha finalizado (Error 401). Abre una nueva pestaña para iniciar sesión sin cerrar esta ventana, y luego presiona Guardar nuevamente.');
             }
-            throw new Error((resp && (resp.error || resp.message)) || `Error en el servidor (${res.status})`);
+
+            const errorDetalle = (resp && (resp.error || resp.message)) || `Error en el servidor (${res.status})`;
+            throw new Error(errorDetalle);
         }
+
         return resp;
-    })
-    .then(resp => {
-        if (resp.success) {
-            Swal.fire({
-                icon: 'success',
-                title: finalizar ? '¡Enviado!' : '¡Guardado!',
-                text: finalizar ? 'Calificaciones enviadas y guardadas exitosamente.' : 'Calificaciones de la materia registradas en borrador.',
-                confirmButtonColor: 'rgb(49, 125, 146)'
-            });
-            // Recargar modal para actualizar estado de solo lectura y ver los cambios reflejados
-            abrirCapturaGrupoMateria(grupoCapturaActualId, idMateria);
-        } else {
+    }
+
+    ejecutarPeticionGuardar(obtenerCsrfToken())
+        .then(resp => {
+            if (resp && resp.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: finalizar ? '¡Enviado!' : '¡Guardado!',
+                    text: finalizar ? 'Calificaciones enviadas y guardadas exitosamente.' : 'Calificaciones de la materia registradas en borrador.',
+                    confirmButtonColor: 'rgb(49, 125, 146)'
+                });
+                // Recargar modal para actualizar estado de solo lectura y ver los cambios reflejados
+                abrirCapturaGrupoMateria(grupoCapturaActualId, idMateria);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al Guardar',
+                    text: (resp && (resp.error || resp.message)) || 'No se pudieron guardar las calificaciones.',
+                    confirmButtonColor: 'rgb(49, 125, 146)'
+                });
+            }
+        })
+        .catch(err => {
+            console.error('Error al guardar:', err);
+            const msg = err.message || 'Ocurrió un error inesperado al enviar las calificaciones.';
             Swal.fire({
                 icon: 'error',
-                title: 'Error',
-                text: resp.error || resp.message || 'No se pudieron guardar las calificaciones.',
-                confirmButtonColor: 'rgb(49, 125, 146)'
+                title: 'Error al Guardar',
+                html: `<div class="text-start">
+                        <p class="mb-2"><strong>Detalle del error:</strong></p>
+                        <div class="alert alert-danger p-2 mb-2" style="font-size: 0.88rem; word-break: break-word;">
+                            ${msg}
+                        </div>
+                        <p class="text-muted small mb-0"><i class="fa-solid fa-circle-check text-success me-1"></i>Tus notas ingresadas siguen en pantalla; no se han borrado.</p>
+                       </div>`,
+                confirmButtonColor: 'rgb(49, 125, 146)',
+                confirmButtonText: 'Entendido'
             });
-        }
-    })
-    .catch(err => {
-        console.error('Error al guardar:', err);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Ocurrió un error al enviar las calificaciones.',
-            confirmButtonColor: 'rgb(49, 125, 146)'
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Guardar Calificaciones de la Asignatura';
         });
-    })
-    .finally(() => {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Guardar Calificaciones de la Asignatura';
-    });
 }
 
 // Carga Inicial
 function inicializarModuloCaptura() {
+    // Mantener activa la sesión y el token CSRF periódicamente cada 4 minutos mientras el usuario captura
+    setInterval(function() {
+        fetch('/refresh-csrf', {
+            headers: { 'Accept': 'application/json', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data && data.csrf_token) {
+                const meta = document.querySelector('meta[name="csrf-token"]');
+                if (meta) meta.setAttribute('content', data.csrf_token);
+            }
+        })
+        .catch(() => {});
+    }, 4 * 60 * 1000);
+
     // Mover modales a document.body para evitar stacking context con navbar y sidebar fijos
     const modal = document.getElementById('modalCapturaMateriaGrupo');
     const modalContainer = document.getElementById('contenedorModal') || document.body;

@@ -48,6 +48,16 @@ Route::get('/materias-usuario', [CalificacionesController::class, 'materiasUsuar
     
 Route::middleware('auth.session')->group(function () {
 
+    Route::get('/refresh-csrf', function () {
+        return response()->json([
+            'csrf_token' => csrf_token(),
+            'session_active' => true
+        ])
+        ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+        ->header('Pragma', 'no-cache')
+        ->header('Expires', '0');
+    });
+
     Route::get('/home', function () {
         if (session('rol') === 'DOCENTE') {
             return redirect()->route('horarios_docentes');
