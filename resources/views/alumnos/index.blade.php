@@ -3176,45 +3176,33 @@ window.recalcularFilaKardexSemestral = function(inputEl) {
     const v2 = parseFloat(p2Inp.value);
     const v3 = parseFloat(p3Inp.value);
 
-    // 1. Verificar si los 3 parciales están llenos
-    const partialsFilled = !isNaN(v1) && !isNaN(v2) && !isNaN(v3);
+    // Habilitar inputs de semestral y extraordinario sin bloqueos
+    if (semInp) {
+        semInp.disabled = false;
+        semInp.placeholder = "0.0";
+    }
+    if (extInp) {
+        extInp.disabled = false;
+        extInp.placeholder = "0.0";
+    }
 
-    if (partialsFilled) {
-        const sumPartials = v1 + v2 + v3;
-        if (sumPartials < 18) {
-            // No tiene derecho a semestral. Va directamente a extraordinario
-            semInp.value = "";
-            semInp.disabled = true;
-            semInp.placeholder = "N/A";
-            
-            extInp.disabled = false;
-            extInp.placeholder = "0.0";
-            
-            const extVal = parseFloat(extInp.value);
-            if (!isNaN(extVal)) {
-                pFinalInp.value = Math.min(extVal, 7.0).toFixed(1);
-            } else {
-                pFinalInp.value = ((v1 + v2 + v3) / 3).toFixed(1);
-            }
+    const semVal = semInp ? parseFloat(semInp.value) : NaN;
+    const extVal = extInp ? parseFloat(extInp.value) : NaN;
+
+    if (!isNaN(extVal)) {
+        // 1. Extraordinario tope 7
+        pFinalInp.value = Math.min(extVal, 7.0).toFixed(1);
+    } else if (!isNaN(semVal)) {
+        // 2. Semestral promedio con parciales
+        const partials = [v1, v2, v3].filter(v => !isNaN(v));
+        if (partials.length > 0) {
+            const count = partials.length === 3 ? 4 : (partials.length + 1);
+            pFinalInp.value = ((partials.reduce((a, b) => a + b, 0) + semVal) / count).toFixed(1);
         } else {
-            semInp.disabled = false;
-            semInp.placeholder = "0.0";
-            
-            extInp.value = "";
-            extInp.disabled = true;
-            extInp.placeholder = "N/A";
-
-            const semVal = parseFloat(semInp.value);
-            if (!isNaN(semVal)) {
-                pFinalInp.value = ((v1 + v2 + v3 + semVal) / 4).toFixed(1);
-            } else {
-                pFinalInp.value = ((v1 + v2 + v3) / 3).toFixed(1);
-            }
+            pFinalInp.value = semVal.toFixed(1);
         }
     } else {
-        semInp.disabled = false;
-        extInp.disabled = false;
-        
+        // 3. Promedio provisional de parciales
         let vals = [];
         if (!isNaN(v1)) vals.push(v1);
         if (!isNaN(v2)) vals.push(v2);

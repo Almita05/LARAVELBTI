@@ -1502,67 +1502,48 @@ function recalcularFilaSemestral(inputEl) {
     const isSoloLectura = datosGrupoMateriaActual && datosGrupoMateriaActual.solo_lectura === true;
     const isDocente = '{{ session("rol") }}' === 'DOCENTE';
 
-    // 1. Verificar si los 3 parciales están llenos
-    const partialsFilled = !isNaN(v1) && !isNaN(v2) && !isNaN(v3);
-
-    if (partialsFilled) {
-        const sumPartials = v1 + v2 + v3;
-        if (sumPartials < 18) {
-            // No tiene derecho a semestral. Va directamente a extraordinario
-            if (semInp) {
-                semInp.value = "";
-                semInp.disabled = true;
-                semInp.placeholder = "N/A";
-            }
-            
-            if (extInp) {
-                extInp.disabled = isSoloLectura || (isDocente && !config.captura_extraordinario);
-                extInp.placeholder = "0-10";
-            }
-            
-            const extVal = extInp ? parseFloat(extInp.value) : NaN;
-            if (!isNaN(extVal) && pFinalInp) {
-                // Promedio final = extraordinario capped at 7 entero
-                pFinalInp.value = Math.min(Math.round(extVal), 7);
-            } else if (pFinalInp) {
-                // Promedio provisional reprobatorio de los 3 parciales mientras no presente extraordinario
-                pFinalInp.value = Math.round((v1 + v2 + v3) / 3);
-            }
+    // Determinar habilitación de semestral y extraordinario
+    if (semInp) {
+        if (!isDocente) {
+            // Como administrador siempre se puede capturar semestral sin bloqueos
+            semInp.disabled = isSoloLectura;
         } else {
-            // Habilitar semestral, deshabilitar extraordinario
-            if (semInp) {
-                semInp.disabled = isSoloLectura || (isDocente && !config.captura_semestral);
-                semInp.placeholder = "0-10";
-            }
-            
-            if (extInp) {
-                extInp.value = "";
-                extInp.disabled = true;
-                extInp.placeholder = "N/A";
-            }
-
-            const semVal = semInp ? parseFloat(semInp.value) : NaN;
-            if (!isNaN(semVal) && pFinalInp) {
-                // Promedio final = (P1 + P2 + P3 + Semestral) / 4 redondeado a entero
-                pFinalInp.value = Math.round((v1 + v2 + v3 + semVal) / 4);
-            } else if (pFinalInp) {
-                // Si aún no se captura el examen semestral, mostrar promedio provisional de parciales
-                pFinalInp.value = Math.round((v1 + v2 + v3) / 3);
-            }
+            // Para docente depende del calendario oficial
+            semInp.disabled = isSoloLectura || !config.captura_semestral;
         }
-    } else {
-        // Parciales incompletos, habilitar según calendario y calcular promedio provisional de parciales
-        if (semInp) semInp.disabled = isSoloLectura || (isDocente && !config.captura_semestral);
-        if (extInp) extInp.disabled = isSoloLectura || (isDocente && !config.captura_extraordinario);
-        
-        let vals = [];
-        if (!isNaN(v1)) vals.push(v1);
-        if (!isNaN(v2)) vals.push(v2);
-        if (!isNaN(v3)) vals.push(v3);
-        
-        if (vals.length > 0 && pFinalInp) {
-            pFinalInp.value = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
-        } else if (pFinalInp) {
+        semInp.placeholder = "0-10";
+    }
+
+    if (extInp) {
+        if (!isDocente) {
+            // Como administrador siempre se puede capturar extraordinario
+            extInp.disabled = isSoloLectura;
+        } else {
+            // Para docente depende del calendario oficial
+            extInp.disabled = isSoloLectura || !config.captura_extraordinario;
+        }
+        extInp.placeholder = "0-10";
+    }
+
+    // Cálculo del promedio final
+    if (!isNaN(extVal) && pFinalInp) {
+        // 1. Si capturó examen extraordinario, promedio final es extraordinario (tope 7)
+        pFinalInp.value = Math.min(Math.round(extVal), 7);
+    } else if (!isNaN(semVal) && pFinalInp) {
+        // 2. Si capturó examen semestral, promedio de parciales capturados + semestral
+        const partials = [v1, v2, v3].filter(v => !isNaN(v));
+        if (partials.length > 0) {
+            const count = partials.length === 3 ? 4 : (partials.length + 1);
+            pFinalInp.value = Math.round((partials.reduce((a, b) => a + b, 0) + semVal) / count);
+        } else {
+            pFinalInp.value = Math.round(semVal);
+        }
+    } else if (pFinalInp) {
+        // 3. Si no hay semestral ni extraordinario, promedio provisional de los parciales capturados
+        const partials = [v1, v2, v3].filter(v => !isNaN(v));
+        if (partials.length > 0) {
+            pFinalInp.value = Math.round(partials.reduce((a, b) => a + b, 0) / partials.length);
+        } else {
             pFinalInp.value = "";
         }
     }
