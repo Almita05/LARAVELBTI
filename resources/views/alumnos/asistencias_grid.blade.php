@@ -291,15 +291,15 @@
                 <div class="modal-body py-4">
                     <div class="mb-3">
                         <label for="input-nombre" class="form-label text-muted uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">NOMBRE(S)</label>
-                        <input type="text" class="form-control text-dark" id="input-nombre" required placeholder="EJ. JUAN CARLOS" style="background: rgba(255, 255, 255, 0.5); border-radius: 10px; border: 1px solid rgba(49, 125, 146, 0.2); height: 42px;">
+                        <input type="text" class="form-control text-dark" id="input-nombre" required placeholder="EJ. JUAN CARLOS" style="background: rgba(255, 255, 255, 0.5); border-radius: 10px; border: 1px solid rgba(49, 125, 146, 0.2); height: 42px; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
                     </div>
                     <div class="mb-3">
                         <label for="input-paterno" class="form-label text-muted uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">APELLIDO PATERNO</label>
-                        <input type="text" class="form-control text-dark" id="input-paterno" required placeholder="EJ. PÉREZ" style="background: rgba(255, 255, 255, 0.5); border-radius: 10px; border: 1px solid rgba(49, 125, 146, 0.2); height: 42px;">
+                        <input type="text" class="form-control text-dark" id="input-paterno" required placeholder="EJ. PÉREZ" style="background: rgba(255, 255, 255, 0.5); border-radius: 10px; border: 1px solid rgba(49, 125, 146, 0.2); height: 42px; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
                     </div>
                     <div class="mb-3">
                         <label for="input-materno" class="form-label text-muted uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">APELLIDO MATERNO</label>
-                        <input type="text" class="form-control text-dark" id="input-materno" placeholder="EJ. GÓMEZ" style="background: rgba(255, 255, 255, 0.5); border-radius: 10px; border: 1px solid rgba(49, 125, 146, 0.2); height: 42px;">
+                        <input type="text" class="form-control text-dark" id="input-materno" placeholder="EJ. GÓMEZ" style="background: rgba(255, 255, 255, 0.5); border-radius: 10px; border: 1px solid rgba(49, 125, 146, 0.2); height: 42px; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
@@ -368,13 +368,15 @@
         border: 1px solid rgba(255,255,255,0.15);
         background: transparent;
         color: #94a3b8;
-        font-size: 0.72rem;
-        font-weight: 700;
+        font-size: 0.78rem;
+        font-weight: 800;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         transition: all 0.15s;
+        text-transform: uppercase;
+        line-height: 1;
     }
     .btn-circle-status.status-A {
         background-color: #22c55e !important;
@@ -1351,9 +1353,9 @@
                     else if (edicionBloqueada) btnTitle = 'Sólo lectura (No es hoy)';
 
                     let simbolo = '-';
-                    if (estatus === 'A') simbolo = ':.';
-                    else if (estatus === 'F') simbolo = '\\';
-                    else if (estatus === 'R') simbolo = '.';
+                    if (estatus === 'A') simbolo = 'A';
+                    else if (estatus === 'F') simbolo = 'F';
+                    else if (estatus === 'R') simbolo = 'R';
                     else if (estatus === 'J') simbolo = 'J';
 
                     td.innerHTML = `
@@ -1403,9 +1405,9 @@
 
         // Actualizar visualmente el botón
         let simbolo = '-';
-        if (nuevo === 'A') simbolo = ':.';
-        else if (nuevo === 'F') simbolo = '\\';
-        else if (nuevo === 'R') simbolo = '.';
+        if (nuevo === 'A') simbolo = 'A';
+        else if (nuevo === 'F') simbolo = 'F';
+        else if (nuevo === 'R') simbolo = 'R';
         else if (nuevo === 'J') simbolo = 'J';
 
         btn.className = `btn-circle-status ${nuevo ? 'status-' + nuevo : ''}`;
@@ -1509,9 +1511,9 @@
     function crearAlumno(e) {
         e.preventDefault();
 
-        const nombre = document.getElementById('input-nombre').value.trim();
-        const paterno = document.getElementById('input-paterno').value.trim();
-        const materno = document.getElementById('input-materno').value.trim();
+        const nombre = document.getElementById('input-nombre').value.trim().toUpperCase();
+        const paterno = document.getElementById('input-paterno').value.trim().toUpperCase();
+        const materno = document.getElementById('input-materno').value.trim().toUpperCase();
 
         if (!nombre || !paterno) {
             Swal.fire({
@@ -1737,9 +1739,9 @@
                 const estatus = record ? record.estatus : '';
                 
                 let simbolo = '';
-                if (estatus === 'A') simbolo = ':.';
-                else if (estatus === 'F') simbolo = '\\';
-                else if (estatus === 'R') simbolo = '.';
+                if (estatus === 'A') simbolo = 'A';
+                else if (estatus === 'F') simbolo = 'F';
+                else if (estatus === 'R') simbolo = 'R';
                 else if (estatus === 'J') simbolo = 'J';
                 
                 let cellColor = '';
@@ -1898,9 +1900,9 @@
                 const estatus = record ? record.estatus : '';
                 
                 let simbolo = '';
-                if (estatus === 'A') simbolo = ':.';
-                else if (estatus === 'F') simbolo = '\\';
-                else if (estatus === 'R') simbolo = '.';
+                if (estatus === 'A') simbolo = 'A';
+                else if (estatus === 'F') simbolo = 'F';
+                else if (estatus === 'R') simbolo = 'R';
                 else if (estatus === 'J') simbolo = 'J';
                 
                 let cellStyle = 'border: 1px solid #000000; text-align: center;';
