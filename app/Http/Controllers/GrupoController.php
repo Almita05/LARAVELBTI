@@ -67,24 +67,34 @@ class GrupoController extends Controller
         $payload = $request->all();
         $payload['id_docente'] = session('id_docente');
         $payload['rol'] = session('rol');
+        $payload['user'] = session('nombre') ?: session('usuario') ?: 'SISTEMA';
 
         $url = config('services.api.base_url') . '/grupos/' . $id_grupo . '/calificaciones-materia/' . $id_materia;
-        $response = Http::withHeaders([
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json'
-        ])->post($url, $payload);
+        
+        try {
+            $response = Http::timeout(30)->withHeaders([
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json'
+            ])->post($url, $payload);
 
-        if ($response->failed()) {
-            $errorData = $response->json();
-            $errorMsg = is_array($errorData) ? ($errorData['error'] ?? $errorData['message'] ?? $response->body()) : $response->body();
+            if ($response->failed()) {
+                $errorData = $response->json();
+                $errorMsg = is_array($errorData) ? ($errorData['error'] ?? $errorData['message'] ?? $response->body()) : $response->body();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al guardar calificaciones.',
+                    'error' => $errorMsg
+                ], $response->status() ?: 500);
+            }
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al guardar calificaciones.',
-                'error' => $errorMsg
-            ], $response->status() ?: 500);
+                'message' => 'Error de conexión con el servicio de base de datos.',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        return response()->json($response->json(), $response->status());
     }
 
     /**
@@ -141,18 +151,29 @@ class GrupoController extends Controller
             $params['idNivelAcademico'] = $request->id_nivel_academico;
         }
 
-        $response = Http::get($url, $params);
+        try {
+            $response = Http::timeout(10)->get($url, $params);
 
-        if ($response->failed()) {
+            if ($response->failed()) {
+                return response()->json([
+                    'data' => [],
+                    'total' => 0,
+                    'page' => 1,
+                    'total_pages' => 1
+                ]);
+            }
+
+            return $response->json();
+        } catch (\Throwable $e) {
+            \Log::error("Error de conexión al obtener grupos desde {$url}: " . $e->getMessage());
             return response()->json([
                 'data' => [],
                 'total' => 0,
                 'page' => 1,
-                'total_pages' => 1
-            ]);
+                'total_pages' => 1,
+                'error' => 'No se pudo conectar con el servidor API backend.'
+            ], 500);
         }
-
-        return $response->json();
     }
 
 

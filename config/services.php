@@ -35,9 +35,15 @@ return [
 
     // 👇 Agrega esto
     'google' => [
-        'credentials' => env('GOOGLE_CREDENTIALS'),
+        'credentials'     => env('GOOGLE_CREDENTIALS'),
         'sheet_id'        => env('GOOGLE_SHEET_ID'),
-    'school_sheet_id' => env('GOOGLE_SCHOOL_SHEET_ID'),
+        'school_sheet_id' => env('GOOGLE_SCHOOL_SHEET_ID'),
+    ],
+
+    'moodle' => [
+        'base_url'       => rtrim(env('MOODLE_URL', 'https://moodle.btinteramericano.com'), '/'),
+        'token'          => env('MOODLE_TOKEN', '80d35103d66bd559a56a3bffd5893f3b'),
+        'role_online_id' => (int)env('MOODLE_ROLE_ONLINE_ID', 9),
     ],
 
 ];

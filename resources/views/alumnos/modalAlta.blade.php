@@ -195,12 +195,18 @@
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <form id="formAlumno" class="modal-content glass-modal" novalidate>
 
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold">
+            <div class="modal-header border-0 d-flex align-items-center justify-content-between">
+                <h5 class="modal-title fw-bold mb-0">
                     <i class="bi bi-person-plus-fill me-2"></i>
                     Alta de Alumno
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Botón Acceso Rápido Online en Modo Edición -->
+                    <button type="button" class="btn btn-sm text-white shadow-sm" id="btnModalOnlineHeader" style="display: none; background: linear-gradient(135deg, #7b2cbf 0%, #5a189a 100%); border: none; border-radius: 10px; font-weight: 600; padding: 0.38rem 0.9rem;" onclick="abrirModalOnlineDesdeEditar()" title="Configuración de Moodle y Pagos">
+                        <i class="fa-solid fa-laptop me-1"></i> <span id="txtBtnModalOnlineHeader">Modalidad Online</span>
+                    </button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
             </div>
 
             <div class="modal-body p-4">
@@ -496,6 +502,69 @@
                                 <div id="avisoSeleccionarCCT" class="alert alert-light border text-muted py-2 px-3 mb-0" style="font-size:0.85rem;">
                                     <i class="bi bi-arrow-up-circle me-1 text-primary"></i>
                                     Seleccione primero un <strong>CCT</strong> para cargar los periodos y grupos compatibles.
+                                </div>
+
+                                <!-- ======================================================== -->
+                                <!-- BLOQUE MODALIDAD DE ESTUDIO (PRESENCIAL / ONLINE)        -->
+                                <!-- ======================================================== -->
+                                <div class="card p-3 border-0 rounded-3 mt-3 mb-2" style="background: linear-gradient(135deg, #fdfaff 0%, #f5e8ff 100%); border: 1.5px solid #d8b4fe !important; border-radius: 14px !important;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="fw-bold mb-0" style="color: #6b21a8; font-size: 0.92rem;">
+                                            <i class="fa-solid fa-laptop-code me-1" style="color: #7b2cbf;"></i> Modalidad de Estudio y Aula Moodle
+                                        </h6>
+                                        <span id="badgeModalidadEstado" class="badge" style="background-color: #6b21a8; font-size: 0.78rem; padding: 5px 10px; border-radius: 8px;">PRESENCIAL</span>
+                                    </div>
+
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-secondary mb-1">Modalidad del Alumno:</label>
+                                            <select name="modalidad_estudio" id="selectModalidadEstudioForm" class="form-select form-select-premium" onchange="toggleModalidadForm(this.value)">
+                                                <option value="PRESENCIAL">🏫 Modalidad Presencial</option>
+                                                <option value="ONLINE">💻 Modalidad En Línea (Moodle)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6" id="boxDiaPagoForm" style="display: none;">
+                                            <label class="form-label small fw-bold text-secondary mb-1">
+                                                <i class="fa-solid fa-calendar-day text-primary me-1"></i> Día de Cobro Semanal:
+                                            </label>
+                                            <select name="dia_pago" id="selectDiaPagoForm" class="form-select form-select-premium">
+                                                <option value="SABADO">Cada Sábado (Fin de semana)</option>
+                                                <option value="DOMINGO">Cada Domingo (Fin de semana)</option>
+                                                <option value="LUNES">Cada Lunes (Semanal)</option>
+                                                <option value="VIERNES">Cada Viernes</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- DETALLES DE MOODLE Y ACCIONES RÁPIDAS (VISIBLE SI ESTÁ EN LÍNEA) -->
+                                    <div id="panelDetallesOnlineForm" class="mt-3 p-3 bg-white rounded-3 border" style="display: none; border-color: #e9d5ff !important; box-shadow: 0 2px 6px rgba(123,44,191,0.06);">
+                                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                            <div>
+                                                <div class="small fw-bold text-dark mb-1">
+                                                    <i class="fa-solid fa-circle-user text-purple me-1" style="color: #7b2cbf;"></i> Usuario Moodle: 
+                                                    <span class="text-primary font-monospace fw-bold" id="txtMoodleUsernameDisplay">Sin asignar</span>
+                                                </div>
+                                                <div class="text-muted" style="font-size: 0.8rem;">
+                                                    Semana actual pagada: <strong class="text-success" id="txtSemanaPagadaDisplay">Semana 0</strong> 
+                                                    <span class="mx-1">•</span> Próximo cobro: <span class="fw-semibold text-secondary" id="txtProximoPagoDisplay">-</span>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <button type="button" class="btn btn-sm btn-success text-white shadow-sm" onclick="abrirModalPagoDesdeEditar()" style="border-radius: 8px; font-weight: 600; padding: 0.45rem 0.9rem;" title="Registrar Pago y Folio de Ticket">
+                                                    <i class="fa-solid fa-receipt me-1"></i> Registrar Pago / Tickets
+                                                </button>
+                                                <button type="button" class="btn btn-sm text-white shadow-sm" onclick="abrirModalOnlineDesdeEditar()" style="background-color: #7b2cbf; border-radius: 8px; font-weight: 600; padding: 0.45rem 0.9rem;" title="Configurar Acceso en Moodle">
+                                                    <i class="fa-solid fa-laptop-code me-1"></i> Configurar Moodle
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ALERTA INFORMATIVA SI NO TIENE GRUPO ASIGNADO -->
+                                    <div id="alertaGrupoOnlineForm" class="alert alert-danger py-2 px-3 mt-2 mb-0" style="display: none; font-size: 0.83rem; border-radius: 8px;">
+                                        <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                                        <strong>Grupo Obligatorio:</strong> Para que el alumno pueda estar en modalidad en línea debe tener un grupo asignado arriba.
+                                    </div>
                                 </div>
 
                             </div>

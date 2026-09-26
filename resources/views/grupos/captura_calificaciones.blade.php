@@ -69,6 +69,7 @@
 }
 
 .table-calif-oficial {
+    min-width: 1150px;
     width: 100%;
     border-collapse: collapse;
     font-size: 0.86rem;
@@ -310,7 +311,7 @@
                             {{-- MÓDULO / PERIODO --}}
                             <div class="col-12 col-md-6 col-lg-3">
                                 <div class="d-flex align-items-center gap-2">
-                                    <strong class="text-nowrap">MÓDULO:</strong>
+                                    <strong class="text-nowrap" id="labelPeriodoCaptura">MÓDULO:</strong>
                                     <select id="selectPeriodoCaptura" class="form-select form-select-sm fw-bold border-dark shadow-sm" onchange="cambiarPeriodoSeleccionado(this.value)" {{ session('rol') === 'DOCENTE' ? 'disabled' : '' }}>
                                         {{-- Poblado por JS --}}
                                     </select>
@@ -499,17 +500,45 @@ function calcularProgresoPeriodo(g) {
     }
 
     // LÓGICA TRIMESTRAL (BGNE)
-    let currentTrimestre = 1;
-    if (idNivelActualDb !== null && idNivelActualDb !== undefined && idNivelActualDb >= 1 && idNivelActualDb <= 6) {
-        currentTrimestre = idNivelActualDb;
+    let currentTrimestre = (idNivelActualDb !== null && idNivelActualDb !== undefined && idNivelActualDb >= 1 && idNivelActualDb <= 6) ? idNivelActualDb : 1;
+
+    if (g.fechaInicioNivel && g.fechaFinNivel) {
+        const parsedStart = parseToUTCDate(g.fechaInicioNivel);
+        const parsedEnd = parseToUTCDate(g.fechaFinNivel);
+        if (parsedStart && parsedEnd) {
+            periodStartDate = parsedStart;
+            periodEndDate = parsedEnd;
+        }
+    } else {
+        let fInicio = new Date(periodStartDate.getTime());
+        let fFin = new Date(fInicio.getTime() + (12 * 7 * 24 * 60 * 60 * 1000));
+        let lvlCalculado = 1;
+
+        while (true) {
+            fFin = new Date(fInicio.getTime() + (12 * 7 * 24 * 60 * 60 * 1000));
+            if (todayUTC.getTime() <= fFin.getTime() || lvlCalculado >= 6) {
+                break;
+            }
+            fInicio = new Date(fFin.getTime() + (7 * 24 * 60 * 60 * 1000));
+            lvlCalculado++;
+        }
+
+        if (lvlCalculado > currentTrimestre) {
+            currentTrimestre = lvlCalculado;
+            periodStartDate = fInicio;
+            periodEndDate = fFin;
+        } else {
+            const weeksOffset = (currentTrimestre - 1) * 13;
+            periodStartDate = new Date(periodStartDate.getTime() + (weeksOffset * 7 * 24 * 60 * 60 * 1000));
+            periodEndDate = new Date(periodStartDate.getTime() + (12 * 7 * 24 * 60 * 60 * 1000));
+        }
     }
 
-    // Cada trimestre dura 13 semanas (91 días)
-    const weeksOffset = (currentTrimestre - 1) * 13;
-    
-    // periodStartDate es la fechaInicio original del primer trimestre
-    periodStartDate = new Date(periodStartDate.getTime() + (weeksOffset * 7 * 24 * 60 * 60 * 1000));
-    periodEndDate = new Date(periodStartDate.getTime() + (12 * 7 * 24 * 60 * 60 * 1000));
+    // Limitar a fechaFin oficial si existe
+    const groupEndDate = parseToUTCDate(g.fechaFin);
+    if (groupEndDate && periodEndDate.getTime() > groupEndDate.getTime()) {
+        periodEndDate = groupEndDate;
+    }
 
     // Porcentaje de progreso
     let percent = 0;
@@ -526,6 +555,7 @@ function calcularProgresoPeriodo(g) {
 
     return {
         percent: percent,
+        currentNivel: currentTrimestre,
         nivelText: `${currentTrimestre}° ${periodLabel}`,
         inicioPeriodo: toDMY(periodStartDate),
         finPeriodo: toDMY(periodEndDate)
@@ -546,22 +576,22 @@ function formatearFecha(fecha) {
     }
 }
 
-// Convertidor de número a letra para calificaciones escolares (Enteros del 1 al 10 o EQUIVALENCIA)
+// Convertidor de número a letra para calificaciones escolares (Enteros del 0 al 10 o EQUIVALENCIA)
 function numeroALetrasCalificacion(num) {
     if (num === 'EQUIV' || num === 'EQUIVALENCIA') return 'EQUIVALENCIA';
     if (num === null || num === undefined || num === '' || isNaN(num)) return '—';
     const n = parseInt(num, 10);
-    if (isNaN(n) || n < 1 || n > 10) return '—';
+    if (isNaN(n) || n < 0 || n > 10) return '—';
 
     const nombres = {
-        1: 'UNO', 2: 'DOS', 3: 'TRES', 4: 'CUATRO',
+        0: 'CERO', 1: 'UNO', 2: 'DOS', 3: 'TRES', 4: 'CUATRO',
         5: 'CINCO', 6: 'SEIS', 7: 'SIETE', 8: 'OCHO', 9: 'NUEVE', 10: 'DIEZ'
     };
 
     return nombres[n] || String(n);
 }
 
-// Prevención estricta de decimales en teclas (solo enteros 1 al 10 o conmutación por tecla 'E')
+// Prevención estricta de decimales en teclas (solo enteros 0 al 10 o conmutación por tecla 'E')
 function prevenirDecimales(event) {
     const allowedKeys = ['Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'Delete'];
     if (allowedKeys.includes(event.key)) return;
@@ -595,53 +625,73 @@ function prevenirDecimales(event) {
 // ==========================================
 function cargarGruposCaptura() {
     const loading = document.getElementById('loadingGrupos');
-    loading.style.display = 'block';
+    if (loading) loading.style.display = 'block';
 
     fetch('/grupos/lista?limit=200')
-        .then(res => res.json())
+        .then(async res => {
+            const data = await res.json().catch(() => null);
+            if (!res.ok) {
+                throw new Error((data && (data.error || data.message)) || `Error HTTP ${res.status}`);
+            }
+            return data;
+        })
         .then(res => {
-            listaTodosGrupos = Array.isArray(res.data) ? res.data : [];
+            listaTodosGrupos = (res && Array.isArray(res.data)) ? res.data : [];
             aplicarFiltros();
         })
         .catch(err => {
             console.error('Error al cargar grupos:', err);
+            listaTodosGrupos = [];
+            aplicarFiltros();
             Swal.fire({
                 icon: 'error',
-                title: 'Error',
-                text: 'No se pudieron cargar los grupos.',
+                title: 'Error al cargar grupos',
+                text: 'No se pudieron cargar los grupos desde el servidor backend. Verifique que el servicio esté iniciado.',
                 confirmButtonColor: 'rgb(49, 125, 146)'
             });
         })
         .finally(() => {
-            loading.style.display = 'none';
+            if (loading) loading.style.display = 'none';
         });
 }
 
 function setFiltroCct(cctVal) {
     filtroCctActual = cctVal;
+    const select = document.getElementById('selectFiltroCct');
+    if (select && select.value !== cctVal) {
+        select.value = cctVal;
+    }
     aplicarFiltros();
 }
 
 function aplicarFiltros() {
-    const estatusFiltro = document.getElementById('selectFiltroEstatus').value;
-    const busqueda = (document.getElementById('buscadorGrupoCaptura').value || '').toLowerCase().trim();
+    const selectCct = document.getElementById('selectFiltroCct');
+    const cctFiltro = selectCct ? selectCct.value : filtroCctActual;
+    filtroCctActual = cctFiltro;
+
+    const selectEstatus = document.getElementById('selectFiltroEstatus');
+    const estatusFiltro = selectEstatus ? selectEstatus.value : '';
+
+    const inputBusqueda = document.getElementById('buscadorGrupoCaptura');
+    const busqueda = (inputBusqueda ? inputBusqueda.value : '').toLowerCase().trim();
 
     const filtrados = listaTodosGrupos.filter(g => {
-        if (filtroCctActual !== '') {
-            if (String(g.id_centroTrabajo) !== String(filtroCctActual)) {
+        if (cctFiltro !== '') {
+            const idCct = g.id_centroTrabajo ?? g.id_centro_trabajo;
+            if (String(idCct) !== String(cctFiltro)) {
                 return false;
             }
         }
         if (estatusFiltro !== '') {
-            const statusG = (g.statusGrupo || 'ACTIVO').toUpperCase();
+            const statusG = String(g.statusGrupo || g.status_grupo || 'ACTIVO').toUpperCase();
             if (statusG !== estatusFiltro) {
                 return false;
             }
         }
         if (busqueda !== '') {
             const clave = (g.clave || '').toLowerCase();
-            const cct = (g.nombreCentroTrabajo || '').toLowerCase();
-            const nivel = (g.nombre_nivel || '').toLowerCase();
+            const cct = (g.nombreCentroTrabajo || g.nombre_centro_trabajo || '').toLowerCase();
+            const nivel = (g.nombre_nivel || g.nombreNivel || '').toLowerCase();
             if (!clave.includes(busqueda) && !cct.includes(busqueda) && !nivel.includes(busqueda)) {
                 return false;
             }
@@ -657,25 +707,32 @@ function renderTablaGrupos(grupos) {
     const tableWrapper = document.getElementById('contenedorTablaGruposWrapper');
     const emptyState = document.getElementById('emptyStateGrupos');
 
-    if (!grupos.length) {
-        tableWrapper.style.display = 'none';
-        emptyState.style.display = 'block';
+    if (!grupos || !grupos.length) {
+        if (tableWrapper) tableWrapper.style.display = 'none';
+        if (emptyState) emptyState.style.display = 'block';
         return;
     }
 
-    tableWrapper.style.display = 'block';
-    emptyState.style.display = 'none';
+    if (tableWrapper) tableWrapper.style.display = 'block';
+    if (emptyState) emptyState.style.display = 'none';
     let html = '';
 
     grupos.forEach((g, idx) => {
-        const status = (g.statusGrupo || 'ACTIVO').toUpperCase();
+        const status = String(g.statusGrupo || g.status_grupo || 'ACTIVO').toUpperCase();
         const statusBadgeClass = status === 'ACTIVO' ? 'bg-success' : 'bg-danger';
 
-        const cctNombre = g.nombreCentroTrabajo || (g.id_centroTrabajo === 3 ? 'BGNE' : (g.id_centroTrabajo === 2 ? 'BTI' : (g.id_centroTrabajo === 1 ? 'INF. Y COMP.' : '—')));
-        const cctBadgeClass = g.id_centroTrabajo === 3 ? 'cct-badge-bgne' : (g.id_centroTrabajo === 2 ? 'cct-badge-bti' : 'cct-badge-ic');
+        const idCct = parseInt(g.id_centroTrabajo ?? g.id_centro_trabajo, 10);
+        const cctNombre = g.nombreCentroTrabajo || g.nombre_centro_trabajo || (idCct === 3 ? 'BGNE' : (idCct === 2 ? 'BTI' : (idCct === 1 ? 'INF. Y COMP.' : '—')));
+        const cctBadgeClass = idCct === 3 ? 'cct-badge-bgne' : (idCct === 2 ? 'cct-badge-bti' : 'cct-badge-ic');
 
-        const nivelNombre = g.nombre_nivel || (g.id_nivel_academico ? (g.id_nivel_academico <= 6 ? `${g.id_nivel_academico}° Trimestre` : `${g.id_nivel_academico - 6}° Semestre`) : '—');
-        const progreso = calcularProgresoPeriodo(g);
+        const nivelNombre = g.nombre_nivel || g.nombreNivel || (g.id_nivel_academico ? (g.id_nivel_academico <= 6 ? `${g.id_nivel_academico}° Trimestre` : `${g.id_nivel_academico - 6}° Semestre`) : '—');
+        
+        let progreso = { percent: 0, nivelText: 'Periodo', inicioPeriodo: '—', finPeriodo: '—' };
+        try {
+            progreso = calcularProgresoPeriodo(g) || progreso;
+        } catch (eProg) {
+            console.warn('Error calculando progreso para grupo:', g, eProg);
+        }
 
         const fechaIniStr = formatearFecha(g.fechaInicio);
         const fechaFinStr = formatearFecha(g.fechaFin);
@@ -686,7 +743,7 @@ function renderTablaGrupos(grupos) {
             <td>
                 <div class="d-flex align-items-center">
                     <i class="fa-solid fa-users me-2" style="color: rgb(49, 125, 146);"></i>
-                    <strong class="text-dark fs-6">${g.clave}</strong>
+                    <strong class="text-dark fs-6">${g.clave || '—'}</strong>
                 </div>
             </td>
             <td>
@@ -728,7 +785,7 @@ function renderTablaGrupos(grupos) {
         `;
     });
 
-    tbody.innerHTML = html;
+    if (tbody) tbody.innerHTML = html;
 }
 
 // ==========================================
@@ -740,12 +797,40 @@ function abrirCapturaGrupoMateria(idGrupo, idMateria = null) {
     const modalEl = document.getElementById('modalCapturaMateriaGrupo');
     const loading = document.getElementById('loadingMateriaGrupo');
     const content = document.getElementById('contentCapturaMateriaGrupo');
+    // Obtener o inicializar la instancia única del Modal
+    let modalInstance = bootstrap.Modal.getInstance(modalEl);
+    if (!modalInstance) {
+        modalInstance = new bootstrap.Modal(modalEl, {
+            backdrop: 'static',
+            keyboard: true
+        });
+    }
 
-    loading.style.display = 'block';
-    content.style.display = 'none';
+    const yaAbierto = modalEl.classList.contains('show');
 
-    const modal = new bootstrap.Modal(modalEl);
-    modal.show();
+    if (!yaAbierto) {
+        // Limpiar backdrops residuales antes de abrir
+        document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+        document.body.classList.remove('modal-open');
+
+        if (loading) loading.style.display = 'block';
+        if (content) content.style.display = 'none';
+        modalInstance.show();
+    } else {
+        // Si el modal ya está visible, no colapsamos el diálogo
+        // Mostramos el spinner en el tbody de la tabla para una transición limpia
+        const tbody = document.getElementById('tbodyAlumnosCalificacionesMateria');
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="13" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <div class="text-muted mt-2 fw-semibold">Cargando datos de la asignatura...</div>
+                    </td>
+                </tr>
+            `;
+        }
+    }
 
     const urlParams = new URLSearchParams(window.location.search);
     const idDocente = urlParams.get('id_docente');
@@ -763,7 +848,11 @@ function abrirCapturaGrupoMateria(idGrupo, idMateria = null) {
         .then(res => {
             if (res.success && res.data) {
                 datosGrupoMateriaActual = res.data;
-                renderDatosControlOficial(res.data);
+                try {
+                    renderDatosControlOficial(res.data);
+                } catch (renderErr) {
+                    console.error('Error renderizando datos del grupo/materia:', renderErr);
+                }
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -774,7 +863,7 @@ function abrirCapturaGrupoMateria(idGrupo, idMateria = null) {
             }
         })
         .catch(err => {
-            console.error('Error:', err);
+            console.error('Error de red/servidor al obtener grupo:', err);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -783,8 +872,8 @@ function abrirCapturaGrupoMateria(idGrupo, idMateria = null) {
             });
         })
         .finally(() => {
-            loading.style.display = 'none';
-            content.style.display = 'block';
+            if (loading) loading.style.display = 'none';
+            if (content) content.style.display = 'block';
         });
 }
 
@@ -814,7 +903,8 @@ function renderDatosControlOficial(data) {
     const grupo = data.grupo || {};
     const materias = data.materias || [];
     const matSel = data.materiaSeleccionada || {};
-    const alumnos = data.alumnos || [];
+    const rawAlumnos = data.alumnos || [];
+    const alumnos = rawAlumnos.filter(a => !a.statusAlumno || a.statusAlumno.toUpperCase() === 'ACTIVO');
 
     const isSoloLectura = data.solo_lectura === true;
     const disAttr = isSoloLectura ? 'disabled' : '';
@@ -973,10 +1063,17 @@ function renderDatosControlOficial(data) {
     document.getElementById('badgeClaveGrupoOficial').textContent = grupo.clave || 'GRUPO';
 
     // 1. Obtener periodos únicos de las materias
+    const isBti = (parseInt(grupo.id_centroTrabajo) === 2 || (grupo.nombreCentroTrabajo || '').toUpperCase().includes('BTI'));
+    const labelPeriodo = document.getElementById('labelPeriodoCaptura');
+    if (labelPeriodo) {
+        labelPeriodo.textContent = isBti ? 'SEMESTRE:' : 'MÓDULO:';
+    }
+
     const uniqueLevels = [];
     const levelIds = new Set();
+
     materias.forEach(m => {
-        const lvlId = m.id_nivel_academico || grupo.id_nivel_academico;
+        const lvlId = m.id_nivel_academico || (isBti ? null : grupo.id_nivel_academico);
         if (lvlId && !levelIds.has(lvlId)) {
             levelIds.add(lvlId);
             
@@ -1016,7 +1113,13 @@ function renderDatosControlOficial(data) {
         });
     }
 
-    // Seleccionar el periodo correspondiente a la materia seleccionada
+    if ('{{ session("rol") }}' === 'DOCENTE') {
+        selectPeriodo.disabled = true;
+    } else {
+        selectPeriodo.disabled = false;
+    }
+
+    // Seleccionar el periodo correspondiente a la materia seleccionada o nivel del grupo
     const currentPeriodId = matSel.id_nivel_academico || grupo.id_nivel_academico;
     if (currentPeriodId) {
         selectPeriodo.value = currentPeriodId;
@@ -1025,14 +1128,15 @@ function renderDatosControlOficial(data) {
     // 2. Filtrar materias pertenecientes al periodo seleccionado
     const activePeriodId = selectPeriodo.value;
     const filteredMaterias = materias.filter(m => {
-        const lvlId = m.id_nivel_academico || grupo.id_nivel_academico;
+        const lvlId = m.id_nivel_academico || (isBti ? null : grupo.id_nivel_academico);
         return String(lvlId) === String(activePeriodId);
     });
 
     // Si la materia seleccionada no está dentro de este periodo filtrado, auto-seleccionar la primera y recargar
     if (filteredMaterias.length > 0) {
-        const isCurrentMatInPeriod = filteredMaterias.some(m => String(m.idMateria) === String(data.idMateriaSeleccionada));
-        if (!isCurrentMatInPeriod) {
+        const idMatActual = data.idMateriaSeleccionada || (matSel ? matSel.idMateria : null);
+        const isCurrentMatInPeriod = filteredMaterias.some(m => String(m.idMateria) === String(idMatActual));
+        if (!isCurrentMatInPeriod && filteredMaterias[0]) {
             setTimeout(() => {
                 abrirCapturaGrupoMateria(grupoCapturaActualId, filteredMaterias[0].idMateria);
             }, 0);
@@ -1077,6 +1181,7 @@ function renderDatosControlOficial(data) {
 
     // Detectar si el grupo es Semestral (BTI o Informatica)
     const isSemestral = (grupo.id_tipoPeriodo === 1 || grupo.id_centroTrabajo === 2 || grupo.id_centroTrabajo === 1);
+    const mostrarAsistencias = !isBti;
 
     // Ajustar thead dinámicamente
     const thead = document.getElementById('theadCalificacionesOficial');
@@ -1094,7 +1199,7 @@ function renderDatosControlOficial(data) {
                 <th style="width: 80px;">EXTRAORDINARIO</th>
                 <th style="width: 95px;">PROMEDIO FINAL</th>
                 <th style="width: 140px;">Calificación con Letra</th>
-                <th style="width: 120px;">Asistencias</th>
+                ${mostrarAsistencias ? '<th style="width: 120px;">Asistencias</th>' : ''}
                 <th style="min-width: 120px;">Observaciones</th>
             </tr>
         `;
@@ -1116,7 +1221,7 @@ function renderDatosControlOficial(data) {
     // Poblar Tabla de Alumnos
     const tbody = document.getElementById('tbodyAlumnosCalificacionesMateria');
     if (!alumnos.length) {
-        tbody.innerHTML = `<tr><td colspan="${isSemestral ? '13' : '8'}" class="text-center py-4 text-muted">No hay alumnos inscritos en este grupo.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="${isSemestral ? (mostrarAsistencias ? 13 : 12) : 8}" class="text-center py-4 text-muted">No hay alumnos inscritos en este grupo.</td></tr>`;
         document.getElementById('statTotalAlumnos').textContent = '0';
         document.getElementById('statAprobados').textContent = '0';
         document.getElementById('statReprobados').textContent = '0';
@@ -1166,14 +1271,14 @@ function renderDatosControlOficial(data) {
                 const intExtSem = (a.extraordinario !== null && a.extraordinario !== undefined && a.extraordinario !== '') ? parseInt(a.extraordinario) : '';
                 const intFinalSem = (calif !== '' && !isNaN(calif)) ? parseInt(calif) : '';
 
-                p1Input = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p1" value="${intP1}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP1}>`;
-                p2Input = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p2" value="${intP2}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP2}>`;
-                p3Input = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p3" value="${intP3}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP3}>`;
-                semInput = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-semestral" value="${intSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disSem}>`;
-                extInput = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-extraordinario" value="${intExtSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disExt}>`;
+                p1Input = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p1" value="${intP1}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP1}>`;
+                p2Input = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p2" value="${intP2}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP1}>`;
+                p3Input = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p3" value="${intP3}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP1}>`;
+                semInput = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-semestral" value="${intSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disAttr}>`;
+                extInput = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="${intExtSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disExt}>`;
                 finalInput = `
                     <div class="d-flex align-items-center justify-content-center gap-1">
-                        <input type="number" step="1" min="1" max="10" class="input-calif-celda inp-calif-final fw-bold" value="${intFinalSem}" readonly style="background-color: #f1f5f9;" ${disAttr}>
+                        <input type="number" step="1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="${intFinalSem}" readonly style="background-color: #f1f5f9;" ${disAttr}>
                         <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-1 fw-bold shadow-sm" title="Marcar como Equivalencia (alumno transferido)" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" style="font-size: 0.68rem; line-height: 1.2;" ${disAttr}>
                             EQUIV
                         </button>
@@ -1190,18 +1295,18 @@ function renderDatosControlOficial(data) {
                     </div>
                 `;
             } else {
-                // Para BGNE: Solo Final y Extraordinario (enteros del 1 al 10)
+                // Para BGNE: Solo Final y Extraordinario (enteros del 0 al 10)
                 const intCalif = (calif !== '' && !isNaN(calif)) ? parseInt(calif) : '';
                 const intExt = (a.extraordinario !== null && a.extraordinario !== undefined && a.extraordinario !== '' && !isNaN(a.extraordinario)) ? parseInt(a.extraordinario) : '';
                 finalInput = `
                     <div class="d-flex align-items-center justify-content-center gap-1">
-                        <input type="number" step="1" min="1" max="10" class="input-calif-celda inp-calif-final fw-bold" value="${intCalif}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="1-10" ${disP1}>
+                        <input type="number" step="1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="${intCalif}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="0-10" ${disP1}>
                         <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-1 fw-bold shadow-sm" title="Marcar alumno con EQUIVALENCIA" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" style="font-size: 0.68rem; line-height: 1.2;" ${disP1}>
                             EQUIV
                         </button>
                     </div>
                 `;
-                extInput = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-extraordinario" value="${intExt}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="1-10" ${disExt}>`;
+                extInput = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="${intExt}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="0-10" ${disExt}>`;
             }
         }
 
@@ -1220,7 +1325,7 @@ function renderDatosControlOficial(data) {
                 <td style="background-color: #fffbeb; text-align: center;">${extInput}</td>
                 <td style="background-color: #f1f5f9; text-align: center;">${finalInput}</td>
                 <td class="text-center fw-bold td-calif-letra" style="font-size: 0.78rem;">${califLetra}</td>
-                <td style="background-color: #f8fafc; text-align: center;">${asistInput}</td>
+                ${mostrarAsistencias ? `<td class="td-asistencias" style="background-color: #f8fafc; text-align: center;">${asistInput}</td>` : ''}
                 <td><input type="text" class="input-observaciones-celda inp-obs" value="${obs}" placeholder="Opcional..." ${isEquiv ? 'disabled' : ''} ${disAttr}></td>
             </tr>
             `;
@@ -1288,6 +1393,7 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
     const disAttr = isSoloLectura ? 'disabled' : '';
 
     const tdLetra = tr.querySelector('.td-calif-letra');
+    const tdAsist = tr.querySelector('.td-asistencias');
     const inpObs = tr.querySelector('.inp-obs');
 
     if (aEquiv) {
@@ -1308,8 +1414,8 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
                     <input type="hidden" class="inp-calif-final" value="EQUIV">
                 </div>
             `;
-            if (tr.children[11]) {
-                tr.children[11].innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
+            if (tdAsist) {
+                tdAsist.innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
             }
         } else {
             // BGNE (children[4] es Final, children[5] es Extraordinario)
@@ -1333,21 +1439,21 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
         tr.setAttribute('data-is-equivalencia', 'false');
 
         if (isSemestral) {
-            tr.children[4].innerHTML = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p1" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP1}>`;
-            tr.children[5].innerHTML = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p2" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP1}>`;
-            tr.children[6].innerHTML = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-p3" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disP1}>`;
-            tr.children[7].innerHTML = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-semestral" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disAttr}>`;
-            tr.children[8].innerHTML = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-extraordinario" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="1-10" ${disExt}>`;
+            tr.children[4].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p1" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP1}>`;
+            tr.children[5].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p2" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP1}>`;
+            tr.children[6].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p3" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP1}>`;
+            tr.children[7].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-semestral" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disAttr}>`;
+            tr.children[8].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disExt}>`;
             tr.children[9].innerHTML = `
                 <div class="d-flex align-items-center justify-content-center gap-1">
-                    <input type="number" step="1" min="1" max="10" class="input-calif-celda inp-calif-final fw-bold" value="" readonly style="background-color: #f1f5f9;" ${disAttr}>
+                    <input type="number" step="1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="" readonly style="background-color: #f1f5f9;" ${disAttr}>
                     <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-1 fw-bold shadow-sm" title="Marcar como Equivalencia (alumno transferido)" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" style="font-size: 0.68rem; line-height: 1.2;" ${disAttr}>
                         EQUIV
                     </button>
                 </div>
             `;
-            if (tr.children[11]) {
-                tr.children[11].innerHTML = `
+            if (tdAsist) {
+                tdAsist.innerHTML = `
                     <div class="d-flex align-items-center justify-content-center gap-1">
                         <input type="number" min="0" class="input-calif-celda inp-asistencias" value="" style="width: 45px;" placeholder="0" oninput="recalcularEstadisticasMateria()" ${disAttr}>
                         <span class="text-muted">/</span>
@@ -1358,13 +1464,13 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
         } else {
             tr.children[4].innerHTML = `
                 <div class="d-flex align-items-center justify-content-center gap-1">
-                    <input type="number" step="1" min="1" max="10" class="input-calif-celda inp-calif-final fw-bold" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="1-10" ${disP1}>
+                    <input type="number" step="1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="0-10" ${disP1}>
                     <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-1 fw-bold shadow-sm" title="Marcar alumno con EQUIVALENCIA" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" style="font-size: 0.68rem; line-height: 1.2;" ${disP1}>
                         EQUIV
                     </button>
                 </div>
             `;
-            tr.children[5].innerHTML = `<input type="number" step="1" min="1" max="10" class="input-calif-celda inp-extraordinario" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="1-10" ${disExt}>`;
+            tr.children[5].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="0-10" ${disExt}>`;
         }
 
         if (tdLetra) {
@@ -1390,8 +1496,8 @@ function validarRangoInput(inputEl) {
     }
 
     const val = parseFloat(inputEl.value);
-    // Solo enteros del 1 al 10
-    if (isNaN(val) || val < 1.0 || val > 10.0 || !Number.isInteger(val)) {
+    // Solo enteros del 0 al 10
+    if (isNaN(val) || val < 0.0 || val > 10.0 || !Number.isInteger(val)) {
         inputEl.style.borderColor = '#dc2626';
         inputEl.style.backgroundColor = '#fef2f2';
         return false;
@@ -1429,65 +1535,51 @@ function recalcularFilaSemestral(inputEl) {
     const isSoloLectura = datosGrupoMateriaActual && datosGrupoMateriaActual.solo_lectura === true;
     const isDocente = '{{ session("rol") }}' === 'DOCENTE';
 
-    // 1. Verificar si los 3 parciales están llenos
-    const partialsFilled = !isNaN(v1) && !isNaN(v2) && !isNaN(v3);
-
-    if (partialsFilled) {
-        const sumPartials = v1 + v2 + v3;
-        if (sumPartials < 18) {
-            // No tiene derecho a semestral. Va directamente a extraordinario
-            if (semInp) {
-                semInp.value = "";
-                semInp.disabled = true;
-                semInp.placeholder = "N/A";
-            }
-            
-            if (extInp) {
-                extInp.disabled = isSoloLectura || (isDocente && !config.captura_extraordinario);
-                extInp.placeholder = "1-10";
-            }
-            
-            const extVal = extInp ? parseFloat(extInp.value) : NaN;
-            if (!isNaN(extVal) && pFinalInp) {
-                // Promedio final = extraordinario capped at 7 entero
-                pFinalInp.value = Math.min(Math.round(extVal), 7);
-            } else if (pFinalInp) {
-                pFinalInp.value = "";
-            }
+    // Determinar habilitación de semestral y extraordinario
+    if (semInp) {
+        if (!isDocente) {
+            // Como administrador siempre se puede capturar semestral sin bloqueos
+            semInp.disabled = isSoloLectura;
         } else {
-            // Habilitar semestral, deshabilitar extraordinario
-            if (semInp) {
-                semInp.disabled = isSoloLectura || (isDocente && !config.captura_semestral);
-                semInp.placeholder = "1-10";
-            }
-            
-            if (extInp) {
-                extInp.value = "";
-                extInp.disabled = true;
-                extInp.placeholder = "N/A";
-            }
-
-            const semVal = semInp ? parseFloat(semInp.value) : NaN;
-            if (!isNaN(semVal) && pFinalInp) {
-                // Promedio final = (P1 + P2 + P3 + Semestral) / 4 redondeado a entero
-                pFinalInp.value = Math.round((v1 + v2 + v3 + semVal) / 4);
-            } else if (pFinalInp) {
-                pFinalInp.value = "";
-            }
+            // Para docente depende del calendario oficial
+            semInp.disabled = isSoloLectura || !config.captura_semestral;
         }
-    } else {
-        // Parciales incompletos, habilitar según calendario y calcular promedio provisional de parciales
-        if (semInp) semInp.disabled = isSoloLectura || (isDocente && !config.captura_semestral);
-        if (extInp) extInp.disabled = isSoloLectura || (isDocente && !config.captura_extraordinario);
-        
-        let vals = [];
-        if (!isNaN(v1)) vals.push(v1);
-        if (!isNaN(v2)) vals.push(v2);
-        if (!isNaN(v3)) vals.push(v3);
-        
-        if (vals.length > 0 && pFinalInp) {
-            pFinalInp.value = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
-        } else if (pFinalInp) {
+        semInp.placeholder = "0-10";
+    }
+
+    if (extInp) {
+        if (!isDocente) {
+            // Como administrador siempre se puede capturar extraordinario
+            extInp.disabled = isSoloLectura;
+        } else {
+            // Para docente depende del calendario oficial
+            extInp.disabled = isSoloLectura || !config.captura_extraordinario;
+        }
+        extInp.placeholder = "0-10";
+    }
+
+    const semVal = semInp && semInp.value !== '' ? parseFloat(semInp.value) : NaN;
+    const extVal = extInp && extInp.value !== '' ? parseFloat(extInp.value) : NaN;
+
+    // Cálculo del promedio final
+    if (!isNaN(extVal) && pFinalInp) {
+        // 1. Si capturó examen extraordinario, promedio final es extraordinario (tope 7)
+        pFinalInp.value = Math.min(Math.round(extVal), 7);
+    } else if (!isNaN(semVal) && pFinalInp) {
+        // 2. Si capturó examen semestral, promedio de parciales capturados + semestral
+        const partials = [v1, v2, v3].filter(v => !isNaN(v));
+        if (partials.length > 0) {
+            const count = partials.length === 3 ? 4 : (partials.length + 1);
+            pFinalInp.value = Math.round((partials.reduce((a, b) => a + b, 0) + semVal) / count);
+        } else {
+            pFinalInp.value = Math.round(semVal);
+        }
+    } else if (pFinalInp) {
+        // 3. Si no hay semestral ni extraordinario, promedio provisional de los parciales capturados
+        const partials = [v1, v2, v3].filter(v => !isNaN(v));
+        if (partials.length > 0) {
+            pFinalInp.value = Math.round(partials.reduce((a, b) => a + b, 0) / partials.length);
+        } else {
             pFinalInp.value = "";
         }
     }
@@ -1657,6 +1749,10 @@ function recalcularEstadisticasMateria() {
         const getAvg = (arr) => arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '0.0';
         
         if (isSemestral) {
+            const grupo = (datosGrupoMateriaActual && datosGrupoMateriaActual.grupo) || {};
+            const isBti = (parseInt(grupo.id_centroTrabajo) === 2 || (grupo.nombreCentroTrabajo || '').toUpperCase().includes('BTI'));
+            const mostrarAsistencias = !isBti;
+
             tfoot.innerHTML = `
                 <tr>
                     <td colspan="4" class="text-end pe-3 fw-bold" style="border: 1.2px solid #0f172a; padding: 6px 8px;">PROMEDIO:</td>
@@ -1666,7 +1762,7 @@ function recalcularEstadisticasMateria() {
                     <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; color: ${parseFloat(getAvg(semVals)) < 6.0 ? '#dc2626' : '#0f172a'};">${getAvg(semVals)}</td>
                     <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; color: ${parseFloat(getAvg(extVals)) < 6.0 ? '#dc2626' : '#0f172a'};">${getAvg(extVals)}</td>
                     <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; background-color: #e2e8f0; color: ${parseFloat(prom) < 6.0 ? '#dc2626' : '#0f172a'};">${prom}</td>
-                    <td colspan="3" style="border: 1.2px solid #0f172a;"></td>
+                    <td colspan="${mostrarAsistencias ? 3 : 2}" style="border: 1.2px solid #0f172a;"></td>
                 </tr>
             `;
         } else {
@@ -1715,7 +1811,7 @@ function guardarCalificacionesMateriaSeleccionada() {
         Swal.fire({
             icon: 'error',
             title: 'Valores Inválidos',
-            text: 'Existen calificaciones fuera del rango permitido (números enteros del 1 al 10). Por favor corríjalas antes de guardar.',
+            text: 'Existen calificaciones fuera del rango permitido (números enteros del 0 al 10). Por favor corríjalas antes de guardar.',
             confirmButtonColor: 'rgb(49, 125, 146)'
         });
         return;
@@ -1793,13 +1889,26 @@ function enviarPeticionGuardar(finalizar) {
         const totAsistInp = tr.querySelector('.inp-total-asistencias');
 
         const califFinalInp = tr.querySelector('.inp-calif-final');
-        const califFinal = califFinalInp ? califFinalInp.value : '';
+        let califFinal = califFinalInp ? califFinalInp.value : '';
+
+        // Si se capturó algún parcial pero por alguna razón la celda final quedó vacía, calcular su promedio
+        if (califFinal === '' && (p1Inp || p2Inp || p3Inp)) {
+            const vals = [];
+            if (p1Inp && p1Inp.value !== '') vals.push(parseFloat(p1Inp.value));
+            if (p2Inp && p2Inp.value !== '') vals.push(parseFloat(p2Inp.value));
+            if (p3Inp && p3Inp.value !== '') vals.push(parseFloat(p3Inp.value));
+            if (vals.length > 0) {
+                califFinal = String(Math.round(vals.reduce((a, b) => a + b, 0) / vals.length));
+                if (califFinalInp) califFinalInp.value = califFinal;
+            }
+        }
 
         if (idAlumno && califFinal !== '' && califFinal !== 'EQUIV') {
+            const esExtra = extInp && extInp.value !== '' && !extInp.disabled;
             const dataObj = {
                 idAlumno: parseInt(idAlumno),
                 calificacion: parseInt(califFinal, 10),
-                tipoAcreditacion: 'ORDINARIO',
+                tipoAcreditacion: esExtra ? 'EXTRAORDINARIO' : 'ORDINARIO',
                 observaciones: obs
             };
             
@@ -1815,72 +1924,135 @@ function enviarPeticionGuardar(finalizar) {
         }
     });
 
-    fetch(`/grupos/${grupoCapturaActualId}/calificaciones-materia/${idMateria}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ 
-            calificaciones: calificaciones,
-            finalizar: finalizar
-        })
-    })
-    .then(async res => {
+    function obtenerCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') 
+            || '{{ csrf_token() }}';
+    }
+
+    async function ejecutarPeticionGuardar(token, esReintento = false) {
+        const res = await fetch(`/grupos/${grupoCapturaActualId}/calificaciones-materia/${idMateria}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': token
+            },
+            body: JSON.stringify({ 
+                calificaciones: calificaciones,
+                finalizar: finalizar
+            })
+        });
+
         const resp = await res.json().catch(() => null);
+
         if (!res.ok) {
-            if (res.status === 419) {
-                throw new Error('La sesión ha expirado (Error 419). Por favor recarga la página con F5.');
+            // Manejo de Error 419 (Token CSRF expirado o sesión inactiva)
+            if (res.status === 419 && !esReintento) {
+                console.warn('Token CSRF expirado (419), renovando token automáticamente...');
+                try {
+                    const csrfRes = await fetch('/refresh-csrf', {
+                        headers: { 'Accept': 'application/json' }
+                    });
+                    if (csrfRes.ok) {
+                        const csrfData = await csrfRes.json();
+                        if (csrfData && csrfData.csrf_token) {
+                            const meta = document.querySelector('meta[name="csrf-token"]');
+                            if (meta) meta.setAttribute('content', csrfData.csrf_token);
+                            // Reintentar de forma transparente con el token nuevo sin perder datos capturados
+                            return await ejecutarPeticionGuardar(csrfData.csrf_token, true);
+                        }
+                    }
+                } catch (retryErr) {
+                    console.error('Error al renovar token CSRF:', retryErr);
+                }
+                throw new Error('La sesión de seguridad ha expirado (Error 419). Tus calificaciones siguen seguras en la pantalla: no cierres esta ventana. Puedes abrir otra pestaña, verificar tu sesión y volver a presionar Guardar.');
             }
+
             if (res.status === 401) {
-                throw new Error('Tu sesión ha finalizado. Por favor vuelve a iniciar sesión.');
+                throw new Error('Tu sesión ha finalizado (Error 401). Abre una nueva pestaña para iniciar sesión sin cerrar esta ventana, y luego presiona Guardar nuevamente.');
             }
-            throw new Error((resp && (resp.error || resp.message)) || `Error en el servidor (${res.status})`);
+
+            const errorDetalle = (resp && (resp.error || resp.message)) || `Error en el servidor (${res.status})`;
+            throw new Error(errorDetalle);
         }
+
         return resp;
-    })
-    .then(resp => {
-        if (resp.success) {
-            Swal.fire({
-                icon: 'success',
-                title: finalizar ? '¡Enviado!' : '¡Guardado!',
-                text: finalizar ? 'Calificaciones enviadas y guardadas exitosamente.' : 'Calificaciones de la materia registradas en borrador.',
-                confirmButtonColor: 'rgb(49, 125, 146)'
-            });
-            // Recargar modal para actualizar estado de solo lectura y ver los cambios reflejados
-            abrirCapturaGrupoMateria(grupoCapturaActualId, idMateria);
-        } else {
+    }
+
+    ejecutarPeticionGuardar(obtenerCsrfToken())
+        .then(resp => {
+            if (resp && resp.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: finalizar ? '¡Enviado!' : '¡Guardado!',
+                    text: finalizar ? 'Calificaciones enviadas y guardadas exitosamente.' : 'Calificaciones de la materia registradas en borrador.',
+                    confirmButtonColor: 'rgb(49, 125, 146)'
+                });
+                // Recargar modal para actualizar estado de solo lectura y ver los cambios reflejados
+                abrirCapturaGrupoMateria(grupoCapturaActualId, idMateria);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al Guardar',
+                    text: (resp && (resp.error || resp.message)) || 'No se pudieron guardar las calificaciones.',
+                    confirmButtonColor: 'rgb(49, 125, 146)'
+                });
+            }
+        })
+        .catch(err => {
+            console.error('Error al guardar:', err);
+            const msg = err.message || 'Ocurrió un error inesperado al enviar las calificaciones.';
             Swal.fire({
                 icon: 'error',
-                title: 'Error',
-                text: resp.error || resp.message || 'No se pudieron guardar las calificaciones.',
-                confirmButtonColor: 'rgb(49, 125, 146)'
+                title: 'Error al Guardar',
+                html: `<div class="text-start">
+                        <p class="mb-2"><strong>Detalle del error:</strong></p>
+                        <div class="alert alert-danger p-2 mb-2" style="font-size: 0.88rem; word-break: break-word;">
+                            ${msg}
+                        </div>
+                        <p class="text-muted small mb-0"><i class="fa-solid fa-circle-check text-success me-1"></i>Tus notas ingresadas siguen en pantalla; no se han borrado.</p>
+                       </div>`,
+                confirmButtonColor: 'rgb(49, 125, 146)',
+                confirmButtonText: 'Entendido'
             });
-        }
-    })
-    .catch(err => {
-        console.error('Error al guardar:', err);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Ocurrió un error al enviar las calificaciones.',
-            confirmButtonColor: 'rgb(49, 125, 146)'
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Guardar Calificaciones de la Asignatura';
         });
-    })
-    .finally(() => {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Guardar Calificaciones de la Asignatura';
-    });
 }
 
 // Carga Inicial
-document.addEventListener("DOMContentLoaded", function() {
+function inicializarModuloCaptura() {
+    // Mantener activa la sesión y el token CSRF periódicamente cada 4 minutos mientras el usuario captura
+    setInterval(function() {
+        fetch('/refresh-csrf', {
+            headers: { 'Accept': 'application/json', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data && data.csrf_token) {
+                const meta = document.querySelector('meta[name="csrf-token"]');
+                if (meta) meta.setAttribute('content', data.csrf_token);
+            }
+        })
+        .catch(() => {});
+    }, 4 * 60 * 1000);
+
     // Mover modales a document.body para evitar stacking context con navbar y sidebar fijos
     const modal = document.getElementById('modalCapturaMateriaGrupo');
     const modalContainer = document.getElementById('contenedorModal') || document.body;
     if (modal && modal.parentElement !== modalContainer) {
         modalContainer.appendChild(modal);
+    }
+
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function () {
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        });
     }
 
     cargarGruposCaptura();
@@ -1894,7 +2066,13 @@ document.addEventListener("DOMContentLoaded", function() {
             abrirCapturaGrupoMateria(parseInt(paramGrupo), paramMateria ? parseInt(paramMateria) : null);
         }, 600);
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener("DOMContentLoaded", inicializarModuloCaptura);
+} else {
+    inicializarModuloCaptura();
+}
 </script>
 
 @endsection

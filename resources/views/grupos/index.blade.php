@@ -577,17 +577,45 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         // LÓGICA TRIMESTRAL (BGNE)
-        let currentTrimestre = 1;
-        if (idNivelActualDb !== null && idNivelActualDb !== undefined && idNivelActualDb >= 1 && idNivelActualDb <= 6) {
-            currentTrimestre = idNivelActualDb;
+        let currentTrimestre = (idNivelActualDb !== null && idNivelActualDb !== undefined && idNivelActualDb >= 1 && idNivelActualDb <= 6) ? idNivelActualDb : 1;
+
+        if (g.fechaInicioNivel && g.fechaFinNivel) {
+            const parsedStart = parseToUTCDate(g.fechaInicioNivel);
+            const parsedEnd = parseToUTCDate(g.fechaFinNivel);
+            if (parsedStart && parsedEnd) {
+                periodStartDate = parsedStart;
+                periodEndDate = parsedEnd;
+            }
+        } else {
+            let fInicio = new Date(periodStartDate.getTime());
+            let fFin = new Date(fInicio.getTime() + (12 * 7 * 24 * 60 * 60 * 1000));
+            let lvlCalculado = 1;
+
+            while (true) {
+                fFin = new Date(fInicio.getTime() + (12 * 7 * 24 * 60 * 60 * 1000));
+                if (todayUTC.getTime() <= fFin.getTime() || lvlCalculado >= 6) {
+                    break;
+                }
+                fInicio = new Date(fFin.getTime() + (7 * 24 * 60 * 60 * 1000));
+                lvlCalculado++;
+            }
+
+            if (lvlCalculado > currentTrimestre) {
+                currentTrimestre = lvlCalculado;
+                periodStartDate = fInicio;
+                periodEndDate = fFin;
+            } else {
+                const weeksOffset = (currentTrimestre - 1) * 13;
+                periodStartDate = new Date(periodStartDate.getTime() + (weeksOffset * 7 * 24 * 60 * 60 * 1000));
+                periodEndDate = new Date(periodStartDate.getTime() + (12 * 7 * 24 * 60 * 60 * 1000));
+            }
         }
 
-        // Cada trimestre dura 13 semanas (91 días)
-        const weeksOffset = (currentTrimestre - 1) * 13;
-        
-        // periodStartDate es la fechaInicio original del primer trimestre
-        periodStartDate = new Date(periodStartDate.getTime() + (weeksOffset * 7 * 24 * 60 * 60 * 1000));
-        periodEndDate = new Date(periodStartDate.getTime() + (12 * 7 * 24 * 60 * 60 * 1000));
+        // Limitar a fechaFin oficial si existe
+        const groupEndDate = parseToUTCDate(g.fechaFin);
+        if (groupEndDate && periodEndDate.getTime() > groupEndDate.getTime()) {
+            periodEndDate = groupEndDate;
+        }
 
         // Porcentaje de progreso
         let percent = 0;
@@ -604,6 +632,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         return {
             percent: percent,
+            currentNivel: currentTrimestre,
             nivelText: `${currentTrimestre}° ${periodLabel}`,
             inicioPeriodo: toDMY(periodStartDate),
             finPeriodo: toDMY(periodEndDate)
@@ -633,9 +662,8 @@ document.addEventListener("DOMContentLoaded", function() {
             const cctNombre = grupo.nombreCentroTrabajo || (grupo.id_centroTrabajo === 3 ? 'BGNE' : (grupo.id_centroTrabajo === 2 ? 'BTI' : (grupo.id_centroTrabajo === 1 ? 'INF. Y COMP.' : '—')));
             const cctBadgeClass = grupo.id_centroTrabajo === 3 ? 'bg-primary' : (grupo.id_centroTrabajo === 2 ? 'bg-info text-dark' : 'bg-secondary');
 
-            const nivelNombre = grupo.nombre_nivel || (grupo.id_nivel_academico ? (grupo.id_nivel_academico <= 6 ? `${grupo.id_nivel_academico}° Trimestre` : `${grupo.id_nivel_academico - 6}° Semestre`) : '—');
-
             const progreso = calcularProgresoPeriodo(grupo);
+            const nivelNombre = grupo.nombre_nivel || (progreso.currentNivel ? (progreso.currentNivel <= 6 ? `${progreso.currentNivel}° Trimestre` : `${progreso.currentNivel - 6}° Semestre`) : (grupo.id_nivel_academico ? (grupo.id_nivel_academico <= 6 ? `${grupo.id_nivel_academico}° Trimestre` : `${grupo.id_nivel_academico - 6}° Semestre`) : '—'));
 
             let btnCaptura = '';
             if (grupo.id_centroTrabajo === 2) {

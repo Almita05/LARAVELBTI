@@ -48,6 +48,16 @@ Route::get('/materias-usuario', [CalificacionesController::class, 'materiasUsuar
     
 Route::middleware('auth.session')->group(function () {
 
+    Route::get('/refresh-csrf', function () {
+        return response()->json([
+            'csrf_token' => csrf_token(),
+            'session_active' => true
+        ])
+        ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+        ->header('Pragma', 'no-cache')
+        ->header('Expires', '0');
+    });
+
     Route::get('/home', function () {
         if (session('rol') === 'DOCENTE') {
             return redirect()->route('horarios_docentes');
@@ -64,6 +74,8 @@ Route::middleware('auth.session')->group(function () {
     // Notificaciones
     Route::get('/notificaciones', [\App\Http\Controllers\NotificacionController::class, 'index'])->name('notificaciones');
     Route::get('/notificaciones/count', [\App\Http\Controllers\NotificacionController::class, 'count']);
+    Route::post('/notificaciones/resolver', [\App\Http\Controllers\NotificacionController::class, 'resolver'])->name('notificaciones.resolver');
+    Route::post('/notificaciones/reactivar', [\App\Http\Controllers\NotificacionController::class, 'reactivar'])->name('notificaciones.reactivar');
 
    // Analizador de Estados de Cuenta QRP
 Route::get('/analizar-estado-cuenta',[QrpController::class, 'index'])->name('analizar-estado-cuenta');
@@ -159,6 +171,11 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::put('/alumnos/{id}', [AlumnoController::class, 'update'])->where('id', '[0-9]+');
     Route::get('/alumnos/{id}/kardex', [AlumnoController::class, 'getKardex'])->where('id', '[0-9]+');
     Route::post('/alumnos/{id}/calificaciones', [AlumnoController::class, 'guardarCalificaciones'])->where('id', '[0-9]+');
+    Route::post('/alumnos/{id}/modalidad-online', [AlumnoController::class, 'cambiarModalidadOnline'])->where('id', '[0-9]+');
+    Route::post('/alumnos/{id}/modalidad-presencial', [AlumnoController::class, 'cambiarModalidadPresencial'])->where('id', '[0-9]+');
+    Route::post('/alumnos/{id}/pagos', [AlumnoController::class, 'registrarPago'])->where('id', '[0-9]+');
+    Route::get('/alumnos/{id}/pagos', [AlumnoController::class, 'getPagos'])->where('id', '[0-9]+');
+
     Route::get('/grupos/{id_grupo}/alumnos', [AlumnoController::class, 'alumnosGrupo'])->where('id_grupo', '[0-9]+');
     Route::get('/alumnos/grupo/{id_grupo}', [AlumnoController::class, 'alumnosPorGrupo'])->where('id_grupo', '[0-9]+');
 

@@ -36,7 +36,14 @@
             <i class="fa-solid fa-arrow-left"></i>
         </a>
         <div>
-            <h3 class="page-title mb-0" style="font-size: 1.6rem; letter-spacing: -0.5px;">{{ $grupo['clave'] }}</h3>
+            <div class="d-flex align-items-center gap-2">
+                <h3 class="page-title mb-0" style="font-size: 1.6rem; letter-spacing: -0.5px;">{{ $grupo['clave'] }}</h3>
+                @if($selected_materia_id === 'general')
+                    <span class="badge bg-primary text-white px-2.5 py-1 rounded-pill shadow-sm" style="font-size: 0.72rem; letter-spacing: 0.3px;">
+                        Pase General
+                    </span>
+                @endif
+            </div>
             <p class="text-muted mb-0" style="font-size: 0.8rem;">
                 {{ $nombreDiaHoy }} • Semana {{ $semanaAnio }} • {{ $diasLabel }} {{ $grupo['horario'] ?? '' }}
             </p>
@@ -58,15 +65,32 @@
     <div class="card border-0 mb-4 shadow-sm" id="selector-fechas-card" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important;">
         <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
             <div class="d-flex flex-wrap align-items-center gap-3">
-                <!-- Selector de Materia -->
+                <!-- Selector de Materia o Pase General -->
                 <div class="d-flex align-items-center gap-2">
-                    <label class="text-muted fw-semibold mb-0" style="font-size: 0.82rem; min-width: 90px;">Asignatura:</label>
-                    <select id="select-materia" class="form-select border-0 text-dark" onchange="seleccionarMateria(this.value)" style="background: rgba(255, 255, 255, 0.5); border-radius: 10px; min-width: 250px; font-size: 0.85rem; height: 38px; border: 1px solid rgba(49, 125, 146, 0.2) !important;">
-                        @foreach($materias as $m)
-                            <option value="{{ $m['idMateria'] }}" {{ $m['idMateria'] == $selected_materia_id ? 'selected' : '' }}>
-                                {{ $m['nombreMateria'] }} ({{ $m['nombreDocente'] }})
+                    <label class="text-muted fw-semibold mb-0" style="font-size: 0.82rem; min-width: 85px;">
+                        @if(session('rol') !== 'DOCENTE') Modalidad: @else Asignatura: @endif
+                    </label>
+                    <select id="select-materia" class="form-select border-0 text-dark" onchange="seleccionarMateria(this.value)" style="background: rgba(255, 255, 255, 0.65); border-radius: 10px; min-width: 270px; font-size: 0.85rem; height: 38px; border: 1px solid rgba(49, 125, 146, 0.2) !important; font-weight: 600;">
+                        @if(session('rol') !== 'DOCENTE')
+                            <option value="general" {{ $selected_materia_id === 'general' ? 'selected' : '' }} style="font-weight: 700; color: #0284c7;">
+                                Pase de Lista General (Todo el grupo)
                             </option>
-                        @endforeach
+                            @if(count($materias) > 0)
+                                <optgroup label="── Por Asignatura Individual ──">
+                                    @foreach($materias as $m)
+                                        <option value="{{ $m['idMateria'] }}" {{ $m['idMateria'] == $selected_materia_id ? 'selected' : '' }}>
+                                            {{ $m['nombreMateria'] }} ({{ $m['nombreDocente'] }})
+                                        </option>
+                                    @endforeach
+                                </optgroup>
+                            @endif
+                        @else
+                            @foreach($materias as $m)
+                                <option value="{{ $m['idMateria'] }}" {{ $m['idMateria'] == $selected_materia_id ? 'selected' : '' }}>
+                                    {{ $m['nombreMateria'] }} ({{ $m['nombreDocente'] }})
+                                </option>
+                            @endforeach
+                        @endif
                     </select>
                 </div>
 
@@ -155,30 +179,34 @@
 
     <!-- Contenido Principal: VISTA LISTADO -->
     <div id="contenedor-vista-listado">
-        <div class="card border-0 shadow-sm" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.15) !important;">
-            <div class="card-body p-0">
-                <div class="table-responsive" style="border-radius: 16px;">
-                    <table class="table table-hover mb-0 align-middle text-center table-bordered" style="border-color: rgba(49, 125, 146, 0.12); font-size: 0.85rem; color: #1e293b;">
-                        <thead>
-                            <tr style="background-color: rgba(49, 125, 146, 0.15); color: rgb(38, 104, 123); font-weight: bold; border-bottom: 2px solid rgba(49, 125, 146, 0.15);">
-                                <th style="width: 60px;">#</th>
-                                <th class="text-start px-4">Nombre del Alumno</th>
-                                <th style="width: 180px;" id="tabla-listado-columna-fecha">Asistencia</th>
-                                <th class="px-4" style="width: 300px;">Observaciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-listado-body">
-                            <!-- Renderizado dinámicamente en JS -->
-                        </tbody>
-                    </table>
-                </div>
+        <!-- Barra de herramientas superior del listado -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 px-1 gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-white text-dark border shadow-sm px-3 py-2 rounded-pill fw-semibold" style="font-size: 0.8rem; border-color: rgba(49, 125, 146, 0.2) !important;">
+                    <i class="fa-solid fa-calendar-day me-1" style="color: rgb(49, 125, 146);"></i>
+                    <span id="label-fecha-seleccionada">Fecha</span>
+                </span>
+                <span class="text-muted small fw-medium" id="label-total-alumnos"></span>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-outline-success fw-semibold d-flex align-items-center gap-1 shadow-sm" onclick="marcarTodos('A')" style="border-radius: 10px; font-size: 0.78rem; background: #fff;">
+                    <i class="fa-solid fa-check-double text-success"></i> Todos Asistencia
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold d-flex align-items-center gap-1 shadow-sm" onclick="marcarTodos(null)" style="border-radius: 10px; font-size: 0.78rem; background: #fff;">
+                    <i class="fa-solid fa-eraser text-secondary"></i> Limpiar
+                </button>
             </div>
         </div>
 
-        <div class="text-center py-5 d-none" id="mensaje-vacio">
-            <i class="fa-solid fa-face-frown text-muted mb-3" style="font-size: 3rem;"></i>
-            <h5 class="text-dark">No se encontraron alumnos</h5>
-            <p class="text-muted small">Prueba escribiendo otro nombre o agrega un nuevo alumno al grupo.</p>
+        <!-- Contenedor de Tarjetas de Alumnos -->
+        <div id="lista-alumnos-cards" class="d-flex flex-column gap-3">
+            <!-- Renderizado dinámicamente por renderListado() -->
+        </div>
+
+        <div class="text-center py-5 d-none bg-white rounded-4 shadow-sm border mt-3" id="mensaje-vacio">
+            <i class="fa-solid fa-users-slash text-muted mb-3" style="font-size: 3rem; opacity: 0.5;"></i>
+            <h5 class="text-dark fw-bold">No se encontraron alumnos</h5>
+            <p class="text-muted small mb-0">Prueba escribiendo otro nombre o agrega un nuevo alumno al grupo.</p>
         </div>
     </div>
 
@@ -373,47 +401,152 @@
         box-shadow: 0 0 6px rgba(49, 125, 146, 0.4);
     }
 
-    /* Tarjetas de Listado */
-    .student-card {
-        background: rgba(255, 255, 255, 0.55);
-        border: 1px solid rgba(49, 125, 146, 0.18);
-        border-radius: 16px;
-        transition: transform 0.2s, background 0.2s;
+    /* ========================================================
+       NUEVO DISEÑO: Tarjetas de Asistencia (Inspirado en App Móvil)
+       ======================================================== */
+    .attendance-card {
+        background: #ffffff;
+        border: 1.5px solid #edf2f7;
+        border-radius: 18px;
+        box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     }
-    .student-card:hover {
-        background: rgba(255, 255, 255, 0.75);
-        border-color: rgba(49, 125, 146, 0.25);
+    .attendance-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        border-color: rgba(2, 132, 199, 0.35);
     }
 
-    /* Botones de Asistencia en el Listado */
-    .btn-status-option {
-        font-size: 0.72rem;
-        font-weight: 600;
-        border-radius: 10px;
-        border: 1px solid rgba(49, 125, 146, 0.2);
-        background: rgba(255, 255, 255, 0.45);
+    /* Píldora redondeada con número de lista (azul estilo imagen 2) */
+    .badge-lista {
+        min-width: 58px;
+        height: 34px;
+        padding: 0 12px;
+        border-radius: 20px;
+        border: 2px solid #0284c7;
+        color: #0284c7;
+        background-color: #f0f9ff;
+        font-weight: 800;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        letter-spacing: -0.01em;
+        flex-shrink: 0;
+        box-shadow: 0 2px 5px rgba(2, 132, 199, 0.1);
+    }
+
+    /* Nombre del Alumno */
+    .alumno-nombre-card {
+        font-size: 1.02rem;
+        font-weight: 800;
+        color: #0f172a;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
+        line-height: 1.25;
+    }
+
+    /* Subtítulo del Alumno */
+    .alumno-subtitulo-card {
+        font-size: 0.82rem;
+        color: #64748b;
+        font-weight: 500;
+        margin-top: 3px;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    /* Grupo de botones de asistencia */
+    .attendance-buttons-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    /* Botón individual de asistencia */
+    .btn-attendance-opt {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 7px 16px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        border: 1.5px solid #cbd5e1;
+        background-color: #ffffff;
         color: #475569;
-        transition: all 0.2s;
+        cursor: pointer;
+        transition: all 0.15s ease-in-out;
+        user-select: none;
+        min-height: 38px;
     }
-    .btn-status-option.opt-A:hover, .btn-status-option.opt-A.active {
-        background-color: rgba(34, 197, 94, 0.15) !important;
-        border-color: #22c55e !important;
-        color: #4ade80 !important;
+    .btn-attendance-opt:hover:not(:disabled) {
+        background-color: #f8fafc;
+        border-color: #94a3b8;
+        color: #0f172a;
+        transform: translateY(-1px);
     }
-    .btn-status-option.opt-F:hover, .btn-status-option.opt-F.active {
-        background-color: rgba(239, 68, 68, 0.15) !important;
-        border-color: #ef4444 !important;
-        color: #f87171 !important;
+    .btn-attendance-opt:active:not(:disabled) {
+        transform: translateY(0);
     }
-    .btn-status-option.opt-R:hover, .btn-status-option.opt-R.active {
-        background-color: rgba(249, 115, 22, 0.15) !important;
-        border-color: #f97316 !important;
-        color: #fb923c !important;
+    .btn-attendance-opt:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
     }
-    .btn-status-option.opt-J:hover, .btn-status-option.opt-J.active {
-        background-color: rgba(49, 125, 146, 0.18) !important;
-        border-color: rgb(49, 125, 146) !important;
-        color: #62bfd6 !important;
+
+    /* Estados Activos según la referencia */
+    /* ✓ ASIS. (Verde sólido) */
+    .btn-attendance-opt.btn-opt-asis.active {
+        background-color: #15803d !important;
+        border-color: #15803d !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(21, 128, 61, 0.35);
+    }
+
+    /* ✕ FALT. (Rojo sólido) */
+    .btn-attendance-opt.btn-opt-falt.active {
+        background-color: #dc2626 !important;
+        border-color: #dc2626 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+    }
+
+    /* ⏱ RETA. (Ámbar sólido) */
+    .btn-attendance-opt.btn-opt-reta.active {
+        background-color: #d97706 !important;
+        border-color: #d97706 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
+    }
+
+    /* 📄 JUST. (Azul sólido) */
+    .btn-attendance-opt.btn-opt-just.active {
+        background-color: #2563eb !important;
+        border-color: #2563eb !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+
+    /* Campo integrado de observaciones */
+    .attendance-note-input {
+        background-color: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.82rem;
+        height: 38px;
+        padding: 6px 14px;
+        color: #1e293b;
+        transition: all 0.2s ease;
+    }
+    .attendance-note-input:focus {
+        background-color: #ffffff;
+        border-color: #0284c7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        outline: none;
     }
 </style>
 
@@ -659,20 +792,25 @@
 
         if (vistaActual === 'LISTADO') {
             let visibles = 0;
-            document.querySelectorAll('.student-row').forEach(row => {
-                const nombre = row.getAttribute('data-nombre') || '';
+            document.querySelectorAll('.attendance-card').forEach(card => {
+                const nombre = card.getAttribute('data-nombre') || '';
                 if (nombre.includes(query)) {
-                    row.classList.remove('d-none');
+                    card.classList.remove('d-none');
                     visibles++;
                 } else {
-                    row.classList.add('d-none');
+                    card.classList.add('d-none');
                 }
             });
             const mensajeVacio = document.getElementById('mensaje-vacio');
-            if (visibles === 0) {
+            if (visibles === 0 && alumnos.length > 0) {
                 mensajeVacio.classList.remove('d-none');
             } else {
                 mensajeVacio.classList.add('d-none');
+            }
+
+            const labelTotal = document.getElementById('label-total-alumnos');
+            if (labelTotal) {
+                labelTotal.innerText = `${visibles} de ${alumnos.length} alumnos`;
             }
         } else {
             // Filtrar tabla matriz
@@ -687,25 +825,31 @@
         }
     }
 
-    // Renderizar Listado de Alumnos en forma de Tabla para la fecha seleccionada
+    // Renderizar Listado de Alumnos en Tarjetas Modernas para la fecha seleccionada
     function renderListado() {
         try {
-            const tbody = document.getElementById('tabla-listado-body');
-            tbody.innerHTML = '';
+            const container = document.getElementById('lista-alumnos-cards');
+            if (!container) return;
+            container.innerHTML = '';
 
-            // Actualizar el encabezado de la columna de asistencia con la fecha seleccionada
-            const colFecha = document.getElementById('tabla-listado-columna-fecha');
-            if (colFecha) {
+            // Actualizar etiqueta de fecha seleccionada
+            const labelFecha = document.getElementById('label-fecha-seleccionada');
+            if (labelFecha) {
                 const dateParts = fechaSeleccionada.split('-');
                 if (dateParts.length === 3) {
-                    colFecha.innerText = `Asistencia ${dateParts[2]}-${dateParts[1]}`;
+                    labelFecha.innerText = `Fecha: ${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
                 } else {
-                    colFecha.innerText = `Asistencia ${fechaSeleccionada}`;
+                    labelFecha.innerText = `Fecha: ${fechaSeleccionada}`;
                 }
             }
 
             if (alumnos.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">No hay alumnos en el grupo.</td></tr>`;
+                container.innerHTML = `
+                    <div class="text-center py-5 bg-white rounded-4 shadow-sm border">
+                        <i class="fa-solid fa-users-slash text-muted mb-3" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                        <h6 class="text-dark fw-bold">No hay alumnos registrados en este grupo</h6>
+                    </div>
+                `;
                 document.getElementById('mensaje-vacio').classList.add('d-none');
                 return;
             } else {
@@ -715,80 +859,118 @@
             const query = normalizeStr(document.getElementById('buscadorAlumno').value.trim());
             let visibles = 0;
 
+            const now = new Date();
+            const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+            const esHoy = (fechaSeleccionada === todayStr);
+            const userRole = @json(session('rol'));
+            const esDocente = (userRole === 'DOCENTE');
+            const edicionBloqueada = esDocente && !esHoy;
+
             alumnos.forEach((al, index) => {
-                const nombreCompleto = `${al.apPaternoAlumno} ${al.apMaternoAlumno || ''} ${al.nombreAlumno}`;
+                const nombreCompleto = `${al.apPaternoAlumno} ${al.apMaternoAlumno || ''} ${al.nombreAlumno}`.trim();
                 const nombreNormalizado = normalizeStr(nombreCompleto);
                 const isVisible = query.length === 0 || nombreNormalizado.includes(query);
+                if (isVisible) visibles++;
 
                 const record = (localState[fechaSeleccionada] || {})[al.idAlumno] || { estatus: null, observaciones: '', justificado_admin: false };
                 const estatus = record.estatus;
                 const justificadoAdmin = record.justificado_admin || false;
                 const observaciones = record.observaciones || '';
 
-                const now = new Date();
-                const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-                const esHoy = (fechaSeleccionada === todayStr);
-                const userRole = @json(session('rol'));
-                const esDocente = (userRole === 'DOCENTE');
-                const edicionBloqueada = esDocente && !esHoy;
-
                 const isDisabled = justificadoAdmin || edicionBloqueada;
                 const disableAttr = isDisabled ? 'disabled' : '';
 
-                // Obtener símbolo
-                let simbolo = '-';
-                let classEstatus = '';
-                if (estatus === 'A') { simbolo = ':.'; classEstatus = 'status-A'; }
-                else if (estatus === 'F') { simbolo = '\\'; classEstatus = 'status-F'; }
-                else if (estatus === 'R') { simbolo = '.'; classEstatus = 'status-R'; }
-                else if (estatus === 'J') { simbolo = 'J'; classEstatus = 'status-J'; }
+                const numLista = al.numero_lista || al.num_lista || (index + 1);
 
-                const tr = document.createElement('tr');
-                tr.className = `student-row ${isVisible ? '' : 'd-none'}`;
-                tr.setAttribute('data-nombre', nombreNormalizado);
-                if (isVisible) visibles++;
-                
-                let btnTitle = 'Hacer clic para cambiar asistencia (Ciclar)';
-                if (justificadoAdmin) btnTitle = 'Justificado por Administración (Bloqueado)';
-                else if (edicionBloqueada) btnTitle = 'Sólo lectura (No es hoy)';
+                const card = document.createElement('div');
+                card.className = `attendance-card student-row ${isVisible ? '' : 'd-none'}`;
+                card.setAttribute('data-nombre', nombreNormalizado);
+                card.setAttribute('data-id', al.idAlumno);
 
-                tr.innerHTML = `
-                    <td class="fw-bold" style="color: #64748b; font-size: 0.82rem;">${index + 1}</td>
-                    <td class="text-start px-4 fw-semibold" style="color: #1e293b; text-transform: uppercase; font-size: 0.82rem;">
-                        ${al.apPaternoAlumno} ${al.apMaternoAlumno || ''} ${al.nombreAlumno}
-                        <div style="font-size: 0.68rem; color: #94a3b8; font-weight: normal; margin-top: 2px;">MATRÍCULA: ${al.matricula || al.idAlumno}</div>
-                    </td>
-                    <td>
-                        <button type="button" 
-                                class="btn-circle-status ${classEstatus}" 
-                                ${isDisabled ? 'disabled' : ''} 
-                                style="width: 42px; height: 42px; border-radius: 50%; font-size: 1.1rem; font-weight: 800; border: 2px solid #e2e8f0; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s; margin: auto; ${isDisabled ? 'opacity: 0.7; cursor: not-allowed;' : 'cursor: pointer;'}"
-                                title="${btnTitle}"
-                                onclick="ciclarEstatusListado(this, ${al.idAlumno})">
-                            ${simbolo}
-                        </button>
+                card.innerHTML = `
+                    <div class="p-3 p-md-4">
+                        <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                            <!-- Datos del Alumno -->
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="badge-lista" title="Número de lista">
+                                    ${numLista}
+                                </div>
+                                <div>
+                                    <div class="alumno-nombre-card">${nombreCompleto}</div>
+                                    <div class="alumno-subtitulo-card">
+                                        <span>Número de lista: ${numLista}</span>
+                                        ${al.matricula ? `<span class="opacity-50">•</span><span>Matrícula: ${al.matricula}</span>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Opciones de Asistencia y Observaciones -->
+                            <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 justify-content-lg-end flex-wrap">
+                                <!-- Botones de Asistencia directos -->
+                                <div class="attendance-buttons-group">
+                                    <button type="button" 
+                                            class="btn-attendance-opt btn-opt-asis ${estatus === 'A' ? 'active' : ''}" 
+                                            data-status="A"
+                                            ${disableAttr}
+                                            title="Asistencia"
+                                            onclick="seleccionarEstatusListado(${al.idAlumno}, 'A')">
+                                        <i class="fa-solid fa-check"></i> ASIS.
+                                    </button>
+                                    <button type="button" 
+                                            class="btn-attendance-opt btn-opt-falt ${estatus === 'F' ? 'active' : ''}" 
+                                            data-status="F"
+                                            ${disableAttr}
+                                            title="Falta"
+                                            onclick="seleccionarEstatusListado(${al.idAlumno}, 'F')">
+                                        <i class="fa-solid fa-xmark"></i> FALT.
+                                    </button>
+                                    <button type="button" 
+                                            class="btn-attendance-opt btn-opt-reta ${estatus === 'R' ? 'active' : ''}" 
+                                            data-status="R"
+                                            ${disableAttr}
+                                            title="Retardo"
+                                            onclick="seleccionarEstatusListado(${al.idAlumno}, 'R')">
+                                        <i class="fa-regular fa-clock"></i> RETA.
+                                    </button>
+                                    <button type="button" 
+                                            class="btn-attendance-opt btn-opt-just ${estatus === 'J' ? 'active' : ''}" 
+                                            data-status="J"
+                                            ${disableAttr}
+                                            title="Justificado"
+                                            onclick="seleccionarEstatusListado(${al.idAlumno}, 'J')">
+                                        <i class="fa-regular fa-file-lines"></i> JUST.
+                                    </button>
+                                </div>
+
+                                <!-- Input de Observaciones / Nota -->
+                                <div class="attendance-note-container" style="min-width: 170px; max-width: 240px;">
+                                    <input type="text" 
+                                           class="form-control form-control-sm attendance-note-input" 
+                                           placeholder="Agregar nota..." 
+                                           value="${(observaciones || '').replace(/"/g, '&quot;')}" 
+                                           ${disableAttr}
+                                           title="Observaciones del alumno"
+                                           oninput="actualizarObservacionesListado(${al.idAlumno}, this.value)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Avisos de restricción / Justificación -->
                         ${justificadoAdmin ? `
-                            <div class="text-primary fw-bold" style="font-size: 0.65rem; margin-top: 4px;">
-                                <i class="fa-solid fa-lock me-1"></i>Justificado Admin
+                            <div class="mt-2 pt-2 border-top border-light-subtle d-flex align-items-center gap-2 text-primary fw-semibold" style="font-size: 0.76rem;">
+                                <i class="fa-solid fa-lock"></i>
+                                <span>Asistencia justificada por Dirección / Administración (Edición bloqueada)</span>
                             </div>
                         ` : ''}
                         ${(!justificadoAdmin && edicionBloqueada) ? `
-                            <div class="text-danger fw-bold" style="font-size: 0.65rem; margin-top: 4px;">
-                                <i class="fa-solid fa-ban me-1"></i>Bloqueado
+                            <div class="mt-2 pt-2 border-top border-light-subtle d-flex align-items-center gap-2 text-danger fw-semibold" style="font-size: 0.76rem;">
+                                <i class="fa-solid fa-ban"></i>
+                                <span>Sólo lectura: Los docentes sólo pueden registrar asistencia para la fecha de hoy.</span>
                             </div>
                         ` : ''}
-                    </td>
-                    <td class="px-4">
-                        <input type="text" 
-                               class="form-control text-dark bg-white" 
-                               value="${observaciones}" 
-                               placeholder="Agregar nota..." 
-                               ${isDisabled ? 'disabled' : ''}
-                               style="border-radius: 8px; border-color: rgba(49, 125, 146, 0.2); font-size: 0.8rem; height: 36px;"
-                               oninput="actualizarObservacionesListado(${al.idAlumno}, this.value)">
-                    </td>
+                    </div>
                 `;
-                tbody.appendChild(tr);
+                container.appendChild(card);
             });
 
             const mensajeVacio = document.getElementById('mensaje-vacio');
@@ -797,14 +979,19 @@
             } else {
                 mensajeVacio.classList.add('d-none');
             }
+
+            const labelTotal = document.getElementById('label-total-alumnos');
+            if (labelTotal) {
+                labelTotal.innerText = `${visibles} de ${alumnos.length} alumnos`;
+            }
         } catch (e) {
             console.error("Error en renderListado:", e);
             mostrarErrorPantalla(e, 'renderListado');
         }
     }
 
-    // Cicla a través de los estados en la vista de lista
-    function ciclarEstatusListado(btn, idAlumno) {
+    // Selecciona o deselecciona directamente un estado para un alumno
+    function seleccionarEstatusListado(idAlumno, estatusDeseado) {
         if (!localState[fechaSeleccionada]) {
             localState[fechaSeleccionada] = {};
         }
@@ -813,7 +1000,7 @@
         }
 
         const record = localState[fechaSeleccionada][idAlumno];
-        
+
         // Bloquear si justificado por admin o si es docente y no es hoy
         if (record.justificado_admin) return;
         const now = new Date();
@@ -821,32 +1008,81 @@
         const userRole = @json(session('rol'));
         if (userRole === 'DOCENTE' && fechaSeleccionada !== todayStr) return;
 
-        let nuevo = null;
-
-        if (record.estatus === null) nuevo = 'A';
-        else if (record.estatus === 'A') nuevo = 'F';
-        else if (record.estatus === 'F') nuevo = 'R';
-        else if (record.estatus === 'R') nuevo = 'J';
-        else if (record.estatus === 'J') nuevo = null;
-
-        record.estatus = nuevo;
+        // Si ya está activo ese estado, se deselecciona (null)
+        if (record.estatus === estatusDeseado) {
+            record.estatus = null;
+        } else {
+            record.estatus = estatusDeseado;
+        }
 
         // Registrar modificación
         if (!modifiedState[fechaSeleccionada]) modifiedState[fechaSeleccionada] = {};
         modifiedState[fechaSeleccionada][idAlumno] = record;
 
-        // Actualizar visualmente el botón
-        let simbolo = '-';
-        let classEstatus = '';
-        if (nuevo === 'A') { simbolo = ':.'; classEstatus = 'status-A'; }
-        else if (nuevo === 'F') { simbolo = '\\'; classEstatus = 'status-F'; }
-        else if (nuevo === 'R') { simbolo = '.'; classEstatus = 'status-R'; }
-        else if (nuevo === 'J') { simbolo = 'J'; classEstatus = 'status-J'; }
+        // Actualizar visualmente la tarjeta
+        actualizarBotonesTarjeta(idAlumno, record.estatus);
 
-        btn.className = `btn-circle-status ${classEstatus}`;
-        btn.innerText = simbolo;
+        // Actualizar barra de progreso
+        actualizarProgreso();
+    }
+
+    // Actualiza la clase activa en los 4 botones de una tarjeta
+    function actualizarBotonesTarjeta(idAlumno, estatus) {
+        const card = document.querySelector(`.attendance-card[data-id="${idAlumno}"]`);
+        if (!card) return;
+
+        card.querySelectorAll('.btn-attendance-opt').forEach(btn => {
+            const opt = btn.getAttribute('data-status');
+            if (opt === estatus) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    // Marcar todos los alumnos con un estado ('A' o null para limpiar)
+    function marcarTodos(estatusDeseado) {
+        const now = new Date();
+        const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        const userRole = @json(session('rol'));
+        if (userRole === 'DOCENTE' && fechaSeleccionada !== todayStr) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Edición restringida',
+                text: 'Como docente sólo puedes registrar asistencias correspondientes al día de hoy.',
+                confirmButtonColor: '#0284c7'
+            });
+            return;
+        }
+
+        if (!localState[fechaSeleccionada]) localState[fechaSeleccionada] = {};
+        if (!modifiedState[fechaSeleccionada]) modifiedState[fechaSeleccionada] = {};
+
+        alumnos.forEach(al => {
+            if (!localState[fechaSeleccionada][al.idAlumno]) {
+                localState[fechaSeleccionada][al.idAlumno] = { estatus: null, observaciones: '', justificado_admin: false };
+            }
+            const rec = localState[fechaSeleccionada][al.idAlumno];
+            if (rec.justificado_admin) return;
+
+            rec.estatus = estatusDeseado;
+            modifiedState[fechaSeleccionada][al.idAlumno] = rec;
+            actualizarBotonesTarjeta(al.idAlumno, estatusDeseado);
+        });
 
         actualizarProgreso();
+    }
+
+    // Compatibilidad para cualquier llamada residual
+    function ciclarEstatusListado(btn, idAlumno) {
+        const record = (localState[fechaSeleccionada] || {})[idAlumno] || { estatus: null };
+        let nuevo = 'A';
+        if (record.estatus === 'A') nuevo = 'F';
+        else if (record.estatus === 'F') nuevo = 'R';
+        else if (record.estatus === 'R') nuevo = 'J';
+        else if (record.estatus === 'J') nuevo = null;
+        seleccionarEstatusListado(idAlumno, nuevo);
     }
 
     // Actualiza las observaciones en tiempo real
@@ -1036,10 +1272,11 @@
         for (const fecha in modifiedState) {
             for (const idAlumno in modifiedState[fecha]) {
                 const rec = modifiedState[fecha][idAlumno];
+                const fObj = fechas.find(fe => fe.fecha === fecha);
                 asistenciasToSend.push({
                     id_alumno: parseInt(idAlumno),
                     fecha: fecha,
-                    id_nivel_academico: fechas.find(fe => fe.fecha === fecha).id_nivel_academico,
+                    id_nivel_academico: fObj ? fObj.id_nivel_academico : null,
                     estatus: rec.estatus,
                     observaciones: rec.observaciones
                 });
