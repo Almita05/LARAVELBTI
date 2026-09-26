@@ -170,6 +170,26 @@ class AsistenciaAlumnoController extends Controller
                     ], 403);
                 }
             }
+
+            // Validar si el docente ya envió previamente el pase de lista de hoy
+            $id_grupo = $data['id_grupo'] ?? null;
+            $id_materia = $data['id_materia'] ?? null;
+            if ($id_grupo) {
+                $queryAsistenciasHoy = \Illuminate\Support\Facades\DB::table('tb_asistencias_alumnos')
+                    ->where('id_grupo', $id_grupo)
+                    ->where('fecha', $hoy)
+                    ->whereNotNull('estatus');
+
+                if ($id_materia && $id_materia !== 'general') {
+                    $queryAsistenciasHoy->where('id_materia', $id_materia);
+                }
+
+                if ($queryAsistenciasHoy->exists()) {
+                    return response()->json([
+                        'error' => 'El pase de lista de hoy ya fue enviado previamente y se encuentra cerrado. Solo el administrador puede realizar modificaciones.'
+                    ], 403);
+                }
+            }
         }
 
         // Si es Pase de Lista General (guardar para todas las materias del grupo)

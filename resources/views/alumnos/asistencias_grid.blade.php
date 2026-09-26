@@ -156,7 +156,7 @@
 
         <div class="d-flex gap-2 w-100 w-md-auto justify-content-end align-items-center">
             <!-- Botón Agregar Alumno -->
-            <button type="button" class="btn btn-premium-secondary py-2 px-4 fw-semibold d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalAgregarAlumno" style="border-radius: 12px; font-size: 0.82rem;">
+            <button id="btn-abrir-modal-alumno" type="button" class="btn btn-premium-secondary py-2 px-4 fw-semibold d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalAgregarAlumno" style="border-radius: 12px; font-size: 0.82rem;">
                 <i class="fa-solid fa-user-plus"></i>Agregar Alumno
             </button>
 
@@ -168,11 +168,6 @@
             <!-- Botón Descargar Excel -->
             <button id="btn-excel-asistencias" type="button" class="btn btn-outline-success py-2 px-4 fw-semibold d-flex align-items-center gap-2 d-none" onclick="descargarExcelAsistencias()" style="border-radius: 12px; font-size: 0.82rem; border-color: rgba(34, 197, 94, 0.35); color: rgb(21, 128, 61); background-color: rgba(255,255,255,0.3);">
                 <i class="fa-solid fa-file-excel"></i>Descargar Excel
-            </button>
-
-            <!-- Botón Guardar Cambios -->
-            <button id="btn-guardar-asistencias" type="button" class="btn btn-success py-2 px-4 fw-semibold d-flex align-items-center gap-2" onclick="guardarAsistencias()" style="border-radius: 12px; font-size: 0.82rem; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);">
-                <i class="fa-solid fa-floppy-disk"></i>Guardar Cambios
             </button>
         </div>
     </div>
@@ -188,7 +183,7 @@
                 </span>
                 <span class="text-muted small fw-medium" id="label-total-alumnos"></span>
             </div>
-            <div class="d-flex gap-2">
+            <div id="botones-acciones-listado" class="d-flex gap-2">
                 <button type="button" class="btn btn-sm btn-outline-success fw-semibold d-flex align-items-center gap-1 shadow-sm" onclick="marcarTodos('A')" style="border-radius: 10px; font-size: 0.78rem; background: #fff;">
                     <i class="fa-solid fa-check-double text-success"></i> Todos Asistencia
                 </button>
@@ -207,6 +202,17 @@
             <i class="fa-solid fa-users-slash text-muted mb-3" style="font-size: 3rem; opacity: 0.5;"></i>
             <h5 class="text-dark fw-bold">No se encontraron alumnos</h5>
             <p class="text-muted small mb-0">Prueba escribiendo otro nombre o agrega un nuevo alumno al grupo.</p>
+        </div>
+
+        <!-- Botón de Confirmación del Pase de Lista (Hasta abajo de la lista de alumnos) -->
+        <div id="panel-guardar-asistencias-bottom" class="mt-4 pt-3 pb-5 text-center">
+            <button id="btn-guardar-asistencias" type="button" class="btn btn-success py-3 px-5 fw-bold d-inline-flex align-items-center justify-content-center gap-2 shadow" onclick="guardarAsistencias()" style="border-radius: 14px; font-size: 1.05rem; min-width: 280px; box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);">
+                <i class="fa-solid fa-check-circle" style="font-size: 1.2rem;"></i>
+                <span id="btn-guardar-texto">Confirmar Pase de Lista</span>
+            </button>
+            <div id="msg-pase-bloqueado" class="mt-2 text-center text-muted small" style="max-width: 520px; margin: 0 auto;">
+                <i class="fa-solid fa-circle-info me-1"></i>Revisa las asistencias antes de confirmar. Al guardar, tu pase de lista quedará registrado.
+            </div>
         </div>
     </div>
 
@@ -275,6 +281,11 @@
                     </table>
                 </div>
             </div>
+        <!-- Botón Guardar Cambios Matriz -->
+        <div id="panel-guardar-matriz-bottom" class="mt-3 pt-2 pb-3 d-flex justify-content-end px-3">
+            <button id="btn-guardar-matriz" type="button" class="btn btn-success py-2 px-4 fw-semibold d-flex align-items-center gap-2" onclick="guardarAsistencias()" style="border-radius: 12px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);">
+                <i class="fa-solid fa-floppy-disk"></i>Guardar Cambios Matriz
+            </button>
         </div>
     </div>
 </div>
@@ -835,25 +846,85 @@
     }
 
     // Renderiza la vista actual
-    function renderizar() {
+    // Determina si el pase de lista de la fecha indicada (o fechaSeleccionada) está cerrado/bloqueado para docentes
+    function estaPaseBloqueado(fecha = null) {
+        const fechaTarget = fecha || fechaSeleccionada;
+        const userRole = @json(session('rol'));
+        const esDocente = (userRole === 'DOCENTE');
+        if (!esDocente) return false; // Administradores y directivos tienen edición completa permitida
+
         const now = new Date();
         const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        const esHoy = (fechaTarget === todayStr);
+        if (!esHoy) return true; // Docente no puede modificar fechas pasadas o futuras
+
+        // Si ya existen asistencias guardadas con estatus no nulo para esta fecha en la base de datos
+        const yaEnviado = asistenciasGuardadas.some(as => as.fecha === fechaTarget && as.estatus !== null && as.estatus !== '');
+        return yaEnviado;
+    }
+
+    function renderizar() {
         const userRole = @json(session('rol'));
-        const esHoy = (fechaSeleccionada === todayStr);
-        const edicionBloqueada = (userRole === 'DOCENTE' && !esHoy);
+        const esDocente = (userRole === 'DOCENTE');
+        const edicionBloqueada = estaPaseBloqueado();
 
         const btnGuardar = document.getElementById('btn-guardar-asistencias');
+        const msgBloqueado = document.getElementById('msg-pase-bloqueado');
+
         if (btnGuardar) {
             if (edicionBloqueada) {
                 btnGuardar.disabled = true;
-                btnGuardar.style.opacity = '0.65';
+                btnGuardar.className = 'btn btn-secondary py-3 px-5 fw-bold d-inline-flex align-items-center justify-content-center gap-2 shadow-sm';
+                btnGuardar.style.opacity = '0.7';
                 btnGuardar.style.cursor = 'not-allowed';
-                btnGuardar.title = 'No se pueden guardar asistencias de otras fechas.';
+                btnGuardar.innerHTML = '<i class="fa-solid fa-lock me-1"></i> <span>Pase de Lista Enviado (Cerrado)</span>';
+                if (msgBloqueado) {
+                    msgBloqueado.innerHTML = '<span class="badge bg-secondary-subtle text-secondary border px-3 py-2 rounded-pill"><i class="fa-solid fa-lock me-1"></i>El pase de lista de esta fecha ya fue enviado y se encuentra bloqueado para docentes. Para modificaciones, solicita apoyo a la administración.</span>';
+                }
             } else {
                 btnGuardar.disabled = false;
+                btnGuardar.className = 'btn btn-success py-3 px-5 fw-bold d-inline-flex align-items-center justify-content-center gap-2 shadow';
                 btnGuardar.style.opacity = '1';
                 btnGuardar.style.cursor = 'pointer';
-                btnGuardar.title = '';
+                btnGuardar.innerHTML = '<i class="fa-solid fa-check-circle me-1"></i> <span>Confirmar Pase de Lista</span>';
+                if (msgBloqueado) {
+                    msgBloqueado.innerHTML = '<i class="fa-solid fa-circle-info me-1"></i>Revisa las asistencias antes de confirmar. Al guardar, tu pase de lista quedará registrado.';
+                }
+            }
+        }
+
+        const btnGuardarMatriz = document.getElementById('btn-guardar-matriz');
+        if (btnGuardarMatriz) {
+            if (edicionBloqueada) {
+                btnGuardarMatriz.disabled = true;
+                btnGuardarMatriz.style.opacity = '0.6';
+                btnGuardarMatriz.style.cursor = 'not-allowed';
+            } else {
+                btnGuardarMatriz.disabled = false;
+                btnGuardarMatriz.style.opacity = '1';
+                btnGuardarMatriz.style.cursor = 'pointer';
+            }
+        }
+
+        // Acciones rápidas (Todos Asistencia, Limpiar)
+        const toolbarAcciones = document.getElementById('botones-acciones-listado');
+        if (toolbarAcciones) {
+            toolbarAcciones.style.display = edicionBloqueada ? 'none' : 'flex';
+        }
+
+        // Botón agregar alumno
+        const btnAgregarAlumno = document.getElementById('btn-abrir-modal-alumno');
+        if (btnAgregarAlumno && esDocente) {
+            if (edicionBloqueada) {
+                btnAgregarAlumno.disabled = true;
+                btnAgregarAlumno.style.opacity = '0.5';
+                btnAgregarAlumno.style.cursor = 'not-allowed';
+                btnAgregarAlumno.title = 'El pase de lista ya fue enviado. No se pueden agregar alumnos.';
+            } else {
+                btnAgregarAlumno.disabled = false;
+                btnAgregarAlumno.style.opacity = '1';
+                btnAgregarAlumno.style.cursor = 'pointer';
+                btnAgregarAlumno.title = '';
             }
         }
 
@@ -996,12 +1067,7 @@
             const query = normalizeStr(document.getElementById('buscadorAlumno').value.trim());
             let visibles = 0;
 
-            const now = new Date();
-            const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-            const esHoy = (fechaSeleccionada === todayStr);
-            const userRole = @json(session('rol'));
-            const esDocente = (userRole === 'DOCENTE');
-            const edicionBloqueada = esDocente && !esHoy;
+            const edicionBloqueada = estaPaseBloqueado();
 
             alumnos.forEach((al, index) => {
                 const nombreCompleto = `${al.apPaternoAlumno} ${al.apMaternoAlumno || ''} ${al.nombreAlumno}`.trim();
@@ -1099,10 +1165,10 @@
                                 <span>Asistencia justificada por Dirección / Administración (Edición bloqueada)</span>
                             </div>
                         ` : ''}
-                        ${(!justificadoAdmin && edicionBloqueada) ? `
-                            <div class="mt-2 pt-2 border-top border-light-subtle d-flex align-items-center gap-2 text-danger fw-semibold" style="font-size: 0.76rem;">
-                                <i class="fa-solid fa-ban"></i>
-                                <span>Sólo lectura: Los docentes sólo pueden registrar asistencia para la fecha de hoy.</span>
+                                                ${(!justificadoAdmin && edicionBloqueada) ? `
+                            <div class="mt-2 pt-2 border-top border-light-subtle d-flex align-items-center gap-2 text-secondary fw-medium" style="font-size: 0.76rem;">
+                                <i class="fa-solid fa-lock text-secondary"></i>
+                                <span>Pase de lista enviado y cerrado. No editable para docentes.</span>
                             </div>
                         ` : ''}
                     </div>
@@ -1129,6 +1195,16 @@
 
     // Selecciona o deselecciona directamente un estado para un alumno
     function seleccionarEstatusListado(idAlumno, estatusDeseado) {
+        if (estaPaseBloqueado()) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Pase de lista cerrado',
+                text: 'El pase de lista ya fue enviado y no puede modificarse. Consulta con el administrador si requieres un cambio.',
+                confirmButtonColor: 'rgb(49, 125, 146)'
+            });
+            return;
+        }
+
         if (!localState[fechaSeleccionada]) {
             localState[fechaSeleccionada] = {};
         }
@@ -1137,13 +1213,7 @@
         }
 
         const record = localState[fechaSeleccionada][idAlumno];
-
-        // Bloquear si justificado por admin o si es docente y no es hoy
         if (record.justificado_admin) return;
-        const now = new Date();
-        const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-        const userRole = @json(session('rol'));
-        if (userRole === 'DOCENTE' && fechaSeleccionada !== todayStr) return;
 
         // Si ya está activo ese estado, se deselecciona (null)
         if (record.estatus === estatusDeseado) {
@@ -1183,15 +1253,12 @@
 
     // Marcar todos los alumnos con un estado ('A' o null para limpiar)
     function marcarTodos(estatusDeseado) {
-        const now = new Date();
-        const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-        const userRole = @json(session('rol'));
-        if (userRole === 'DOCENTE' && fechaSeleccionada !== todayStr) {
+        if (estaPaseBloqueado()) {
             Swal.fire({
                 icon: 'info',
-                title: 'Edición restringida',
-                text: 'Como docente sólo puedes registrar asistencias correspondientes al día de hoy.',
-                confirmButtonColor: '#0284c7'
+                title: 'Pase de lista cerrado',
+                text: 'El pase de lista ya fue enviado y no puede modificarse.',
+                confirmButtonColor: 'rgb(49, 125, 146)'
             });
             return;
         }
@@ -1228,6 +1295,7 @@
 
     // Actualiza las observaciones en tiempo real
     function actualizarObservacionesListado(idAlumno, valor) {
+        if (estaPaseBloqueado()) return;
         if (!localState[fechaSeleccionada]) {
             localState[fechaSeleccionada] = {};
         }
@@ -1381,13 +1449,8 @@
     // Cicla a través de los estados: '-' -> 'A' -> 'F' -> 'R' -> 'J' -> '-'
     function ciclarEstatusMatriz(btn, idAlumno, fecha) {
         const record = localState[fecha][idAlumno];
-        
-        // Bloquear si justificado por admin o si es docente y no es hoy
         if (record.justificado_admin) return;
-        const now = new Date();
-        const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-        const userRole = @json(session('rol'));
-        if (userRole === 'DOCENTE' && fecha !== todayStr) return;
+        if (estaPaseBloqueado(fecha)) return;
 
         let nuevo = null;
 
@@ -1416,6 +1479,16 @@
 
     // GUARDAR CAMBIOS MASIVOS POR AJAX
     function guardarAsistencias() {
+        if (estaPaseBloqueado()) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Pase de lista cerrado',
+                text: 'El pase de lista ya fue enviado previamente y se encuentra cerrado.',
+                confirmButtonColor: '#ef4444'
+            });
+            return;
+        }
+
         const asistenciasToSend = [];
 
         // Recopilar todos los registros modificados del modifiedState
@@ -1430,6 +1503,23 @@
                     estatus: rec.estatus,
                     observaciones: rec.observaciones
                 });
+            }
+        }
+
+        // Si modifiedState está vacío pero hay asistencias marcadas en localState para la fecha actual, incluirlas
+        if (asistenciasToSend.length === 0 && localState[fechaSeleccionada]) {
+            for (const idAlumno in localState[fechaSeleccionada]) {
+                const rec = localState[fechaSeleccionada][idAlumno];
+                if (rec && rec.estatus !== null) {
+                    const fObj = fechas.find(fe => fe.fecha === fechaSeleccionada);
+                    asistenciasToSend.push({
+                        id_alumno: parseInt(idAlumno),
+                        fecha: fechaSeleccionada,
+                        id_nivel_academico: fObj ? fObj.id_nivel_academico : null,
+                        estatus: rec.estatus,
+                        observaciones: rec.observaciones || ''
+                    });
+                }
             }
         }
 
@@ -1510,6 +1600,16 @@
     // CREAR Y MATRICULAR NUEVO ALUMNO EN EL GRUPO
     function crearAlumno(e) {
         e.preventDefault();
+
+        if (estaPaseBloqueado()) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Pase de lista cerrado',
+                text: 'No es posible agregar alumnos porque el pase de lista de hoy ya fue enviado y cerrado.',
+                confirmButtonColor: '#ef4444'
+            });
+            return;
+        }
 
         const nombre = document.getElementById('input-nombre').value.trim().toUpperCase();
         const paterno = document.getElementById('input-paterno').value.trim().toUpperCase();
@@ -2026,18 +2126,4 @@
     }
 }
 </style>
-<!-- Barra flotante de guardado para teléfonos móviles -->
-<div id="barra-flotante-guardar-movil" class="d-md-none position-fixed bottom-0 start-0 end-0 p-2 shadow-lg border-top" style="z-index: 1040; backdrop-filter: blur(12px); background: rgba(255, 255, 255, 0.94); border-color: rgba(49, 125, 146, 0.2) !important;">
-    <div class="d-flex align-items-center justify-content-between px-2 gap-2">
-        <div class="d-flex align-items-center gap-1">
-            <span class="badge rounded-pill px-3 py-2 text-white fw-bold shadow-sm" id="badge-movil-progreso" style="background-color: rgb(49, 125, 146); font-size: 0.78rem;">
-                <i class="fa-solid fa-users me-1"></i> <span id="texto-movil-progreso">0/0</span>
-            </span>
-        </div>
-        <button type="button" class="btn btn-success fw-bold px-3 py-2 d-flex align-items-center gap-2 shadow-sm" onclick="guardarAsistencias()" style="border-radius: 12px; font-size: 0.82rem; background-color: #16a34a; border: none;">
-            <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
-        </button>
-    </div>
-</div>
-
 @endsection
