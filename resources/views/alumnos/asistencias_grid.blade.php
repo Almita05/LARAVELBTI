@@ -458,11 +458,20 @@
         gap: 6px;
     }
 
-    /* Grupo de botones de asistencia */
-    .attendance-buttons-group {
+    /* Panel de opciones de asistencia y notas */
+    .attendance-action-panel {
         display: flex;
-        flex-wrap: wrap;
+        flex-direction: column;
         gap: 8px;
+        width: 100%;
+    }
+
+    /* Grupo de 4 botones de asistencia en móviles: 4 columnas exactas e iguales */
+    .attendance-buttons-group {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        width: 100%;
     }
 
     /* Botón individual de asistencia */
@@ -470,19 +479,22 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        padding: 7px 16px;
+        gap: 5px;
+        padding: 8px 3px;
         border-radius: 12px;
-        font-size: 0.8rem;
+        font-size: 0.77rem;
         font-weight: 700;
-        letter-spacing: 0.4px;
+        letter-spacing: 0.3px;
         border: 1.5px solid #cbd5e1;
         background-color: #ffffff;
         color: #475569;
         cursor: pointer;
         transition: all 0.15s ease-in-out;
         user-select: none;
-        min-height: 38px;
+        min-height: 42px;
+        width: 100%;
+        text-align: center;
+        white-space: nowrap;
     }
     .btn-attendance-opt:hover:not(:disabled) {
         background-color: #f8fafc;
@@ -531,8 +543,14 @@
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
     }
 
+    /* Contenedor de notas responsivo */
+    .attendance-note-container {
+        width: 100%;
+    }
+
     /* Campo integrado de observaciones */
     .attendance-note-input {
+        width: 100%;
         background-color: #f8fafc;
         border: 1.5px solid #e2e8f0;
         border-radius: 12px;
@@ -547,6 +565,81 @@
         border-color: #0284c7;
         box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
         outline: none;
+    }
+
+    /* Optimizaciones responsivas para Desktop (>= 992px) */
+    @media (min-width: 992px) {
+        .attendance-action-panel {
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-end;
+            width: auto;
+            gap: 10px;
+        }
+        .attendance-buttons-group {
+            display: flex;
+            flex-wrap: nowrap;
+            width: auto;
+            gap: 8px;
+        }
+        .btn-attendance-opt {
+            width: auto;
+            min-width: 82px;
+            padding: 7px 14px;
+            min-height: 38px;
+            font-size: 0.8rem;
+        }
+        .attendance-note-container {
+            width: 200px;
+            min-width: 170px;
+            max-width: 240px;
+        }
+    }
+
+    /* Optimizaciones responsivas para Móviles (< 768px) */
+    @media (max-width: 767.98px) {
+        #contenedor-vista-listado {
+            padding-bottom: 75px;
+        }
+        #select-materia,
+        #select-fecha {
+            min-width: 0 !important;
+            width: 100% !important;
+        }
+        #div-select-fecha {
+            width: 100% !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        #div-select-fecha label {
+            min-width: 0 !important;
+            margin-bottom: 2px;
+        }
+        #div-nav-fecha {
+            width: 100% !important;
+            justify-content: center !important;
+            margin-top: 6px;
+        }
+    }
+
+    /* Móviles con pantallas estrechas (< 390px) */
+    @media (max-width: 389.98px) {
+        .btn-attendance-opt {
+            padding: 7px 2px;
+            font-size: 0.69rem;
+            gap: 3px;
+        }
+        .btn-attendance-opt i {
+            font-size: 0.72rem;
+        }
+        .badge-lista {
+            min-width: 32px;
+            height: 32px;
+            font-size: 0.8rem;
+        }
+        .alumno-nombre-card {
+            font-size: 0.88rem;
+        }
     }
 </style>
 
@@ -598,7 +691,7 @@
 
     // Variables de datos inyectadas desde PHP
     const alumnosRaw = @json($alumnos);
-    const alumnos = Array.isArray(alumnosRaw) ? alumnosRaw : Object.values(alumnosRaw || {});
+    let alumnos = Array.isArray(alumnosRaw) ? [...alumnosRaw] : Object.values(alumnosRaw || {});
 
     const fechasRaw = @json($fechas);
     const fechas = Array.isArray(fechasRaw) ? fechasRaw : Object.values(fechasRaw || {});
@@ -615,6 +708,45 @@
     const localState = {};
     // Registro de modificaciones para guardar únicamente lo cambiado
     const modifiedState = {};
+
+    // Persistencia local (sessionStorage) para no perder el pase de lista si se recarga la página o apaga la pantalla
+    function guardarBorradorLocal() {
+        try {
+            const key = `draft_asistencias_${grupo.id}_${@json($selected_materia_id)}`;
+            sessionStorage.setItem(key, JSON.stringify({
+                modifiedState: modifiedState,
+                localState: localState,
+                timestamp: Date.now()
+            }));
+        } catch (e) {
+            console.warn("No se pudo guardar borrador en sessionStorage", e);
+        }
+    }
+
+    function recuperarBorradorLocal() {
+        try {
+            const key = `draft_asistencias_${grupo.id}_${@json($selected_materia_id)}`;
+            const raw = sessionStorage.getItem(key);
+            if (!raw) return;
+            const draft = JSON.parse(raw);
+            // Recuperar si el borrador es reciente (menos de 24 horas)
+            if (Date.now() - (draft.timestamp || 0) < 24 * 3600 * 1000) {
+                if (draft.modifiedState && Object.keys(draft.modifiedState).length > 0) {
+                    for (const fecha in draft.modifiedState) {
+                        if (!localState[fecha]) localState[fecha] = {};
+                        if (!modifiedState[fecha]) modifiedState[fecha] = {};
+                        for (const idAlumno in draft.modifiedState[fecha]) {
+                            const rec = draft.modifiedState[fecha][idAlumno];
+                            localState[fecha][idAlumno] = rec;
+                            modifiedState[fecha][idAlumno] = rec;
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("Error al recuperar borrador de sessionStorage", e);
+        }
+    }
 
     try {
         if (fechas.length > 0) {
@@ -641,6 +773,9 @@
                 localState[as.fecha][as.id_alumno].justificado_admin = as.justificado_admin || false;
             }
         });
+
+        // Restaurar borrador pendiente si existe para esta sesión
+        recuperarBorradorLocal();
     } catch (e) {
         console.error("Error al inicializar el estado de asistencias:", e);
     }
@@ -904,9 +1039,9 @@
                                 </div>
                             </div>
 
-                            <!-- Opciones de Asistencia y Observaciones -->
-                            <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2 justify-content-lg-end flex-wrap">
-                                <!-- Botones de Asistencia directos -->
+                            <!-- Opciones de Asistencia y Observaciones Responsivo -->
+                            <div class="attendance-action-panel">
+                                <!-- Botones de Asistencia directos (4 columnas exactas en móvil) -->
                                 <div class="attendance-buttons-group">
                                     <button type="button" 
                                             class="btn-attendance-opt btn-opt-asis ${estatus === 'A' ? 'active' : ''}" 
@@ -914,7 +1049,7 @@
                                             ${disableAttr}
                                             title="Asistencia"
                                             onclick="seleccionarEstatusListado(${al.idAlumno}, 'A')">
-                                        <i class="fa-solid fa-check"></i> ASIS.
+                                        <i class="fa-solid fa-check"></i> <span>ASIS.</span>
                                     </button>
                                     <button type="button" 
                                             class="btn-attendance-opt btn-opt-falt ${estatus === 'F' ? 'active' : ''}" 
@@ -922,7 +1057,7 @@
                                             ${disableAttr}
                                             title="Falta"
                                             onclick="seleccionarEstatusListado(${al.idAlumno}, 'F')">
-                                        <i class="fa-solid fa-xmark"></i> FALT.
+                                        <i class="fa-solid fa-xmark"></i> <span>FALT.</span>
                                     </button>
                                     <button type="button" 
                                             class="btn-attendance-opt btn-opt-reta ${estatus === 'R' ? 'active' : ''}" 
@@ -930,7 +1065,7 @@
                                             ${disableAttr}
                                             title="Retardo"
                                             onclick="seleccionarEstatusListado(${al.idAlumno}, 'R')">
-                                        <i class="fa-regular fa-clock"></i> RETA.
+                                        <i class="fa-regular fa-clock"></i> <span>RETA.</span>
                                     </button>
                                     <button type="button" 
                                             class="btn-attendance-opt btn-opt-just ${estatus === 'J' ? 'active' : ''}" 
@@ -938,12 +1073,12 @@
                                             ${disableAttr}
                                             title="Justificado"
                                             onclick="seleccionarEstatusListado(${al.idAlumno}, 'J')">
-                                        <i class="fa-regular fa-file-lines"></i> JUST.
+                                        <i class="fa-regular fa-file-lines"></i> <span>JUST.</span>
                                     </button>
                                 </div>
 
-                                <!-- Input de Observaciones / Nota -->
-                                <div class="attendance-note-container" style="min-width: 170px; max-width: 240px;">
+                                <!-- Input de Observaciones / Nota (Ancho completo debajo en móviles) -->
+                                <div class="attendance-note-container">
                                     <input type="text" 
                                            class="form-control form-control-sm attendance-note-input" 
                                            placeholder="Agregar nota..." 
@@ -1024,6 +1159,9 @@
 
         // Actualizar barra de progreso
         actualizarProgreso();
+
+        // Guardar borrador local
+        guardarBorradorLocal();
     }
 
     // Actualiza la clase activa en los 4 botones de una tarjeta
@@ -1072,6 +1210,7 @@
         });
 
         actualizarProgreso();
+        guardarBorradorLocal();
     }
 
     // Compatibilidad para cualquier llamada residual
@@ -1100,6 +1239,9 @@
         // Registrar modificación
         if (!modifiedState[fechaSeleccionada]) modifiedState[fechaSeleccionada] = {};
         modifiedState[fechaSeleccionada][idAlumno] = record;
+
+        // Guardar borrador local
+        guardarBorradorLocal();
     }
 
     // Actualiza la barra de progreso para la fecha seleccionada
@@ -1124,6 +1266,12 @@
 
         bar.style.width = `${porcentaje}%`;
         text.innerText = `${completados} / ${total} Alumnos`;
+
+        // Actualizar contador en la barra flotante para móviles
+        const textoMovil = document.getElementById('texto-movil-progreso');
+        if (textoMovil) {
+            textoMovil.innerText = `${completados} / ${total}`;
+        }
 
         if (completados === total) {
             label.innerText = '¡Todos los alumnos completados!';
@@ -1337,6 +1485,9 @@
                 }).then(() => {
                     // Limpiar historial de modificaciones locales
                     for (const prop in modifiedState) { delete modifiedState[prop]; }
+                    try {
+                        sessionStorage.removeItem(`draft_asistencias_${grupo.id}_${@json($selected_materia_id)}`);
+                    } catch(e) {}
                     // Recargar datos y refrescar la vista
                     window.location.reload();
                 });
@@ -1375,7 +1526,7 @@
         // Ocultar modal
         const modalEl = document.getElementById('modalAgregarAlumno');
         const modal = bootstrap.Modal.getInstance(modalEl);
-        modal.hide();
+        if (modal) modal.hide();
 
         Swal.fire({
             title: 'Registrando alumno...',
@@ -1385,20 +1536,24 @@
             }
         });
 
-        // Payload requerido por el backend Laravel/Flask
+        const creatorName = @json(session('nombre') ?: session('usuario') ?: 'Docente');
+
+        // Payload requerido por el backend Laravel/Flask con createBy para notificaciones
         const payload = {
             alumno: {
                 nombre: nombre,
                 apPaterno: paterno,
                 apMaterno: materno,
-                statusAlumno: 'ACTIVO'
+                statusAlumno: 'ACTIVO',
+                createBy: creatorName
             },
             academico: {
                 id_centroTrabajo: grupo.id_centroTrabajo,
                 id_nivel_academico: grupo.id_nivel_academico_actual,
                 id_generacion: grupo.idGeneracion,
                 id_grupo: grupo.id
-            }
+            },
+            createBy: creatorName
         };
 
         fetch("/alumnos", {
@@ -1420,18 +1575,82 @@
                     text: data.message || 'Error al guardar alumno.',
                     confirmButtonColor: '#ef4444'
                 }).then(() => {
-                    modal.show();
+                    if (modal) modal.show();
                 });
             } else {
+                // Obtener ID del nuevo alumno asignado por la base de datos
+                const nuevoId = (data.data && data.data.idAlumno) ? data.data.idAlumno : (data.idAlumno || Date.now());
+
+                // Crear objeto del nuevo alumno para agregar a la colección local
+                const nuevoAlumno = {
+                    idAlumno: nuevoId,
+                    nombreAlumno: nombre,
+                    apPaternoAlumno: paterno,
+                    apMaternoAlumno: materno || '',
+                    matricula: (data.data && data.data.numeroControl) ? data.data.numeroControl : '',
+                    numero_lista: 0
+                };
+
+                // Agregar el alumno al array local
+                alumnos.push(nuevoAlumno);
+
+                // Reordenar alfabéticamente (Paterno, Materno, Nombre)
+                alumnos.sort((a, b) => {
+                    const nomA = `${a.apPaternoAlumno || ''} ${a.apMaternoAlumno || ''} ${a.nombreAlumno || ''}`.trim().toLowerCase();
+                    const nomB = `${b.apPaternoAlumno || ''} ${b.apMaternoAlumno || ''} ${b.nombreAlumno || ''}`.trim().toLowerCase();
+                    return nomA.localeCompare(nomB, 'es', { sensitivity: 'base' });
+                });
+
+                // Recalcular correlativo de número de lista
+                alumnos.forEach((al, idx) => {
+                    al.numero_lista = idx + 1;
+                    al.num_lista = idx + 1;
+                });
+
+                // Inicializar estado para el nuevo alumno en todas las fechas disponibles
+                fechas.forEach(f => {
+                    if (!localState[f.fecha]) localState[f.fecha] = {};
+                    if (!localState[f.fecha][nuevoId]) {
+                        localState[f.fecha][nuevoId] = {
+                            estatus: null,
+                            observaciones: '',
+                            justificado_admin: false
+                        };
+                    }
+                });
+
+                // Limpiar formulario modal para próximas inserciones
+                const formEl = document.getElementById('form-agregar-alumno');
+                if (formEl) formEl.reset();
+
+                // Re-renderizar la vista CONSERVANDO el pase de lista de todos los demás alumnos
+                renderizar();
+                guardarBorradorLocal();
+
+                // Notificar al usuario con confirmación clara
                 Swal.fire({
                     icon: 'success',
-                    title: 'Alumno Agregado',
-                    text: 'El alumno se ha matriculado en este grupo correctamente.',
-                    confirmButtonColor: '#22c55e'
-                }).then(() => {
-                    // Recargar la pantalla para actualizar la lista de alumnos
-                    window.location.reload();
+                    title: '¡Alumno Agregado!',
+                    text: `${paterno} ${materno} ${nombre} se incorporó a la lista. Tu pase de lista anterior se ha conservado; ya puedes marcar la asistencia del nuevo alumno.`,
+                    confirmButtonColor: 'rgb(49, 125, 146)',
+                    timer: 3500,
+                    timerProgressBar: true
                 });
+
+                // Desplazar suavemente hasta la tarjeta del nuevo alumno y resaltarla temporalmente
+                setTimeout(() => {
+                    const tarjeta = document.querySelector(`.attendance-card[data-id="${nuevoId}"]`);
+                    if (tarjeta) {
+                        tarjeta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        tarjeta.style.transition = 'all 0.4s ease';
+                        tarjeta.style.boxShadow = '0 0 0 3px rgba(49, 125, 146, 0.75), 0 8px 24px rgba(49, 125, 146, 0.25)';
+                        tarjeta.style.transform = 'scale(1.02)';
+                        setTimeout(() => {
+                            tarjeta.style.boxShadow = '';
+                            tarjeta.style.transform = '';
+                        }, 2600);
+                    }
+                }, 350);
             }
         })
         .catch(err => {
@@ -1442,7 +1661,7 @@
                 text: 'Hubo un error al conectar con el servidor para registrar el alumno.',
                 confirmButtonColor: '#ef4444'
             }).then(() => {
-                modal.show();
+                if (modal) modal.show();
             });
             console.error(err);
         });
@@ -1805,4 +2024,18 @@
     }
 }
 </style>
+<!-- Barra flotante de guardado para teléfonos móviles -->
+<div id="barra-flotante-guardar-movil" class="d-md-none position-fixed bottom-0 start-0 end-0 p-2 shadow-lg border-top" style="z-index: 1040; backdrop-filter: blur(12px); background: rgba(255, 255, 255, 0.94); border-color: rgba(49, 125, 146, 0.2) !important;">
+    <div class="d-flex align-items-center justify-content-between px-2 gap-2">
+        <div class="d-flex align-items-center gap-1">
+            <span class="badge rounded-pill px-3 py-2 text-white fw-bold shadow-sm" id="badge-movil-progreso" style="background-color: rgb(49, 125, 146); font-size: 0.78rem;">
+                <i class="fa-solid fa-users me-1"></i> <span id="texto-movil-progreso">0/0</span>
+            </span>
+        </div>
+        <button type="button" class="btn btn-success fw-bold px-3 py-2 d-flex align-items-center gap-2 shadow-sm" onclick="guardarAsistencias()" style="border-radius: 12px; font-size: 0.82rem; background-color: #16a34a; border: none;">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+        </button>
+    </div>
+</div>
+
 @endsection

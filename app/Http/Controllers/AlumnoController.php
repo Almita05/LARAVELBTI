@@ -104,7 +104,16 @@ public function getGrupos(Request $request)
 public function store(Request $request)
 {
     $payload = $request->json()->all() ?: $request->all();
-    \Log::info('Store request payload:', $payload);
+
+    $creatorName = session('nombre') ?: session('usuario') ?: 'Docente';
+    if (empty($payload['createBy'])) {
+        $payload['createBy'] = $creatorName;
+    }
+    if (isset($payload['alumno']) && is_array($payload['alumno']) && empty($payload['alumno']['createBy'])) {
+        $payload['alumno']['createBy'] = $creatorName;
+    }
+
+    \Log::info('Store request payload with createBy:', $payload);
 
     $url = config('services.api.base_url') . '/crealumnos';
 

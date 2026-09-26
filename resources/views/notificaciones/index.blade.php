@@ -46,8 +46,12 @@
                 <span class="badge bg-light text-dark ms-2" id="badge-pill-equivalencias">{{ $notificaciones['totales']['equivalencias'] ?? 0 }}</span>
             </button>
             <button class="btn btn-premium-pill" onclick="filtrarAlertas('grupos', this)">
-                <i class="bi bi-calendar-event-fill me-1"></i> Término de Grupos
+                <i class="bi bi-calendar-event-fill me-1"></i> Grupos y Horarios
                 <span class="badge bg-light text-dark ms-2" id="badge-pill-grupos">{{ $notificaciones['totales']['grupos'] ?? 0 }}</span>
+            </button>
+            <button class="btn btn-premium-pill" onclick="filtrarAlertas('nuevos_alumnos', this)">
+                <i class="bi bi-person-plus-fill me-1"></i> Nuevos Alumnos
+                <span class="badge bg-light text-dark ms-2" id="badge-pill-nuevos_alumnos">{{ $notificaciones['totales']['nuevos_alumnos'] ?? 0 }}</span>
             </button>
             <button class="btn btn-premium-pill" onclick="filtrarAlertas('resueltas', this)">
                 <i class="bi bi-check2-all me-1"></i> Resueltas / Omitidas
@@ -124,31 +128,52 @@
                             </tr>
                         @endforeach
 
-                        <!-- SECCIÓN: TÉRMINO DE GRUPOS -->
+                        <!-- SECCIÓN: GRUPOS Y HORARIOS -->
                         @foreach($notificaciones['grupos'] as $gp)
                             <tr class="fila-alerta" data-categoria="grupos">
                                 <td>
-                                    <span class="badge bg-info text-dark px-2 py-1 fw-bold text-uppercase" style="font-size: 0.73rem;">Término Ciclo</span>
+                                    <span class="badge {{ $gp['badge_color'] ?? 'bg-info text-dark' }} px-2 py-1 fw-bold text-uppercase" style="font-size: 0.73rem;">
+                                        {{ $gp['badge_tipo'] ?? 'Término Ciclo' }}
+                                    </span>
                                 </td>
-                                <td class="fw-bold text-dark">Grupo: {{ $gp['clave'] }}</td>
+                                <td class="fw-bold text-dark">
+                                    Grupo: {{ $gp['clave'] }}
+                                    @if(isset($gp['esCritico']) && $gp['esCritico'])
+                                        <span class="badge bg-danger rounded-pill ms-1" style="font-size: 0.65rem;">Urgente</span>
+                                    @endif
+                                </td>
                                 <td class="text-secondary">
-                                    <i class="bi bi-clock-history text-info me-1"></i>{{ $gp['detalle'] }}
+                                    <i class="bi {{ $gp['icono'] ?? 'bi-clock-history text-info' }} me-1"></i>{{ $gp['detalle'] }}
                                 </td>
                                 <td class="text-secondary">
                                     <strong>CCT:</strong> {{ $gp['cct'] }}
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex flex-column gap-1 align-items-center">
-                                        <a href="/grupos/captura_calificaciones" class="btn btn-ver btn-sm text-white w-100">
-                                            <i class="bi bi-journal-check me-1"></i> Capturar Notas
-                                        </a>
-                                        @if(isset($gp['id_centroTrabajo']) && $gp['id_centroTrabajo'] == 3)
-                                            <a href="/horarios?grupo_id={{ $gp['idGrupo'] }}&es_prehorario=1" class="btn btn-warning btn-sm text-dark w-100">
+                                        @if(isset($gp['accion_tipo']) && $gp['accion_tipo'] == 'armar_prehorario')
+                                            <a href="/horarios?grupo_id={{ $gp['idGrupo'] }}&es_prehorario=1" class="btn btn-warning btn-sm text-dark w-100 fw-bold">
                                                 <i class="bi bi-calendar-plus me-1"></i> Armar Pre-Horario
                                             </a>
+                                        @elseif(isset($gp['accion_tipo']) && in_array($gp['accion_tipo'], ['armar_horario', 'completar_horario']))
+                                            <a href="/horarios?grupo_id={{ $gp['idGrupo'] }}" class="btn btn-primary btn-sm text-white w-100 fw-bold">
+                                                <i class="bi bi-calendar-check me-1"></i> {{ $gp['accion_tipo'] == 'completar_horario' ? 'Completar Horario' : 'Armar Horario' }}
+                                            </a>
+                                        @else
+                                            <a href="/grupos/captura_calificaciones" class="btn btn-ver btn-sm text-white w-100">
+                                                <i class="bi bi-journal-check me-1"></i> Capturar Notas
+                                            </a>
+                                            @if(isset($gp['id_centroTrabajo']) && $gp['id_centroTrabajo'] == 3)
+                                                <a href="/horarios?grupo_id={{ $gp['idGrupo'] }}&es_prehorario=1" class="btn btn-warning btn-sm text-dark w-100">
+                                                    <i class="bi bi-calendar-plus me-1"></i> Armar Pre-Horario
+                                                </a>
+                                            @else
+                                                <a href="/horarios?grupo_id={{ $gp['idGrupo'] }}" class="btn btn-primary btn-sm text-white w-100">
+                                                    <i class="bi bi-calendar-check me-1"></i> Ver Horario
+                                                </a>
+                                            @endif
                                         @endif
                                         <button type="button" class="btn btn-outline-secondary btn-sm w-100 mt-1 d-inline-flex align-items-center justify-content-center gap-1"
-                                                onclick="abrirModalResolver('grupos', {{ $gp['idGrupo'] }}, 'Grupo: {{ addslashes($gp['clave']) }}', '{{ addslashes($gp['detalle']) }}', 'termino_ciclo', this)"
+                                                onclick="abrirModalResolver('grupos', {{ $gp['idGrupo'] }}, 'Grupo: {{ addslashes($gp['clave']) }}', '{{ addslashes($gp['detalle']) }}', '{{ $gp['subtipo'] ?? 'general' }}', this)"
                                                 style="border-radius: 8px; font-size: 0.75rem;">
                                             <i class="bi bi-eye-slash"></i> Omitir Aviso
                                         </button>
@@ -156,6 +181,51 @@
                                 </td>
                             </tr>
                         @endforeach
+
+                        <!-- SECCIÓN: NUEVOS ALUMNOS REGISTRADOS -->
+                        @if(!empty($notificaciones['nuevos_alumnos']))
+                            @foreach($notificaciones['nuevos_alumnos'] as $na)
+                                <tr class="fila-alerta" data-categoria="nuevos_alumnos">
+                                    <td>
+                                        <span class="badge bg-primary px-2 py-1 fw-bold text-uppercase" style="font-size: 0.73rem;">
+                                            <i class="bi bi-person-plus me-1"></i>Nuevo Alumno
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold text-dark">
+                                        {{ $na['nombre'] }}
+                                        @if(!empty($na['matricula']) && $na['matricula'] !== 'Sin Matrícula')
+                                            <br><small class="text-muted fw-normal"><i class="bi bi-card-heading me-1"></i>Mat: {{ $na['matricula'] }}</small>
+                                        @endif
+                                    </td>
+                                    <td class="text-secondary">
+                                        <div>
+                                            <i class="bi bi-person-badge-fill text-primary me-1"></i>
+                                            Registrado por: <strong class="text-dark">{{ $na['creador'] ?? 'Docente/Admin' }}</strong>
+                                        </div>
+                                        <div class="small text-muted mt-0.5">
+                                            <i class="bi bi-clock-history me-1"></i>Fecha y hora: <strong>{{ $na['fecha_creacion'] }} @if(!empty($na['hora_creacion'])) a las {{ $na['hora_creacion'] }} @endif</strong>
+                                        </div>
+                                    </td>
+                                    <td class="text-secondary">
+                                        <strong>CCT:</strong> {{ $na['cct'] }} <br>
+                                        <strong>Grupo:</strong> <span class="badge bg-info text-dark">{{ $na['grupo'] }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex flex-column gap-1 align-items-center">
+                                            <a href="/alumnos/{{ $na['idAlumno'] }}/kardex" class="btn btn-sm btn-outline-primary w-100 d-inline-flex align-items-center justify-content-center gap-1" style="border-radius: 8px; font-size: 0.78rem;">
+                                                <i class="bi bi-person-lines-fill"></i> Ver Kardex
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-success w-100 d-inline-flex align-items-center justify-content-center gap-1 btn-resolver-alerta"
+                                                    onclick="abrirModalResolver('nuevos_alumnos', {{ $na['idAlumno'] }}, '{{ addslashes($na['nombre']) }}', 'Nuevo alumno en grupo {{ addslashes($na['grupo']) }}', 'nuevo_registro', this)"
+                                                    title="Marcar como enterado / visto"
+                                                    style="border-radius: 8px; font-size: 0.78rem; font-weight: 600;">
+                                                <i class="bi bi-check-circle-fill"></i> Enterado
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @endif
 
                         <!-- SECCIÓN: ALERTAS RESUELTAS / OMITIDAS -->
                         @if(!empty($notificaciones['resueltas']))

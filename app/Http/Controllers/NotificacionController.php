@@ -18,10 +18,12 @@ class NotificacionController extends Controller
                 'documentos' => [],
                 'equivalencias' => [],
                 'grupos' => [],
+                'nuevos_alumnos' => [],
                 'totales' => [
                     'documentos' => 0,
                     'equivalencias' => 0,
                     'grupos' => 0,
+                    'nuevos_alumnos' => 0,
                     'total' => 0
                 ]
             ];
@@ -37,7 +39,8 @@ class NotificacionController extends Controller
                 'documentos' => [],
                 'equivalencias' => [],
                 'grupos' => [],
-                'totales' => ['documentos' => 0, 'equivalencias' => 0, 'grupos' => 0, 'total' => 0],
+                'nuevos_alumnos' => [],
+                'totales' => ['documentos' => 0, 'equivalencias' => 0, 'grupos' => 0, 'nuevos_alumnos' => 0, 'total' => 0],
                 'error' => 'No se pudo establecer conexión con el servicio de notificaciones.'
             ];
         }
