@@ -132,6 +132,7 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::get('/asistencias_alumnos/grupo/{id_grupo}', [\App\Http\Controllers\AsistenciaAlumnoController::class, 'grupoGrid'])->name('asistencias_alumnos.grupo');
     Route::post('/asistencias_alumnos/guardar', [\App\Http\Controllers\AsistenciaAlumnoController::class, 'guardar'])->name('asistencias_alumnos.guardar');
     Route::post('/asistencias_alumnos/justificar', [\App\Http\Controllers\AsistenciaAlumnoController::class, 'justificar'])->name('asistencias_alumnos.justificar');
+    Route::post('/asistencias_alumnos/reabrir', [\App\Http\Controllers\AsistenciaAlumnoController::class, 'reabrirPase'])->name('asistencias_alumnos.reabrir');
 
     // Reportes de Asistencias
     Route::get('/reportes/asistencias', [\App\Http\Controllers\ReporteAsistenciaController::class, 'index'])->name('reportes.asistencias');

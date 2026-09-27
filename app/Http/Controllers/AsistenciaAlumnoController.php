@@ -143,7 +143,18 @@ class AsistenciaAlumnoController extends Controller
                 }
             }
 
-            return view('alumnos.asistencias_grid', compact('grupo', 'alumnos', 'fechas', 'asistencias', 'materias', 'selected_materia_id'));
+                        $reaperturasFechas = $attendanceData['reaperturas_fechas'] ?? [];
+            try {
+                $dbReaperturas = \Illuminate\Support\Facades\DB::table('tb_asistencias_reaperturas')
+                    ->where('id_grupo', $id_grupo)
+                    ->where('habilitado', 1)
+                    ->pluck('fecha')
+                    ->map(function($f) { return is_string($f) ? substr($f, 0, 10) : (string)$f; })
+                    ->toArray();
+                $reaperturasFechas = array_values(array_unique(array_merge($reaperturasFechas, $dbReaperturas)));
+            } catch (\Throwable $e) {}
+
+            return view('alumnos.asistencias_grid', compact('grupo', 'alumnos', 'fechas', 'asistencias', 'materias', 'selected_materia_id', 'reaperturasFechas'));
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error("Error en grupoGrid para grupo $id_grupo: " . $e->getMessage() . " en " . $e->getFile() . ":" . $e->getLine());
             return redirect()->route('asistencias_alumnos')->with('error', 'Ocurrió un problema al cargar el grupo: ' . $e->getMessage());
@@ -184,7 +195,23 @@ class AsistenciaAlumnoController extends Controller
                     $queryAsistenciasHoy->where('id_materia', $id_materia);
                 }
 
-                if ($queryAsistenciasHoy->exists()) {
+                $reaperturaActiva = false;
+                try {
+                    $reaperturaActiva = \Illuminate\Support\Facades\DB::table('tb_asistencias_reaperturas')
+                        ->where('id_grupo', $id_grupo)
+                        ->where('fecha', $hoy)
+                        ->where('habilitado', 1)
+                        ->where(function($q) use ($id_materia) {
+                            $q->whereNull('id_materia')
+                              ->orWhere('id_materia', 0);
+                            if ($id_materia && $id_materia !== 'general') {
+                                $q->orWhere('id_materia', $id_materia);
+                            }
+                        })
+                        ->exists();
+                } catch (\Throwable $e) {}
+
+                if ($queryAsistenciasHoy->exists() && !$reaperturaActiva) {
                     return response()->json([
                         'error' => 'El pase de lista de hoy ya fue enviado previamente y se encuentra cerrado. Solo el administrador puede realizar modificaciones.'
                     ], 403);
@@ -259,6 +286,15 @@ class AsistenciaAlumnoController extends Controller
             }
 
             if ($dbDirectSucceeded) {
+                if ($rol === 'DOCENTE') {
+                    try {
+                        \Illuminate\Support\Facades\DB::table('tb_asistencias_reaperturas')
+                            ->where('id_grupo', $id_grupo)
+                            ->where('fecha', date('Y-m-d'))
+                            ->where('habilitado', 1)
+                            ->update(['habilitado' => 0, 'updated_at' => now()]);
+                    } catch (\Throwable $e) {}
+                }
                 return response()->json([
                     'mensaje' => 'Asistencias generales guardadas correctamente en todas las materias del grupo.'
                 ]);
@@ -267,6 +303,20 @@ class AsistenciaAlumnoController extends Controller
 
         // Proxy de guardado a Flask (para materia individual o fallback de general)
         $response = Http::post($baseApiUrl . '/asistencias/alumnos/guardar', $data);
+
+        if ($response->successful() && $rol === 'DOCENTE') {
+            try {
+                $id_grp = $data['id_grupo'] ?? null;
+                $hoy = date('Y-m-d');
+                if ($id_grp) {
+                    \Illuminate\Support\Facades\DB::table('tb_asistencias_reaperturas')
+                        ->where('id_grupo', $id_grp)
+                        ->where('fecha', $hoy)
+                        ->where('habilitado', 1)
+                        ->update(['habilitado' => 0, 'updated_at' => now()]);
+                }
+            } catch (\Throwable $e) {}
+        }
 
         return response()->json($response->json(), $response->status());
     }
@@ -289,5 +339,76 @@ class AsistenciaAlumnoController extends Controller
         ]);
 
         return response()->json($response->json(), $response->status());
+    }
+
+    public function reabrirPase(Request $request)
+    {
+        if (session('rol') === 'DOCENTE') {
+            return response()->json(['error' => 'No tienes permisos para reabrir pases de lista.'], 403);
+        }
+
+        $id_grupo = $request->input('id_grupo');
+        $fecha = $request->input('fecha') ?? date('Y-m-d');
+        $id_materia = $request->input('id_materia');
+        $habilitar = $request->boolean('habilitar', true);
+        $usuario = session('usuario') ?? session('nombre') ?? 'Administrador';
+
+        try {
+            \Illuminate\Support\Facades\DB::statement("
+                CREATE TABLE IF NOT EXISTS tb_asistencias_reaperturas (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    id_grupo INT NOT NULL,
+                    id_materia INT NULL,
+                    fecha DATE NOT NULL,
+                    autorizado_por VARCHAR(100) NULL,
+                    habilitado TINYINT(1) NOT NULL DEFAULT 1,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    KEY idx_reapertura_lookup (id_grupo, fecha, habilitado)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        } catch (\Throwable $e) {}
+
+        try {
+            $matId = ($id_materia && $id_materia !== 'general') ? intval($id_materia) : null;
+            if ($habilitar) {
+                \Illuminate\Support\Facades\DB::table('tb_asistencias_reaperturas')->insert([
+                    'id_grupo' => $id_grupo,
+                    'id_materia' => $matId,
+                    'fecha' => $fecha,
+                    'autorizado_por' => $usuario,
+                    'habilitado' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            } else {
+                \Illuminate\Support\Facades\DB::table('tb_asistencias_reaperturas')
+                    ->where('id_grupo', $id_grupo)
+                    ->where('fecha', $fecha)
+                    ->update(['habilitado' => 0, 'updated_at' => now()]);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Direct DB reabrir failed: " . $e->getMessage());
+        }
+
+        // Notificar a API Flask
+        try {
+            $baseApiUrl = config('services.api.base_url');
+            \Illuminate\Support\Facades\Http::post($baseApiUrl . '/asistencias/alumnos/reabrir', [
+                'id_grupo' => $id_grupo,
+                'fecha' => $fecha,
+                'id_materia' => ($id_materia && $id_materia !== 'general') ? intval($id_materia) : null,
+                'autorizado_por' => $usuario,
+                'habilitar' => $habilitar
+            ]);
+        } catch (\Throwable $e) {}
+
+        return response()->json([
+            'success' => true,
+            'habilitado' => $habilitar,
+            'mensaje' => $habilitar
+                ? 'Se ha habilitado el permiso al docente para realizar/modificar el pase de lista de la fecha ' . $fecha . '.'
+                : 'Se ha cerrado el permiso al docente para la fecha ' . $fecha . '.'
+        ]);
     }
 }

@@ -190,6 +190,12 @@
                 <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold d-flex align-items-center gap-1 shadow-sm" onclick="marcarTodos(null)" style="border-radius: 10px; font-size: 0.78rem; background: #fff;">
                     <i class="fa-solid fa-eraser text-secondary"></i> Limpiar
                 </button>
+                @if(session('rol') !== 'DOCENTE')
+                    <button type="button" id="btn-reabrir-pase" class="btn btn-sm fw-semibold d-flex align-items-center gap-1 shadow-sm" onclick="toggleReaperturaDocente()" style="border-radius: 10px; font-size: 0.78rem; background: #fff; border: 1px solid #f59e0b; color: #b45309;" title="Permitir que el docente pueda volver a modificar y reenviar el pase de lista">
+                        <i class="fa-solid fa-lock-open" id="icon-reabrir-pase"></i>
+                        <span id="label-reabrir-pase">Permitir Edición a Docente</span>
+                    </button>
+                @endif
             </div>
         </div>
 
@@ -712,6 +718,9 @@
     const asistenciasRaw = @json($asistencias);
     const asistenciasGuardadas = Array.isArray(asistenciasRaw) ? asistenciasRaw : Object.values(asistenciasRaw || {});
 
+    const reaperturasRaw = @json($reaperturasFechas ?? []);
+    let reaperturasActivas = Array.isArray(reaperturasRaw) ? [...reaperturasRaw] : Object.values(reaperturasRaw || {});
+
     const grupo = @json($grupo);
 
     let vistaActual = 'LISTADO'; // 'LISTADO' o 'MATRIZ'
@@ -858,6 +867,11 @@
         const esHoy = (fechaTarget === todayStr);
         if (!esHoy) return true; // Docente no puede modificar fechas pasadas o futuras
 
+        // Si la administración otorgó permiso de reapertura para esta fecha, NO está bloqueado
+        if (reaperturasActivas.includes(fechaTarget)) {
+            return false;
+        }
+
         // Si ya existen asistencias guardadas con estatus no nulo para esta fecha en la base de datos
         const yaEnviado = asistenciasGuardadas.some(as => as.fecha === fechaTarget && as.estatus !== null && as.estatus !== '');
         return yaEnviado;
@@ -870,6 +884,30 @@
 
         const btnGuardar = document.getElementById('btn-guardar-asistencias');
         const msgBloqueado = document.getElementById('msg-pase-bloqueado');
+
+        // Actualizar botón de reapertura para Administradores
+        const btnReabrir = document.getElementById('btn-reabrir-pase');
+        if (btnReabrir) {
+            const estaHabilitado = reaperturasActivas.includes(fechaSeleccionada);
+            const iconReabrir = document.getElementById('icon-reabrir-pase');
+            const labelReabrir = document.getElementById('label-reabrir-pase');
+
+            if (estaHabilitado) {
+                btnReabrir.style.borderColor = '#ef4444';
+                btnReabrir.style.color = '#dc2626';
+                btnReabrir.style.backgroundColor = '#fef2f2';
+                btnReabrir.title = 'El docente actualmente tiene permiso para modificar este pase. Haz clic para bloquearlo nuevamente.';
+                if (iconReabrir) iconReabrir.className = 'fa-solid fa-lock';
+                if (labelReabrir) labelReabrir.innerText = 'Bloquear Edición a Docente';
+            } else {
+                btnReabrir.style.borderColor = '#f59e0b';
+                btnReabrir.style.color = '#b45309';
+                btnReabrir.style.backgroundColor = '#fff';
+                btnReabrir.title = 'Permitir que el docente pueda volver a realizar o modificar el pase de lista de esta fecha';
+                if (iconReabrir) iconReabrir.className = 'fa-solid fa-lock-open';
+                if (labelReabrir) labelReabrir.innerText = 'Permitir Edición a Docente';
+            }
+        }
 
         if (btnGuardar) {
             if (edicionBloqueada) {
@@ -888,7 +926,11 @@
                 btnGuardar.style.cursor = 'pointer';
                 btnGuardar.innerHTML = '<i class="fa-solid fa-check-circle me-1"></i> <span>Confirmar Pase de Lista</span>';
                 if (msgBloqueado) {
-                    msgBloqueado.innerHTML = '<i class="fa-solid fa-circle-info me-1"></i>Revisa las asistencias antes de confirmar. Al guardar, tu pase de lista quedará registrado.';
+                    if (esDocente && reaperturasActivas.includes(fechaSeleccionada)) {
+                          msgBloqueado.innerHTML = '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning px-3 py-2 rounded-pill"><i class="fa-solid fa-unlock-keyhole me-1"></i> Administración te ha habilitado el permiso para modificar y reenviar tu pase de lista.</span>';
+                      } else {
+                          msgBloqueado.innerHTML = '<i class="fa-solid fa-circle-info me-1"></i>Revisa las asistencias antes de confirmar. Al guardar, tu pase de lista quedará registrado.';
+                      }
                 }
             }
         }
@@ -2098,6 +2140,75 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
+
+    // Habilitar o revocar permiso al docente para modificar el pase de lista
+    function toggleReaperturaDocente() {
+        const fecha = fechaSeleccionada;
+        const estaHabilitado = reaperturasActivas.includes(fecha);
+        const titulo = estaHabilitado 
+            ? '¿Bloquear edición al docente?' 
+            : '¿Permitir edición al docente?';
+        const texto = estaHabilitado 
+            ? `El pase de lista del ${fecha} volverá a quedar cerrado para el docente.` 
+            : `El docente podrá volver a modificar y reenviar el pase de lista de la fecha ${fecha}.`;
+        const confirmBtnText = estaHabilitado ? 'Sí, bloquear edición' : 'Sí, habilitar edición';
+        const confirmBtnColor = estaHabilitado ? '#ef4444' : '#f59e0b';
+
+        Swal.fire({
+            icon: 'question',
+            title: titulo,
+            text: texto,
+            showCancelButton: true,
+            confirmButtonColor: confirmBtnColor,
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: confirmBtnText,
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.showLoading();
+                fetch('{{ route("asistencias_alumnos.reabrir") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        id_grupo: grupo.id,
+                        fecha: fecha,
+                        id_materia: document.getElementById('select-materia').value,
+                        habilitar: !estaHabilitado
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        Swal.fire({ icon: 'error', title: 'Error', text: data.error });
+                    } else {
+                        if (data.habilitado) {
+                            if (!reaperturasActivas.includes(fecha)) {
+                                reaperturasActivas.push(fecha);
+                            }
+                        } else {
+                            reaperturasActivas = reaperturasActivas.filter(f => f !== fecha);
+                        }
+                        Swal.fire({
+                            icon: 'success',
+                            title: data.habilitado ? 'Edición Habilitada' : 'Edición Bloqueada',
+                            text: data.mensaje,
+                            timer: 2200,
+                            showConfirmButton: false
+                        });
+                        renderizar();
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo actualizar el permiso de edición.' });
+                });
+            }
+        });
+    }
+
 </script>
 
 <div id="printable-report" class="d-none d-print-block" style="font-family: Arial, sans-serif; color: black; padding: 15px; background: white;">
