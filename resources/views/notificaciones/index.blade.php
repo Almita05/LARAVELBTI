@@ -143,7 +143,9 @@
                                     @endif
                                 </td>
                                 <td class="text-secondary">
-                                    <i class="bi {{ $gp['icono'] ?? 'bi-clock-history text-info' }} me-1"></i>{{ $gp['detalle'] }}
+                                    {{-- Se comenta el ícono (rombo/reloj) para mostrar únicamente el texto descriptivo --}}
+                                    {{-- <i class="bi {{ $gp['icono'] ?? 'bi-clock-history text-info' }} me-1"></i> --}}
+                                    {{ $gp['detalle'] }}
                                 </td>
                                 <td class="text-secondary">
                                     <strong>CCT:</strong> {{ $gp['cct'] }}
