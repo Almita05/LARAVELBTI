@@ -301,24 +301,110 @@ class AsistenciaAlumnoController extends Controller
             }
         }
 
-        // Proxy de guardado a Flask (para materia individual o fallback de general)
-        $response = Http::post($baseApiUrl . '/asistencias/alumnos/guardar', $data);
+        // Si es Materia Individual (guardar directamente en base de datos)
+        if (($data['id_materia'] ?? null) && ($data['id_materia'] ?? null) !== 'general') {
+            $id_grupo = $data['id_grupo'];
+            $id_materia = intval($data['id_materia']);
+            $id_docente = $data['id_docente'] ?? session('id_docente');
+            $asistenciasList = $data['asistencias'] ?? [];
 
-        if ($response->successful() && $rol === 'DOCENTE') {
+            if (!$id_docente) {
+                $id_docente = \Illuminate\Support\Facades\DB::table('tb_horarios')
+                    ->where('id_grupo', $id_grupo)
+                    ->where('id_materia', $id_materia)
+                    ->orderBy('es_prehorario', 'asc')
+                    ->value('id_docente') ?: 1;
+            }
+
+            $dbDirectSucceeded = false;
             try {
-                $id_grp = $data['id_grupo'] ?? null;
-                $hoy = date('Y-m-d');
-                if ($id_grp) {
-                    \Illuminate\Support\Facades\DB::table('tb_asistencias_reaperturas')
-                        ->where('id_grupo', $id_grp)
-                        ->where('fecha', $hoy)
-                        ->where('habilitado', 1)
-                        ->update(['habilitado' => 0, 'updated_at' => now()]);
+                foreach ($asistenciasList as $a) {
+                    $idAlumno = $a['id_alumno'];
+                    $fecha = $a['fecha'];
+                    $estatus = $a['estatus'] ?? null;
+                    $obs = $a['observaciones'] ?? null;
+                    $idNivel = $a['id_nivel_academico'] ?? null;
+
+                    if ($estatus === null || $estatus === '') {
+                        \Illuminate\Support\Facades\DB::table('tb_asistencias_alumnos')
+                            ->where('id_grupo', $id_grupo)
+                            ->where('id_materia', $id_materia)
+                            ->where('id_alumno', $idAlumno)
+                            ->where('fecha', $fecha)
+                            ->delete();
+                    } else {
+                        \Illuminate\Support\Facades\DB::table('tb_asistencias_alumnos')->upsert([
+                            'id_alumno' => $idAlumno,
+                            'id_materia' => $id_materia,
+                            'id_docente' => $id_docente,
+                            'id_grupo' => $id_grupo,
+                            'fecha' => $fecha,
+                            'id_nivel_academico' => $idNivel,
+                            'estatus' => $estatus,
+                            'observaciones' => $obs,
+                        ], ['id_alumno', 'id_grupo', 'id_materia', 'fecha'], ['estatus', 'id_nivel_academico', 'observaciones', 'id_docente']);
+                    }
                 }
-            } catch (\Throwable $e) {}
+                $dbDirectSucceeded = true;
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Direct DB guardar materia individual failed: " . $e->getMessage() . ". Delegating to API.");
+            }
+
+            if ($dbDirectSucceeded) {
+                if ($rol === 'DOCENTE') {
+                    try {
+                        \Illuminate\Support\Facades\DB::table('tb_asistencias_reaperturas')
+                            ->where('id_grupo', $id_grupo)
+                            ->where('fecha', date('Y-m-d'))
+                            ->where('habilitado', 1)
+                            ->where(function($q) use ($id_materia) {
+                                $q->whereNull('id_materia')
+                                  ->orWhere('id_materia', 0)
+                                  ->orWhere('id_materia', $id_materia);
+                            })
+                            ->update(['habilitado' => 0, 'updated_at' => now()]);
+                    } catch (\Throwable $e) {}
+                }
+                return response()->json([
+                    'success' => true,
+                    'mensaje' => 'Asistencias guardadas correctamente.'
+                ]);
+            }
         }
 
-        return response()->json($response->json(), $response->status());
+        // Fallback: Proxy de guardado a Flask
+        try {
+            $response = Http::timeout(15)->post($baseApiUrl . '/asistencias/alumnos/guardar', $data);
+
+            if ($response->successful() && $rol === 'DOCENTE') {
+                try {
+                    $id_grp = $data['id_grupo'] ?? null;
+                    $id_mat = ($data['id_materia'] ?? null) !== 'general' ? intval($data['id_materia']) : null;
+                    $hoy = date('Y-m-d');
+                    if ($id_grp) {
+                        \Illuminate\Support\Facades\DB::table('tb_asistencias_reaperturas')
+                            ->where('id_grupo', $id_grp)
+                            ->where('fecha', $hoy)
+                            ->where('habilitado', 1)
+                            ->when($id_mat, function($q) use ($id_mat) {
+                                $q->where(function($sub) use ($id_mat) {
+                                    $sub->whereNull('id_materia')
+                                        ->orWhere('id_materia', 0)
+                                        ->orWhere('id_materia', $id_mat);
+                                });
+                            })
+                            ->update(['habilitado' => 0, 'updated_at' => now()]);
+                    }
+                } catch (\Throwable $e) {}
+            }
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Error conectando con la API de Flask: " . $e->getMessage());
+            return response()->json([
+                'error' => 'No se pudo comunicar con el servicio de base de datos escolar: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function justificar(Request $request)

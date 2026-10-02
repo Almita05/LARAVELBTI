@@ -1272,9 +1272,9 @@ function renderDatosControlOficial(data) {
                 const intFinalSem = (calif !== '' && !isNaN(calif)) ? parseInt(calif) : '';
 
                 p1Input = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p1" value="${intP1}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP1}>`;
-                p2Input = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p2" value="${intP2}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP1}>`;
-                p3Input = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p3" value="${intP3}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP1}>`;
-                semInput = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-semestral" value="${intSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disAttr}>`;
+                p2Input = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p2" value="${intP2}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP2}>`;
+                p3Input = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p3" value="${intP3}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP3}>`;
+                semInput = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-semestral" value="${intSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disSem}>`;
                 extInput = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="${intExtSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disExt}>`;
                 finalInput = `
                     <div class="d-flex align-items-center justify-content-center gap-1">
@@ -1389,6 +1389,9 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
     };
     const isDocente = '{{ session("rol") }}' === 'DOCENTE';
     const disP1 = (isSoloLectura || (isDocente && !cctConfig.captura_p1)) ? 'disabled' : '';
+    const disP2 = (isSoloLectura || (isDocente && !cctConfig.captura_p2)) ? 'disabled' : '';
+    const disP3 = (isSoloLectura || (isDocente && !cctConfig.captura_p3)) ? 'disabled' : '';
+    const disSem = (isSoloLectura || (isDocente && !cctConfig.captura_semestral)) ? 'disabled' : '';
     const disExt = (isSoloLectura || (isDocente && !cctConfig.captura_extraordinario)) ? 'disabled' : '';
     const disAttr = isSoloLectura ? 'disabled' : '';
 
@@ -1440,9 +1443,9 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
 
         if (isSemestral) {
             tr.children[4].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p1" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP1}>`;
-            tr.children[5].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p2" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP1}>`;
-            tr.children[6].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p3" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP1}>`;
-            tr.children[7].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-semestral" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disAttr}>`;
+            tr.children[5].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p2" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP2}>`;
+            tr.children[6].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p3" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP3}>`;
+            tr.children[7].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-semestral" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disSem}>`;
             tr.children[8].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disExt}>`;
             tr.children[9].innerHTML = `
                 <div class="d-flex align-items-center justify-content-center gap-1">
@@ -1534,6 +1537,17 @@ function recalcularFilaSemestral(inputEl) {
     };
     const isSoloLectura = datosGrupoMateriaActual && datosGrupoMateriaActual.solo_lectura === true;
     const isDocente = '{{ session("rol") }}' === 'DOCENTE';
+
+    // Determinar habilitación de parciales para docente
+    if (p1Inp && isDocente) {
+        p1Inp.disabled = isSoloLectura || !config.captura_p1;
+    }
+    if (p2Inp && isDocente) {
+        p2Inp.disabled = isSoloLectura || !config.captura_p2;
+    }
+    if (p3Inp && isDocente) {
+        p3Inp.disabled = isSoloLectura || !config.captura_p3;
+    }
 
     // Determinar habilitación de semestral y extraordinario
     if (semInp) {

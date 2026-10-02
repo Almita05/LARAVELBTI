@@ -1591,6 +1591,7 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({
@@ -1600,10 +1601,18 @@
                 asistencias: asistenciasToSend
             })
         })
-        .then(res => res.json())
+        .then(async res => {
+            const data = await res.json().catch(() => null);
+            if (!res.ok) {
+                const errorMsg = (data && (data.error || data.message))
+                    || (res.status === 419 ? 'La sesión de seguridad ha expirado por inactividad. Abre otra pestaña para ingresar al sistema y vuelve a presionar Confirmar.' : `Error del servidor (${res.status})`);
+                throw new Error(errorMsg);
+            }
+            return data;
+        })
         .then(data => {
             Swal.close();
-            if (data.error) {
+            if (data && data.error) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error al guardar',
@@ -1614,7 +1623,7 @@
                 Swal.fire({
                     icon: 'success',
                     title: 'Guardado',
-                    text: 'Las asistencias se han actualizado correctamente en el sistema.',
+                    text: (data && data.mensaje) || 'Las asistencias se han actualizado correctamente en el sistema.',
                     confirmButtonColor: '#22c55e'
                 }).then(() => {
                     // Limpiar historial de modificaciones locales
@@ -1631,8 +1640,8 @@
             Swal.close();
             Swal.fire({
                 icon: 'error',
-                title: 'Error de Red',
-                text: 'No se pudo establecer comunicación con el servidor. Inténtalo de nuevo.',
+                title: 'Error al guardar',
+                text: err.message || 'No se pudo establecer comunicación con el servidor. Inténtalo de nuevo.',
                 confirmButtonColor: '#ef4444'
             });
             console.error(err);
