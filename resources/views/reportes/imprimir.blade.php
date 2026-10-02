@@ -1260,889 +1260,529 @@
 
     // Modal, impresión y guardado de Kárdex y Boleta oficial
     function mostrarKardexConDatos(data) {
-        const modalEl = document.getElementById('modalKardexAlumno');
-        if (modalEl && modalEl.parentElement !== document.body) {
-            document.body.appendChild(modalEl);
-        }
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modal.show();
+    const modalEl = document.getElementById('modalKardexAlumno');
+    if (modalEl && modalEl.parentElement !== document.body) {
+        document.body.appendChild(modalEl);
+    }
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
 
-        const contenedor = document.getElementById('contenedorPeriodosKardex');
-        const al = data.alumno;
-        const periodos = data.periodos || [];
+    const contenedor = document.getElementById('contenedorPeriodosKardex');
+    const al = data.alumno;
+    const periodos = data.periodos || [];
 
-        const isBti = (al.id_centroTrabajo === 2 || al.claveCentroTrabajo === '21PCT0073R' || (al.nombreCentroTrabajo && al.nombreCentroTrabajo.toUpperCase().includes('BTI')));
+    const isBti = (al.id_centroTrabajo === 2 || al.claveCentroTrabajo === '21PCT0073R' || (al.nombreCentroTrabajo && al.nombreCentroTrabajo.toUpperCase().includes('BTI')));
 
-        document.getElementById('kardexNombreAlumno').textContent = `${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}`.trim().toUpperCase();
-        if (al.claveCentroTrabajo) {
-            document.getElementById('kardexCCTClave').textContent = `CLAVE CT: ${al.claveCentroTrabajo}`;
-        }
-        if (al.nombreCentroTrabajo) {
-            document.getElementById('kardexCCTNombre').textContent = al.nombreCentroTrabajo.toUpperCase();
-        }
-
-        let htmlPeriodos = '';
-        periodos.forEach((p, idx) => {
-            let htmlMaterias = '';
-            (p.materias || []).forEach(m => {
-                const isEquiv = m.es_equivalencia === true;
-                if (isEquiv) {
-                    if (isBti) {
-                        htmlMaterias += `
-                            <tr data-materia-id="${m.idMateria}" data-is-equivalencia="true">
-                                <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #cbd5e1;">
-                                    ${m.nombreMateria}
-                                </td>
-                                <td colspan="7" class="text-center px-1 py-1 text-warning fw-bold align-middle" style="font-size: 0.85rem; border-color: #cbd5e1;">
-                                    EQUIVALENCIA
-                                </td>
-                            </tr>
-                        `;
-                    } else {
-                        htmlMaterias += `
-                            <tr data-materia-id="${m.idMateria}" data-nivel="${p.idNivel}" data-is-equivalencia="true">
-                                <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #cbd5e1;">
-                                    ${m.nombreMateria}
-                                </td>
-                                <td class="px-1 py-1 text-center align-middle" style="width: 85px; border-color: #cbd5e1;">
-                                    <span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>
-                                </td>
-                            </tr>
-                        `;
-                    }
-                } else {
-                    const califVal = m.calificacion !== null ? m.calificacion : '';
-                    if (isBti) {
-                        const p1 = m.parcial1 !== null ? m.parcial1 : '';
-                        const p2 = m.parcial2 !== null ? m.parcial2 : '';
-                        const p3 = m.parcial3 !== null ? m.parcial3 : '';
-                        const sem = m.semestral !== null ? m.semestral : '';
-                        const ext = m.extraordinario !== null ? m.extraordinario : '';
-                        const asist = m.asistencias !== null ? m.asistencias : '';
-                        const totAsist = m.total_asistencias !== null ? m.total_asistencias : '';
-
-                        htmlMaterias += `
-                            <tr data-materia-id="${m.idMateria}" data-nivel="${p.idNivel}">
-                                <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #000;">
-                                    ${m.nombreMateria}
-                                </td>
-                                <td class="px-1 py-1 align-middle text-center" style="border-color: #000 !important;">
-                                    <input type="number" step="0.1" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-p1" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="parcial1" value="${p1}" style="height: 28px; font-size: 0.82rem; padding: 2px;" oninput="recalcularFilaKardexSemestral(this)">
-                                </td>
-                                <td class="px-1 py-1 align-middle text-center" style="border-color: #000 !important;">
-                                    <input type="number" step="0.1" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-p2" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="parcial2" value="${p2}" style="height: 28px; font-size: 0.82rem; padding: 2px;" oninput="recalcularFilaKardexSemestral(this)">
-                                </td>
-                                <td class="px-1 py-1 align-middle text-center" style="border-color: #000 !important;">
-                                    <input type="number" step="0.1" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-p3" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="parcial3" value="${p3}" style="height: 28px; font-size: 0.82rem; padding: 2px;" oninput="recalcularFilaKardexSemestral(this)">
-                                </td>
-                                <td class="px-1 py-1 align-middle text-center" style="border-color: #000 !important;">
-                                    <input type="number" step="0.1" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-semestral" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="semestral" value="${sem}" style="height: 28px; font-size: 0.82rem; padding: 2px;" oninput="recalcularFilaKardexSemestral(this)">
-                                </td>
-                                <td class="px-1 py-1 align-middle text-center" style="border-color: #000 !important;">
-                                    <input type="number" step="0.1" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-extraordinario" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="extraordinario" value="${ext}" style="height: 28px; font-size: 0.82rem; padding: 2px;" oninput="recalcularFilaKardexSemestral(this)">
-                                </td>
-                                <td class="px-1 py-1 align-middle text-center" style="border-color: #000 !important;">
-                                    <input type="number" step="0.1" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-calif-final" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="calificacion" value="${califVal}" readonly style="height: 28px; font-size: 0.82rem; padding: 2px; background-color: #f1f5f9;">
-                                </td>
-                                <td class="px-1 py-1 align-middle text-center" style="border-color: #000 !important;">
-                                    <div class="d-flex align-items-center gap-1 justify-content-center">
-                                        <input type="number" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-asistencias" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="asistencias" value="${asist}" style="height: 28px; font-size: 0.80rem; padding: 2px; width: 28px;" oninput="calcularPromediosKardex()">
-                                        <span style="font-size: 0.7rem;">/</span>
-                                        <input type="number" class="form-control form-control-sm text-center fw-bold input-calif-kardex inp-total-asistencias" data-materia="${m.idMateria}" data-nivel="${p.idNivel}" data-periodo-idx="${idx}" data-field="total_asistencias" value="${totAsist}" style="height: 28px; font-size: 0.80rem; padding: 2px; width: 28px;" oninput="calcularPromediosKardex()">
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    } else {
-                        htmlMaterias += `
-                            <tr data-materia-id="${m.idMateria}" data-nivel="${p.idNivel}">
-                                <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #cbd5e1;">
-                                    ${m.nombreMateria}
-                                </td>
-                                <td class="px-1 py-1 text-center align-middle" style="width: 85px; border-color: #cbd5e1;">
-                                    <input type="text" maxlength="4" 
-                                        class="form-control form-control-sm text-center fw-bold input-calif-kardex" 
-                                        data-materia="${m.idMateria}" 
-                                        data-nivel="${p.idNivel}" 
-                                        data-periodo-idx="${idx}" 
-                                        data-field="calificacion" 
-                                        value="${califVal}" 
-                                        style="height: 28px; font-size: 0.85rem; padding: 2px; background: transparent; border: 1px solid #cbd5e1;"
-                                        oninput="this.value = this.value.toUpperCase(); calcularPromediosKardex()">
-                                </td>
-                            </tr>
-                        `;
-                    }
-                }
-            });
-
-            const promInicial = p.promedio !== null ? p.promedio : '—';
-
-            let footerHtml = '';
-            if (isBti) {
-                footerHtml = `
-                    <tfoot>
-                        <tr class="bg-light fw-bold" style="border-color: #333; font-size: 0.70rem;">
-                            <td class="text-end px-2 py-1 text-uppercase">PROMEDIO</td>
-                            <td class="text-center px-1 py-1 prom-p1-val" id="promP1_${idx}">—</td>
-                            <td class="text-center px-1 py-1 prom-p2-val" id="promP2_${idx}">—</td>
-                            <td class="text-center px-1 py-1 prom-p3-val" id="promP3_${idx}">—</td>
-                            <td class="text-center px-1 py-1 prom-sem-val" id="promSem_${idx}">—</td>
-                            <td class="text-center px-1 py-1 prom-ext-val" id="promExt_${idx}">—</td>
-                            <td class="text-center px-1 py-1 text-primary fw-bold prom-periodo-val" id="promPeriodo_${idx}">${promInicial}</td>
-                            <td class="text-center px-1 py-1" style="font-size: 0.65rem;" id="totalAsistPeriodo_${idx}">—</td>
-                        </tr>
-                `;
-            } else {
-                footerHtml = `
-                    <tfoot>
-                        <tr class="bg-light fw-bold" style="border-color: #333; font-size: 0.78rem;">
-                            <td class="text-end px-2 py-1 text-uppercase">PROMEDIO</td>
-                            <td class="text-center px-1 py-1 text-primary fw-bold prom-periodo-val" id="promPeriodo_${idx}">${promInicial}</td>
-                        </tr>
-                `;
-            }
-
-            if (idx === 4) { // 5to periodo
-                footerHtml += `
-                    <tr class="fw-bold" style="border-color: #333; font-size: 0.8rem; background: #e2e8f0;">
-                        <td class="${isBti ? 'text-end' : 'text-end'} px-2 py-1 text-uppercase" colspan="${isBti ? '6' : '1'}">PROMEDIO FINAL</td>
-                        <td class="text-center px-1 py-1 fw-bold text-primary" id="kardexPromedioFinal">0.0</td>
-                        ${isBti ? '<td style="border: none !important;"></td>' : ''}
-                    </tr>
-                `;
-            } else if (idx === 5) { // 6to periodo (balance visual)
-                footerHtml += `
-                    <tr style="border-color: transparent; height: 26px;">
-                        <td colspan="${isBti ? '8' : '2'}" style="border: none !important; background: transparent;"></td>
-                    </tr>
-                `;
-            }
-            footerHtml += `</tfoot>`;
-
-            htmlPeriodos += `
-                <div class="col-6" style="width: 50%;">
-                    <div class="border rounded-1 shadow-none overflow-hidden bg-white h-100" style="border-color: #000 !important;">
-                        <div class="py-1 px-2 fw-bold text-dark text-uppercase bg-light border-bottom" style="font-size: 0.78rem; letter-spacing: 0.5px; border-color: #000 !important;">
-                            ${p.nombrePeriodo}
-                        </div>
-                        <div class="table-responsive mb-0">
-                            <table class="table table-bordered table-sm mb-0" style="border-color: #000 !important;">
-                                <thead class="table-light">
-                                    <tr style="font-size: 0.70rem; border-color: #000;">
-                                        ${isBti ? `
-                                        <th class="px-2 py-1 text-uppercase text-dark" style="border-color: #000 !important;">MATERIA</th>
-                                        <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 42px; border-color: #000 !important;">P1</th>
-                                        <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 42px; border-color: #000 !important;">P2</th>
-                                        <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 42px; border-color: #000 !important;">P3</th>
-                                        <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 42px; border-color: #000 !important;">SEM</th>
-                                        <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 42px; border-color: #000 !important;">EXT</th>
-                                        <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 48px; border-color: #000 !important;">FINAL</th>
-                                        <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 66px; border-color: #000 !important;">ASIST.</th>
-                                        ` : `
-                                        <th class="px-2 py-1 text-uppercase text-dark" style="border-color: #000 !important;">MATERIA</th>
-                                        <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 80px; border-color: #000 !important;">EVALUACIÓN OBTENIDA</th>
-                                        `}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${htmlMaterias}
-                                </tbody>
-                                ${footerHtml}
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
-        contenedor.innerHTML = htmlPeriodos;
-        calcularPromediosKardex();
+    // Datos de encabezado
+    document.getElementById('kardexNombreAlumno').textContent = `${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}`.trim().toUpperCase();
+    if (al.claveCentroTrabajo) {
+        document.getElementById('kardexCCTClave').textContent = `CLAVE CT: ${al.claveCentroTrabajo}`;
+    }
+    if (al.nombreCentroTrabajo) {
+        document.getElementById('kardexCCTNombre').textContent = al.nombreCentroTrabajo.toUpperCase();
     }
 
-    window.calcularPromediosKardex = function() {
-        const inputs = document.querySelectorAll('.input-calif-kardex');
-        const isBti = document.getElementById('kardexCCTNombre')?.textContent.includes('BTI') || document.getElementById('kardexCCTClave')?.textContent.includes('21PCT0073R') || (document.querySelector('.prom-p1-val') !== null);
-
-        const p1Sums = {}; const p1Counts = {};
-        const p2Sums = {}; const p2Counts = {};
-        const p3Sums = {}; const p3Counts = {};
-        const semSums = {}; const semCounts = {};
-        const extSums = {}; const extCounts = {};
-        const periodosSums = {}; const periodosCounts = {};
-        const asistSums = {}; const totAsistSums = {};
-
-        let sumGlobal = 0;
-        let countGlobal = 0;
-
-        inputs.forEach(inp => {
-            const pIdx = inp.dataset.periodoIdx;
-            const field = inp.dataset.field || 'calificacion';
-            const valStr = inp.value.trim();
-
-            if (!periodosSums[pIdx]) {
-                p1Sums[pIdx] = 0; p1Counts[pIdx] = 0;
-                p2Sums[pIdx] = 0; p2Counts[pIdx] = 0;
-                p3Sums[pIdx] = 0; p3Counts[pIdx] = 0;
-                semSums[pIdx] = 0; semCounts[pIdx] = 0;
-                extSums[pIdx] = 0; extCounts[pIdx] = 0;
-                periodosSums[pIdx] = 0; periodosCounts[pIdx] = 0;
-                asistSums[pIdx] = 0; totAsistSums[pIdx] = 0;
+    // Renderizar las 6 cajas de periodos (3 por columna: 1,3,5 a la izq y 2,4,6 a la der)
+    let htmlPeriodos = '';
+    periodos.forEach((p, idx) => {
+        let htmlMaterias = '';
+        
+        (p.materias || []).forEach(m => {
+            const isEquiv = m.es_equivalencia === true;
+            if (isEquiv) {
+                htmlMaterias += `
+                    <tr data-materia-id="${m.idMateria}" data-nivel="${p.idNivel}" data-is-equivalencia="true">
+                        <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #cbd5e1;">
+                            ${m.nombreMateria}
+                        </td>
+                        <td class="px-1 py-1 text-center align-middle" style="width: 85px; border-color: #cbd5e1;">
+                            <span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                const califVal = m.calificacion !== null ? m.calificacion : '';
+                htmlMaterias += `
+                    <tr data-materia-id="${m.idMateria}" data-nivel="${p.idNivel}">
+                        <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #cbd5e1;">
+                            ${m.nombreMateria}
+                        </td>
+                        <td class="px-1 py-1 text-center align-middle" style="width: 85px; border-color: #cbd5e1;">
+                            <input type="text" maxlength="4" 
+                                class="form-control form-control-sm text-center fw-bold input-calif-kardex" 
+                                data-materia="${m.idMateria}" 
+                                data-nivel="${p.idNivel}" 
+                                data-periodo-idx="${idx}" 
+                                data-field="calificacion" 
+                                value="${califVal}" 
+                                style="height: 28px; font-size: 0.85rem; padding: 2px; background: transparent; border: 1px solid #cbd5e1;"
+                                oninput="this.value = this.value.toUpperCase(); calcularPromediosKardex()">
+                        </td>
+                    </tr>
+                `;
             }
+        });
 
-            if (valStr !== '' && !isNaN(valStr)) {
-                const num = parseFloat(valStr);
-                if (field === 'parcial1') { p1Sums[pIdx] += num; p1Counts[pIdx]++; }
-                else if (field === 'parcial2') { p2Sums[pIdx] += num; p2Counts[pIdx]++; }
-                else if (field === 'parcial3') { p3Sums[pIdx] += num; p3Counts[pIdx]++; }
-                else if (field === 'semestral') { semSums[pIdx] += num; semCounts[pIdx]++; }
-                else if (field === 'extraordinario') { extSums[pIdx] += num; extCounts[pIdx]++; }
-                else if (field === 'calificacion') { 
-                    periodosSums[pIdx] += num; 
-                    periodosCounts[pIdx]++; 
-                    sumGlobal += num;
-                    countGlobal++;
-                }
-                else if (field === 'asistencias') { asistSums[pIdx] += num; }
-                else if (field === 'total_asistencias') { totAsistSums[pIdx] += num; }
+        const promInicial = p.promedio !== null ? p.promedio : '—';
 
-                if (field !== 'asistencias' && field !== 'total_asistencias') {
-                    if (num < 6.0) {
-                        inp.style.setProperty('color', '#dc2626', 'important');
-                        inp.style.setProperty('font-weight', '700', 'important');
-                    } else {
-                        inp.style.setProperty('color', '#1e293b', 'important');
-                        inp.style.setProperty('font-weight', '700', 'important');
-                    }
-                }
-            } else if (valStr.toUpperCase() === 'EQUIV.' || valStr.toUpperCase() === 'EQUIVALENCIA') {
-                inp.style.setProperty('color', '#d97706', 'important');
+        let footerHtml = `
+            <tfoot>
+                <tr class="bg-light fw-bold" style="border-color: #333; font-size: 0.78rem;">
+                    <td class="text-end px-2 py-1 text-uppercase">PROMEDIO</td>
+                    <td class="text-center px-1 py-1 text-primary fw-bold prom-periodo-val" id="promPeriodo_${idx}">${promInicial}</td>
+                </tr>
+        `;
+
+        if (idx === 4) { // 5to periodo
+            footerHtml += `
+                <tr class="fw-bold" style="border-color: #333; font-size: 0.8rem; background: #e2e8f0;">
+                    <td class="text-end px-2 py-1 text-uppercase">PROMEDIO FINAL</td>
+                    <td class="text-center px-1 py-1 fw-bold text-primary" id="kardexPromedioFinal">0.0</td>
+                </tr>
+            `;
+        } else if (idx === 5) { // 6to periodo (balance visual)
+            footerHtml += `
+                <tr style="border-color: transparent; height: 26px;">
+                    <td colspan="2" style="border: none !important; background: transparent;"></td>
+                </tr>
+            `;
+        }
+        footerHtml += `</tfoot>`;
+
+        htmlPeriodos += `
+            <div class="col-6" style="width: 50%;">
+                <div class="border rounded-1 shadow-none overflow-hidden bg-white h-100" style="border-color: #000 !important;">
+                    <div class="py-1 px-2 fw-bold text-dark text-uppercase bg-light border-bottom" style="font-size: 0.78rem; letter-spacing: 0.5px; border-color: #000 !important;">
+                        ${p.nombrePeriodo}
+                    </div>
+                    <div class="table-responsive mb-0">
+                        <table class="table table-bordered table-sm mb-0" style="border-color: #000 !important;">
+                            <thead class="table-light">
+                                <tr style="font-size: 0.70rem; border-color: #000;">
+                                    <th class="px-2 py-1 text-uppercase text-dark" style="border-color: #000 !important;">MATERIA</th>
+                                    <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 85px; border-color: #000 !important;">${isBti ? 'FINAL' : 'EVALUACIÓN OBTENIDA'}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${htmlMaterias}
+                            </tbody>
+                            ${footerHtml}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    contenedor.innerHTML = htmlPeriodos;
+    calcularPromediosKardex();
+}
+
+    window.recalcularFilaKardexSemestral = function(inputEl) {
+    calcularPromediosKardex();
+};
+
+window.calcularPromediosKardex = function() {
+    const inputs = document.querySelectorAll('.input-calif-kardex');
+    const periodosSums = {};
+    const periodosCounts = {};
+    let sumGlobal = 0;
+    let countGlobal = 0;
+
+    inputs.forEach(inp => {
+        const pIdx = inp.dataset.periodoIdx;
+        const valStr = inp.value.trim();
+
+        if (!periodosSums[pIdx]) {
+            periodosSums[pIdx] = 0;
+            periodosCounts[pIdx] = 0;
+        }
+
+        if (valStr !== '' && !isNaN(valStr)) {
+            const num = parseFloat(valStr);
+            periodosSums[pIdx] += num;
+            periodosCounts[pIdx]++;
+            sumGlobal += num;
+            countGlobal++;
+
+            if (num < 6.0) {
+                inp.style.setProperty('color', '#dc2626', 'important');
                 inp.style.setProperty('font-weight', '700', 'important');
             } else {
                 inp.style.setProperty('color', '#1e293b', 'important');
-                inp.style.setProperty('font-weight', 'normal', 'important');
+                inp.style.setProperty('font-weight', '700', 'important');
             }
-        });
-
-        Object.keys(periodosSums).forEach(pIdx => {
-            const updateAvgEl = (id, sum, count) => {
-                const el = document.getElementById(id);
-                if (el) {
-                    if (count > 0) {
-                        const avg = (sum / count).toFixed(1);
-                        el.textContent = avg;
-                        el.style.setProperty('color', parseFloat(avg) < 6.0 ? '#dc2626' : '#1e6fa8', 'important');
-                    } else {
-                        el.textContent = '—';
-                        el.style.setProperty('color', '#64748b', 'important');
-                    }
-                }
-            };
-
-            if (isBti) {
-                updateAvgEl(`promP1_${pIdx}`, p1Sums[pIdx], p1Counts[pIdx]);
-                updateAvgEl(`promP2_${pIdx}`, p2Sums[pIdx], p2Counts[pIdx]);
-                updateAvgEl(`promP3_${pIdx}`, p3Sums[pIdx], p3Counts[pIdx]);
-                updateAvgEl(`promSem_${pIdx}`, semSums[pIdx], semCounts[pIdx]);
-                updateAvgEl(`promExt_${pIdx}`, extSums[pIdx], extCounts[pIdx]);
-                
-                const asistEl = document.getElementById(`totalAsistPeriodo_${pIdx}`);
-                if (asistEl) {
-                    asistEl.textContent = `${asistSums[pIdx]} / ${totAsistSums[pIdx]}`;
-                }
-            }
-            
-            updateAvgEl(`promPeriodo_${pIdx}`, periodosSums[pIdx], periodosCounts[pIdx]);
-        });
-
-        const finalEl = document.getElementById('kardexPromedioFinal');
-        if (finalEl) {
-            if (countGlobal > 0) {
-                const promFinal = (sumGlobal / countGlobal).toFixed(1);
-                finalEl.textContent = promFinal;
-                finalEl.style.setProperty('color', parseFloat(promFinal) < 6.0 ? '#dc2626' : '#1e6fa8', 'important');
-            } else {
-                finalEl.textContent = '0.0';
-                finalEl.style.setProperty('color', '#1e6fa8', 'important');
-            }
-        }
-    };
-
-    window.recalcularFilaKardexSemestral = function(inputEl) {
-        const tr = inputEl.closest('tr');
-        if (!tr) return;
-
-        const p1Inp = tr.querySelector('.inp-p1');
-        const p2Inp = tr.querySelector('.inp-p2');
-        const p3Inp = tr.querySelector('.inp-p3');
-        const semInp = tr.querySelector('.inp-semestral');
-        const extInp = tr.querySelector('.inp-extraordinario');
-        const pFinalInp = tr.querySelector('.inp-calif-final');
-
-        const v1 = parseFloat(p1Inp.value);
-        const v2 = parseFloat(p2Inp.value);
-        const v3 = parseFloat(p3Inp.value);
-
-        // Habilitar inputs de semestral y extraordinario sin bloqueos
-        if (semInp) {
-            semInp.disabled = false;
-            semInp.placeholder = "0.0";
-        }
-        if (extInp) {
-            extInp.disabled = false;
-            extInp.placeholder = "0.0";
-        }
-
-        const semVal = semInp ? parseFloat(semInp.value) : NaN;
-        const extVal = extInp ? parseFloat(extInp.value) : NaN;
-
-        if (!isNaN(extVal)) {
-            // 1. Extraordinario tope 7
-            pFinalInp.value = Math.min(extVal, 7.0).toFixed(1);
-        } else if (!isNaN(semVal)) {
-            // 2. Semestral promedio con parciales
-            const partials = [v1, v2, v3].filter(v => !isNaN(v));
-            if (partials.length > 0) {
-                const count = partials.length === 3 ? 4 : (partials.length + 1);
-                pFinalInp.value = ((partials.reduce((a, b) => a + b, 0) + semVal) / count).toFixed(1);
-            } else {
-                pFinalInp.value = semVal.toFixed(1);
-            }
+        } else if (valStr.toUpperCase() === 'EQUIV.' || valStr.toUpperCase() === 'EQUIVALENCIA') {
+            inp.style.setProperty('color', '#d97706', 'important');
+            inp.style.setProperty('font-weight', '700', 'important');
         } else {
-            // 3. Promedio provisional de parciales
-            let vals = [];
-            if (!isNaN(v1)) vals.push(v1);
-            if (!isNaN(v2)) vals.push(v2);
-            if (!isNaN(v3)) vals.push(v3);
-            
-            if (vals.length > 0) {
-                pFinalInp.value = (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1);
+            inp.style.setProperty('color', '#1e293b', 'important');
+            inp.style.setProperty('font-weight', 'normal', 'important');
+        }
+    });
+
+    // Actualizar promedios por periodo
+    Object.keys(periodosSums).forEach(pIdx => {
+        const el = document.getElementById(`promPeriodo_${pIdx}`);
+        if (el) {
+            if (periodosCounts[pIdx] > 0) {
+                const avg = (periodosSums[pIdx] / periodosCounts[pIdx]).toFixed(1);
+                el.textContent = avg;
+                el.style.setProperty('color', parseFloat(avg) < 6.0 ? '#dc2626' : '#1e6fa8', 'important');
             } else {
-                pFinalInp.value = "";
+                el.textContent = '—';
+                el.style.setProperty('color', '#64748b', 'important');
             }
         }
+    });
 
-        const checkRed = (inp) => {
-            if (!inp) return;
-            const v = parseFloat(inp.value);
-            if (!isNaN(v) && v < 6.0) {
-                inp.style.color = '#dc2626';
-            } else {
-                inp.style.color = '#1e293b';
-            }
-        };
-        checkRed(p1Inp);
-        checkRed(p2Inp);
-        checkRed(p3Inp);
-        checkRed(semInp);
-        checkRed(extInp);
-        checkRed(pFinalInp);
+    // Actualizar promedio final (ubicado en el footer del 5to periodo)
+    const finalEl = document.getElementById('kardexPromedioFinal');
+    if (finalEl) {
+        if (countGlobal > 0) {
+            const promFinal = (sumGlobal / countGlobal).toFixed(1);
+            finalEl.textContent = promFinal;
+            finalEl.style.setProperty('color', parseFloat(promFinal) < 6.0 ? '#dc2626' : '#1e6fa8', 'important');
+        } else {
+            finalEl.textContent = '0.0';
+            finalEl.style.setProperty('color', '#1e6fa8', 'important');
+        }
+    }
+};
 
-        calcularPromediosKardex();
-    };
+window.guardarCalificacionesKardex = function() {
+    if (!idAlumnoKardexActual) return;
+    const btn = document.getElementById('btnGuardarKardex');
+    const rows = document.querySelectorAll('#contenedorPeriodosKardex tbody tr');
+    const calificaciones = [];
 
-    window.guardarCalificacionesKardex = function() {
-        if (!idAlumnoKardexActual) return;
-        const btn = document.getElementById('btnGuardarKardex');
-        const rows = document.querySelectorAll('#contenedorPeriodosKardex tbody tr');
-        const calificaciones = [];
+    rows.forEach(tr => {
+        const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
+        if (isEquiv) return;
 
-        rows.forEach(tr => {
-            const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
-            if (isEquiv) return;
+        const idMateria = tr.getAttribute('data-materia-id');
+        const idNivel = tr.getAttribute('data-nivel');
+        if (!idMateria) return;
 
-            const idMateria = tr.getAttribute('data-materia-id');
-            const idNivel = tr.getAttribute('data-nivel');
-            if (!idMateria) return;
+        const finalInp = tr.querySelector('.input-calif-kardex');
+        if (!finalInp) return;
 
-            const p1Inp = tr.querySelector('.inp-p1');
-            const p2Inp = tr.querySelector('.inp-p2');
-            const p3Inp = tr.querySelector('.inp-p3');
-            const semInp = tr.querySelector('.inp-semestral');
-            const extInp = tr.querySelector('.inp-extraordinario');
-            const finalInp = tr.querySelector('.inp-calif-final') || tr.querySelector('.input-calif-kardex');
+        const valStr = finalInp.value.trim();
+        let calif = null;
+        if (valStr !== '' && !isNaN(valStr)) {
+            calif = parseFloat(valStr);
+        }
 
-            if (!finalInp) return;
-
-            const valStr = finalInp.value.trim();
-            let calif = null;
-            if (valStr !== '' && !isNaN(valStr)) {
-                calif = parseFloat(valStr);
-            }
-
-            const dataObj = {
-                idMateria: parseInt(idMateria),
-                id_nivel_academico: parseInt(idNivel || finalInp.dataset.nivel),
-                calificacion: calif,
-                tipoAcreditacion: 'ORDINARIO'
-            };
-
-            if (p1Inp) dataObj.parcial1 = p1Inp.value !== "" ? parseFloat(p1Inp.value) : null;
-            if (p2Inp) dataObj.parcial2 = p2Inp.value !== "" ? parseFloat(p2Inp.value) : null;
-            if (p3Inp) dataObj.parcial3 = p3Inp.value !== "" ? parseFloat(p3Inp.value) : null;
-            if (semInp) dataObj.semestral = semInp.value !== "" ? parseFloat(semInp.value) : null;
-            if (extInp) dataObj.extraordinario = extInp.value !== "" ? parseFloat(extInp.value) : null;
-            
-            const asistInp = tr.querySelector('.inp-asistencias');
-            const totAsistInp = tr.querySelector('.inp-total-asistencias');
-            if (asistInp) dataObj.asistencias = asistInp.value !== "" ? parseInt(asistInp.value) : null;
-            if (totAsistInp) dataObj.total_asistencias = totAsistInp.value !== "" ? parseInt(totAsistInp.value) : null;
-
-            calificaciones.push(dataObj);
+        calificaciones.push({
+            idMateria: parseInt(idMateria),
+            id_nivel_academico: parseInt(idNivel || finalInp.dataset.nivel),
+            calificacion: calif,
+            tipoAcreditacion: 'ORDINARIO'
         });
+    });
 
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Guardando...';
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-        fetch(`/alumnos/${idAlumnoKardexActual}/calificaciones`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify({ calificaciones: calificaciones })
-        })
-        .then(async r => {
-            const data = await r.json().catch(() => null);
-            if (!r.ok) {
-                if (r.status === 419) {
-                    throw new Error('La sesión ha expirado (Error 419). Por favor recarga la página con F5.');
-                }
-                if (r.status === 401) {
-                    throw new Error('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
-                }
-                throw new Error((data && (data.error || data.message)) || `Error en el servidor (${r.status})`);
+    fetch(`/alumnos/${idAlumnoKardexActual}/calificaciones`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify({ calificaciones: calificaciones })
+    })
+    .then(async r => {
+        const data = await r.json().catch(() => null);
+        if (!r.ok) {
+            if (r.status === 419) {
+                throw new Error('La sesión ha expirado (Error 419). Por favor recarga la página con F5.');
             }
-            return data;
-        })
-        .then(resp => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Guardar Calificaciones';
-
-            if (resp.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Kárdex Actualizado',
-                    text: 'Las calificaciones se han guardado exitosamente.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-                
-                if (datosKardexActual) {
-                    datosKardexActual.periodos.forEach((p, pIdx) => {
-                        p.materias.forEach(m => {
-                            const califFound = calificaciones.find(c => c.idMateria === m.idMateria && c.id_nivel_academico === p.idNivel);
-                            if (califFound) {
-                                m.parcial1 = califFound.parcial1;
-                                m.parcial2 = califFound.parcial2;
-                                m.parcial3 = califFound.parcial3;
-                                m.semestral = califFound.semestral;
-                                m.extraordinario = califFound.extraordinario;
-                                m.asistencias = califFound.asistencias;
-                                m.total_asistencias = califFound.total_asistencias;
-                                
-                                let finalVal = m.calificacion;
-                                const v1 = parseFloat(m.parcial1);
-                                const v2 = parseFloat(m.parcial2);
-                                const v3 = parseFloat(m.parcial3);
-                                if (!isNaN(v1) && !isNaN(v2) && !isNaN(v3)) {
-                                    if ((v1+v2+v3) < 18) {
-                                        const ext = parseFloat(m.extraordinario);
-                                        finalVal = !isNaN(ext) ? Math.min(ext, 7.0) : null;
-                                    } else {
-                                        const sem = parseFloat(m.semestral);
-                                        finalVal = !isNaN(sem) ? (v1+v2+v3+sem)/4 : null;
-                                    }
-                                }
-                                m.calificacion = finalVal;
-                            }
-                        });
-                    });
-                    
-                    let sum = 0, count = 0;
-                    datosKardexActual.periodos.forEach(p => {
-                        p.materias.forEach(m => {
-                            if (m.calificacion !== null && !isNaN(m.calificacion) && m.es_equivalencia !== true) {
-                                sum += parseFloat(m.calificacion);
-                                count++;
-                            }
-                        });
-                    });
-                    const prom = count > 0 ? (sum / count).toFixed(1) : '—';
-                    const lblKProm = document.getElementById('lbl-kardex-promedio');
-                    if (lblKProm) lblKProm.innerText = `Promedio General: ${prom}`;
-                }
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: resp.error || resp.message || 'Error al guardar calificaciones'
-                });
+            if (r.status === 401) {
+                throw new Error('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
             }
-        })
-        .catch(err => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Guardar Calificaciones';
-            console.error(err);
+            throw new Error((data && (data.error || data.message)) || `Error en el servidor (${r.status})`);
+        }
+        return data;
+    })
+    .then(resp => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Guardar Calificaciones';
+
+        if (resp && resp.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Kárdex Actualizado',
+                text: 'Las calificaciones se han guardado exitosamente.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } else {
             Swal.fire({
                 icon: 'error',
-                title: 'Error',
-                text: 'Error de comunicación al guardar calificaciones'
+                title: 'Error al Guardar',
+                text: (resp && (resp.error || resp.message)) || 'Error al guardar calificaciones'
             });
-        });
-    };
-
-    window.imprimirKardex = function() {
-        if (!datosKardexActual) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'No hay datos cargados',
-                text: 'Por favor, busque un alumno primero.',
-                confirmButtonColor: '#0284c7'
-            });
-            return;
         }
-        const al = datosKardexActual.alumno;
-        const cctClave = al.claveCentroTrabajo || '21PCT0073R';
-        const cctNombre = al.nombreCentroTrabajo || 'BACHILLERATO TECNOLÓGICO INTERAMERICANO';
-        const alumnoNombre = `${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}`.trim().toUpperCase();
-        
-        let sumGlobal = 0;
-        let countGlobal = 0;
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Guardar Calificaciones';
+        console.error(err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error al Guardar',
+            text: err.message || 'Error de comunicación al guardar calificaciones'
+        });
+    });
+};
 
-        const periodosData = [];
-        (datosKardexActual.periodos || []).forEach((p, idx) => {
-            const rows = [];
-            let sumPeriodo = 0;
-            let countPeriodo = 0;
-            
-            (p.materias || []).forEach(m => {
-                const isEquiv = m.es_equivalencia === true;
-                const p1 = m.parcial1 !== null ? m.parcial1 : '';
-                const p2 = m.parcial2 !== null ? m.parcial2 : '';
-                const p3 = m.parcial3 !== null ? m.parcial3 : '';
-                const sem = m.semestral !== null ? m.semestral : '';
-                const ext = m.extraordinario !== null ? m.extraordinario : '';
-                const calif = m.calificacion !== null ? m.calificacion : '';
+window.imprimirKardex = function() {
+    const isBti = document.getElementById('kardexCCTNombre')?.textContent.includes('BTI') || document.getElementById('kardexCCTClave')?.textContent.includes('21PCT0073R') || (document.querySelector('.prom-p1-val') !== null);
 
-                if (m.calificacion !== null && !isEquiv) {
-                    sumPeriodo += parseFloat(m.calificacion);
-                    countPeriodo++;
-                    sumGlobal += parseFloat(m.calificacion);
-                    countGlobal++;
-                }
+    const alumnoNombre = document.getElementById('kardexNombreAlumno')?.textContent || '—';
+    const cctClave = document.getElementById('kardexCCTClave')?.textContent || 'CLAVE CT: 21PBH0353G';
+    const cctNombre = document.getElementById('kardexCCTNombre')?.textContent || 'BACHILLERATO GENERAL NO ESCOLARIZADO';
+    const promFinal = document.getElementById('kardexPromedioFinal')?.textContent || '—';
 
-                rows.push({
-                    materia: m.nombreMateria,
-                    isEquiv: isEquiv,
-                    p1: p1 !== '' ? parseFloat(p1).toFixed(1) : '—',
-                    p2: p2 !== '' ? parseFloat(p2).toFixed(1) : '—',
-                    p3: p3 !== '' ? parseFloat(p3).toFixed(1) : '—',
-                    semestral: sem !== '' ? parseFloat(sem).toFixed(1) : '—',
-                    extraordinario: ext !== '' ? parseFloat(ext).toFixed(1) : '—',
-                    calificacion: calif !== '' ? parseFloat(calif).toFixed(1) : '—',
-                    esReprobatoria: calif !== '' && parseFloat(calif) < 6.0
-                });
-            });
+    // Extraer datos de los 6 periodos
+    const periodosData = [];
+    const periodosDom = document.querySelectorAll('#contenedorPeriodosKardex > div');
 
-            periodosData.push({
-                titulo: p.nombrePeriodo,
-                promedio: countPeriodo > 0 ? (sumPeriodo / countPeriodo).toFixed(1) : '—',
-                promReprobatorio: countPeriodo > 0 && (sumPeriodo / countPeriodo) < 6.0,
-                materias: rows
+    periodosDom.forEach((pDom, idx) => {
+        const title = pDom.querySelector('.fw-bold.text-dark')?.textContent.trim() || `PERIODO ${idx + 1}`;
+        const promVal = document.getElementById(`promPeriodo_${idx}`)?.textContent.trim() || '—';
+        const rows = [];
+        const trs = pDom.querySelectorAll('tbody tr');
+
+        trs.forEach(tr => {
+            const matName = tr.querySelector('td:first-child')?.textContent.trim() || '';
+            const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
+            const finalInp = tr.querySelector('.input-calif-kardex');
+            const finalVal = finalInp ? finalInp.value.trim() : '';
+
+            rows.push({
+                materia: matName,
+                isEquiv: isEquiv,
+                calificacion: finalVal !== '' ? finalVal : '—',
+                esReprobatoria: finalVal !== '' && !isNaN(finalVal) && parseFloat(finalVal) < 6.0
             });
         });
 
-        const promFinal = countGlobal > 0 ? (sumGlobal / countGlobal).toFixed(1) : '—';
-        const isBti = (al.id_centroTrabajo === 2 || al.claveCentroTrabajo === '21PCT0073R' || (al.nombreCentroTrabajo && al.nombreCentroTrabajo.toUpperCase().includes('BTI')));
+        periodosData.push({
+            titulo: title,
+            promedio: promVal,
+            promReprobatorio: promVal !== '—' && !isNaN(promVal) && parseFloat(promVal) < 6.0,
+            materias: rows
+        });
+    });
 
-        function renderTablaPeriodo(p, is5to, is6to) {
-            if (!p) return '';
-            let filasHtml = '';
-            
-            if (isBti) {
-                p.materias.forEach(m => {
-                    if (m.isEquiv) {
-                        filasHtml += `
-                            <tr>
-                                <td style="border: 1px solid #000; padding: 1.2px 4px; font-size: 6.8pt; text-align: left; text-transform: uppercase;">
-                                    ${m.materia}
-                                </td>
-                                <td colspan="6" style="border: 1px solid #000; padding: 1.2px 4px; font-size: 7.2pt; text-align: center; font-weight: bold; color: #d97706;">
-                                    EQUIVALENCIA
-                                </td>
-                            </tr>
-                        `;
-                    } else {
-                        const styleColor = m.esReprobatoria ? 'color: #dc2626 !important; font-weight: bold;' : 'color: #000;';
-                        filasHtml += `
-                            <tr>
-                                <td style="border: 1px solid #000; padding: 1.2px 4px; font-size: 6.8pt; text-align: left; text-transform: uppercase;">
-                                    ${m.materia}
-                                </td>
-                                <td style="border: 1px solid #000; padding: 1.2px 4px; font-size: 7.2pt; text-align: center; color: #000;">${m.p1}</td>
-                                <td style="border: 1px solid #000; padding: 1.2px 4px; font-size: 7.2pt; text-align: center; color: #000;">${m.p2}</td>
-                                <td style="border: 1px solid #000; padding: 1.2px 4px; font-size: 7.2pt; text-align: center; color: #000;">${m.p3}</td>
-                                <td style="border: 1px solid #000; padding: 1.2px 4px; font-size: 7.2pt; text-align: center; color: #000;">${m.semestral}</td>
-                                <td style="border: 1px solid #000; padding: 1.2px 4px; font-size: 7.2pt; text-align: center; color: #000;">${m.extraordinario}</td>
-                                <td style="border: 1px solid #000; padding: 1.2px 4px; font-size: 7.2pt; text-align: center; background-color: #f1f5f9; ${styleColor}">${m.calificacion}</td>
-                            </tr>
-                        `;
-                    }
-                });
-
-                let p1Vals = []; let p2Vals = []; let p3Vals = []; let semVals = []; let extVals = []; let finalVals = [];
-
-                p.materias.forEach(m => {
-                    if (m.isEquiv) return;
-                    const parseVal = (v, arr) => { if (v !== '—' && !isNaN(v)) arr.push(parseFloat(v)); };
-                    parseVal(m.p1, p1Vals);
-                    parseVal(m.p2, p2Vals);
-                    parseVal(m.p3, p3Vals);
-                    parseVal(m.semestral, semVals);
-                    parseVal(m.extraordinario, extVals);
-                    parseVal(m.calificacion, finalVals);
-                });
-
-                const getAvg = (arr) => arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '—';
-                const avgFinal = getAvg(finalVals);
-
-                let footerExtra = '';
-                if (is5to) {
-                    footerExtra = `
-                        <tr style="font-weight: bold; background: #e8ecf2;">
-                            <td style="border: 1.5px solid #000; padding: 2px 4px; font-size: 7.5pt; text-align: right;">PROMEDIO FINAL DEL SEMESTRE</td>
-                            <td colspan="6" style="border: 1.5px solid #000; padding: 2px 4px; font-size: 8pt; text-align: center; color: #1e6fa8;">${avgFinal}</td>
-                        </tr>
-                    `;
-                } else if (is6to) {
-                    footerExtra = `
-                        <tr>
-                            <td colspan="7" style="border: 1px solid #000; height: 18px; background: #f8fafc;"></td>
-                        </tr>
-                    `;
-                }
-
-                return `
-                    <div style="margin-bottom: 5px;">
-                        <div style="font-size: 7.8pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; color: #000;">
-                            ${p.titulo}
-                        </div>
-                        <table style="width: 100%; border-collapse: collapse; border: 1.2px solid #000; font-family: Arial, sans-serif;">
-                            <thead>
-                                <tr style="background: #e2e8f0; font-size: 6.2pt; font-weight: bold; text-align: center; color: #000;">
-                                    <th style="border: 1px solid #000; padding: 2px; text-align: left; width: 180px;">ASIGNATURAS / ÁREAS</th>
-                                    <th style="border: 1px solid #000; padding: 2px; width: 32px;">1ER. PAR.</th>
-                                    <th style="border: 1px solid #000; padding: 2px; width: 32px;">2DO. PAR.</th>
-                                    <th style="border: 1px solid #000; padding: 2px; width: 32px;">3ER. PAR.</th>
-                                    <th style="border: 1px solid #000; padding: 2px; width: 32px;">SEM.</th>
-                                    <th style="border: 1px solid #000; padding: 2px; width: 32px;">EXT.</th>
-                                    <th style="border: 1px solid #000; padding: 2px; width: 45px;">FINAL</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${filasHtml}
-                                <tr style="font-weight: bold; background: #f8fafc;">
-                                    <td style="border: 1px solid #000; padding: 2px 4px; font-size: 7.2pt; text-align: right;">PROMEDIO:</td>
-                                    <td style="border: 1px solid #000; padding: 2px; text-align: center;">${getAvg(p1Vals)}</td>
-                                    <td style="border: 1px solid #000; padding: 2px; text-align: center;">${getAvg(p2Vals)}</td>
-                                    <td style="border: 1px solid #000; padding: 2px; text-align: center;">${getAvg(p3Vals)}</td>
-                                    <td style="border: 1px solid #000; padding: 2px; text-align: center;">${getAvg(semVals)}</td>
-                                    <td style="border: 1px solid #000; padding: 2px; text-align: center;">${getAvg(extVals)}</td>
-                                    <td style="border: 1px solid #000; padding: 2px 4px; font-size: 7.2pt; text-align: center; color: #1e6fa8; background: #e2e8f0;">${avgFinal}</td>
-                                </tr>
-                                ${footerExtra}
-                            </tbody>
-                        </table>
-                    </div>
+    function renderTablaPeriodo(p, is5to, is6to) {
+        if (!p) return '';
+        let filasHtml = '';
+        
+        p.materias.forEach(m => {
+            if (m.isEquiv) {
+                filasHtml += `
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 7.5pt; text-align: left; text-transform: uppercase;">
+                            ${m.materia}
+                        </td>
+                        <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 7.5pt; text-align: center; font-weight: bold; color: #d97706;">
+                            EQUIV.
+                        </td>
+                    </tr>
                 `;
             } else {
-                p.materias.forEach(m => {
-                    const styleColor = m.esReprobatoria ? 'color: #dc2626 !important; font-weight: bold;' : 'color: #000;';
-                    filasHtml += `
-                        <tr>
-                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; text-align: left; text-transform: uppercase;">
-                                ${m.materia}
-                            </td>
-                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8.5pt; text-align: center; font-weight: bold; width: 75px; ${styleColor}">
-                                ${m.calificacion}
-                            </td>
-                        </tr>
-                    `;
-                });
-
-                let footerExtra = '';
-                if (is5to) {
-                    const finalColor = promFinal !== '—' && !isNaN(promFinal) && parseFloat(promFinal) < 6.0 ? 'color: #dc2626 !important;' : 'color: #000;';
-                    footerExtra = `
-                        <tr>
-                            <td style="border: 1.5px solid #000; padding: 2.5px 5px; font-size: 8.2pt; font-weight: bold; text-align: right; background: #e8ecf2;">
-                                PROMEDIO FINAL
-                            </td>
-                            <td style="border: 1.5px solid #000; padding: 2.5px 5px; font-size: 8.8pt; font-weight: bold; text-align: center; background: #e8ecf2; ${finalColor}">
-                                ${promFinal}
-                            </td>
-                        </tr>
-                    `;
-                } else if (is6to) {
-                    footerExtra = `
-                        <tr>
-                            <td colspan="2" style="border: 1px solid #000; height: 21px; background: #f8fafc;"></td>
-                        </tr>
-                    `;
-                }
-
-                const promColor = p.promReprobatorio ? 'color: #dc2626 !important;' : 'color: #000;';
-
-                return `
-                    <div style="margin-bottom: 8px;">
-                        <div style="font-size: 8.2pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; color: #000;">
-                            ${p.titulo}
-                        </div>
-                        <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-family: Arial, sans-serif;">
-                            <thead>
-                                <tr style="background: #ffffff;">
-                                    <th style="border: 1px solid #000; padding: 2.5px 5px; font-size: 7.8pt; text-align: left; font-weight: bold; width: 275px;">MATERIA</th>
-                                    <th style="border: 1px solid #000; padding: 2.5px 2px; font-size: 7.2pt; text-align: center; font-weight: bold; width: 75px; line-height: 1.1;">EVALUACIÓN<br>OBTENIDA</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${filasHtml}
-                                <tr>
-                                    <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; font-weight: bold; text-align: right;">
-                                        PROMEDIO
-                                    </td>
-                                    <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8.5pt; font-weight: bold; text-align: center; ${promColor}">
-                                        ${p.promedio}
-                                    </td>
-                                </tr>
-                                ${footerExtra}
-                            </tbody>
-                        </table>
-                    </div>
+                const styleColor = m.esReprobatoria ? 'color: #dc2626 !important; font-weight: bold;' : 'color: #000;';
+                filasHtml += `
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 7.5pt; text-align: left; text-transform: uppercase;">
+                            ${m.materia}
+                        </td>
+                        <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; text-align: center; ${styleColor}">
+                            ${m.calificacion}
+                        </td>
+                    </tr>
                 `;
             }
-        }
+        });
 
-        const pageContainerWidth = isBti ? '920px' : '720px';
-        const pageColWidth = isBti ? '450px' : '350px';
-        const pageSize = isBti ? 'letter landscape' : 'letter portrait';
-
-        const colIzqHtml = `
-            <div style="width: ${pageColWidth}; flex-shrink: 0;">
-                ${renderTablaPeriodo(periodosData[0], false, false)}
-                ${renderTablaPeriodo(periodosData[2], false, false)}
-                ${renderTablaPeriodo(periodosData[4], true, false)}
-            </div>
-        `;
-
-        const colDerHtml = `
-            <div style="width: ${pageColWidth}; flex-shrink: 0;">
-                ${renderTablaPeriodo(periodosData[1], false, false)}
-                ${renderTablaPeriodo(periodosData[3], false, false)}
-                ${renderTablaPeriodo(periodosData[5], false, true)}
-            </div>
-        `;
-
-        let signaturesHtml = '';
-        if (isBti) {
-            signaturesHtml = `
-                <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: flex-end; width: 920px; font-family: Arial, sans-serif;">
-                    <div style="width: 380px; text-align: center;">
-                        <div style="border-bottom: 1px solid #000; width: 220px; margin: 0 auto 3px auto; height: 30px;"></div>
-                        <div style="font-size: 7.5pt; font-weight: bold;">ING. FAUSTO LEYVA FLORES</div>
-                        <div style="font-size: 7.0pt; color: #444; text-transform: uppercase;">DIRECTOR</div>
-                    </div>
-                    <div style="width: 380px; text-align: center; font-size: 8pt; font-weight: bold; padding-bottom: 10px;">
-                        TEZIUTLÁN PUEBLA A ${new Date().toLocaleDateString('es-MX', {day: 'numeric', month: 'long', year: 'numeric'}).toUpperCase()}
-                    </div>
-                </div>
+        let footerExtra = '';
+        if (is5to) {
+            const finalColor = promFinal !== '—' && !isNaN(promFinal) && parseFloat(promFinal) < 6.0 ? 'color: #dc2626 !important;' : 'color: #1e6fa8;';
+            footerExtra = `
+                <tr style="font-weight: bold; background: #e8ecf2;">
+                    <td style="border: 1.5px solid #000; padding: 2.5px 5px; font-size: 8pt; text-align: right;">
+                        PROMEDIO FINAL
+                    </td>
+                    <td style="border: 1.5px solid #000; padding: 2.5px 5px; font-size: 8.8pt; font-weight: bold; text-align: center; background: #e8ecf2; ${finalColor}">
+                        ${promFinal}
+                    </td>
+                </tr>
+            `;
+        } else if (is6to) {
+            footerExtra = `
+                <tr>
+                    <td colspan="2" style="border: 1px solid #000; height: 21px; background: #f8fafc;"></td>
+                </tr>
             `;
         }
 
-        const win = window.open('', '', 'height=850,width=1100');
-        win.document.write(`
-            <html>
-                <head>
-                    <title>Kárdex de Calificaciones - ${alumnoNombre}</title>
-                    <style>
-                        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-                        @page {
-                            size: ${pageSize};
-                            margin: 3mm 4mm 2mm 4mm;
-                        }
-                        html, body {
-                            font-family: Arial, Helvetica, sans-serif;
-                            background: #fff;
-                            color: #000;
-                            padding: 0;
-                            margin: 0;
-                            height: 100%;
-                        }
-                        .kardex-hoja {
-                            width: ${pageContainerWidth};
-                            margin: 0 auto;
-                            text-align: center;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="kardex-hoja">
-                        <!-- MEMBRETE OFICIAL -->
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-                            <div style="width: 80px; text-align: left;">
-                                <img src="/img/logo.png" alt="Logo" style="height: 45px; object-fit: contain;">
-                            </div>
-                            <div style="width: ${isBti ? '820px' : '630px'}; border: 1.5px solid #10599a; overflow: hidden; border-radius: 3px;">
-                                <div style="background: #10599a; color: #ffffff; font-weight: bold; font-size: 10pt; padding: 2.5px 5px; text-align: center; letter-spacing: 0.8px;">
-                                    BACHILLERATO INTERAMERICANO
-                                </div>
-                                <div style="background: #d4ebf9; color: #000000; font-size: 6.8pt; padding: 1.5px 5px; text-align: center; line-height: 1.2;">
-                                    <div>Avenida Benito Juárez 901, Colonia Centro Teziutlán Puebla. Tel: 231-3123979</div>
-                                    <div style="font-weight: bold;">CLAVE CT: ${cctClave}</div>
-                                </div>
-                            </div>
+        const promColor = p.promReprobatorio ? 'color: #dc2626 !important;' : 'color: #000;';
+
+        return `
+            <div style="margin-bottom: 8px;">
+                <div style="font-size: 8.2pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; color: #000;">
+                    ${p.titulo}
+                </div>
+                <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-family: Arial, sans-serif;">
+                    <thead>
+                        <tr style="background: #ffffff;">
+                            <th style="border: 1px solid #000; padding: 2.5px 5px; font-size: 7.8pt; text-align: left; font-weight: bold; width: 275px;">MATERIA</th>
+                            <th style="border: 1px solid #000; padding: 2.5px 2px; font-size: 7.2pt; text-align: center; font-weight: bold; width: 75px; line-height: 1.1;">${isBti ? 'CALIFICACIÓN<br>FINAL' : 'EVALUACIÓN<br>OBTENIDA'}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filasHtml}
+                        <tr>
+                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; font-weight: bold; text-align: right;">
+                                PROMEDIO
+                            </td>
+                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8.5pt; font-weight: bold; text-align: center; ${promColor}">
+                                ${p.promedio}
+                            </td>
+                        </tr>
+                        ${footerExtra}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    const pageContainerWidth = '720px';
+    const pageColWidth = '350px';
+    const pageSize = 'letter portrait';
+
+    const colIzqHtml = `
+        <div style="width: ${pageColWidth}; flex-shrink: 0;">
+            ${renderTablaPeriodo(periodosData[0], false, false)}
+            ${renderTablaPeriodo(periodosData[2], false, false)}
+            ${renderTablaPeriodo(periodosData[4], true, false)}
+        </div>
+    `;
+
+    const colDerHtml = `
+        <div style="width: ${pageColWidth}; flex-shrink: 0;">
+            ${renderTablaPeriodo(periodosData[1], false, false)}
+            ${renderTablaPeriodo(periodosData[3], false, false)}
+            ${renderTablaPeriodo(periodosData[5], false, true)}
+        </div>
+    `;
+
+    const fechaHoy = new Date();
+    const meses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+    const fechaTexto = `TEZIUTLÁN PUEBLA A ${fechaHoy.getDate()} DE ${meses[fechaHoy.getMonth()]} DE ${fechaHoy.getFullYear()}`;
+
+    let signaturesHtml = '';
+    if (isBti) {
+        signaturesHtml = `
+            <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; width: ${pageContainerWidth}; font-family: Arial, sans-serif;">
+                <div style="width: 300px; text-align: center;">
+                    <div style="border-bottom: 1px solid #000; width: 220px; margin: 0 auto 5px auto; height: 35px;"></div>
+                    <div style="font-size: 8pt; font-weight: bold;">ING. FAUSTO LEYVA FLORES</div>
+                    <div style="font-size: 7.5pt; color: #444; text-transform: uppercase;">DIRECTOR</div>
+                </div>
+                <div style="width: 300px; text-align: center; font-size: 8.5pt; font-weight: bold; padding-bottom: 12px;">
+                    ${fechaTexto}
+                </div>
+            </div>
+        `;
+    }
+
+    const win = window.open('', '', 'height=850,width=850');
+    win.document.write(`
+        <html>
+            <head>
+                <title>Kárdex de Calificaciones</title>
+                <style>
+                    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
+                    @page {
+                        size: ${pageSize};
+                        margin: 6mm 8mm 4mm 8mm;
+                    }
+                    html, body {
+                        font-family: Arial, Helvetica, sans-serif;
+                        background: #fff;
+                        color: #000;
+                        padding: 0;
+                        margin: 0;
+                        height: 100%;
+                    }
+                    .kardex-hoja {
+                        width: ${pageContainerWidth};
+                        margin: 0 auto;
+                        text-align: center;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="kardex-hoja">
+                    <!-- MEMBRETE OFICIAL -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <div style="width: 80px; text-align: left;">
+                            <img src="/img/logo.png" alt="Logo" style="height: 60px; object-fit: contain;">
                         </div>
-
-                        <!-- TEXTO DIRECCIÓN Y NOMBRE ALUMNO -->
-                        <div style="margin-bottom: 4px;">
-                            <div style="font-size: 8pt; color: #000;">
-                                La Dirección de la escuela <strong>${cctNombre}</strong>
+                        <div style="width: 630px; border: 1.5px solid #10599a; overflow: hidden; border-radius: 3px;">
+                            <div style="background: #10599a; color: #ffffff; font-weight: bold; font-size: 11.5pt; padding: 3px 6px; text-align: center; letter-spacing: 0.8px;">
+                                BACHILLERATO INTERAMERICANO
                             </div>
-                            <div style="font-size: 7.2pt; color: #333; font-style: italic;">
-                                Reporta las siguientes calificaciones obtenidas hasta el momento del alumno(a):
+                            <div style="background: #d4ebf9; color: #000000; font-size: 7.2pt; padding: 2px 6px; text-align: center; line-height: 1.3;">
+                                <div>Avenida Benito Juárez 901, Colonia Centro Teziutlán Puebla. Tel: 231-3123979</div>
+                                <div style="font-weight: bold;">${cctClave}</div>
                             </div>
-                            <div style="display: inline-block; background: #e8ecf2; border: 1.5px solid #1e293b; border-radius: 20px; padding: 1.5px 22px; margin: 2px 0 5px 0; font-size: 10pt; font-weight: bold; text-decoration: underline; text-transform: uppercase;">
-                                ${alumnoNombre}
-                            </div>
-                        </div>
-
-                        <!-- TABLAS DE LOS 6 PERIODOS (2 COLUMNAS) -->
-                        <div style="display: flex; justify-content: space-between; width: ${pageContainerWidth}; margin: 0 auto; text-align: left;">
-                            ${colIzqHtml}
-                            ${colDerHtml}
-                        </div>
-
-                        ${signaturesHtml}
-
-                        <!-- LEMA INFERIOR -->
-                        <div style="width: ${pageContainerWidth}; margin: 4px auto 0 auto; background: #5b9bd5; color: #ffffff; font-weight: bold; font-size: 7.5pt; padding: 2px 0; text-align: center; border-radius: 2px;">
-                            ¡ Excelencia educativa a su servicio !
                         </div>
                     </div>
-                </body>
-            </html>
-        `);
-        win.document.close();
-        win.focus();
-        setTimeout(() => {
-            win.print();
-            win.close();
-        }, 400);
-    };
+
+                    <!-- TEXTO DIRECCIÓN Y NOMBRE ALUMNO -->
+                    <div style="margin-bottom: 6px;">
+                        <div style="font-size: 8.5pt; color: #000;">
+                            La Dirección de la escuela <strong>${cctNombre}</strong>
+                        </div>
+                        <div style="font-size: 7.8pt; color: #333; font-style: italic;">
+                            Reporta las siguientes calificaciones obtenidas hasta el momento del alumno(a):
+                        </div>
+                        <div style="display: inline-block; background: #e8ecf2; border: 1.5px solid #1e293b; border-radius: 20px; padding: 2.5px 30px; margin: 4px 0 8px 0; font-size: 11.5pt; font-weight: bold; text-decoration: underline; text-transform: uppercase;">
+                            ${alumnoNombre}
+                        </div>
+                    </div>
+
+                    <!-- TABLAS DE LOS 6 PERIODOS (2 COLUMNAS) -->
+                    <div style="display: flex; justify-content: space-between; width: ${pageContainerWidth}; margin: 0 auto; text-align: left;">
+                        ${colIzqHtml}
+                        ${colDerHtml}
+                    </div>
+
+                    ${signaturesHtml}
+
+                    <!-- LEMA INFERIOR -->
+                    <div style="width: ${pageContainerWidth}; margin: 6px auto 0 auto; background: #5b9bd5; color: #ffffff; font-weight: bold; font-size: 8.2pt; padding: 3px 0; text-align: center; border-radius: 2px;">
+                        ¡ Excelencia educativa a su servicio !
+                    </div>
+                </div>
+            </body>
+        </html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => {
+        win.print();
+        win.close();
+    }, 400);
+};
 
     window.imprimirBoletaBTISemestre = function(data, idNivelSemestre, reportesCounts) {
         const al = data.alumno;
