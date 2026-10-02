@@ -40,114 +40,134 @@ class ReporteAsistenciaController extends Controller
 
     public function getGrupoReport(Request $request, $id_grupo)
     {
-        // 1. Obtener metadatos del grupo
-        $grupo = DB::table('tb_grupos')
-            ->where('id', $id_grupo)
-            ->first();
-
-        if (!$grupo) {
-            return response()->json(['error' => 'Grupo no encontrado'], 404);
-        }
-
-        // 2. Obtener alumnos inscritos activos en el grupo
-        $alumnos = DB::table('tb_alumnogrupo')
-            ->join('tb_alumnos', 'tb_alumnogrupo.idAlumno', '=', 'tb_alumnos.idAlumno')
-            ->where('tb_alumnogrupo.idGrupo', $id_grupo)
-            ->where('tb_alumnogrupo.estado', 'ACTIVO')
-            ->select('tb_alumnos.idAlumno', 'tb_alumnos.nombre', 'tb_alumnos.apPaterno', 'tb_alumnos.apMaterno', 'tb_alumnos.numeroControl')
-            ->orderBy('tb_alumnos.apPaterno', 'asc')
-            ->orderBy('tb_alumnos.apMaterno', 'asc')
-            ->orderBy('tb_alumnos.nombre', 'asc')
-            ->get();
-
-        // 3. Obtener materias y docentes asociados en tb_horarios
-        $materias = DB::table('tb_horarios')
-            ->join('tb_materias', 'tb_horarios.id_materia', '=', 'tb_materias.id')
-            ->leftJoin('tb_docentes', 'tb_horarios.id_docente', '=', 'tb_docentes.idDocente')
-            ->where('tb_horarios.id_grupo', $id_grupo)
-            ->where('tb_horarios.es_prehorario', 0)
-            ->select(
-                'tb_materias.id as id_materia',
-                'tb_materias.nombreMateria',
-                'tb_materias.clave',
-                'tb_horarios.id_docente',
-                DB::raw("CONCAT_WS(' ', tb_docentes.nombreDocente, COALESCE(tb_docentes.apPaternoDocente, ''), COALESCE(tb_docentes.apMaternoDocente, '')) as docente_nombre")
-            )
-            ->distinct()
-            ->orderBy('tb_materias.nombreMateria', 'asc')
-            ->get();
-
-        // Si no hay horarios configurados, traer materias según el CCT del grupo
-        if ($materias->isEmpty()) {
-            $materias = DB::table('tb_materias')
-                ->where('idCentroTrabajo', $grupo->id_centroTrabajo)
-                ->orWhereNull('idCentroTrabajo')
-                ->select(
-                    'id as id_materia',
-                    'nombreMateria',
-                    'clave',
-                    DB::raw("NULL as id_docente"),
-                    DB::raw("'Sin docente asignado' as docente_nombre")
-                )
-                ->orderBy('nombreMateria', 'asc')
-                ->get();
-        }
-
-        // 4. Calcular estadísticas de asistencia para cada materia
-        $reporteMaterias = [];
-        foreach ($materias as $mat) {
-            // Contar asistencias registradas
-            $stats = DB::table('tb_asistencias_alumnos')
-                ->where('id_grupo', $id_grupo)
-                ->where('id_materia', $mat->id_materia)
-                ->select(
-                    DB::raw("SUM(CASE WHEN estatus = 'A' THEN 1 ELSE 0 END) as total_a"),
-                    DB::raw("SUM(CASE WHEN estatus = 'F' THEN 1 ELSE 0 END) as total_f"),
-                    DB::raw("SUM(CASE WHEN estatus = 'R' THEN 1 ELSE 0 END) as total_r"),
-                    DB::raw("SUM(CASE WHEN estatus = 'J' THEN 1 ELSE 0 END) as total_j"),
-                    DB::raw("COUNT(*) as total_registros")
-                )
+        try {
+            // 1. Obtener metadatos del grupo
+            $grupo = DB::table('tb_grupos')
+                ->where('id', $id_grupo)
                 ->first();
 
-            $total_a = intval($stats->total_a ?? 0);
-            $total_f = intval($stats->total_f ?? 0);
-            $total_r = intval($stats->total_r ?? 0);
-            $total_j = intval($stats->total_j ?? 0);
-            $total_registros = intval($stats->total_registros ?? 0);
-
-            // Calcular porcentaje: (Asistencias + Retardos) / (Asistencias + Retardos + Faltas)
-            $valid_denominator = $total_a + $total_r + $total_f;
-            $percentage = 100.0;
-            if ($valid_denominator > 0) {
-                $percentage = round((($total_a + $total_r) / $valid_denominator) * 100, 1);
-            } elseif ($total_registros == 0) {
-                $percentage = null; // Indica que no hay pases de lista registrados
+            if (!$grupo) {
+                return response()->json(['error' => 'Grupo no encontrado'], 404);
             }
 
-            $reporteMaterias[] = [
-                'id_materia' => $mat->id_materia,
-                'nombreMateria' => $mat->nombreMateria,
-                'clave' => $mat->clave,
-                'docente_nombre' => $mat->docente_nombre ?: 'Sin docente asignado',
-                'asistencias' => $total_a,
-                'faltas' => $total_f,
-                'retardos' => $total_r,
-                'justificadas' => $total_j,
-                'total_registros' => $total_registros,
-                'porcentaje' => $percentage
-            ];
-        }
+            // 2. Obtener alumnos inscritos activos en el grupo
+            $alumnos = DB::table('tb_alumnogrupo')
+                ->join('tb_alumnos', 'tb_alumnogrupo.idAlumno', '=', 'tb_alumnos.idAlumno')
+                ->where('tb_alumnogrupo.idGrupo', $id_grupo)
+                ->where('tb_alumnogrupo.estado', 'ACTIVO')
+                ->select('tb_alumnos.idAlumno', 'tb_alumnos.nombre', 'tb_alumnos.apPaterno', 'tb_alumnos.apMaterno', 'tb_alumnos.numeroControl')
+                ->orderBy('tb_alumnos.apPaterno', 'asc')
+                ->orderBy('tb_alumnos.apMaterno', 'asc')
+                ->orderBy('tb_alumnos.nombre', 'asc')
+                ->get();
 
-        return response()->json([
-            'grupo' => [
-                'id' => $grupo->id,
-                'clave' => $grupo->clave,
-                'horario' => $grupo->horario,
-                'modalidad' => $grupo->modalidadHorario
-            ],
-            'alumnos' => $alumnos,
-            'materias_reporte' => $reporteMaterias
-        ]);
+            // Si no hay alumnos en tb_alumnogrupo, buscar directamente en tb_alumnos
+            if ($alumnos->isEmpty()) {
+                $alumnos = DB::table('tb_alumnos')
+                    ->where('idGrupo', $id_grupo)
+                    ->whereNotIn('statusAlumno', ['BAJA_DEFINITIVA', 'INACTIVO'])
+                    ->select('idAlumno', 'nombre', 'apPaterno', 'apMaterno', 'numeroControl')
+                    ->orderBy('apPaterno', 'asc')
+                    ->orderBy('apMaterno', 'asc')
+                    ->orderBy('nombre', 'asc')
+                    ->get();
+            }
+
+            // 3. Obtener materias y docentes asociados en tb_horarios
+            $materias = DB::table('tb_horarios')
+                ->join('tb_materias', 'tb_horarios.id_materia', '=', 'tb_materias.id')
+                ->leftJoin('tb_docentes', 'tb_horarios.id_docente', '=', 'tb_docentes.idDocente')
+                ->where('tb_horarios.id_grupo', $id_grupo)
+                ->where('tb_horarios.es_prehorario', 0)
+                ->select(
+                    'tb_materias.id as id_materia',
+                    'tb_materias.nombreMateria',
+                    'tb_materias.clave',
+                    'tb_horarios.id_docente',
+                    DB::raw("CONCAT_WS(' ', tb_docentes.nombreDocente, COALESCE(tb_docentes.apPaternoDocente, ''), COALESCE(tb_docentes.apMaternoDocente, '')) as docente_nombre")
+                )
+                ->distinct()
+                ->orderBy('tb_materias.nombreMateria', 'asc')
+                ->get();
+
+            // Si no hay horarios configurados, traer materias según el CCT del grupo
+            if ($materias->isEmpty()) {
+                $materias = DB::table('tb_materias')
+                    ->where('idCentroTrabajo', $grupo->id_centroTrabajo)
+                    ->orWhereNull('idCentroTrabajo')
+                    ->select(
+                        'id as id_materia',
+                        'nombreMateria',
+                        'clave',
+                        DB::raw("NULL as id_docente"),
+                        DB::raw("'Sin docente asignado' as docente_nombre")
+                    )
+                    ->orderBy('nombreMateria', 'asc')
+                    ->get();
+            }
+
+            // 4. Calcular estadísticas de asistencia para cada materia
+            $reporteMaterias = [];
+            foreach ($materias as $mat) {
+                // Contar asistencias registradas
+                $stats = DB::table('tb_asistencias_alumnos')
+                    ->where('id_grupo', $id_grupo)
+                    ->where('id_materia', $mat->id_materia)
+                    ->select(
+                        DB::raw("SUM(CASE WHEN estatus = 'A' THEN 1 ELSE 0 END) as total_a"),
+                        DB::raw("SUM(CASE WHEN estatus = 'F' THEN 1 ELSE 0 END) as total_f"),
+                        DB::raw("SUM(CASE WHEN estatus = 'R' THEN 1 ELSE 0 END) as total_r"),
+                        DB::raw("SUM(CASE WHEN estatus = 'J' THEN 1 ELSE 0 END) as total_j"),
+                        DB::raw("COUNT(*) as total_registros")
+                    )
+                    ->first();
+
+                $total_a = intval($stats->total_a ?? 0);
+                $total_f = intval($stats->total_f ?? 0);
+                $total_r = intval($stats->total_r ?? 0);
+                $total_j = intval($stats->total_j ?? 0);
+                $total_registros = intval($stats->total_registros ?? 0);
+
+                // Calcular porcentaje: (Asistencias + Retardos) / (Asistencias + Retardos + Faltas)
+                $valid_denominator = $total_a + $total_r + $total_f;
+                $percentage = 100.0;
+                if ($valid_denominator > 0) {
+                    $percentage = round((($total_a + $total_r) / $valid_denominator) * 100, 1);
+                } elseif ($total_registros == 0) {
+                    $percentage = null; // Indica que no hay pases de lista registrados
+                }
+
+                $reporteMaterias[] = [
+                    'id_materia' => $mat->id_materia,
+                    'nombreMateria' => $mat->nombreMateria,
+                    'clave' => $mat->clave,
+                    'docente_nombre' => $mat->docente_nombre ?: 'Sin docente asignado',
+                    'asistencias' => $total_a,
+                    'faltas' => $total_f,
+                    'retardos' => $total_r,
+                    'justificadas' => $total_j,
+                    'total_registros' => $total_registros,
+                    'porcentaje' => $percentage
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'grupo' => [
+                    'id' => $grupo->id,
+                    'clave' => $grupo->clave,
+                    'horario' => $grupo->horario,
+                    'modalidad' => $grupo->modalidadHorario
+                ],
+                'alumnos' => $alumnos,
+                'materias_reporte' => $reporteMaterias
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Error al obtener reporte del grupo: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function getAlumnoHistorial(Request $request, $id_grupo, $id_alumno)

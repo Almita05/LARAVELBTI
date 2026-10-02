@@ -251,28 +251,44 @@
             }
         });
 
-        fetch(`/reportes/asistencias/grupo/${idGrupo}`)
-            .then(res => res.json())
+        fetch(`/reportes/asistencias/grupo/${idGrupo}`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(async res => {
+                const data = await res.json().catch(() => null);
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 419) {
+                        throw new Error('Tu sesión ha expirado. Por favor recarga la página (F5) o inicia sesión de nuevo.');
+                    }
+                    throw new Error((data && (data.error || data.message)) || `Error del servidor (${res.status})`);
+                }
+                if (!data) throw new Error('Respuesta inválida del servidor');
+                if (data.error) throw new Error(data.error);
+                return data;
+            })
             .then(data => {
                 Swal.close();
-                if (data.error) {
-                    Swal.fire({ icon: 'error', title: 'Error', text: data.error });
-                    return;
-                }
 
                 document.getElementById('mensaje-vacio-grupo').classList.add('d-none');
                 document.getElementById('seccion-reporte').classList.remove('d-none');
 
                 // Renderizar materias
-                renderizarMateriasReporte(data.materias_reporte);
+                renderizarMateriasReporte(data.materias_reporte || []);
 
                 // Poblar select de alumnos
-                poblarSelectAlumnos(data.alumnos);
+                poblarSelectAlumnos(data.alumnos || []);
             })
             .catch(err => {
                 Swal.close();
                 console.error(err);
-                Swal.fire({ icon: 'error', title: 'Error de Red', text: 'No se pudieron cargar las estadísticas del grupo.' });
+                Swal.fire({ 
+                    icon: 'error', 
+                    title: 'Error de Consulta', 
+                    text: err.message || 'No se pudieron cargar las estadísticas del grupo.' 
+                });
             });
     }
 
@@ -358,8 +374,8 @@
         if (tomSelectAlumno) {
             tomSelectAlumno.clearOptions();
             tomSelectAlumno.addOption({ value: '', text: '-- Seleccione un alumno --' });
-            alumnos.forEach(al => {
-                const fullName = `${al.apPaterno} ${al.apMaterno || ''} ${al.nombre} (${al.numeroControl || 'S/M'})`.toUpperCase();
+            (alumnos || []).forEach(al => {
+                const fullName = `${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''} (${al.numeroControl || 'S/M'})`.replace(/\s+/g, ' ').trim().toUpperCase();
                 tomSelectAlumno.addOption({ value: al.idAlumno, text: fullName });
             });
             tomSelectAlumno.setValue('');
@@ -394,21 +410,36 @@
             }
         });
 
-        fetch(`/reportes/asistencias/grupo/${activeGroupId}/alumno/${idAlumno}`)
-            .then(res => res.json())
+        fetch(`/reportes/asistencias/grupo/${activeGroupId}/alumno/${idAlumno}`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(async res => {
+                const data = await res.json().catch(() => null);
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 419) {
+                        throw new Error('Tu sesión ha expirado. Por favor recarga la página (F5) o inicia sesión de nuevo.');
+                    }
+                    throw new Error((data && (data.error || data.message)) || `Error del servidor (${res.status})`);
+                }
+                if (!data) throw new Error('Respuesta inválida del servidor');
+                if (data.error) throw new Error(data.error);
+                return data;
+            })
             .then(data => {
                 Swal.close();
-                if (data.error) {
-                    Swal.fire({ icon: 'error', title: 'Error', text: data.error });
-                    return;
-                }
-
-                renderizarHistorialTimeline(data.historial, data.alumno);
+                renderizarHistorialTimeline(data.historial || [], data.alumno || {});
             })
             .catch(err => {
                 Swal.close();
                 console.error(err);
-                Swal.fire({ icon: 'error', title: 'Error de Red', text: 'No se pudo cargar el historial del alumno.' });
+                Swal.fire({ 
+                    icon: 'error', 
+                    title: 'Error de Consulta', 
+                    text: err.message || 'No se pudo cargar el historial del alumno.' 
+                });
             });
     }
 
