@@ -93,4 +93,15 @@ class NotificacionController extends Controller
             return response()->json(['error' => 'Error al comunicar con el servicio: ' . $e->getMessage()], 500);
         }
     }
+public function limpiar(Request $request)
+    {
+        $url = config('services.api.base_url') . '/notificaciones/limpiar';
+        try {
+            $payload = $request->all();
+            $response = Http::post($url, $payload);
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al comunicar con el servicio: ' . $e->getMessage()], 500);
+        }
+    }
 }

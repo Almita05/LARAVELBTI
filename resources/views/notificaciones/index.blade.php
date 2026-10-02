@@ -32,31 +32,38 @@
         </div>
     @else
         <!-- Filtros Rápidos (Pills usando el color del tema) -->
-        <div class="d-flex flex-wrap gap-2 mb-4">
-            <button class="btn btn-premium-pill active" onclick="filtrarAlertas('todos', this)">
-                <i class="bi bi-grid-fill me-1"></i> Todos
-                <span class="badge bg-light text-dark ms-2" id="badge-pill-todos">{{ $notificaciones['totales']['total'] ?? 0 }}</span>
-            </button>
-            <button class="btn btn-premium-pill" onclick="filtrarAlertas('documentos', this)">
-                <i class="bi bi-file-earmark-text-fill me-1"></i> Documentación
-                <span class="badge bg-light text-dark ms-2" id="badge-pill-documentos">{{ $notificaciones['totales']['documentos'] ?? 0 }}</span>
-            </button>
-            <button class="btn btn-premium-pill" onclick="filtrarAlertas('equivalencias', this)">
-                <i class="bi bi-folder-symlink-fill me-1"></i> Equivalencias
-                <span class="badge bg-light text-dark ms-2" id="badge-pill-equivalencias">{{ $notificaciones['totales']['equivalencias'] ?? 0 }}</span>
-            </button>
-            <button class="btn btn-premium-pill" onclick="filtrarAlertas('grupos', this)">
-                <i class="bi bi-calendar-event-fill me-1"></i> Grupos y Horarios
-                <span class="badge bg-light text-dark ms-2" id="badge-pill-grupos">{{ $notificaciones['totales']['grupos'] ?? 0 }}</span>
-            </button>
-            <button class="btn btn-premium-pill" onclick="filtrarAlertas('nuevos_alumnos', this)">
-                <i class="bi bi-person-plus-fill me-1"></i> Nuevos Alumnos
-                <span class="badge bg-light text-dark ms-2" id="badge-pill-nuevos_alumnos">{{ $notificaciones['totales']['nuevos_alumnos'] ?? 0 }}</span>
-            </button>
-            <button class="btn btn-premium-pill" onclick="filtrarAlertas('resueltas', this)">
-                <i class="bi bi-check2-all me-1"></i> Resueltas / Omitidas
-                <span class="badge bg-light text-dark ms-2" id="badge-pill-resueltas">{{ $notificaciones['totales']['resueltas'] ?? count($notificaciones['resueltas'] ?? []) }}</span>
-            </button>
+        <div class="d-flex flex-wrap gap-2 mb-4 justify-content-between align-items-center">
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-premium-pill active" onclick="filtrarAlertas('todos', this)">
+                    <i class="bi bi-grid-fill me-1"></i> Todos
+                    <span class="badge bg-light text-dark ms-2" id="badge-pill-todos">{{ $notificaciones['totales']['total'] ?? 0 }}</span>
+                </button>
+                <button class="btn btn-premium-pill" onclick="filtrarAlertas('documentos', this)">
+                    <i class="bi bi-file-earmark-text-fill me-1"></i> Documentación
+                    <span class="badge bg-light text-dark ms-2" id="badge-pill-documentos">{{ $notificaciones['totales']['documentos'] ?? 0 }}</span>
+                </button>
+                <button class="btn btn-premium-pill" onclick="filtrarAlertas('equivalencias', this)">
+                    <i class="bi bi-folder-symlink-fill me-1"></i> Equivalencias
+                    <span class="badge bg-light text-dark ms-2" id="badge-pill-equivalencias">{{ $notificaciones['totales']['equivalencias'] ?? 0 }}</span>
+                </button>
+                <button class="btn btn-premium-pill" onclick="filtrarAlertas('grupos', this)">
+                    <i class="bi bi-calendar-event-fill me-1"></i> Grupos y Horarios
+                    <span class="badge bg-light text-dark ms-2" id="badge-pill-grupos">{{ $notificaciones['totales']['grupos'] ?? 0 }}</span>
+                </button>
+                <button class="btn btn-premium-pill" onclick="filtrarAlertas('nuevos_alumnos', this)">
+                    <i class="bi bi-person-plus-fill me-1"></i> Nuevos Alumnos
+                    <span class="badge bg-light text-dark ms-2" id="badge-pill-nuevos_alumnos">{{ $notificaciones['totales']['nuevos_alumnos'] ?? 0 }}</span>
+                </button>
+                <button class="btn btn-premium-pill" onclick="filtrarAlertas('resueltas', this)" id="btn-pill-resueltas">
+                    <i class="bi bi-check2-all me-1"></i> Resueltas / Omitidas
+                    <span class="badge bg-light text-dark ms-2" id="badge-pill-resueltas">{{ $notificaciones['totales']['resueltas'] ?? count($notificaciones['resueltas'] ?? []) }}</span>
+                </button>
+            </div>
+            <div id="contenedor-btn-limpiar" style="display: none;">
+                <button type="button" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1.5 px-3 py-2 shadow-sm rounded-pill fw-bold" onclick="limpiarResueltasOmitidas()" id="btn-limpiar-resueltas" title="Limpiar y dejar en cero la sección de resueltas y omitidas">
+                    <i class="bi bi-trash3-fill"></i> Limpiar Resueltas / Omitidas
+                </button>
+            </div>
         </div>
 
         <div class="glass-card shadow-lg bg-white rounded-4 p-3 border">
@@ -338,6 +345,18 @@ function filtrarAlertas(categoria, botonElement) {
     botones.forEach(btn => btn.classList.remove('active'));
     botonElement.classList.add('active');
 
+    // Mostrar/ocultar botón de limpiar según pestaña seleccionada y conteo
+    const contLimpiar = document.getElementById('contenedor-btn-limpiar');
+    const badgeResueltas = document.getElementById('badge-pill-resueltas');
+    const countResueltas = parseInt(badgeResueltas?.innerText) || 0;
+    if (contLimpiar) {
+        if (categoria === 'resueltas' && countResueltas > 0) {
+            contLimpiar.style.display = 'block';
+        } else {
+            contLimpiar.style.display = 'none';
+        }
+    }
+
     const filas = document.querySelectorAll('.fila-alerta');
     let visibles = 0;
 
@@ -532,6 +551,67 @@ function reactivarAlerta(tipo, idReferencia, subtipo, nombre, btnElement) {
             })
             .catch(err => {
                 Swal.fire('Error', err.message, 'error');
+            });
+        }
+    });
+}
+
+function limpiarResueltasOmitidas() {
+    const badgeResueltas = document.getElementById('badge-pill-resueltas');
+    const count = parseInt(badgeResueltas?.innerText) || 0;
+
+    if (count === 0) {
+        Swal.fire({
+            icon: 'info',
+            title: 'Sección vacía',
+            text: 'No hay alertas resueltas u omitidas para limpiar.'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: '¿Limpiar sección?',
+        text: `¿Deseas dejar en cero la sección de resueltas y omitidas (${count} registros)? Esta acción vacía el historial de resueltas sin reactivar las advertencias.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '<i class="bi bi-trash3-fill me-1"></i> Sí, limpiar todo',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#64748b'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Limpiando...',
+                text: 'Dejando en cero la sección de resueltas y omitidas',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            fetch('/notificaciones/limpiar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Sección limpia!',
+                        text: 'La sección de resueltas y omitidas ha quedado en cero.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire('Error', data.error || 'No se pudo limpiar la sección.', 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Error de red', err.message, 'error');
             });
         }
     });
