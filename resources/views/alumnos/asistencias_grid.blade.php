@@ -226,13 +226,13 @@
     <div id="contenedor-vista-matriz" class="d-none">
         <div class="card border-0 shadow-sm" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.15) !important;">
             <div class="card-body p-0">
-                <!-- Contenedor scrollable horizontal -->
-                <div class="table-responsive" style="max-height: 60vh; overflow-y: auto; border-radius: 16px;">
-                    <table class="table table-hover mb-0 align-middle text-center table-bordered" style="border-color: rgba(49, 125, 146, 0.12); font-size: 0.78rem; color: #1e293b;">
+                <!-- Contenedor scrollable horizontal y vertical -->
+                <div class="table-responsive matriz-scroll-container" style="max-height: 72vh; overflow: auto; border-radius: 16px; background: #ffffff;">
+                    <table id="tabla-matriz" class="table table-hover mb-0 align-middle text-center table-bordered" style="border-color: rgba(49, 125, 146, 0.15); font-size: 0.78rem; color: #1e293b;">
                         <thead>
                             <!-- Fila 1: Trimestre / Nivel Académico -->
-                            <tr style="background-color: rgba(255,255,255,0.7); border-bottom: 2px solid rgba(49, 125, 146, 0.15);">
-                                <th class="text-start sticky-col px-3 py-3" style="min-width: 250px; background-color: rgba(255,255,255,0.9); font-weight: 700; color: #1e293b;">Alumno</th>
+                            <tr class="fila-nivel" style="border-bottom: 1px solid rgba(49, 125, 146, 0.25);">
+                                <th class="text-start sticky-col px-3 py-2" style="min-width: 260px; max-width: 260px; width: 260px; background-color: #f8fafc; font-weight: 700; color: #1e293b;">Alumno</th>
                                 @php
                                     // Agrupar fechas por su nivel académico para hacer colspan
                                     $nivelesAgrupados = [];
@@ -248,14 +248,14 @@
                                     }
                                 @endphp
                                 @foreach($nivelesAgrupados as $n)
-                                    <th colspan="{{ $n['count'] }}" style="background-color: rgba(49, 125, 146, 0.25); color: rgb(38, 104, 123); font-weight: bold; border-left: 1px solid rgba(49, 125, 146, 0.15);">
+                                    <th colspan="{{ $n['count'] }}" class="header-nivel-th" style="background-color: #93b5be; color: #0b343e; font-weight: 700; border-left: 1px solid rgba(49, 125, 146, 0.25);">
                                         {{ $n['nombre'] }}
                                     </th>
                                 @endforeach
                             </tr>
                             <!-- Fila 2: Fechas -->
-                            <tr style="background-color: rgba(255,255,255,0.5);">
-                                <th class="text-start sticky-col px-3 py-2" style="background-color: rgba(255,255,255,0.85); font-weight: 600; color: #475569; border-bottom: 1px solid rgba(49, 125, 146, 0.15);">Clave / Matrícula</th>
+                            <tr class="fila-fechas" style="border-bottom: 2px solid #94a3b8;">
+                                <th class="text-start sticky-col px-3 py-2" style="min-width: 260px; max-width: 260px; width: 260px; background-color: #f8fafc; font-weight: 600; color: #475569; border-bottom: 2px solid #94a3b8;">Clave / Matrícula</th>
                                 @foreach($fechas as $fIdx => $f)
                                     @php
                                          $isBgne = ($grupo['id_centroTrabajo'] == 3);
@@ -272,7 +272,7 @@
                                              }
                                          }
                                     @endphp
-                                    <th class="py-2 px-1" style="min-width: 75px; font-size: 0.72rem; font-weight: 600; color: #475569; border-left: 1px solid rgba(49, 125, 146, 0.15); border-bottom: 1px solid rgba(49, 125, 146, 0.15); @if($isEvaluation) background-color: rgba(226, 232, 240, 0.85); @endif">
+                                    <th class="py-2 px-1 header-fecha-th @if($isEvaluation) col-evaluacion @endif" style="min-width: 75px; font-size: 0.72rem; font-weight: 600; color: #334155; border-left: 1px solid rgba(49, 125, 146, 0.15); @if($isEvaluation) background-color: #e2e8f0; @else background-color: #f8fafc; @endif">
                                          @if($isEvaluation)
                                              <div class="text-primary fw-bold" style="font-size: 0.62rem; line-height: 1; margin-bottom: 2px;">{{ $evalLabel }}</div>
                                          @endif
@@ -359,22 +359,102 @@
         color: rgb(38, 104, 123) !important;
     }
 
-    /* Forzar border-collapse: separate para habilitar columnas sticky */
-    .table-responsive table {
-        border-collapse: separate !important;
-        border-spacing: 0 !important;
+    /* ========================================================
+       CONGELAR PANELES MATRIZ (Freeze Panes: Encabezados y Alumno)
+       ======================================================== */
+    .matriz-scroll-container {
+        position: relative;
+        max-height: 72vh !important;
+        overflow: auto !important;
+        border-radius: 16px;
+        background-color: #ffffff !important;
+        border: 1px solid rgba(49, 125, 146, 0.2) !important;
     }
 
-    /* Columna congelada (Sticky) en la matriz */
-    .sticky-col {
+    /* Anular overflow:hidden heredado de layouts/app.blade.php .table */
+    .matriz-scroll-container table,
+    #tabla-matriz {
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        overflow: visible !important;
+        width: max-content !important;
+        min-width: 100% !important;
+    }
+
+    /* Columna congelada (Sticky horizontal) */
+    #tabla-matriz .sticky-col {
         position: sticky !important;
         left: 0 !important;
-        z-index: 100 !important;
+        min-width: 260px !important;
+        max-width: 260px !important;
+        width: 260px !important;
+        box-sizing: border-box !important;
         background-color: #ffffff !important;
-        box-shadow: 4px 0 8px -4px rgba(0,0,0,0.15) !important;
+        border-right: 2px solid #cbd5e1 !important;
+        box-shadow: 4px 0 8px -3px rgba(0, 0, 0, 0.12) !important;
     }
-    tr:hover .sticky-col {
-        background-color: #f0f7f9 !important;
+
+    /* En tbody (filas de alumnos) */
+    #tabla-matriz tbody td.sticky-col {
+        z-index: 20 !important;
+        background-color: #ffffff !important;
+    }
+    #tabla-matriz tbody tr:hover td.sticky-col {
+        background-color: #f1f5f9 !important;
+    }
+
+    /* Fila 1 de encabezado (Niveles/Trimestres) - fija arriba */
+    #tabla-matriz thead tr.fila-nivel th {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 30 !important;
+        background-color: #93b5be !important;
+        color: #0b343e !important;
+        height: 40px !important;
+        vertical-align: middle !important;
+        box-sizing: border-box !important;
+        border-bottom: 1px solid rgba(49, 125, 146, 0.25) !important;
+    }
+
+    /* Esquina superior izquierda (Fila 1, Alumno) - fija arriba y a la izquierda */
+    #tabla-matriz thead tr.fila-nivel th.sticky-col {
+        top: 0 !important;
+        left: 0 !important;
+        z-index: 50 !important;
+        background-color: #f8fafc !important;
+        color: #1e293b !important;
+        border-right: 2px solid #cbd5e1 !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+    }
+
+    /* Fila 2 de encabezado (Fechas) - fija debajo de la Fila 1 */
+    #tabla-matriz thead tr.fila-fechas th {
+        position: sticky !important;
+        top: 40px !important;
+        z-index: 30 !important;
+        background-color: #f8fafc !important;
+        color: #334155 !important;
+        height: 48px !important;
+        vertical-align: middle !important;
+        box-sizing: border-box !important;
+        border-bottom: 2px solid #94a3b8 !important;
+        box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    #tabla-matriz thead tr.fila-fechas th.col-evaluacion {
+        background-color: #e2e8f0 !important;
+    }
+
+    /* Esquina intermedia izquierda (Fila 2, Clave / Matrícula) - fija arriba y a la izquierda */
+    #tabla-matriz thead tr.fila-fechas th.sticky-col {
+        top: 40px !important;
+        left: 0 !important;
+        z-index: 50 !important;
+        background-color: #f8fafc !important;
+        color: #475569 !important;
+        border-right: 2px solid #cbd5e1 !important;
+        border-bottom: 2px solid #94a3b8 !important;
+        box-shadow: 4px 4px 8px -2px rgba(0, 0, 0, 0.15) !important;
     }
 
     /* Botones circulares de la matriz */
@@ -1015,6 +1095,7 @@
             
             if (btnPrint) btnPrint.classList.remove('d-none');
             if (btnExcel) btnExcel.classList.remove('d-none');
+            setTimeout(ajustarAlturasSticky, 50);
         }
 
         renderizar();
@@ -1420,7 +1501,7 @@
                 tr.className = `tabla-matriz-fila ${isVisible ? '' : 'd-none'}`;
                 tr.setAttribute('data-nombre', nombreNormalizado);
                 tr.innerHTML = `
-                    <td class="text-start sticky-col px-3 py-2 fw-semibold" style="background-color: rgba(255, 255, 255, 0.95); color: #1e293b; border-right: 1px solid rgba(49, 125, 146, 0.15); border-bottom: 1px solid rgba(49, 125, 146, 0.08);">
+                    <td class="text-start sticky-col px-3 py-2 fw-semibold" style="min-width: 260px; max-width: 260px; width: 260px; background-color: #ffffff; color: #1e293b; border-right: 2px solid #cbd5e1; border-bottom: 1px solid rgba(49, 125, 146, 0.1);">
                         <div style="font-size: 0.82rem; text-transform: uppercase;">
                             ${index + 1}. ${al.apPaternoAlumno} ${al.apMaternoAlumno || ''} ${al.nombreAlumno}
                         </div>
@@ -1482,11 +1563,28 @@
 
                 tbody.appendChild(tr);
             });
+
+            // Sincronizar altura de fila de fechas sticky
+            setTimeout(ajustarAlturasSticky, 30);
         } catch (e) {
             console.error("Error en renderMatriz:", e);
             mostrarErrorPantalla(e, 'renderMatriz');
         }
     }
+
+    // Función para asegurar que la fila de fechas esté perfectamente pegada debajo de la fila de niveles
+    function ajustarAlturasSticky() {
+        const filaNivel = document.querySelector('#tabla-matriz thead tr.fila-nivel');
+        if (filaNivel) {
+            const h = filaNivel.offsetHeight;
+            if (h && h > 0) {
+                document.querySelectorAll('#tabla-matriz thead tr.fila-fechas th').forEach(th => {
+                    th.style.top = h + 'px';
+                });
+            }
+        }
+    }
+    window.addEventListener('resize', ajustarAlturasSticky);
 
     // Cicla a través de los estados: '-' -> 'A' -> 'F' -> 'R' -> 'J' -> '-'
     function ciclarEstatusMatriz(btn, idAlumno, fecha) {
