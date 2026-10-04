@@ -50,8 +50,8 @@
                     </span>
                 @endif
                 @if($turnoLabelGrid)
-                    <span class="badge" style="font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; {{ $esTardeGrid ? 'background-color: rgba(249, 115, 22, 0.16); color: rgb(194, 65, 12); border: 1px solid rgba(249, 115, 22, 0.35);' : 'background-color: rgba(234, 179, 8, 0.16); color: rgb(161, 98, 7); border: 1px solid rgba(234, 179, 8, 0.35);' }}">
-                        <i class="fa-solid {{ $esTardeGrid ? 'fa-cloud-sun' : 'fa-sun' }} me-1"></i>{{ $turnoLabelGrid }}
+                    <span class="badge" style="font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; {{ $esTardeGrid ? 'background-color: rgba(249, 115, 22, 0.16); color: rgb(194, 65, 12); border: 1px solid rgba(249, 115, 22, 0.35); font-weight: 600;' : 'background-color: rgba(234, 179, 8, 0.16); color: rgb(161, 98, 7); border: 1px solid rgba(234, 179, 8, 0.35); font-weight: 600;' }}">
+                        {{ $turnoLabelGrid }}
                     </span>
                 @endif
             </div>
