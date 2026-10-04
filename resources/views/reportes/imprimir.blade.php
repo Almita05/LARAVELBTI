@@ -520,8 +520,8 @@
                                         <span class="d-block">Docente: <strong id="lbl-extraordinario-docente"></strong></span>
                                     </div>
                                 </div>
-                                <button type="button" class="btn btn-primary fw-bold py-2.5 px-4 shadow-sm" onclick="imprimirActaExtraordinario()">
-                                    <i class="fa-solid fa-file-pdf me-2"></i> Generar Formato Extraordinario
+                                <button type="button" class="btn btn-primary fw-bold py-2.5 px-4 shadow-sm" onclick="abrirPrevisualizacionExtraordinario()">
+                                    <i class="fa-solid fa-eye me-2"></i> Previsualizar e Imprimir Formato
                                 </button>
                             </div>
                         </div>
@@ -606,6 +606,39 @@
         </div>
     </div>
 </div>
+
+
+    <!-- MODAL DE PREVISUALIZACIÓN Y IMPRESIÓN DE EXAMEN EXTRAORDINARIO -->
+    <div class="modal fade" id="modalExtraordinarioPreview" tabindex="-1" aria-labelledby="modalExtraordinarioLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background: #f1f5f9;">
+                <div class="modal-header py-3 px-4 d-flex justify-content-between align-items-center" style="background: #1e6fa8 !important; color: #ffffff !important;">
+                    <h5 class="modal-title fw-bold text-white mb-0" id="modalExtraordinarioLabel">
+                        <i class="fa-solid fa-file-circle-check me-2"></i> Vista Previa - Acta y Recibo de Examen Extraordinario
+                    </h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-light btn-sm fw-semibold shadow-sm text-dark px-3" onclick="ejecutarImpresionExtraordinario()">
+                            <i class="fa-solid fa-print me-1 text-primary"></i> Imprimir Documento
+                        </button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+                <div class="modal-body p-4 d-flex justify-content-center" style="max-height: calc(85vh - 120px); overflow-y: auto;">
+                    <div id="extraordinarioHojaImpresion" style="width: 100%; max-width: 760px; background: #ffffff; padding: 28px 32px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 1px solid #cbd5e1; font-family: Arial, Helvetica, sans-serif; color: #000000;">
+                        <!-- Se puebla dinámicamente con renderFormatoExtraordinario() -->
+                    </div>
+                </div>
+                <div class="modal-footer bg-white py-2.5 px-4 d-flex justify-content-between border-top">
+                    <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark me-1"></i> Cerrar
+                    </button>
+                    <button type="button" class="btn btn-primary fw-bold px-4 shadow-sm" onclick="ejecutarImpresionExtraordinario()">
+                        <i class="fa-solid fa-print me-2"></i> Imprimir Formato
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 <!-- DATOS COMPARTIDOS (JS) -->
 <script>
@@ -1505,6 +1538,7 @@
 
     function simularBusquedaAlumnoExtraordinario(query) {
         buscarAlumnosReal(query, 'extraordinario-alumno-sugerencia', (alumno) => {
+            alumnoExtraordinarioActual = alumno;
             const fullName = `${alumno.nombre} ${alumno.apPaterno} ${alumno.apMaterno || ''}`.trim();
             const elSearch = document.getElementById('extraordinarioAlumnoSearch');
             if (elSearch) elSearch.value = fullName;
@@ -2843,15 +2877,303 @@ window.imprimirKardex = function() {
         }
     }
 
-    function imprimirActaExtraordinario() {
-        const alumno = document.getElementById('lbl-extraordinario-nombre')?.innerText || 'Alumno';
-        const materia = document.getElementById('lbl-extraordinario-materia')?.innerText || 'Materia';
-        const grupo = document.getElementById('lbl-extraordinario-grupo')?.innerText || 'Grupo';
-        const semestre = document.getElementById('lbl-extraordinario-semestre-val')?.innerText || '';
-        const docente = document.getElementById('lbl-extraordinario-docente')?.innerText || '';
+    let alumnoExtraordinarioActual = null;
 
-        const detalle = `${materia} (${grupo}) - ${semestre} | Docente: ${docente}`;
-        printDoc('Acta de Examen Extraordinario', alumno, detalle);
+    function abrirPrevisualizacionExtraordinario() {
+        const alumnoNombre = document.getElementById('extraordinarioAlumnoSearch')?.value.trim() || 
+                             document.getElementById('lbl-extraordinario-nombre')?.innerText.trim() || '';
+        const grupo = document.getElementById('extraordinarioGrupoInput')?.value.trim() || 
+                      document.getElementById('lbl-extraordinario-grupo')?.innerText.trim() || 'Sin asignar';
+        const materia = document.getElementById('extraordinarioMateriaInput')?.value.trim() || 
+                        document.getElementById('lbl-extraordinario-materia')?.innerText.trim() || '';
+        const docente = document.getElementById('extraordinarioDocenteInput')?.value.trim() || 
+                        document.getElementById('lbl-extraordinario-docente')?.innerText.trim() || 'Sin asignar';
+        const semSelect = document.getElementById('extraordinarioSemestreSelect');
+        const semestre = semSelect && semSelect.selectedIndex > 0 ? semSelect.options[semSelect.selectedIndex].text : 
+                         (document.getElementById('lbl-extraordinario-semestre-val')?.innerText.trim() || 'General');
+
+        if (!alumnoNombre || alumnoNombre === 'Alumno') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Requerido',
+                text: 'Por favor, busque y seleccione o escriba el nombre del alumno.',
+                confirmButtonColor: '#0284c7'
+            });
+            return;
+        }
+
+        if (!materia || materia === 'Materia') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Requerido',
+                text: 'Por favor, seleccione o escriba la materia para el examen extraordinario.',
+                confirmButtonColor: '#0284c7'
+            });
+            return;
+        }
+
+        const matricula = alumnoExtraordinarioActual 
+            ? (alumnoExtraordinarioActual.numeroControl || alumnoExtraordinarioActual.idAlumno || 'S/N') 
+            : 'S/N';
+
+        renderFormatoExtraordinario(alumnoNombre, matricula, grupo, semestre, materia, docente);
+
+        const modalEl = document.getElementById('modalExtraordinarioPreview');
+        if (modalEl && window.bootstrap && bootstrap.Modal) {
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        }
+    }
+
+    function renderFormatoExtraordinario(alumno, matricula, grupo, semestre, materia, docente) {
+        const isBti = (cctSeleccionado === 'BTI') || (!cctSeleccionado && true);
+        const cctNombre = isBti ? 'BACHILLERATO TECNOLÓGICO INTERAMERICANO' : 'BACHILLERATO GENERAL NO ESCOLARIZADO';
+        const cctClave = isBti ? '21PCT0073R' : '21PBH0353G';
+        
+        const fechaObj = new Date();
+        const fechaFormateada = fechaObj.toLocaleDateString('es-MX', {
+            day: '2-digit', 
+            month: 'long', 
+            year: 'numeric'
+        }).toUpperCase();
+
+        const randFolio = String(Math.floor(1000 + Math.random() * 9000));
+        const folio = `EXT-${fechaObj.getFullYear()}-${randFolio}`;
+
+        const html = `
+            <div style="font-family: Arial, Helvetica, sans-serif; color: #000; font-size: 8.2pt; line-height: 1.35;">
+                <!-- ==================== SECCIÓN 1: ACTA DE EXAMEN EXTRAORDINARIO ==================== -->
+                <div style="border: 2px solid #000; padding: 18px 20px; border-radius: 4px; background: #fff; margin-bottom: 12px; position: relative;">
+                    <!-- Membrete Oficial -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #10599a; padding-bottom: 8px; margin-bottom: 10px;">
+                        <div style="width: 70px; text-align: left;">
+                            <img src="/img/logo.png" alt="Logo" style="height: 52px; width: auto; object-fit: contain;">
+                        </div>
+                        <div style="text-align: center; flex-grow: 1; padding: 0 10px;">
+                            <div style="font-weight: 900; font-size: 11pt; color: #10599a; text-transform: uppercase; letter-spacing: 0.5px;">
+                                ${cctNombre}
+                            </div>
+                            <div style="font-size: 7.2pt; color: #334155; margin-top: 2px;">
+                                Avenida Benito Juárez 901, Colonia Centro Teziutlán, Puebla. Tel: 231-3123979
+                            </div>
+                            <div style="font-size: 7.5pt; font-weight: bold; color: #0f172a; margin-top: 1px;">
+                                CLAVE C.C.T. ${cctClave}
+                            </div>
+                        </div>
+                        <div style="width: 140px; text-align: right; border-left: 1px solid #cbd5e1; padding-left: 8px;">
+                            <div style="font-size: 7pt; color: #64748b; font-weight: bold; text-transform: uppercase;">FOLIO OFICIAL</div>
+                            <div style="font-size: 9.5pt; font-weight: 900; color: #dc2626;">${folio}</div>
+                            <div style="font-size: 7pt; color: #334155; margin-top: 2px;">${fechaFormateada}</div>
+                        </div>
+                    </div>
+
+                    <!-- Título del Documento -->
+                    <div style="text-align: center; margin-bottom: 10px;">
+                        <span style="font-size: 10.5pt; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; background: #f8fafc; padding: 3px 20px; border-radius: 4px; border: 1.5px solid #000; display: inline-block;">
+                            Acta de Examen Extraordinario
+                        </span>
+                    </div>
+
+                    <!-- Datos del Alumno y Asignatura -->
+                    <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; margin-bottom: 10px; font-size: 8pt;">
+                        <tbody>
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 4px 8px; width: 68%; background: #ffffff;">
+                                    <span style="font-size: 6.8pt; color: #64748b; display: block; font-weight: bold; text-transform: uppercase;">Nombre del Alumno(a)</span>
+                                    <strong style="font-size: 9.2pt; text-transform: uppercase; color: #000;">${alumno}</strong>
+                                </td>
+                                <td style="border: 1px solid #000; padding: 4px 8px; width: 32%; background: #ffffff;">
+                                    <span style="font-size: 6.8pt; color: #64748b; display: block; font-weight: bold; text-transform: uppercase;">Matrícula / No. Control</span>
+                                    <strong style="font-size: 8.5pt; color: #000;">${matricula}</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 4px 8px; background: #ffffff;">
+                                    <span style="font-size: 6.8pt; color: #64748b; display: block; font-weight: bold; text-transform: uppercase;">Asignatura / Materia</span>
+                                    <strong style="font-size: 8.8pt; text-transform: uppercase; color: #1e40af;">${materia}</strong>
+                                </td>
+                                <td style="border: 1px solid #000; padding: 4px 8px; background: #ffffff;">
+                                    <span style="font-size: 6.8pt; color: #64748b; display: block; font-weight: bold; text-transform: uppercase;">Semestre / Periodo y Grupo</span>
+                                    <strong style="font-size: 8.5pt; text-transform: uppercase; color: #000;">${semestre} | Grupo: ${grupo}</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="border: 1px solid #000; padding: 4px 8px; background: #ffffff;">
+                                    <span style="font-size: 6.8pt; color: #64748b; display: block; font-weight: bold; text-transform: uppercase;">Docente Titular / Evaluador</span>
+                                    <strong style="font-size: 8.5pt; text-transform: uppercase; color: #000;">${docente}</strong>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Dictamen y Calificación -->
+                    <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; margin-bottom: 12px; font-size: 8pt;">
+                        <thead>
+                            <tr style="background: #f8fafc; text-align: center; font-size: 7.2pt;">
+                                <th style="border: 1px solid #000; padding: 4px; width: 25%;">FECHA DE APLICACIÓN</th>
+                                <th style="border: 1px solid #000; padding: 4px; width: 25%;">CALIFICACIÓN (NÚMERO)</th>
+                                <th style="border: 1px solid #000; padding: 4px; width: 30%;">CALIFICACIÓN (CON LETRA)</th>
+                                <th style="border: 1px solid #000; padding: 4px; width: 20%;">DICTAMEN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="text-align: center; height: 38px;">
+                                <td style="border: 1px solid #000; padding: 4px; font-weight: bold;">${fechaFormateada}</td>
+                                <td style="border: 1px solid #000; padding: 4px; font-size: 11pt; font-weight: bold;"></td>
+                                <td style="border: 1px solid #000; padding: 4px;"></td>
+                                <td style="border: 1px solid #000; padding: 4px; font-size: 7.5pt; line-height: 1.2;">
+                                    [ &nbsp; ] APROBADO<br>[ &nbsp; ] REPROBADO
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Leyenda Legal -->
+                    <p style="font-size: 7.2pt; text-align: justify; margin: 0 0 16px 0; color: #334155; line-height: 1.35;">
+                        El docente y las autoridades escolares que suscriben hacen constar que el(la) alumno(a) acreditó el proceso de examen extraordinario conforme al reglamento escolar vigente. Las calificaciones aquí asentadas son de carácter oficial y definitivo.
+                    </p>
+
+                    <!-- Firmas Oficiales -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; padding: 0 5px;">
+                        <div style="width: 175px; text-align: center;">
+                            <div style="border-bottom: 1.5px solid #000; height: 35px; margin-bottom: 4px;"></div>
+                            <span style="font-size: 7.2pt; font-weight: bold; text-transform: uppercase; color: #000; display: block;">Firma del Alumno</span>
+                            <span style="font-size: 6.8pt; color: #64748b;">Aceptación de Calificación</span>
+                        </div>
+
+                        <div style="width: 110px; text-align: center; border: 1.5px dashed #94a3b8; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: #fafafa;">
+                            <span style="font-size: 7pt; font-weight: bold; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Sello Escolar</span>
+                        </div>
+
+                        <div style="width: 175px; text-align: center;">
+                            <div style="border-bottom: 1.5px solid #000; height: 35px; margin-bottom: 4px;"></div>
+                            <span style="font-size: 7.2pt; font-weight: bold; text-transform: uppercase; color: #000; display: block;">Docente Evaluador</span>
+                            <span style="font-size: 6.8pt; color: #64748b;">Firma de Conformidad</span>
+                        </div>
+
+                        <div style="width: 175px; text-align: center;">
+                            <div style="border-bottom: 1.5px solid #000; height: 35px; margin-bottom: 4px; display: flex; align-items: flex-end; justify-content: center; font-size: 7.2pt; font-weight: bold;">
+                                Ing. Fausto Mauro Leyva Flores
+                            </div>
+                            <span style="font-size: 7.2pt; font-weight: bold; text-transform: uppercase; color: #000; display: block;">Director</span>
+                            <span style="font-size: 6.8pt; color: #64748b;">Autorización Institucional</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Línea de Corte -->
+                <div style="display: flex; align-items: center; justify-content: center; margin: 10px 0; color: #64748b; font-size: 7pt; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">
+                    <span style="border-top: 1.5px dashed #94a3b8; flex-grow: 1;"></span>
+                    <span style="padding: 0 12px;"><i class="fa-solid fa-scissors me-1"></i> CORTE AQUÍ &mdash; TALÓN DE DERECHO A EXAMEN EXTRAORDINARIO</span>
+                    <span style="border-top: 1.5px dashed #94a3b8; flex-grow: 1;"></span>
+                </div>
+
+                <!-- ==================== SECCIÓN 2: RECIBO Y DERECHO A EXAMEN ==================== -->
+                <div style="border: 1.5px solid #000; padding: 14px 18px; border-radius: 4px; background: #fff;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #10599a; padding-bottom: 6px; margin-bottom: 8px;">
+                        <div style="font-weight: 800; font-size: 9.5pt; color: #10599a; text-transform: uppercase;">
+                            ${cctNombre} &mdash; <span style="font-size: 8.5pt; color: #334155;">Comprobante de Derecho a Examen</span>
+                        </div>
+                        <div style="font-size: 8pt; font-weight: bold; color: #dc2626;">
+                            FOLIO: ${folio}
+                        </div>
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; font-size: 7.8pt; margin-bottom: 8px;">
+                        <tbody>
+                            <tr>
+                                <td style="padding: 2px 4px; width: 65%;"><strong>ALUMNO:</strong> ${alumno}</td>
+                                <td style="padding: 2px 4px; width: 35%;"><strong>MATRÍCULA:</strong> ${matricula}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 4px;"><strong>ASIGNATURA:</strong> ${materia}</td>
+                                <td style="padding: 2px 4px;"><strong>PERIODO / GRUPO:</strong> ${semestre} (${grupo})</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding: 2px 4px;"><strong>DOCENTE ASIGNADO:</strong> ${docente}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 5px 8px; font-size: 7.2pt; color: #334155; line-height: 1.3; margin-bottom: 10px;">
+                        El presente recibo certifica que el alumno(a) ha tramitado en tiempo y forma su solicitud para presentar la prueba extraordinaria de la materia indicada. Es obligatorio presentar este talón con sello al momento de realizar la evaluación.
+                    </div>
+
+                    <div style="display: flex; justify-content: space-around; align-items: flex-end; padding: 0 20px;">
+                        <div style="width: 190px; text-align: center;">
+                            <div style="border-bottom: 1px solid #000; height: 26px; margin-bottom: 3px;"></div>
+                            <span style="font-size: 7pt; font-weight: bold; text-transform: uppercase; color: #475569;">Firma del Alumno</span>
+                        </div>
+                        <div style="width: 90px; text-align: center; border: 1px dashed #94a3b8; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 3px;">
+                            <span style="font-size: 6.5pt; font-weight: bold; color: #94a3b8; text-transform: uppercase;">Sello</span>
+                        </div>
+                        <div style="width: 190px; text-align: center;">
+                            <div style="border-bottom: 1px solid #000; height: 26px; margin-bottom: 3px; display: flex; align-items: flex-end; justify-content: center; font-size: 7pt; font-weight: bold;">
+                                Control Escolar
+                            </div>
+                            <span style="font-size: 7pt; font-weight: bold; text-transform: uppercase; color: #475569;">Firma de Validación</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const container = document.getElementById('extraordinarioHojaImpresion');
+        if (container) {
+            container.innerHTML = html;
+        }
+    }
+
+    function ejecutarImpresionExtraordinario() {
+        const container = document.getElementById('extraordinarioHojaImpresion');
+        if (!container) return;
+
+        const contenidoHtml = container.innerHTML;
+        const win = window.open('', '', 'height=900,width=850');
+        win.document.write(`
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <title>Acta de Examen Extraordinario</title>
+                    <style>
+                        * {
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                            box-sizing: border-box;
+                        }
+                        @page {
+                            size: letter portrait;
+                            margin: 10mm;
+                        }
+                        body {
+                            font-family: Arial, Helvetica, sans-serif;
+                            background: #fff;
+                            color: #000;
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .hoja-print {
+                            width: 100%;
+                            max-width: 730px;
+                            margin: 0 auto;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="hoja-print">
+                        ${contenidoHtml}
+                    </div>
+                </body>
+            </html>
+        `);
+        win.document.close();
+        win.focus();
+        setTimeout(() => {
+            win.print();
+        }, 350);
+    }
+
+    function imprimirActaExtraordinario() {
+        abrirPrevisualizacionExtraordinario();
     }
 
     let alumnosGrupoActual = [];
