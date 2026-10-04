@@ -55,6 +55,14 @@ class ListasAsistenciasController extends Controller
             }
         } catch (\Throwable $e) {}
 
+        try {
+            $resMat = \Illuminate\Support\Facades\Http::timeout(3)->get($apiUrl . '/materias', ['limit' => 1000]);
+            if ($resMat->successful()) {
+                $mData = $resMat->json()['data'] ?? $resMat->json() ?? [];
+                $materias = collect(array_map(fn($item) => (object)$item, $mData));
+            }
+        } catch (\Throwable $e) {}
+
         // 2. Si la API no respondió o estamos en local con BD directa:
         try {
             if ($docentes->isEmpty()) {
@@ -79,11 +87,13 @@ class ListasAsistenciasController extends Controller
                 ->select('h.id_grupo', 'h.id_docente', 'h.id_materia', 'm.nombreMateria', 'h.diaSemana')
                 ->get();
 
-            $materias = DB::table('tb_materias')
-                ->where('estatusMateria', 'ACTIVA')
-                ->orderBy('nombreMateria')
-                ->select('id', 'nombreMateria', 'idCentroTrabajo', 'id_nivel_academico')
-                ->get();
+            if ($materias->isEmpty()) {
+                $materias = DB::table('tb_materias')
+                    ->where('estatusMateria', 'ACTIVA')
+                    ->orderBy('nombreMateria')
+                    ->select('id', 'nombreMateria', 'idCentroTrabajo', 'id_nivel_academico')
+                    ->get();
+            }
         } catch (\Throwable $eDb) {
             // Silencioso: en entornos donde MySQL no está conectado en Laravel, nunca arroja 500
         }

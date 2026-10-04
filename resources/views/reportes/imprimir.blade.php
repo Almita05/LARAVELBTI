@@ -447,49 +447,80 @@
                             <p class="text-muted mb-0">Emisión de actas y recibos de derecho a exámenes extraordinarios.</p>
                         </div>
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Nombre del Alumno</label>
-                                <input type="text" id="extraordinarioAlumnoSearch" class="form-control" placeholder="Escriba matrícula o nombre del alumno..." onkeyup="simularBusquedaAlumnoExtraordinario(this.value)">
-                                <div id="extraordinario-alumno-sugerencia" class="list-group mt-2 shadow-sm" style="display: none;">
+                            <!-- Alumno con búsqueda predictiva -->
+                            <div class="col-md-6 position-relative">
+                                <label class="form-label fw-semibold text-slate-700">Nombre del Alumno</label>
+                                <div class="input-group shadow-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-user-graduate"></i></span>
+                                    <input type="text" id="extraordinarioAlumnoSearch" class="form-control border-start-0" placeholder="Escriba matrícula o nombre del alumno..." autocomplete="off" onkeyup="simularBusquedaAlumnoExtraordinario(this.value)">
+                                </div>
+                                <div id="extraordinario-alumno-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 220px; overflow-y: auto;">
                                     <!-- Cargado por JS -->
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Grupo</label>
-                                <select id="extraordinarioGrupoSelect" class="form-select" onchange="actualizarExtraordinarioPreview()">
-                                    <option value="Grupo A">Grupo A</option>
-                                    <option value="Grupo B">Grupo B</option>
-                                    <option value="Grupo C">Grupo C</option>
+
+                            <!-- Grupo: escritura y sugerencias dinámicas -->
+                            <div class="col-md-6 position-relative">
+                                <label class="form-label fw-semibold text-slate-700">Grupo</label>
+                                <div class="input-group shadow-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-users"></i></span>
+                                    <input type="text" id="extraordinarioGrupoInput" class="form-control border-start-0" placeholder="Escriba o busque grupo (ej. 101, BTI...)" autocomplete="off" oninput="buscarGruposExtraordinario(this.value)" onfocus="buscarGruposExtraordinario(this.value)">
+                                </div>
+                                <div id="extraordinario-grupo-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 220px; overflow-y: auto;">
+                                    <!-- Cargado por JS -->
+                                </div>
+                            </div>
+
+                            <!-- Semestre Select para desglosar materias -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold text-slate-700" id="lbl-extraordinario-semestre-label">Semestre</label>
+                                <select id="extraordinarioSemestreSelect" class="form-select shadow-sm" onchange="onExtraordinarioSemestreChange()">
+                                    <option value="">Seleccione Semestre</option>
+                                    <option value="1">1º Semestre</option>
+                                    <option value="2">2º Semestre</option>
+                                    <option value="3">3º Semestre</option>
+                                    <option value="4">4º Semestre</option>
+                                    <option value="5">5º Semestre</option>
+                                    <option value="6">6º Semestre</option>
                                 </select>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Docente</label>
-                                <select id="extraordinarioDocenteSelect" class="form-select" onchange="actualizarExtraordinarioPreview()">
-                                    <option value="Ing. Juan Carlos Pérez Gómez">Ing. Juan Carlos Pérez Gómez</option>
-                                    <option value="Lic. María Elena Rojas Ortiz">Lic. María Elena Rojas Ortiz</option>
-                                    <option value="Dr. Alejandro Silva Montes">Dr. Alejandro Silva Montes</option>
-                                    <option value="Mtra. Laura Patricia Jiménez">Mtra. Laura Patricia Jiménez</option>
-                                </select>
+
+                            <!-- Materia: escritura y sugerencias filtradas por el semestre seleccionado -->
+                            <div class="col-md-4 position-relative">
+                                <label class="form-label fw-semibold text-slate-700">Materia</label>
+                                <div class="input-group shadow-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-book-open"></i></span>
+                                    <input type="text" id="extraordinarioMateriaInput" class="form-control border-start-0" placeholder="Escriba o seleccione materia..." autocomplete="off" oninput="buscarMateriasExtraordinario(this.value)" onfocus="buscarMateriasExtraordinario(this.value)">
+                                </div>
+                                <div id="extraordinario-materia-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 220px; overflow-y: auto;">
+                                    <!-- Cargado por JS -->
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Materia</label>
-                                <select id="extraordinarioMateriaSelect" class="form-select" onchange="actualizarExtraordinarioPreview()">
-                                    <option value="Matemáticas Aplicadas">Matemáticas Aplicadas</option>
-                                    <option value="Programación Orientada a Objetos">Programación Orientada a Objetos</option>
-                                    <option value="Administración General">Administración General</option>
-                                    <option value="Inglés Técnico I">Inglés Técnico I</option>
-                                </select>
+
+                            <!-- Docente: escritura y sugerencias predictivas -->
+                            <div class="col-md-4 position-relative">
+                                <label class="form-label fw-semibold text-slate-700">Docente</label>
+                                <div class="input-group shadow-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-chalkboard-user"></i></span>
+                                    <input type="text" id="extraordinarioDocenteInput" class="form-control border-start-0" placeholder="Escriba o seleccione docente..." autocomplete="off" oninput="buscarDocentesExtraordinario(this.value)" onfocus="buscarDocentesExtraordinario(this.value)">
+                                </div>
+                                <div id="extraordinario-docente-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 220px; overflow-y: auto;">
+                                    <!-- Cargado por JS -->
+                                </div>
                             </div>
+
+                            <!-- Resumen y botón para generar acta -->
                             <div class="col-12 mt-4" id="extraordinario-info-alumno" style="display: none;">
                                 <div class="alert alert-warning border-0 p-3 shadow-sm" style="border-radius: 12px; background: rgba(245, 158, 11, 0.1);">
                                     <h6 class="fw-bold mb-1 text-slate-800" id="lbl-extraordinario-nombre"></h6>
                                     <div class="fs-8 mt-2 text-slate-700">
                                         <span class="d-block">Grupo: <strong id="lbl-extraordinario-grupo"></strong></span>
+                                        <span class="d-block">Periodo: <strong id="lbl-extraordinario-semestre-val"></strong></span>
+                                        <span class="d-block">Materia: <strong id="lbl-extraordinario-materia" class="text-primary"></strong></span>
                                         <span class="d-block">Docente: <strong id="lbl-extraordinario-docente"></strong></span>
-                                        <span class="d-block">Materia: <strong id="lbl-extraordinario-materia"></strong></span>
                                     </div>
                                 </div>
-                                <button type="button" class="btn btn-primary fw-bold" onclick="printDoc('Acta de Examen Extraordinario', document.getElementById('lbl-extraordinario-nombre').innerText, `${document.getElementById('lbl-extraordinario-materia').innerText} (${document.getElementById('lbl-extraordinario-grupo').innerText})`)">
+                                <button type="button" class="btn btn-primary fw-bold py-2.5 px-4 shadow-sm" onclick="imprimirActaExtraordinario()">
                                     <i class="fa-solid fa-file-pdf me-2"></i> Generar Formato Extraordinario
                                 </button>
                             </div>
@@ -1475,10 +1506,25 @@
     function simularBusquedaAlumnoExtraordinario(query) {
         buscarAlumnosReal(query, 'extraordinario-alumno-sugerencia', (alumno) => {
             const fullName = `${alumno.nombre} ${alumno.apPaterno} ${alumno.apMaterno || ''}`.trim();
-            document.getElementById('extraordinarioAlumnoSearch').value = fullName;
-            document.getElementById('lbl-extraordinario-nombre').innerText = fullName;
+            const elSearch = document.getElementById('extraordinarioAlumnoSearch');
+            if (elSearch) elSearch.value = fullName;
+            const elLbl = document.getElementById('lbl-extraordinario-nombre');
+            if (elLbl) elLbl.innerText = fullName;
+
+            // Si el alumno cuenta con grupo asignado en la BD, auto-seleccionarlo
+            const grpVal = alumno.claveGrupo || alumno.grupo || alumno.nombreGrupo || '';
+            if (grpVal) {
+                const grpInput = document.getElementById('extraordinarioGrupoInput');
+                if (grpInput && !grpInput.value) {
+                    grpInput.value = grpVal;
+                    const matchG = (window.gruposDb || []).find(g => (g.clave || '').toLowerCase() === grpVal.toLowerCase());
+                    if (matchG) seleccionarGrupoExtraordinario(matchG);
+                }
+            }
+
             actualizarExtraordinarioPreview();
-            document.getElementById('extraordinario-info-alumno').style.display = 'block';
+            const infoCard = document.getElementById('extraordinario-info-alumno');
+            if (infoCard) infoCard.style.display = 'block';
         });
     }
 
@@ -2492,18 +2538,320 @@ window.imprimirKardex = function() {
         mostrarKardexConDatos(datosKardexActual);
     }
 
-    function actualizarExtraordinarioPreview() {
-        const grupo = document.getElementById('extraordinarioGrupoSelect').value;
-        const docente = document.getElementById('extraordinarioDocenteSelect').value;
-        const materia = document.getElementById('extraordinarioMateriaSelect').value;
+    // ==========================================
+    // AUTOCOMPLETE Y FILTRADO - FORMATO EXTRAORDINARIO
+    // ==========================================
 
+    function buscarGruposExtraordinario(query = '') {
+        const div = document.getElementById('extraordinario-grupo-sugerencia');
+        if (!div) return;
+
+        const grupos = window.gruposDb || [];
+        const normQ = (query || '').normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+        const targetCentroId = cctSeleccionado === 'BTI' ? 2 : (cctSeleccionado === 'BGNE' ? 3 : null);
+
+        let filtered = grupos.filter(g => {
+            if (targetCentroId) {
+                const cid = g.id_centroTrabajo ?? g.idCentroTrabajo ?? g.id_centro_trabajo;
+                if (cid && cid != targetCentroId) return false;
+            }
+            if (!normQ) return true;
+            const claveNorm = (g.clave || '').normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+            const modNorm = (g.modalidadHorario || '').normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+            return claveNorm.includes(normQ) || modNorm.includes(normQ);
+        });
+
+        div.innerHTML = '';
+        div.style.display = 'block';
+
+        if (filtered.length === 0) {
+            div.innerHTML = '<div class="p-2 text-muted fs-8 text-center">No se encontraron grupos</div>';
+            return;
+        }
+
+        filtered.slice(0, 15).forEach(g => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action py-2 text-start d-flex justify-content-between align-items-center';
+            btn.style.borderLeft = '3px solid #0284c7';
+
+            const cctName = (g.id_centroTrabajo == 2) ? 'BTI' : ((g.id_centroTrabajo == 3) ? 'BGNE' : '');
+            btn.innerHTML = `
+                <div>
+                    <span class="fw-bold d-block text-slate-800 fs-8">${g.clave}</span>
+                    <small class="text-muted fs-9">${g.modalidadHorario || 'General'}</small>
+                </div>
+                ${cctName ? `<span class="badge bg-primary-subtle text-primary fs-9">${cctName}</span>` : ''}
+            `;
+
+            btn.onclick = (e) => {
+                e.preventDefault();
+                seleccionarGrupoExtraordinario(g);
+                div.style.display = 'none';
+            };
+            div.appendChild(btn);
+        });
+    }
+
+    function seleccionarGrupoExtraordinario(grupo) {
+        const input = document.getElementById('extraordinarioGrupoInput');
+        if (input) input.value = grupo.clave;
+
+        // Auto-seleccionar semestre en base al nivel académico del grupo
+        if (grupo.id_nivel_academico) {
+            const isBti = (grupo.id_centroTrabajo == 2) || (cctSeleccionado === 'BTI');
+            let semNum = isBti ? (grupo.id_nivel_academico - 6) : grupo.id_nivel_academico;
+            if (semNum >= 1 && semNum <= 6) {
+                const semSelect = document.getElementById('extraordinarioSemestreSelect');
+                if (semSelect) {
+                    semSelect.value = String(semNum);
+                    onExtraordinarioSemestreChange();
+                }
+            }
+        }
+
+        // Sugerir docente si hay asignaciones en tb_horarios
+        if (window.horariosDb && window.horariosDb.length > 0) {
+            const asignacion = window.horariosDb.find(h => h.id_grupo == grupo.id);
+            if (asignacion && asignacion.id_docente) {
+                const docInput = document.getElementById('extraordinarioDocenteInput');
+                if (docInput && !docInput.value.trim()) {
+                    const doc = (window.docentesDb || []).find(d => (d.idDocente || d.id) == asignacion.id_docente);
+                    if (doc) {
+                        const nom = `${doc.nombreDocente || doc.nombre || ''} ${doc.apPaternoDocente || doc.apPaterno || ''} ${doc.apMaternoDocente || doc.apMaterno || ''}`.trim();
+                        docInput.value = nom;
+                    }
+                }
+            }
+        }
+
+        actualizarExtraordinarioPreview();
+    }
+
+    function onExtraordinarioSemestreChange() {
+        const semSelect = document.getElementById('extraordinarioSemestreSelect');
+        const semVal = semSelect ? semSelect.value : '';
+
+        // Si la materia actual no pertenece al nuevo semestre seleccionado, limpiarla
+        const matInput = document.getElementById('extraordinarioMateriaInput');
+        if (matInput && matInput.value.trim() && semVal) {
+            const materias = obtenerMateriasFiltradasExtraordinario();
+            const coincide = materias.some(m => (m.nombreMateria || '').toLowerCase().trim() === matInput.value.toLowerCase().trim());
+            if (!coincide) {
+                matInput.value = '';
+            }
+        }
+
+        actualizarExtraordinarioPreview();
+    }
+
+    function obtenerMateriasFiltradasExtraordinario(query = '') {
+        const materias = window.materiasDb || [];
+        const semSelect = document.getElementById('extraordinarioSemestreSelect');
+        const semVal = semSelect ? semSelect.value : '';
+        const normQ = (query || '').normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+
+        const targetCentroId = cctSeleccionado === 'BTI' ? 2 : (cctSeleccionado === 'BGNE' ? 3 : null);
+
+        return materias.filter(m => {
+            if (targetCentroId) {
+                const cid = m.idCentroTrabajo ?? m.id_centro_trabajo ?? m.id_centroTrabajo;
+                if (cid && cid != targetCentroId) return false;
+            }
+
+            if (semVal) {
+                const sNum = parseInt(semVal);
+                const nivel = parseInt(m.id_nivel_academico);
+                if (cctSeleccionado === 'BTI') {
+                    if (nivel !== (sNum + 6) && nivel !== sNum) return false;
+                } else if (cctSeleccionado === 'BGNE') {
+                    if (nivel !== sNum) return false;
+                } else {
+                    if (nivel !== sNum && nivel !== (sNum + 6)) return false;
+                }
+            }
+
+            if (!normQ) return true;
+            const nomNorm = (m.nombreMateria || '').normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+            const claveNorm = (m.clave || '').normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+            return nomNorm.includes(normQ) || claveNorm.includes(normQ);
+        });
+    }
+
+    function buscarMateriasExtraordinario(query = '') {
+        const div = document.getElementById('extraordinario-materia-sugerencia');
+        if (!div) return;
+
+        // Si materiasDb está vacío, intentar cargar diferido
+        if (!window.materiasDb || window.materiasDb.length === 0) {
+            fetch('/materias/lista?limit=1000')
+                .then(r => r.json())
+                .then(res => {
+                    if (res && res.data) {
+                        window.materiasDb = res.data;
+                        buscarMateriasExtraordinario(query);
+                    }
+                }).catch(() => {});
+        }
+
+        const semSelect = document.getElementById('extraordinarioSemestreSelect');
+        const semVal = semSelect ? semSelect.value : '';
+        const filtered = obtenerMateriasFiltradasExtraordinario(query);
+
+        div.innerHTML = '';
+        div.style.display = 'block';
+
+        if (!semVal && filtered.length > 0) {
+            const notice = document.createElement('div');
+            notice.className = 'p-2 bg-light text-muted fs-9 border-bottom text-center';
+            notice.innerHTML = '<i class="fa-solid fa-info-circle me-1 text-info"></i> Selecciona un semestre arriba para desglosar materias de ese periodo';
+            div.appendChild(notice);
+        }
+
+        if (filtered.length === 0) {
+            div.innerHTML = `<div class="p-3 text-muted fs-8 text-center">${semVal ? 'No hay materias para este semestre' : 'No se encontraron materias'}</div>`;
+            return;
+        }
+
+        filtered.slice(0, 20).forEach(m => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action py-2 text-start d-flex justify-content-between align-items-center';
+            btn.style.borderLeft = '3px solid #0284c7';
+
+            let semBadge = '';
+            if (m.id_nivel_academico) {
+                const num = m.id_nivel_academico >= 7 ? (m.id_nivel_academico - 6) : m.id_nivel_academico;
+                semBadge = `${num}º Sem/Trim`;
+            }
+
+            btn.innerHTML = `
+                <div>
+                    <span class="fw-semibold d-block text-slate-800 fs-8">${m.nombreMateria}</span>
+                    ${m.clave ? `<small class="text-muted fs-9">Clave: ${m.clave}</small>` : ''}
+                </div>
+                ${semBadge ? `<span class="badge bg-light text-secondary border fs-9">${semBadge}</span>` : ''}
+            `;
+
+            btn.onclick = (e) => {
+                e.preventDefault();
+                seleccionarMateriaExtraordinario(m);
+                div.style.display = 'none';
+            };
+            div.appendChild(btn);
+        });
+    }
+
+    function seleccionarMateriaExtraordinario(materia) {
+        const input = document.getElementById('extraordinarioMateriaInput');
+        if (input) input.value = materia.nombreMateria;
+
+        // Auto-seleccionar semestre si no estaba seleccionado
+        if (materia.id_nivel_academico) {
+            const semSelect = document.getElementById('extraordinarioSemestreSelect');
+            if (semSelect && !semSelect.value) {
+                const num = materia.id_nivel_academico >= 7 ? (materia.id_nivel_academico - 6) : materia.id_nivel_academico;
+                if (num >= 1 && num <= 6) {
+                    semSelect.value = String(num);
+                    onExtraordinarioSemestreChange();
+                }
+            }
+        }
+
+        // Sugerir docente de tb_horarios si coincide
+        if (window.horariosDb && window.horariosDb.length > 0) {
+            const asignacion = window.horariosDb.find(h => h.id_materia == materia.id);
+            if (asignacion && asignacion.id_docente) {
+                const docInput = document.getElementById('extraordinarioDocenteInput');
+                if (docInput && !docInput.value.trim()) {
+                    const doc = (window.docentesDb || []).find(d => (d.idDocente || d.id) == asignacion.id_docente);
+                    if (doc) {
+                        const nom = `${doc.nombreDocente || doc.nombre || ''} ${doc.apPaternoDocente || doc.apPaterno || ''} ${doc.apMaternoDocente || doc.apMaterno || ''}`.trim();
+                        docInput.value = nom;
+                    }
+                }
+            }
+        }
+
+        actualizarExtraordinarioPreview();
+    }
+
+    function buscarDocentesExtraordinario(query = '') {
+        const div = document.getElementById('extraordinario-docente-sugerencia');
+        if (!div) return;
+
+        const docentes = window.docentesDb || [];
+        const normQ = (query || '').normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+
+        let filtered = docentes.filter(d => {
+            if (!normQ) return true;
+            const nom = `${d.nombreDocente || d.nombre || ''} ${d.apPaternoDocente || d.apPaterno || ''} ${d.apMaternoDocente || d.apMaterno || ''}`;
+            const nomNorm = nom.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+            return nomNorm.includes(normQ);
+        });
+
+        div.innerHTML = '';
+        div.style.display = 'block';
+
+        if (filtered.length === 0) {
+            div.innerHTML = '<div class="p-2 text-muted fs-8 text-center">No se encontraron docentes</div>';
+            return;
+        }
+
+        filtered.slice(0, 15).forEach(d => {
+            const fullName = `${d.nombreDocente || d.nombre || ''} ${d.apPaternoDocente || d.apPaterno || ''} ${d.apMaternoDocente || d.apMaterno || ''}`.trim();
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action py-2 text-start';
+            btn.style.borderLeft = '3px solid #0284c7';
+            btn.innerHTML = `<span class="fw-semibold text-slate-800 fs-8">${fullName}</span>`;
+
+            btn.onclick = (e) => {
+                e.preventDefault();
+                const input = document.getElementById('extraordinarioDocenteInput');
+                if (input) input.value = fullName;
+                div.style.display = 'none';
+                actualizarExtraordinarioPreview();
+            };
+            div.appendChild(btn);
+        });
+    }
+
+    function actualizarExtraordinarioPreview() {
+        const alumno = document.getElementById('extraordinarioAlumnoSearch')?.value.trim() || '';
+        const grupo = document.getElementById('extraordinarioGrupoInput')?.value.trim() || '';
+        const docente = document.getElementById('extraordinarioDocenteInput')?.value.trim() || '';
+        const materia = document.getElementById('extraordinarioMateriaInput')?.value.trim() || '';
+        const semSelect = document.getElementById('extraordinarioSemestreSelect');
+        const semestreText = semSelect && semSelect.selectedIndex > 0 ? semSelect.options[semSelect.selectedIndex].text : '';
+
+        const lblA = document.getElementById('lbl-extraordinario-nombre');
         const lblG = document.getElementById('lbl-extraordinario-grupo');
         const lblD = document.getElementById('lbl-extraordinario-docente');
         const lblM = document.getElementById('lbl-extraordinario-materia');
+        const lblS = document.getElementById('lbl-extraordinario-semestre-val');
 
-        if (lblG) lblG.innerText = grupo;
-        if (lblD) lblD.innerText = docente;
-        if (lblM) lblM.innerText = materia;
+        if (lblA && alumno) lblA.innerText = alumno;
+        if (lblG) lblG.innerText = grupo || 'Sin asignar';
+        if (lblD) lblD.innerText = docente || 'Sin asignar';
+        if (lblM) lblM.innerText = materia || 'Sin asignar';
+        if (lblS) lblS.innerText = semestreText || 'Sin especificar';
+
+        const infoCard = document.getElementById('extraordinario-info-alumno');
+        if (infoCard && (alumno || grupo || materia)) {
+            infoCard.style.display = 'block';
+        }
+    }
+
+    function imprimirActaExtraordinario() {
+        const alumno = document.getElementById('lbl-extraordinario-nombre')?.innerText || 'Alumno';
+        const materia = document.getElementById('lbl-extraordinario-materia')?.innerText || 'Materia';
+        const grupo = document.getElementById('lbl-extraordinario-grupo')?.innerText || 'Grupo';
+        const semestre = document.getElementById('lbl-extraordinario-semestre-val')?.innerText || '';
+        const docente = document.getElementById('lbl-extraordinario-docente')?.innerText || '';
+
+        const detalle = `${materia} (${grupo}) - ${semestre} | Docente: ${docente}`;
+        printDoc('Acta de Examen Extraordinario', alumno, detalle);
     }
 
     let alumnosGrupoActual = [];
