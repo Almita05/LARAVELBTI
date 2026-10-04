@@ -85,37 +85,58 @@
 
     <!-- Barra de Filtros y Búsqueda -->
     <div class="card border-0 mb-4 shadow-sm" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important;">
-        <div class="card-body p-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-            <!-- Tabs de Filtro de Días -->
-            <ul class="nav nav-pills border-0 p-1" style="border-radius: 12px; gap: 4px; background: rgba(0, 0, 0, 0.06); border: 1px solid rgba(49, 125, 146, 0.1) !important;">
-                <li class="nav-item">
-                    <button class="nav-link active px-4 py-2 border-0 rounded-3 fw-medium" id="tab-todos" onclick="filtrarDia('TODOS')" style="font-size: 0.8rem; transition: 0.2s;">
-                        Todos
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link px-4 py-2 border-0 rounded-3 fw-medium" id="tab-semana" onclick="filtrarDia('LUNES-VIERNES')" style="font-size: 0.8rem; transition: 0.2s;">
-                        Lunes a Viernes
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link px-4 py-2 border-0 rounded-3 fw-medium" id="tab-sabados" onclick="filtrarDia('SABADO')" style="font-size: 0.8rem; transition: 0.2s;">
-                        Sábados
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link px-4 py-2 border-0 rounded-3 fw-medium" id="tab-domingos" onclick="filtrarDia('DOMINGO')" style="font-size: 0.8rem; transition: 0.2s;">
-                        Domingos
-                    </button>
-                </li>
-            </ul>
+        <div class="card-body p-3 d-flex flex-column flex-xl-row justify-content-between align-items-center gap-3">
+            <div class="d-flex flex-wrap align-items-center gap-2 w-100 w-xl-auto">
+                <!-- Tabs de Filtro de Días -->
+                <ul class="nav nav-pills border-0 p-1" id="filtros-dias" style="border-radius: 12px; gap: 4px; background: rgba(0, 0, 0, 0.06); border: 1px solid rgba(49, 125, 146, 0.1) !important;">
+                    <li class="nav-item">
+                        <button class="nav-link active px-3 py-1.5 border-0 rounded-3 fw-medium" id="tab-todos" onclick="filtrarDia('TODOS')" style="font-size: 0.78rem; transition: 0.2s;">
+                            Todos los Días
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link px-3 py-1.5 border-0 rounded-3 fw-medium" id="tab-semana" onclick="filtrarDia('LUNES-VIERNES')" style="font-size: 0.78rem; transition: 0.2s;">
+                            Lunes a Viernes
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link px-3 py-1.5 border-0 rounded-3 fw-medium" id="tab-sabados" onclick="filtrarDia('SABADO')" style="font-size: 0.78rem; transition: 0.2s;">
+                            Sábados
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link px-3 py-1.5 border-0 rounded-3 fw-medium" id="tab-domingos" onclick="filtrarDia('DOMINGO')" style="font-size: 0.78rem; transition: 0.2s;">
+                            Domingos
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Filtro de Turno / Modalidad (Mañana / Tarde) -->
+                <ul class="nav nav-pills border-0 p-1" id="filtros-turno" style="border-radius: 12px; gap: 4px; background: rgba(0, 0, 0, 0.06); border: 1px solid rgba(49, 125, 146, 0.1) !important;">
+                    <li class="nav-item">
+                        <button class="nav-link active px-2.5 py-1.5 border-0 rounded-3 fw-medium" id="turno-todos" onclick="filtrarTurno('TODOS')" style="font-size: 0.78rem; transition: 0.2s;">
+                            Todos Turnos
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link px-2.5 py-1.5 border-0 rounded-3 fw-medium" id="turno-manana" onclick="filtrarTurno('MANANA')" style="font-size: 0.78rem; transition: 0.2s;">
+                            <i class="fa-solid fa-sun me-1 text-warning"></i>Mañana
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link px-2.5 py-1.5 border-0 rounded-3 fw-medium" id="turno-tarde" onclick="filtrarTurno('TARDE')" style="font-size: 0.78rem; transition: 0.2s;">
+                            <i class="fa-solid fa-cloud-sun me-1 text-warning"></i>Tarde
+                        </button>
+                    </li>
+                </ul>
+            </div>
 
             <!-- Buscador por Texto -->
-            <div class="position-relative w-100 w-md-25" style="min-width: 250px;">
+            <div class="position-relative w-100 w-xl-25" style="min-width: 250px;">
                 <span class="position-absolute start-0 top-50 translate-middle-y ms-3 text-muted">
                     <i class="fa-solid fa-magnifying-glass" style="font-size: 0.85rem;"></i>
                 </span>
-                <input type="text" id="buscadorGrupo" class="form-control ps-5 border-0 text-dark" placeholder="Buscar grupo por clave..." style="background: rgba(255, 255, 255, 0.5); border-radius: 12px; height: 42px; font-size: 0.85rem; border: 1px solid rgba(49, 125, 146, 0.2) !important;">
+                <input type="text" id="buscadorGrupo" class="form-control ps-5 border-0 text-dark" placeholder="Buscar por clave, turno o aula..." style="background: rgba(255, 255, 255, 0.5); border-radius: 12px; height: 40px; font-size: 0.85rem; border: 1px solid rgba(49, 125, 146, 0.2) !important;">
             </div>
         </div>
     </div>
@@ -143,17 +164,54 @@
                 } else {
                     $diasLabel = implode(', ', $dias);
                 }
+
+                // Detección de Turno / Modalidad (Mañana o Tarde)
+                $modRaw = strtoupper(trim($grupo['modalidadHorario'] ?? ''));
+                $esTarde = str_contains($modRaw, 'TARDE') || str_contains($modRaw, 'VESPERTINO');
+                $esManana = str_contains($modRaw, 'MAÑANA') || str_contains($modRaw, 'MANANA') || str_contains($modRaw, 'MATUTINO') || str_contains($modRaw, 'MAANA');
+
+                if ($esTarde) {
+                    $turnoLabel = 'Tarde';
+                    $turnoDetalle = 'Turno Tarde';
+                    $turnoKey = 'TARDE';
+                    $turnoIcon = 'fa-solid fa-cloud-sun';
+                    $turnoBadgeStyle = 'background-color: rgba(249, 115, 22, 0.16); color: rgb(194, 65, 12); border: 1px solid rgba(249, 115, 22, 0.35);';
+                    $turnoIconColor = 'rgb(217, 119, 6)';
+                } elseif ($esManana) {
+                    $turnoLabel = 'Mañana';
+                    $turnoDetalle = 'Turno Mañana';
+                    $turnoKey = 'MANANA';
+                    $turnoIcon = 'fa-solid fa-sun';
+                    $turnoBadgeStyle = 'background-color: rgba(234, 179, 8, 0.16); color: rgb(161, 98, 7); border: 1px solid rgba(234, 179, 8, 0.35);';
+                    $turnoIconColor = 'rgb(202, 138, 4)';
+                } else {
+                    $turnoLabel = !empty($modRaw) ? ucwords(strtolower($modRaw)) : 'Sin turno';
+                    $turnoDetalle = $turnoLabel;
+                    $turnoKey = 'OTRO';
+                    $turnoIcon = 'fa-solid fa-clock';
+                    $turnoBadgeStyle = 'background-color: rgba(100, 116, 139, 0.12); color: rgb(71, 85, 105); border: 1px solid rgba(100, 116, 139, 0.25);';
+                    $turnoIconColor = 'rgb(100, 116, 139)';
+                }
             @endphp
-            <div class="col-md-6 col-lg-4 elemento-grupo" data-clave="{{ strtolower($grupo['clave']) }}" data-dias="{{ implode(',', $dias) }}">
+            <div class="col-md-6 col-lg-4 elemento-grupo" 
+                 data-clave="{{ strtolower($grupo['clave']) }}" 
+                 data-dias="{{ implode(',', $dias) }}"
+                 data-turno="{{ $turnoKey }}"
+                 data-modalidad="{{ strtolower($turnoLabel . ' ' . $turnoDetalle . ' ' . $modRaw) }}">
                 <div class="card h-100 border-0 shadow-premium card-premium position-relative" style="border-radius: 20px; background: rgba(255, 255, 255, 0.55); border: 1px solid rgba(49, 125, 146, 0.18) !important; backdrop-filter: blur(12px); transition: transform 0.25s, box-shadow 0.25s;">
                     <div class="card-body p-4 d-flex flex-column">
                         <!-- Clave del Grupo y Estado -->
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div>
                                 <h4 class="text-dark fw-bold mb-1" style="font-size: 1.25rem; letter-spacing: -0.3px;">{{ $grupo['clave'] }}</h4>
-                                <span class="badge" style="font-size: 0.68rem; padding: 4px 8px; border-radius: 6px; background-color: {{ $grupo['id_centroTrabajo'] == 2 ? 'rgba(49, 125, 146, 0.15)' : 'rgba(139, 92, 246, 0.12)' }}; color: {{ $grupo['id_centroTrabajo'] == 2 ? 'rgb(38, 104, 123)' : 'rgb(109, 40, 217)' }};">
-                                    {{ $grupo['nombreCentroTrabajo'] ?? ($grupo['id_centroTrabajo'] == 2 ? 'BTI' : 'BGNE') }}
-                                </span>
+                                <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                                    <span class="badge" style="font-size: 0.68rem; padding: 4px 8px; border-radius: 6px; background-color: {{ $grupo['id_centroTrabajo'] == 2 ? 'rgba(49, 125, 146, 0.15)' : 'rgba(139, 92, 246, 0.12)' }}; color: {{ $grupo['id_centroTrabajo'] == 2 ? 'rgb(38, 104, 123)' : 'rgb(109, 40, 217)' }};">
+                                        {{ $grupo['nombreCentroTrabajo'] ?? ($grupo['id_centroTrabajo'] == 2 ? 'BTI' : 'BGNE') }}
+                                    </span>
+                                    <span class="badge" style="font-size: 0.68rem; padding: 4px 8px; border-radius: 6px; {{ $turnoBadgeStyle }}">
+                                        <i class="{{ $turnoIcon }} me-1"></i>{{ $turnoLabel }}
+                                    </span>
+                                </div>
                             </div>
                             @if($status == 'FINALIZADO')
                                 <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1" style="border-radius: 20px; font-size: 0.68rem; font-weight: 600;">
@@ -175,6 +233,10 @@
                             <div class="d-flex align-items-center mb-2">
                                 <i class="fa-solid fa-calendar-days me-2" style="width: 16px; color: rgb(49, 125, 146);"></i>
                                 <span class="text-dark" style="font-weight: 500;">{{ $diasLabel }}</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="{{ $turnoIcon }} me-2" style="width: 16px; color: {{ $turnoIconColor }};"></i>
+                                <span class="text-dark" style="font-weight: 500;">Modalidad: <strong style="color: #0f172a;">{{ $turnoDetalle }}</strong></span>
                             </div>
                             <div class="d-flex align-items-center mb-2">
                                 <i class="fa-solid fa-graduation-cap me-2" style="width: 16px; color: rgb(49, 125, 146);"></i>
@@ -253,16 +315,29 @@
 
 <script>
     let filtroDiaActual = 'TODOS';
+    let filtroTurnoActual = 'TODOS';
 
     function filtrarDia(dia) {
         filtroDiaActual = dia;
         
-        // Actualizar pestañas activas
-        document.querySelectorAll('.nav-pills .nav-link').forEach(el => el.classList.remove('active'));
-        if (dia === 'TODOS') document.getElementById('tab-todos').classList.add('active');
-        if (dia === 'LUNES-VIERNES') document.getElementById('tab-semana').classList.add('active');
-        if (dia === 'SABADO') document.getElementById('tab-sabados').classList.add('active');
-        if (dia === 'DOMINGO') document.getElementById('tab-domingos').classList.add('active');
+        // Actualizar pestañas de días activas
+        document.querySelectorAll('#filtros-dias .nav-link').forEach(el => el.classList.remove('active'));
+        if (dia === 'TODOS') document.getElementById('tab-todos')?.classList.add('active');
+        if (dia === 'LUNES-VIERNES') document.getElementById('tab-semana')?.classList.add('active');
+        if (dia === 'SABADO') document.getElementById('tab-sabados')?.classList.add('active');
+        if (dia === 'DOMINGO') document.getElementById('tab-domingos')?.classList.add('active');
+
+        aplicarFiltros();
+    }
+
+    function filtrarTurno(turno) {
+        filtroTurnoActual = turno;
+
+        // Actualizar pestañas de turno activas
+        document.querySelectorAll('#filtros-turno .nav-link').forEach(el => el.classList.remove('active'));
+        if (turno === 'TODOS') document.getElementById('turno-todos')?.classList.add('active');
+        if (turno === 'MANANA') document.getElementById('turno-manana')?.classList.add('active');
+        if (turno === 'TARDE') document.getElementById('turno-tarde')?.classList.add('active');
 
         aplicarFiltros();
     }
@@ -279,11 +354,16 @@
         elementos.forEach(el => {
             const clave = el.getAttribute('data-clave') || '';
             const dias = el.getAttribute('data-dias') || '';
+            const turno = el.getAttribute('data-turno') || '';
+            const modalidad = el.getAttribute('data-modalidad') || '';
 
             const coincideDia = (filtroDiaActual === 'TODOS') || dias.includes(filtroDiaActual);
-            const coincideTexto = query.length === 0 || normalizeStr(clave).includes(query);
+            const coincideTurno = (filtroTurnoActual === 'TODOS') || (turno === filtroTurnoActual);
+            const coincideTexto = query.length === 0 || 
+                normalizeStr(clave).includes(query) || 
+                normalizeStr(modalidad).includes(query);
 
-            if (coincideDia && coincideTexto) {
+            if (coincideDia && coincideTurno && coincideTexto) {
                 el.classList.remove('d-none');
                 visibles++;
             } else {

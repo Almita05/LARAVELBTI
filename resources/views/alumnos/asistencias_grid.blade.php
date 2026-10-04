@@ -36,11 +36,22 @@
             <i class="fa-solid fa-arrow-left"></i>
         </a>
         <div>
-            <div class="d-flex align-items-center gap-2">
+            @php
+                $modRawGrid = strtoupper(trim($grupo['modalidadHorario'] ?? ''));
+                $esTardeGrid = str_contains($modRawGrid, 'TARDE') || str_contains($modRawGrid, 'VESPERTINO');
+                $esMananaGrid = str_contains($modRawGrid, 'MAÑANA') || str_contains($modRawGrid, 'MANANA') || str_contains($modRawGrid, 'MATUTINO') || str_contains($modRawGrid, 'MAANA');
+                $turnoLabelGrid = $esTardeGrid ? 'Turno Tarde' : ($esMananaGrid ? 'Turno Mañana' : (!empty($modRawGrid) ? ucwords(strtolower($modRawGrid)) : ''));
+            @endphp
+            <div class="d-flex align-items-center gap-2 flex-wrap">
                 <h3 class="page-title mb-0" style="font-size: 1.6rem; letter-spacing: -0.5px;">{{ $grupo['clave'] }}</h3>
                 @if($selected_materia_id === 'general')
                     <span class="badge bg-primary text-white px-2.5 py-1 rounded-pill shadow-sm" style="font-size: 0.72rem; letter-spacing: 0.3px;">
                         Pase General
+                    </span>
+                @endif
+                @if($turnoLabelGrid)
+                    <span class="badge" style="font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; {{ $esTardeGrid ? 'background-color: rgba(249, 115, 22, 0.16); color: rgb(194, 65, 12); border: 1px solid rgba(249, 115, 22, 0.35);' : 'background-color: rgba(234, 179, 8, 0.16); color: rgb(161, 98, 7); border: 1px solid rgba(234, 179, 8, 0.35);' }}">
+                        <i class="fa-solid {{ $esTardeGrid ? 'fa-cloud-sun' : 'fa-sun' }} me-1"></i>{{ $turnoLabelGrid }}
                     </span>
                 @endif
             </div>
