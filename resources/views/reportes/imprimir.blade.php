@@ -134,34 +134,79 @@
                     <div class="tab-pane fade" id="pane-kardex" role="tabpanel">
                         <div class="glass-header mb-4">
                             <h5 class="fw-bold mb-1 text-slate-800">
-                                <i class="fa-solid fa-graduation-cap text-info me-2"></i>Kardex Académico
+                                <i class="fa-solid fa-graduation-cap text-info me-2"></i>Kárdex Académico
                             </h5>
-                            <p class="text-muted mb-0">Historial completo de asignaturas cursadas, calificaciones y promedios.</p>
+                            <p class="text-muted mb-0">Historial completo de asignaturas cursadas, calificaciones oficiales y promedios por periodo.</p>
                         </div>
                         <div class="row g-3">
-                            <div class="col-md-12">
-                                <label class="form-label fw-semibold">Buscar Alumno para Kardex</label>
-                                <input type="text" id="kardexAlumnoSearch" class="form-control" placeholder="Escriba matrícula o nombre del alumno..." onkeyup="simularBusquedaAlumnoKardex(this.value)">
-                                <div id="kardex-alumno-sugerencia" class="list-group mt-2 shadow-sm" style="display: none;">
+                            <div class="col-md-12 position-relative">
+                                <label class="form-label fw-semibold">Buscar Alumno para Kárdex</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                                    <input type="text" id="kardexAlumnoSearch" class="form-control border-start-0" placeholder="Escriba matrícula o nombre del alumno..." onkeyup="simularBusquedaAlumnoKardex(this.value)">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="limpiarBusquedaKardex()"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <div id="kardex-alumno-sugerencia" class="list-group mt-2 shadow-sm position-absolute w-100" style="display: none; z-index: 1050; max-height: 250px; overflow-y: auto;">
                                     <!-- Cargado por JS -->
                                 </div>
                             </div>
-                            <div class="col-12 mt-4" id="kardex-info-alumno" style="display: none;">
-                                <div class="card p-3 border-0 bg-light mb-3" style="border-radius: 12px;">
-                                    <div class="d-flex justify-content-between align-items-center">
+
+                            <div class="col-12 mt-3" id="kardex-info-alumno" style="display: none;">
+                                <!-- Tarjeta de Resumen y Acciones -->
+                                <div class="card p-3 border-0 shadow-sm mb-3" style="border-radius: 14px; background: linear-gradient(135deg, #f8fafc 0%, #eef2f6 100%); border-left: 5px solid #1e6fa8 !important;">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                                         <div>
-                                            <h6 class="fw-bold mb-0 text-slate-800" id="lbl-kardex-nombre"></h6>
-                                            <small class="text-muted" id="lbl-kardex-matricula"></small>
+                                            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                                <h5 class="fw-bold mb-0 text-slate-800" id="lbl-kardex-nombre"></h5>
+                                                <span class="badge bg-primary-subtle text-primary px-2 py-1 fs-9" id="lbl-kardex-badge-cct">BTI</span>
+                                                <span class="badge bg-success-subtle text-success px-2 py-1 fs-9" id="lbl-kardex-status">ACTIVO</span>
+                                            </div>
+                                            <div class="text-muted fs-8">
+                                                <span id="lbl-kardex-matricula"></span>
+                                                <span class="mx-2">•</span>
+                                                <span id="lbl-kardex-generacion-grupo"></span>
+                                            </div>
                                         </div>
-                                        <div class="text-end">
-                                            <span class="d-block fw-bold text-info" id="lbl-kardex-promedio">Promedio General: —</span>
+                                        <div class="text-end d-flex align-items-center gap-3">
+                                            <div class="bg-white px-3 py-2 rounded-3 border shadow-xs text-center">
+                                                <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.72rem;">Promedio General</small>
+                                                <span class="fs-5 fw-bold text-primary" id="lbl-kardex-promedio">—</span>
+                                            </div>
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                <button type="button" class="btn btn-outline-primary fw-bold shadow-xs px-3" onclick="mostrarModalKardexManual()">
+                                                    <i class="fa-solid fa-pen-to-square me-1"></i> Ver / Ajustar en Modal
+                                                </button>
+                                                <button type="button" class="btn btn-primary fw-bold shadow-sm px-3" onclick="imprimirKardex()">
+                                                    <i class="fa-solid fa-print me-1"></i> Imprimir Kárdex
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <button type="button" class="btn btn-primary fw-bold" onclick="imprimirKardex()">
-                                        <i class="fa-solid fa-print me-2"></i> Imprimir Kárdex General
-                                    </button>
+
+                                <!-- Vista previa oficial en pantalla del Kárdex (para poder verse antes de imprimir) -->
+                                <div class="card border shadow-sm p-4 mb-4 bg-white" style="border-radius: 12px;" id="kardex-preview-wrapper">
+                                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-wrap gap-2">
+                                        <h6 class="fw-bold text-dark mb-0">
+                                            <i class="fa-solid fa-file-invoice text-info me-2"></i>Vista Previa del Formato Oficial de Kárdex
+                                        </h6>
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <span class="text-muted fs-8"><i class="fa-solid fa-circle-check text-success me-1"></i>Documento completo listo para imprimir</span>
+                                            <button type="button" class="btn btn-sm btn-primary fw-bold" onclick="imprimirKardex()">
+                                                <i class="fa-solid fa-print me-1"></i> Imprimir
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div id="kardex-live-preview">
+                                        <!-- Se renderiza dinámicamente con la estructura oficial del Kárdex -->
+                                    </div>
+
+                                    <div class="text-end mt-3 pt-3 border-top">
+                                        <button type="button" class="btn btn-primary fw-bold shadow-sm px-4" onclick="imprimirKardex()">
+                                            <i class="fa-solid fa-print me-2"></i> Imprimir Kárdex Oficial
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -857,6 +902,7 @@
     // Función principal para la selección del CCT
     function selectCCT(cct) {
         cctSeleccionado = cct;
+        if (typeof limpiarBusquedaKardex === 'function') { limpiarBusquedaKardex(); }
         
         // Actualizar UI del selector
         document.querySelectorAll('.cct-card').forEach(card => card.classList.remove('selected-cct'));
@@ -1175,32 +1221,226 @@
         });
     }
 
+    function limpiarBusquedaKardex() {
+        const input = document.getElementById('kardexAlumnoSearch');
+        if (input) input.value = '';
+        const sugerencias = document.getElementById('kardex-alumno-sugerencia');
+        if (sugerencias) {
+            sugerencias.innerHTML = '';
+            sugerencias.style.display = 'none';
+        }
+        const infoBox = document.getElementById('kardex-info-alumno');
+        if (infoBox) infoBox.style.display = 'none';
+        datosKardexActual = null;
+        idAlumnoKardexActual = null;
+    }
+
     function simularBusquedaAlumnoKardex(query) {
         buscarAlumnosReal(query, 'kardex-alumno-sugerencia', (alumno) => {
             const fullName = `${alumno.nombre} ${alumno.apPaterno} ${alumno.apMaterno || ''}`.trim();
             document.getElementById('kardexAlumnoSearch').value = fullName;
             
             cargarKardexAlumnoReal(alumno.idAlumno, (data) => {
-                const al = data.alumno;
-                document.getElementById('lbl-kardex-nombre').innerText = fullName;
-                document.getElementById('lbl-kardex-matricula').innerText = `Matrícula: ${al.numeroControl || al.idAlumno} | Plan: ${al.claveCentroTrabajo || cctSeleccionado}`;
+                datosKardexActual = data;
+                idAlumnoKardexActual = alumno.idAlumno;
+                const al = data.alumno || alumno;
                 
-                // Calculate average
-                let sum = 0, count = 0;
-                (data.periodos || []).forEach(p => {
-                    (p.materias || []).forEach(m => {
-                        if (m.calificacion !== null && !isNaN(m.calificacion) && m.es_equivalencia !== true) {
-                            sum += parseFloat(m.calificacion);
-                            count++;
-                        }
-                    });
-                });
-                const prom = count > 0 ? (sum / count).toFixed(1) : '—';
-                document.getElementById('lbl-kardex-promedio').innerText = `Promedio General: ${prom}`;
+                document.getElementById('lbl-kardex-nombre').innerText = fullName;
+                const cctClave = al.claveCentroTrabajo || (cctSeleccionado === 'BTI' ? '21PCT0073R' : '21PBH0353G');
+                document.getElementById('lbl-kardex-matricula').innerText = `Matrícula: ${al.numeroControl || al.idAlumno} | CCT: ${cctClave}`;
+                
+                const badgeCct = document.getElementById('lbl-kardex-badge-cct');
+                if (badgeCct) badgeCct.innerText = al.nombreCentroTrabajo || cctSeleccionado || 'BTI';
+
+                const badgeStatus = document.getElementById('lbl-kardex-status');
+                if (badgeStatus) {
+                    badgeStatus.innerText = al.statusAlumno || 'ACTIVO';
+                    if ((al.statusAlumno || '').toUpperCase() === 'INACTIVO' || (al.statusAlumno || '').toUpperCase() === 'BAJA') {
+                        badgeStatus.className = 'badge bg-danger-subtle text-danger px-2 py-1 fs-9';
+                    } else {
+                        badgeStatus.className = 'badge bg-success-subtle text-success px-2 py-1 fs-9';
+                    }
+                }
+
+                const genGrupo = document.getElementById('lbl-kardex-generacion-grupo');
+                if (genGrupo) {
+                    genGrupo.innerText = `Gen: ${al.nombreGeneracion || 'N/A'} | Grupo: ${al.claveGrupo || 'N/A'}`;
+                }
+
+                const prom = (data.promedioGeneral !== null && data.promedioGeneral !== undefined) ? data.promedioGeneral : '—';
+                document.getElementById('lbl-kardex-promedio').innerText = prom;
+
+                // Renderizar vista previa integrada para que se pueda ver en pantalla antes de imprimir
+                renderizarKardexPreview(data);
+
+                // Poblar los elementos del modal en segundo plano (sin abrir modal)
+                mostrarKardexConDatos(data, false);
                 
                 document.getElementById('kardex-info-alumno').style.display = 'block';
             });
         });
+    }
+
+    function renderizarKardexPreview(data) {
+        const previewEl = document.getElementById('kardex-live-preview');
+        if (!previewEl || !data || !data.alumno) return;
+
+        const al = data.alumno;
+        const isBti = (cctSeleccionado === 'BTI') || (al.id_centroTrabajo === 2 || al.claveCentroTrabajo === '21PCT0073R' || (al.nombreCentroTrabajo && al.nombreCentroTrabajo.toUpperCase().includes('BTI')));
+
+        const alumnoNombre = `${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}`.trim().toUpperCase() || '—';
+        const cctClave = isBti 
+            ? `CLAVE CT: ${al.claveCentroTrabajo || '21PCT0073R'}` 
+            : `CLAVE CT: ${al.claveCentroTrabajo || '21PBH0353G'}`;
+        const cctNombre = isBti 
+            ? 'BACHILLERATO TECNOLÓGICO INTERAMERICANO' 
+            : 'BACHILLERATO GENERAL NO ESCOLARIZADO';
+
+        const periodos = data.periodos || [];
+        const promFinal = (data.promedioGeneral !== null && data.promedioGeneral !== undefined) ? data.promedioGeneral : '—';
+
+        function renderTablaPreviewPeriodo(p, is5to, is6to) {
+            if (!p) return '';
+            let filasHtml = '';
+            (p.materias || []).forEach(m => {
+                if (m.es_equivalencia) {
+                    filasHtml += `
+                        <tr>
+                            <td class="text-uppercase" style="border: 1px solid #000; padding: 2px 4px; font-size: 7.5pt; text-align: left;">${m.nombreMateria}</td>
+                            <td style="border: 1px solid #000; padding: 2px 4px; font-size: 7.5pt; text-align: center; font-weight: bold; color: #d97706;">EQUIV.</td>
+                        </tr>
+                    `;
+                } else {
+                    const cVal = (m.calificacion !== null && m.calificacion !== undefined) ? m.calificacion : '—';
+                    const esRep = cVal !== '—' && !isNaN(cVal) && parseFloat(cVal) < 6.0;
+                    const styleColor = esRep ? 'color: #dc2626 !important; font-weight: bold;' : 'color: #000;';
+                    filasHtml += `
+                        <tr>
+                            <td class="text-uppercase" style="border: 1px solid #000; padding: 2px 4px; font-size: 7.5pt; text-align: left;">${m.nombreMateria}</td>
+                            <td style="border: 1px solid #000; padding: 2px 4px; font-size: 8pt; text-align: center; ${styleColor}">${cVal}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            let footerExtra = '';
+            if (is5to) {
+                const finalColor = promFinal !== '—' && !isNaN(promFinal) && parseFloat(promFinal) < 6.0 ? 'color: #dc2626 !important;' : 'color: #1e6fa8;';
+                footerExtra = `
+                    <tr style="font-weight: bold; background: #e8ecf2;">
+                        <td style="border: 1.5px solid #000; padding: 2px 4px; font-size: 7.8pt; text-align: right;">PROMEDIO FINAL</td>
+                        <td style="border: 1.5px solid #000; padding: 2px 4px; font-size: 8.5pt; font-weight: bold; text-align: center; background: #e8ecf2; ${finalColor}">${promFinal}</td>
+                    </tr>
+                `;
+            } else if (is6to) {
+                footerExtra = `
+                    <tr>
+                        <td colspan="2" style="border: 1px solid #000; height: 21px; background: #f8fafc;"></td>
+                    </tr>
+                `;
+            }
+
+            const pAvg = (p.promedio !== null && p.promedio !== undefined) ? p.promedio : '—';
+            const promColor = pAvg !== '—' && !isNaN(pAvg) && parseFloat(pAvg) < 6.0 ? 'color: #dc2626 !important;' : 'color: #000;';
+
+            return `
+                <div style="margin-bottom: 8px;">
+                    <div style="font-size: 8pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; color: #000;">
+                        ${p.nombrePeriodo}
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-family: Arial, sans-serif; background: #ffffff;">
+                        <thead>
+                            <tr style="background: #ffffff;">
+                                <th style="border: 1px solid #000; padding: 2px 4px; font-size: 7.5pt; text-align: left; font-weight: bold;">MATERIA</th>
+                                <th style="border: 1px solid #000; padding: 2px 2px; font-size: 7pt; text-align: center; font-weight: bold; width: 75px; line-height: 1.1;">${isBti ? 'CALIFICACIÓN<br>FINAL' : 'EVALUACIÓN<br>OBTENIDA'}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filasHtml}
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 2px 4px; font-size: 7.8pt; font-weight: bold; text-align: right;">PROMEDIO</td>
+                                <td style="border: 1px solid #000; padding: 2px 4px; font-size: 8.2pt; font-weight: bold; text-align: center; ${promColor}">${pAvg}</td>
+                            </tr>
+                            ${footerExtra}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        const fechaHoy = new Date();
+        const meses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+        const fechaTexto = `TEZIUTLÁN PUEBLA A ${fechaHoy.getDate()} DE ${meses[fechaHoy.getMonth()]} DE ${fechaHoy.getFullYear()}`;
+
+        let signaturesHtml = '';
+        if (isBti) {
+            signaturesHtml = `
+                <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: flex-end; width: 100%; font-family: Arial, sans-serif;">
+                    <div style="width: 250px; text-align: center;">
+                        <div style="border-bottom: 1px solid #000; width: 180px; margin: 0 auto 4px auto; height: 30px;"></div>
+                        <div style="font-size: 7.8pt; font-weight: bold;">ING. FAUSTO LEYVA FLORES</div>
+                        <div style="font-size: 7.2pt; color: #444; text-transform: uppercase;">DIRECTOR</div>
+                    </div>
+                    <div style="width: 250px; text-align: center; font-size: 8pt; font-weight: bold; padding-bottom: 10px;">
+                        ${fechaTexto}
+                    </div>
+                </div>
+            `;
+        }
+
+        previewEl.innerHTML = `
+            <div style="max-width: 740px; margin: 0 auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                <!-- MEMBRETE INSTITUCIONAL -->
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 10px;">
+                    <div style="width: 70px; flex-shrink: 0; text-align: left;">
+                        <img src="/img/logo.png" alt="Logo" style="height: 60px; object-fit: contain;">
+                    </div>
+                    <div style="flex-grow: 1; border: 1.5px solid #10599a; overflow: hidden; border-radius: 4px;">
+                        <div style="background: #10599a; color: #ffffff; font-weight: bold; font-size: 11pt; padding: 3px 6px; text-align: center; letter-spacing: 0.8px;">
+                            BACHILLERATO INTERAMERICANO
+                        </div>
+                        <div style="background: #d4ebf9; color: #000000; font-size: 7.2pt; padding: 2px 6px; text-align: center; line-height: 1.35;">
+                            <div>Avenida Benito Juárez 901, Colonia Centro Teziutlán Puebla. Tel: 231-3123979</div>
+                            <div style="font-weight: bold;">${cctClave}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TEXTO DIRECCIÓN Y NOMBRE ALUMNO -->
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <div style="font-size: 8.5pt; color: #000;">
+                        La Dirección de la escuela <strong>${cctNombre}</strong>
+                    </div>
+                    <div style="font-size: 7.8pt; color: #333; font-style: italic;">
+                        Reporta las siguientes calificaciones obtenidas hasta el momento del alumno(a):
+                    </div>
+                    <div style="display: inline-block; background: #e8ecf2; border: 1.5px solid #1e293b; border-radius: 20px; padding: 3px 25px; margin: 4px 0 6px 0; font-size: 11pt; font-weight: bold; text-decoration: underline; text-transform: uppercase;">
+                        ${alumnoNombre}
+                    </div>
+                </div>
+
+                <!-- GRID 2 COLUMNAS (1,3,5 a la izq y 2,4,6 a la der) -->
+                <div style="display: flex; justify-content: space-between; gap: 15px; width: 100%;">
+                    <div style="width: 50%;">
+                        ${renderTablaPreviewPeriodo(periodos[0], false, false)}
+                        ${renderTablaPreviewPeriodo(periodos[2], false, false)}
+                        ${renderTablaPreviewPeriodo(periodos[4], true, false)}
+                    </div>
+                    <div style="width: 50%;">
+                        ${renderTablaPreviewPeriodo(periodos[1], false, false)}
+                        ${renderTablaPreviewPeriodo(periodos[3], false, false)}
+                        ${renderTablaPreviewPeriodo(periodos[5], false, true)}
+                    </div>
+                </div>
+
+                ${signaturesHtml}
+
+                <!-- LEMA INFERIOR -->
+                <div style="background: #4a90e2; color: #ffffff; font-weight: bold; font-size: 7.5pt; padding: 3px; margin-top: 10px; border-radius: 2px; text-align: center; letter-spacing: 0.5px;">
+                    ¡ Excelencia educativa a su servicio !
+                </div>
+            </div>
+        `;
     }
 
     function simularBusquedaAlumnoBoleta(query) {
@@ -1259,124 +1499,134 @@
     }
 
     // Modal, impresión y guardado de Kárdex y Boleta oficial
-    function mostrarKardexConDatos(data) {
-    const modalEl = document.getElementById('modalKardexAlumno');
-    if (modalEl && modalEl.parentElement !== document.body) {
-        document.body.appendChild(modalEl);
-    }
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.show();
+    function mostrarKardexConDatos(data, openModal = true) {
+        if (!data || !data.alumno) return;
+        const al = data.alumno;
+        const periodos = data.periodos || [];
 
-    const contenedor = document.getElementById('contenedorPeriodosKardex');
-    const al = data.alumno;
-    const periodos = data.periodos || [];
+        const isBti = (cctSeleccionado === 'BTI') || (al.id_centroTrabajo === 2 || al.claveCentroTrabajo === '21PCT0073R' || (al.nombreCentroTrabajo && al.nombreCentroTrabajo.toUpperCase().includes('BTI')));
 
-    const isBti = (al.id_centroTrabajo === 2 || al.claveCentroTrabajo === '21PCT0073R' || (al.nombreCentroTrabajo && al.nombreCentroTrabajo.toUpperCase().includes('BTI')));
+        // Datos de encabezado del Modal
+        const nombreCompleto = `${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}`.trim().toUpperCase();
+        const elNombre = document.getElementById('kardexNombreAlumno');
+        if (elNombre) elNombre.textContent = nombreCompleto || '—';
 
-    // Datos de encabezado
-    document.getElementById('kardexNombreAlumno').textContent = `${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}`.trim().toUpperCase();
-    if (al.claveCentroTrabajo) {
-        document.getElementById('kardexCCTClave').textContent = `CLAVE CT: ${al.claveCentroTrabajo}`;
-    }
-    if (al.nombreCentroTrabajo) {
-        document.getElementById('kardexCCTNombre').textContent = al.nombreCentroTrabajo.toUpperCase();
-    }
+        const claveCctVal = isBti ? (al.claveCentroTrabajo || '21PCT0073R') : (al.claveCentroTrabajo || '21PBH0353G');
+        const elClave = document.getElementById('kardexCCTClave');
+        if (elClave) elClave.textContent = `CLAVE CT: ${claveCctVal}`;
 
-    // Renderizar las 6 cajas de periodos (3 por columna: 1,3,5 a la izq y 2,4,6 a la der)
-    let htmlPeriodos = '';
-    periodos.forEach((p, idx) => {
-        let htmlMaterias = '';
-        
-        (p.materias || []).forEach(m => {
-            const isEquiv = m.es_equivalencia === true;
-            if (isEquiv) {
-                htmlMaterias += `
-                    <tr data-materia-id="${m.idMateria}" data-nivel="${p.idNivel}" data-is-equivalencia="true">
-                        <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #cbd5e1;">
-                            ${m.nombreMateria}
-                        </td>
-                        <td class="px-1 py-1 text-center align-middle" style="width: 85px; border-color: #cbd5e1;">
-                            <span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>
-                        </td>
+        const nombreCctVal = isBti ? 'BACHILLERATO TECNOLÓGICO INTERAMERICANO' : 'BACHILLERATO GENERAL NO ESCOLARIZADO';
+        const elCctNombre = document.getElementById('kardexCCTNombre');
+        if (elCctNombre) elCctNombre.textContent = nombreCctVal;
+
+        // Renderizar las 6 cajas de periodos (3 por columna: 1,3,5 a la izq y 2,4,6 a la der)
+        let htmlPeriodos = '';
+        periodos.forEach((p, idx) => {
+            let htmlMaterias = '';
+            
+            (p.materias || []).forEach(m => {
+                const isEquiv = m.es_equivalencia === true;
+                if (isEquiv) {
+                    htmlMaterias += `
+                        <tr data-materia-id="${m.idMateria}" data-nivel="${p.idNivel}" data-is-equivalencia="true">
+                            <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #cbd5e1;">
+                                ${m.nombreMateria}
+                            </td>
+                            <td class="px-1 py-1 text-center align-middle" style="width: 85px; border-color: #cbd5e1;">
+                                <span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    const califVal = (m.calificacion !== null && m.calificacion !== undefined) ? m.calificacion : '';
+                    htmlMaterias += `
+                        <tr data-materia-id="${m.idMateria}" data-nivel="${p.idNivel}">
+                            <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #cbd5e1;">
+                                ${m.nombreMateria}
+                            </td>
+                            <td class="px-1 py-1 text-center align-middle" style="width: 85px; border-color: #cbd5e1;">
+                                <input type="text" maxlength="4" 
+                                    class="form-control form-control-sm text-center fw-bold input-calif-kardex" 
+                                    data-materia="${m.idMateria}" 
+                                    data-nivel="${p.idNivel}" 
+                                    data-periodo-idx="${idx}" 
+                                    data-field="calificacion" 
+                                    value="${califVal}" 
+                                    style="height: 28px; font-size: 0.85rem; padding: 2px; background: transparent; border: 1px solid #cbd5e1;"
+                                    oninput="this.value = this.value.toUpperCase(); calcularPromediosKardex()">
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+
+            const promInicial = (p.promedio !== null && p.promedio !== undefined) ? p.promedio : '—';
+
+            let footerHtml = `
+                <tfoot>
+                    <tr class="bg-light fw-bold" style="border-color: #333; font-size: 0.78rem;">
+                        <td class="text-end px-2 py-1 text-uppercase">PROMEDIO</td>
+                        <td class="text-center px-1 py-1 text-primary fw-bold prom-periodo-val" id="promPeriodo_${idx}">${promInicial}</td>
+                    </tr>
+            `;
+
+            if (idx === 4) { // 5to periodo
+                const promGenVal = (data.promedioGeneral !== null && data.promedioGeneral !== undefined) ? data.promedioGeneral : '0.0';
+                footerHtml += `
+                    <tr class="fw-bold" style="border-color: #333; font-size: 0.8rem; background: #e2e8f0;">
+                        <td class="text-end px-2 py-1 text-uppercase">PROMEDIO FINAL</td>
+                        <td class="text-center px-1 py-1 fw-bold text-primary" id="kardexPromedioFinal">${promGenVal}</td>
                     </tr>
                 `;
-            } else {
-                const califVal = m.calificacion !== null ? m.calificacion : '';
-                htmlMaterias += `
-                    <tr data-materia-id="${m.idMateria}" data-nivel="${p.idNivel}">
-                        <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #cbd5e1;">
-                            ${m.nombreMateria}
-                        </td>
-                        <td class="px-1 py-1 text-center align-middle" style="width: 85px; border-color: #cbd5e1;">
-                            <input type="text" maxlength="4" 
-                                class="form-control form-control-sm text-center fw-bold input-calif-kardex" 
-                                data-materia="${m.idMateria}" 
-                                data-nivel="${p.idNivel}" 
-                                data-periodo-idx="${idx}" 
-                                data-field="calificacion" 
-                                value="${califVal}" 
-                                style="height: 28px; font-size: 0.85rem; padding: 2px; background: transparent; border: 1px solid #cbd5e1;"
-                                oninput="this.value = this.value.toUpperCase(); calcularPromediosKardex()">
-                        </td>
+            } else if (idx === 5) { // 6to periodo (balance visual)
+                footerHtml += `
+                    <tr style="border-color: transparent; height: 26px;">
+                        <td colspan="2" style="border: none !important; background: transparent;"></td>
                     </tr>
                 `;
             }
-        });
+            footerHtml += `</tfoot>`;
 
-        const promInicial = p.promedio !== null ? p.promedio : '—';
-
-        let footerHtml = `
-            <tfoot>
-                <tr class="bg-light fw-bold" style="border-color: #333; font-size: 0.78rem;">
-                    <td class="text-end px-2 py-1 text-uppercase">PROMEDIO</td>
-                    <td class="text-center px-1 py-1 text-primary fw-bold prom-periodo-val" id="promPeriodo_${idx}">${promInicial}</td>
-                </tr>
-        `;
-
-        if (idx === 4) { // 5to periodo
-            footerHtml += `
-                <tr class="fw-bold" style="border-color: #333; font-size: 0.8rem; background: #e2e8f0;">
-                    <td class="text-end px-2 py-1 text-uppercase">PROMEDIO FINAL</td>
-                    <td class="text-center px-1 py-1 fw-bold text-primary" id="kardexPromedioFinal">0.0</td>
-                </tr>
-            `;
-        } else if (idx === 5) { // 6to periodo (balance visual)
-            footerHtml += `
-                <tr style="border-color: transparent; height: 26px;">
-                    <td colspan="2" style="border: none !important; background: transparent;"></td>
-                </tr>
-            `;
-        }
-        footerHtml += `</tfoot>`;
-
-        htmlPeriodos += `
-            <div class="col-6" style="width: 50%;">
-                <div class="border rounded-1 shadow-none overflow-hidden bg-white h-100" style="border-color: #000 !important;">
-                    <div class="py-1 px-2 fw-bold text-dark text-uppercase bg-light border-bottom" style="font-size: 0.78rem; letter-spacing: 0.5px; border-color: #000 !important;">
-                        ${p.nombrePeriodo}
-                    </div>
-                    <div class="table-responsive mb-0">
-                        <table class="table table-bordered table-sm mb-0" style="border-color: #000 !important;">
-                            <thead class="table-light">
-                                <tr style="font-size: 0.70rem; border-color: #000;">
-                                    <th class="px-2 py-1 text-uppercase text-dark" style="border-color: #000 !important;">MATERIA</th>
-                                    <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 85px; border-color: #000 !important;">${isBti ? 'FINAL' : 'EVALUACIÓN OBTENIDA'}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${htmlMaterias}
-                            </tbody>
-                            ${footerHtml}
-                        </table>
+            htmlPeriodos += `
+                <div class="col-6" style="width: 50%;">
+                    <div class="border rounded-1 shadow-none overflow-hidden bg-white h-100" style="border-color: #000 !important;">
+                        <div class="py-1 px-2 fw-bold text-dark text-uppercase bg-light border-bottom" style="font-size: 0.78rem; letter-spacing: 0.5px; border-color: #000 !important;">
+                            ${p.nombrePeriodo}
+                        </div>
+                        <div class="table-responsive mb-0">
+                            <table class="table table-bordered table-sm mb-0" style="border-color: #000 !important;">
+                                <thead class="table-light">
+                                    <tr style="font-size: 0.70rem; border-color: #000;">
+                                        <th class="px-2 py-1 text-uppercase text-dark" style="border-color: #000 !important;">MATERIA</th>
+                                        <th class="px-1 py-1 text-center text-uppercase text-dark" style="width: 85px; border-color: #000 !important;">${isBti ? 'FINAL' : 'EVALUACIÓN OBTENIDA'}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${htmlMaterias}
+                                </tbody>
+                                ${footerHtml}
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
-    });
+            `;
+        });
 
-    contenedor.innerHTML = htmlPeriodos;
-    calcularPromediosKardex();
-}
+        const contenedor = document.getElementById('contenedorPeriodosKardex');
+        if (contenedor) {
+            contenedor.innerHTML = htmlPeriodos;
+        }
+        calcularPromediosKardex();
+
+        if (openModal) {
+            const modalEl = document.getElementById('modalKardexAlumno');
+            if (modalEl && modalEl.parentElement !== document.body) {
+                document.body.appendChild(modalEl);
+            }
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+    }
 
     window.recalcularFilaKardexSemestral = function(inputEl) {
     calcularPromediosKardex();
@@ -1520,6 +1770,12 @@ window.guardarCalificacionesKardex = function() {
                 timer: 2000,
                 showConfirmButton: false
             });
+            if (idAlumnoKardexActual) {
+                cargarKardexAlumnoReal(idAlumnoKardexActual, (freshData) => {
+                    datosKardexActual = freshData;
+                    renderizarKardexPreview(freshData);
+                });
+            }
         } else {
             Swal.fire({
                 icon: 'error',
@@ -1541,44 +1797,85 @@ window.guardarCalificacionesKardex = function() {
 };
 
 window.imprimirKardex = function() {
-    const isBti = document.getElementById('kardexCCTNombre')?.textContent.includes('BTI') || document.getElementById('kardexCCTClave')?.textContent.includes('21PCT0073R') || (document.querySelector('.prom-p1-val') !== null);
+    if (!datosKardexActual || !datosKardexActual.alumno) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Sin datos de alumno',
+            text: 'Por favor, busque y seleccione un alumno primero para generar el kárdex.',
+            confirmButtonColor: '#0284c7'
+        });
+        return;
+    }
 
-    const alumnoNombre = document.getElementById('kardexNombreAlumno')?.textContent || '—';
-    const cctClave = document.getElementById('kardexCCTClave')?.textContent || 'CLAVE CT: 21PBH0353G';
-    const cctNombre = document.getElementById('kardexCCTNombre')?.textContent || 'BACHILLERATO GENERAL NO ESCOLARIZADO';
-    const promFinal = document.getElementById('kardexPromedioFinal')?.textContent || '—';
+    const al = datosKardexActual.alumno;
+    const isBti = (cctSeleccionado === 'BTI') || (al.id_centroTrabajo === 2 || al.claveCentroTrabajo === '21PCT0073R' || (al.nombreCentroTrabajo && al.nombreCentroTrabajo.toUpperCase().includes('BTI')));
 
-    // Extraer datos de los 6 periodos
+    const alumnoNombre = `${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}`.trim().toUpperCase() || '—';
+    const cctClave = isBti 
+        ? `CLAVE CT: ${al.claveCentroTrabajo || '21PCT0073R'}` 
+        : `CLAVE CT: ${al.claveCentroTrabajo || '21PBH0353G'}`;
+    const cctNombre = isBti 
+        ? 'BACHILLERATO TECNOLÓGICO INTERAMERICANO' 
+        : 'BACHILLERATO GENERAL NO ESCOLARIZADO';
+
+    // Mapear valores editados en inputs si existen en el modal
+    const inputsMap = {};
+    document.querySelectorAll('.input-calif-kardex').forEach(inp => {
+        const matId = inp.dataset.materia;
+        const nivId = inp.dataset.nivel;
+        if (matId && nivId) {
+            inputsMap[`${matId}_${nivId}`] = inp.value.trim();
+        }
+    });
+
+    const periodos = datosKardexActual.periodos || [];
     const periodosData = [];
-    const periodosDom = document.querySelectorAll('#contenedorPeriodosKardex > div');
+    let sumGlobal = 0, countGlobal = 0;
 
-    periodosDom.forEach((pDom, idx) => {
-        const title = pDom.querySelector('.fw-bold.text-dark')?.textContent.trim() || `PERIODO ${idx + 1}`;
-        const promVal = document.getElementById(`promPeriodo_${idx}`)?.textContent.trim() || '—';
+    periodos.forEach((p, idx) => {
         const rows = [];
-        const trs = pDom.querySelectorAll('tbody tr');
+        let sumPeriodo = 0, countPeriodo = 0;
 
-        trs.forEach(tr => {
-            const matName = tr.querySelector('td:first-child')?.textContent.trim() || '';
-            const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
-            const finalInp = tr.querySelector('.input-calif-kardex');
-            const finalVal = finalInp ? finalInp.value.trim() : '';
+        (p.materias || []).forEach(m => {
+            const isEquiv = m.es_equivalencia === true;
+            let califVal = (m.calificacion !== null && m.calificacion !== undefined) ? String(m.calificacion) : '';
+
+            const key = `${m.idMateria}_${p.idNivel}`;
+            if (inputsMap[key] !== undefined) {
+                califVal = inputsMap[key];
+            }
+
+            if (!isEquiv && califVal !== '' && !isNaN(califVal)) {
+                const num = parseFloat(califVal);
+                sumPeriodo += num;
+                countPeriodo++;
+                sumGlobal += num;
+                countGlobal++;
+            }
 
             rows.push({
-                materia: matName,
+                materia: m.nombreMateria,
                 isEquiv: isEquiv,
-                calificacion: finalVal !== '' ? finalVal : '—',
-                esReprobatoria: finalVal !== '' && !isNaN(finalVal) && parseFloat(finalVal) < 6.0
+                calificacion: califVal !== '' ? califVal : '—',
+                esReprobatoria: !isEquiv && califVal !== '' && !isNaN(califVal) && parseFloat(califVal) < 6.0
             });
         });
 
+        const promPeriodo = countPeriodo > 0 
+            ? (sumPeriodo / countPeriodo).toFixed(1) 
+            : (p.promedio !== null && p.promedio !== undefined ? String(p.promedio) : '—');
+
         periodosData.push({
-            titulo: title,
-            promedio: promVal,
-            promReprobatorio: promVal !== '—' && !isNaN(promVal) && parseFloat(promVal) < 6.0,
+            titulo: p.nombrePeriodo || `PERIODO ${idx + 1}`,
+            promedio: promPeriodo,
+            promReprobatorio: promPeriodo !== '—' && !isNaN(promPeriodo) && parseFloat(promPeriodo) < 6.0,
             materias: rows
         });
     });
+
+    const promFinal = countGlobal > 0 
+        ? (sumGlobal / countGlobal).toFixed(1) 
+        : (datosKardexActual.promedioGeneral !== null && datosKardexActual.promedioGeneral !== undefined ? String(datosKardexActual.promedioGeneral) : '—');
 
     function renderTablaPeriodo(p, is5to, is6to) {
         if (!p) return '';
@@ -1588,10 +1885,10 @@ window.imprimirKardex = function() {
             if (m.isEquiv) {
                 filasHtml += `
                     <tr>
-                        <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 7.5pt; text-align: left; text-transform: uppercase;">
+                        <td style="border: 1px solid #000; padding: 2px 4px; font-size: 7.2pt; text-align: left; text-transform: uppercase;">
                             ${m.materia}
                         </td>
-                        <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 7.5pt; text-align: center; font-weight: bold; color: #d97706;">
+                        <td style="border: 1px solid #000; padding: 2px 4px; font-size: 7.2pt; text-align: center; font-weight: bold; color: #d97706;">
                             EQUIV.
                         </td>
                     </tr>
@@ -1600,10 +1897,10 @@ window.imprimirKardex = function() {
                 const styleColor = m.esReprobatoria ? 'color: #dc2626 !important; font-weight: bold;' : 'color: #000;';
                 filasHtml += `
                     <tr>
-                        <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 7.5pt; text-align: left; text-transform: uppercase;">
+                        <td style="border: 1px solid #000; padding: 2px 4px; font-size: 7.2pt; text-align: left; text-transform: uppercase;">
                             ${m.materia}
                         </td>
-                        <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; text-align: center; ${styleColor}">
+                        <td style="border: 1px solid #000; padding: 2px 4px; font-size: 7.8pt; text-align: center; ${styleColor}">
                             ${m.calificacion}
                         </td>
                     </tr>
@@ -1616,10 +1913,10 @@ window.imprimirKardex = function() {
             const finalColor = promFinal !== '—' && !isNaN(promFinal) && parseFloat(promFinal) < 6.0 ? 'color: #dc2626 !important;' : 'color: #1e6fa8;';
             footerExtra = `
                 <tr style="font-weight: bold; background: #e8ecf2;">
-                    <td style="border: 1.5px solid #000; padding: 2.5px 5px; font-size: 8pt; text-align: right;">
+                    <td style="border: 1.5px solid #000; padding: 2.2px 4px; font-size: 7.6pt; text-align: right;">
                         PROMEDIO FINAL
                     </td>
-                    <td style="border: 1.5px solid #000; padding: 2.5px 5px; font-size: 8.8pt; font-weight: bold; text-align: center; background: #e8ecf2; ${finalColor}">
+                    <td style="border: 1.5px solid #000; padding: 2.2px 4px; font-size: 8.2pt; font-weight: bold; text-align: center; background: #e8ecf2; ${finalColor}">
                         ${promFinal}
                     </td>
                 </tr>
@@ -1627,7 +1924,7 @@ window.imprimirKardex = function() {
         } else if (is6to) {
             footerExtra = `
                 <tr>
-                    <td colspan="2" style="border: 1px solid #000; height: 21px; background: #f8fafc;"></td>
+                    <td colspan="2" style="border: 1px solid #000; height: 19px; background: #f8fafc;"></td>
                 </tr>
             `;
         }
@@ -1635,24 +1932,24 @@ window.imprimirKardex = function() {
         const promColor = p.promReprobatorio ? 'color: #dc2626 !important;' : 'color: #000;';
 
         return `
-            <div style="margin-bottom: 8px;">
-                <div style="font-size: 8.2pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; color: #000;">
+            <div style="margin-bottom: 6px;">
+                <div style="font-size: 8pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; color: #000;">
                     ${p.titulo}
                 </div>
                 <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-family: Arial, sans-serif;">
                     <thead>
                         <tr style="background: #ffffff;">
-                            <th style="border: 1px solid #000; padding: 2.5px 5px; font-size: 7.8pt; text-align: left; font-weight: bold; width: 275px;">MATERIA</th>
-                            <th style="border: 1px solid #000; padding: 2.5px 2px; font-size: 7.2pt; text-align: center; font-weight: bold; width: 75px; line-height: 1.1;">${isBti ? 'CALIFICACIÓN<br>FINAL' : 'EVALUACIÓN<br>OBTENIDA'}</th>
+                            <th style="border: 1px solid #000; padding: 2.2px 4px; font-size: 7.4pt; text-align: left; font-weight: bold; width: 280px;">MATERIA</th>
+                            <th style="border: 1px solid #000; padding: 2.2px 2px; font-size: 7pt; text-align: center; font-weight: bold; width: 70px; line-height: 1.1;">${isBti ? 'CALIFICACIÓN<br>FINAL' : 'EVALUACIÓN<br>OBTENIDA'}</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${filasHtml}
                         <tr>
-                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8pt; font-weight: bold; text-align: right;">
+                            <td style="border: 1px solid #000; padding: 2px 4px; font-size: 7.6pt; font-weight: bold; text-align: right;">
                                 PROMEDIO
                             </td>
-                            <td style="border: 1px solid #000; padding: 2.2px 5px; font-size: 8.5pt; font-weight: bold; text-align: center; ${promColor}">
+                            <td style="border: 1px solid #000; padding: 2px 4px; font-size: 8pt; font-weight: bold; text-align: center; ${promColor}">
                                 ${p.promedio}
                             </td>
                         </tr>
@@ -1690,13 +1987,13 @@ window.imprimirKardex = function() {
     let signaturesHtml = '';
     if (isBti) {
         signaturesHtml = `
-            <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; width: ${pageContainerWidth}; font-family: Arial, sans-serif;">
-                <div style="width: 300px; text-align: center;">
-                    <div style="border-bottom: 1px solid #000; width: 220px; margin: 0 auto 5px auto; height: 35px;"></div>
-                    <div style="font-size: 8pt; font-weight: bold;">ING. FAUSTO LEYVA FLORES</div>
-                    <div style="font-size: 7.5pt; color: #444; text-transform: uppercase;">DIRECTOR</div>
+            <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: flex-end; width: ${pageContainerWidth}; font-family: Arial, sans-serif;">
+                <div style="width: 280px; text-align: center;">
+                    <div style="border-bottom: 1px solid #000; width: 200px; margin: 0 auto 5px auto; height: 30px;"></div>
+                    <div style="font-size: 7.8pt; font-weight: bold;">ING. FAUSTO LEYVA FLORES</div>
+                    <div style="font-size: 7.2pt; color: #444; text-transform: uppercase;">DIRECTOR</div>
                 </div>
-                <div style="width: 300px; text-align: center; font-size: 8.5pt; font-weight: bold; padding-bottom: 12px;">
+                <div style="width: 280px; text-align: center; font-size: 8pt; font-weight: bold; padding-bottom: 10px;">
                     ${fechaTexto}
                 </div>
             </div>
@@ -1704,15 +2001,25 @@ window.imprimirKardex = function() {
     }
 
     const win = window.open('', '', 'height=850,width=850');
+    if (!win) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Ventana emergente bloqueada',
+            text: 'Por favor, habilite las ventanas emergentes en su navegador para imprimir el kárdex.',
+            confirmButtonColor: '#0284c7'
+        });
+        return;
+    }
+
     win.document.write(`
         <html>
             <head>
-                <title>Kárdex de Calificaciones</title>
+                <title>Kárdex de Calificaciones - ${alumnoNombre}</title>
                 <style>
                     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
                     @page {
                         size: ${pageSize};
-                        margin: 6mm 8mm 4mm 8mm;
+                        margin: 5mm 8mm 4mm 8mm;
                     }
                     html, body {
                         font-family: Arial, Helvetica, sans-serif;
@@ -1733,14 +2040,14 @@ window.imprimirKardex = function() {
                 <div class="kardex-hoja">
                     <!-- MEMBRETE OFICIAL -->
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                        <div style="width: 80px; text-align: left;">
-                            <img src="/img/logo.png" alt="Logo" style="height: 60px; object-fit: contain;">
+                        <div style="width: 75px; text-align: left;">
+                            <img src="/img/logo.png" alt="Logo" style="height: 58px; object-fit: contain;">
                         </div>
-                        <div style="width: 630px; border: 1.5px solid #10599a; overflow: hidden; border-radius: 3px;">
-                            <div style="background: #10599a; color: #ffffff; font-weight: bold; font-size: 11.5pt; padding: 3px 6px; text-align: center; letter-spacing: 0.8px;">
+                        <div style="width: 635px; border: 1.5px solid #10599a; overflow: hidden; border-radius: 3px;">
+                            <div style="background: #10599a; color: #ffffff; font-weight: bold; font-size: 11.5pt; padding: 2.5px 6px; text-align: center; letter-spacing: 0.8px;">
                                 BACHILLERATO INTERAMERICANO
                             </div>
-                            <div style="background: #d4ebf9; color: #000000; font-size: 7.2pt; padding: 2px 6px; text-align: center; line-height: 1.3;">
+                            <div style="background: #d4ebf9; color: #000000; font-size: 7.2pt; padding: 2px 6px; text-align: center; line-height: 1.35;">
                                 <div>Avenida Benito Juárez 901, Colonia Centro Teziutlán Puebla. Tel: 231-3123979</div>
                                 <div style="font-weight: bold;">${cctClave}</div>
                             </div>
@@ -1755,7 +2062,7 @@ window.imprimirKardex = function() {
                         <div style="font-size: 7.8pt; color: #333; font-style: italic;">
                             Reporta las siguientes calificaciones obtenidas hasta el momento del alumno(a):
                         </div>
-                        <div style="display: inline-block; background: #e8ecf2; border: 1.5px solid #1e293b; border-radius: 20px; padding: 2.5px 30px; margin: 4px 0 8px 0; font-size: 11.5pt; font-weight: bold; text-decoration: underline; text-transform: uppercase;">
+                        <div style="display: inline-block; background: #e8ecf2; border: 1.5px solid #1e293b; border-radius: 20px; padding: 2px 25px; margin: 3px 0 6px 0; font-size: 11pt; font-weight: bold; text-decoration: underline; text-transform: uppercase;">
                             ${alumnoNombre}
                         </div>
                     </div>
@@ -1769,7 +2076,7 @@ window.imprimirKardex = function() {
                     ${signaturesHtml}
 
                     <!-- LEMA INFERIOR -->
-                    <div style="width: ${pageContainerWidth}; margin: 6px auto 0 auto; background: #5b9bd5; color: #ffffff; font-weight: bold; font-size: 8.2pt; padding: 3px 0; text-align: center; border-radius: 2px;">
+                    <div style="width: ${pageContainerWidth}; margin: 6px auto 0 auto; background: #4a90e2; color: #ffffff; font-weight: bold; font-size: 7.8pt; padding: 2.5px 0; text-align: center; border-radius: 2px; letter-spacing: 0.5px;">
                         ¡ Excelencia educativa a su servicio !
                     </div>
                 </div>
@@ -1780,8 +2087,7 @@ window.imprimirKardex = function() {
     win.focus();
     setTimeout(() => {
         win.print();
-        win.close();
-    }, 400);
+    }, 450);
 };
 
     window.imprimirBoletaBTISemestre = function(data, idNivelSemestre, reportesCounts) {
