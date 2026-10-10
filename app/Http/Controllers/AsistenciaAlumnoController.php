@@ -168,239 +168,72 @@ class AsistenciaAlumnoController extends Controller
         $rol = session('rol');
         $data = $request->all();
 
-        // Si el usuario es docente, forzar id_docente de la sesión y validar que la fecha sea estrictamente hoy
+        // Si el usuario es docente, forzar id_docente de la sesión y validar que la fecha sea estrictamente hoy o fecha con reapertura autorizada
         if ($rol === 'DOCENTE') {
             $data['id_docente'] = session('id_docente');
             
             $hoy = date('Y-m-d');
             $asistencias = $request->get('asistencias', []);
+            $idGrupo = $request->get('id_grupo');
+            $idMateria = $request->get('id_materia');
+
             foreach ($asistencias as $a) {
-                if ($a['fecha'] !== $hoy) {
-                    return response()->json([
-                        'error' => 'Como docente, solo tienes permitido registrar la asistencia del día de hoy.'
-                    ], 403);
-                }
-            }
-
-            // Validar si el docente ya envió previamente el pase de lista de hoy
-            $id_grupo = $data['id_grupo'] ?? null;
-            $id_materia = $data['id_materia'] ?? null;
-            if ($id_grupo) {
-                $queryAsistenciasHoy = \Illuminate\Support\Facades\DB::table('tb_asistencias_alumnos')
-                    ->where('id_grupo', $id_grupo)
-                    ->where('fecha', $hoy)
-                    ->whereNotNull('estatus');
-
-                if ($id_materia && $id_materia !== 'general') {
-                    $queryAsistenciasHoy->where('id_materia', $id_materia);
-                }
-
-                $reaperturaActiva = false;
-                try {
-                    $reaperturaActiva = \Illuminate\Support\Facades\DB::table('tb_asistencias_reaperturas')
-                        ->where('id_grupo', $id_grupo)
-                        ->where('fecha', $hoy)
-                        ->where('habilitado', 1)
-                        ->where(function($q) use ($id_materia) {
-                            $q->whereNull('id_materia')
-                              ->orWhere('id_materia', 0);
-                            if ($id_materia && $id_materia !== 'general') {
-                                $q->orWhere('id_materia', $id_materia);
-                            }
-                        })
-                        ->exists();
-                } catch (\Throwable $e) {}
-
-                if ($queryAsistenciasHoy->exists() && !$reaperturaActiva) {
-                    return response()->json([
-                        'error' => 'El pase de lista de hoy ya fue enviado previamente y se encuentra cerrado. Solo el administrador puede realizar modificaciones.'
-                    ], 403);
-                }
-            }
-        }
-
-        // Si es Pase de Lista General (guardar para todas las materias del grupo)
-        if (($data['id_materia'] ?? null) === 'general') {
-            $id_grupo = $data['id_grupo'];
-            $asistenciasList = $data['asistencias'] ?? [];
-
-            $dbDirectSucceeded = false;
-            try {
-                // Obtener todas las materias y docentes del grupo desde tb_horarios
-                $horarios = \Illuminate\Support\Facades\DB::table('tb_horarios as h')
-                    ->join('tb_materias as m', 'h.id_materia', '=', 'm.id')
-                    ->where('h.id_grupo', $id_grupo)
-                    ->select('h.id_materia', 'h.id_docente', 'm.id_nivel_academico')
-                    ->distinct()
-                    ->get();
-
-                // Si el grupo no tiene horarios configurados, buscar materias asignables al CCT del grupo
-                if ($horarios->isEmpty()) {
-                    $grupoInfo = \Illuminate\Support\Facades\DB::table('tb_grupos')->where('id', $id_grupo)->first();
-                    $cct = $grupoInfo->id_centroTrabajo ?? 3;
-                    $materiasDb = \Illuminate\Support\Facades\DB::table('tb_materias')
-                        ->where(function($q) use ($cct) {
-                            $q->where('idCentroTrabajo', $cct)->orWhereNull('idCentroTrabajo');
-                        })
-                        ->get();
-                    $horarios = $materiasDb->map(function($m) {
-                        return (object)[
-                            'id_materia' => $m->id,
-                            'id_docente' => 1,
-                            'id_nivel_academico' => $m->id_nivel_academico
-                        ];
-                    });
-                }
-
-                foreach ($asistenciasList as $a) {
-                    $idAlumno = $a['id_alumno'];
-                    $fecha = $a['fecha'];
-                    $estatus = $a['estatus'] ?? null;
-                    $obs = $a['observaciones'] ?? null;
-                    $idNivel = $a['id_nivel_academico'] ?? null;
-
-                    if ($estatus === null || $estatus === '') {
-                        \Illuminate\Support\Facades\DB::table('tb_asistencias_alumnos')
-                            ->where('id_grupo', $id_grupo)
-                            ->where('id_alumno', $idAlumno)
-                            ->where('fecha', $fecha)
-                            ->delete();
-                    } else {
-                        foreach ($horarios as $h) {
-                            \Illuminate\Support\Facades\DB::table('tb_asistencias_alumnos')->upsert([
-                                'id_alumno' => $idAlumno,
-                                'id_materia' => $h->id_materia,
-                                'id_docente' => $h->id_docente ?: 1,
-                                'id_grupo' => $id_grupo,
-                                'fecha' => $fecha,
-                                'id_nivel_academico' => $idNivel ?: $h->id_nivel_academico,
-                                'estatus' => $estatus,
-                                'observaciones' => $obs,
-                            ], ['id_alumno', 'id_grupo', 'id_materia', 'fecha'], ['estatus', 'id_nivel_academico', 'observaciones', 'id_docente']);
-                        }
-                    }
-                }
-                $dbDirectSucceeded = true;
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("Direct DB guardar failed: " . $e->getMessage() . ". Delegating to API.");
-            }
-
-            if ($dbDirectSucceeded) {
-                if ($rol === 'DOCENTE') {
+                if (isset($a['fecha']) && $a['fecha'] !== $hoy) {
+                    $tieneReapertura = false;
                     try {
-                        \Illuminate\Support\Facades\DB::table('tb_asistencias_reaperturas')
-                            ->where('id_grupo', $id_grupo)
-                            ->where('fecha', date('Y-m-d'))
+                        $tieneReapertura = \Illuminate\Support\Facades\DB::table('tb_asistencias_reaperturas')
+                            ->where('id_grupo', $idGrupo)
+                            ->where('fecha', $a['fecha'])
                             ->where('habilitado', 1)
-                            ->update(['habilitado' => 0, 'updated_at' => now()]);
-                    } catch (\Throwable $e) {}
-                }
-                return response()->json([
-                    'mensaje' => 'Asistencias generales guardadas correctamente en todas las materias del grupo.'
-                ]);
-            }
-        }
-
-        // Si es Materia Individual (guardar directamente en base de datos)
-        if (($data['id_materia'] ?? null) && ($data['id_materia'] ?? null) !== 'general') {
-            $id_grupo = $data['id_grupo'];
-            $id_materia = intval($data['id_materia']);
-            $id_docente = $data['id_docente'] ?? session('id_docente');
-            $asistenciasList = $data['asistencias'] ?? [];
-
-            if (!$id_docente) {
-                $id_docente = \Illuminate\Support\Facades\DB::table('tb_horarios')
-                    ->where('id_grupo', $id_grupo)
-                    ->where('id_materia', $id_materia)
-                    ->orderBy('es_prehorario', 'asc')
-                    ->value('id_docente') ?: 1;
-            }
-
-            $dbDirectSucceeded = false;
-            try {
-                foreach ($asistenciasList as $a) {
-                    $idAlumno = $a['id_alumno'];
-                    $fecha = $a['fecha'];
-                    $estatus = $a['estatus'] ?? null;
-                    $obs = $a['observaciones'] ?? null;
-                    $idNivel = $a['id_nivel_academico'] ?? null;
-
-                    if ($estatus === null || $estatus === '') {
-                        \Illuminate\Support\Facades\DB::table('tb_asistencias_alumnos')
-                            ->where('id_grupo', $id_grupo)
-                            ->where('id_materia', $id_materia)
-                            ->where('id_alumno', $idAlumno)
-                            ->where('fecha', $fecha)
-                            ->delete();
-                    } else {
-                        \Illuminate\Support\Facades\DB::table('tb_asistencias_alumnos')->upsert([
-                            'id_alumno' => $idAlumno,
-                            'id_materia' => $id_materia,
-                            'id_docente' => $id_docente,
-                            'id_grupo' => $id_grupo,
-                            'fecha' => $fecha,
-                            'id_nivel_academico' => $idNivel,
-                            'estatus' => $estatus,
-                            'observaciones' => $obs,
-                        ], ['id_alumno', 'id_grupo', 'id_materia', 'fecha'], ['estatus', 'id_nivel_academico', 'observaciones', 'id_docente']);
-                    }
-                }
-                $dbDirectSucceeded = true;
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning("Direct DB guardar materia individual failed: " . $e->getMessage() . ". Delegating to API.");
-            }
-
-            if ($dbDirectSucceeded) {
-                if ($rol === 'DOCENTE') {
-                    try {
-                        \Illuminate\Support\Facades\DB::table('tb_asistencias_reaperturas')
-                            ->where('id_grupo', $id_grupo)
-                            ->where('fecha', date('Y-m-d'))
-                            ->where('habilitado', 1)
-                            ->where(function($q) use ($id_materia) {
+                            ->where(function($q) use ($idMateria) {
                                 $q->whereNull('id_materia')
-                                  ->orWhere('id_materia', 0)
-                                  ->orWhere('id_materia', $id_materia);
+                                  ->orWhere('id_materia', 0);
+                                if ($idMateria && $idMateria !== 'general') {
+                                    $q->orWhere('id_materia', $idMateria);
+                                }
                             })
-                            ->update(['habilitado' => 0, 'updated_at' => now()]);
+                            ->exists();
                     } catch (\Throwable $e) {}
+
+                    if (!$tieneReapertura) {
+                        return response()->json([
+                            'error' => 'Como docente, solo tienes permitido registrar la asistencia del día de hoy o fechas con permiso de reapertura autorizado por la administración.'
+                        ], 403);
+                    }
                 }
-                return response()->json([
-                    'success' => true,
-                    'mensaje' => 'Asistencias guardadas correctamente.'
-                ]);
             }
         }
 
-        // Fallback: Proxy de guardado a Flask
+        // Delegar el guardado y validaciones de pase cerrado a la API Flask (centralizada con MySQL)
         try {
-            $response = Http::timeout(15)->post($baseApiUrl . '/asistencias/alumnos/guardar', $data);
+            $response = Http::timeout(30)->post($baseApiUrl . '/asistencias/alumnos/guardar', $data);
 
-            if ($response->successful() && $rol === 'DOCENTE') {
-                try {
-                    $id_grp = $data['id_grupo'] ?? null;
-                    $id_mat = ($data['id_materia'] ?? null) !== 'general' ? intval($data['id_materia']) : null;
-                    $hoy = date('Y-m-d');
-                    if ($id_grp) {
-                        \Illuminate\Support\Facades\DB::table('tb_asistencias_reaperturas')
-                            ->where('id_grupo', $id_grp)
-                            ->where('fecha', $hoy)
-                            ->where('habilitado', 1)
-                            ->when($id_mat, function($q) use ($id_mat) {
-                                $q->where(function($sub) use ($id_mat) {
-                                    $sub->whereNull('id_materia')
-                                        ->orWhere('id_materia', 0)
-                                        ->orWhere('id_materia', $id_mat);
-                                });
-                            })
-                            ->update(['habilitado' => 0, 'updated_at' => now()]);
-                    }
-                } catch (\Throwable $e) {}
+            $resJson = $response->json();
+
+            // Si la API respondió con código 2xx
+            if ($response->successful()) {
+                if (is_array($resJson) && isset($resJson['error'])) {
+                    return response()->json(['error' => $resJson['error']], 400);
+                }
+                return response()->json($resJson ?: ['mensaje' => 'Asistencias guardadas correctamente.'], 200);
             }
 
-            return response()->json($response->json(), $response->status());
+            // Si la API devolvió error (400, 403, 500, etc.)
+            $mensajeError = null;
+            if (is_array($resJson)) {
+                $mensajeError = $resJson['error'] ?? $resJson['mensaje'] ?? null;
+            }
+
+            if (!$mensajeError) {
+                $mensajeError = 'Error al registrar asistencias en el servidor escolar (' . $response->status() . ')';
+            }
+
+            return response()->json([
+                'error' => $mensajeError
+            ], $response->status());
+
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error("Error conectando con la API de Flask: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error("Error conectando con la API de Flask en guardar asistencias: " . $e->getMessage());
             return response()->json([
                 'error' => 'No se pudo comunicar con el servicio de base de datos escolar: ' . $e->getMessage()
             ], 500);

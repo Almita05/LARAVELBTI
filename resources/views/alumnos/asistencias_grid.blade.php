@@ -122,8 +122,11 @@
                                     }
                                 }
                             @endphp
+                            @php
+                                $esReabierta = in_array($f['fecha'], $reaperturasFechas ?? []);
+                            @endphp
                             <option value="{{ $f['fecha'] }}">
-                                {{ \Carbon\Carbon::parse($f['fecha'])->format('d-m-Y') }} ({{ $f['nombreNivel'] }}){{ $evalText }}
+                                {{ \Carbon\Carbon::parse($f['fecha'])->format('d-m-Y') }} ({{ $f['nombreNivel'] }}){{ $evalText }}{{ $esReabierta ? ' [REAPERTURA ACTIVA]' : '' }}
                             </option>
                         @endforeach
                     </select>
@@ -901,11 +904,14 @@
                 document.body.appendChild(modalEl);
             }
 
-            // Seleccionar fecha de hoy si está programada, o la más cercana
-            const hoyStr = new Date().toISOString().split('T')[0];
+                        // Seleccionar fecha de hoy si está programada, o fecha de reapertura activa, o la más cercana
+            const now = new Date();
+            const hoyStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
             const tieneHoy = fechas.some(f => f.fecha === hoyStr);
             if (tieneHoy) {
                 fechaSeleccionada = hoyStr;
+            } else if (reaperturasActivas.length > 0 && fechas.some(f => f.fecha === reaperturasActivas[0])) {
+                fechaSeleccionada = reaperturasActivas[0];
             } else if (fechas.length > 0) {
                 let closest = fechas[0];
                 let minDiff = Math.abs(new Date(closest.fecha + 'T00:00:00') - new Date(hoyStr + 'T00:00:00'));
@@ -953,18 +959,18 @@
         const esDocente = (userRole === 'DOCENTE');
         if (!esDocente) return false; // Administradores y directivos tienen edición completa permitida
 
-        const now = new Date();
-        const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-        const esHoy = (fechaTarget === todayStr);
-        if (!esHoy) return true; // Docente no puede modificar fechas pasadas o futuras
-
         // Si la administración otorgó permiso de reapertura para esta fecha, NO está bloqueado
         if (reaperturasActivas.includes(fechaTarget)) {
             return false;
         }
 
-        // Si ya existen asistencias guardadas con estatus no nulo para esta fecha en la base de datos
-        const yaEnviado = asistenciasGuardadas.some(as => as.fecha === fechaTarget && as.estatus !== null && as.estatus !== '');
+        const now = new Date();
+        const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        const esHoy = (fechaTarget === todayStr);
+        if (!esHoy) return true; // Docente no puede modificar fechas pasadas o futuras sin reapertura
+
+        // Si ya existen asistencias guardadas con estatus no nulo para esta fecha en la base de datos (excluyendo justificaciones de admin)
+        const yaEnviado = asistenciasGuardadas.some(as => as.fecha === fechaTarget && as.estatus !== null && as.estatus !== '' && !as.justificado_admin);
         return yaEnviado;
     }
 
@@ -1525,12 +1531,7 @@
                     const estatus = record.estatus || '';
                     const justificadoAdmin = record.justificado_admin || false;
 
-                    const now = new Date();
-                    const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-                    const esHoy = (f.fecha === todayStr);
-                    const userRole = @json(session('rol'));
-                    const esDocente = (userRole === 'DOCENTE');
-                    const edicionBloqueada = esDocente && !esHoy;
+                    const edicionBloqueada = estaPaseBloqueado(f.fecha);
 
                     const isDisabled = justificadoAdmin || edicionBloqueada;
 
@@ -1630,6 +1631,9 @@
 
     // GUARDAR CAMBIOS MASIVOS POR AJAX
     function guardarAsistencias() {
+        const userRole = @json(session('rol'));
+        const esDocente = (userRole === 'DOCENTE');
+
         if (estaPaseBloqueado()) {
             Swal.fire({
                 icon: 'warning',
@@ -1642,49 +1646,100 @@
 
         const asistenciasToSend = [];
 
-        // Recopilar todos los registros modificados del modifiedState
-        for (const fecha in modifiedState) {
-            for (const idAlumno in modifiedState[fecha]) {
-                const rec = modifiedState[fecha][idAlumno];
-                const fObj = fechas.find(fe => fe.fecha === fecha);
-                asistenciasToSend.push({
-                    id_alumno: parseInt(idAlumno),
-                    fecha: fecha,
-                    id_nivel_academico: fObj ? fObj.id_nivel_academico : null,
-                    estatus: rec.estatus,
-                    observaciones: rec.observaciones
-                });
-            }
-        }
+        if (vistaActual === 'LISTADO' && esDocente) {
+            // En vista listado como docente, confirmamos estrictamente el pase de lista de la fecha seleccionada
+            const fObj = fechas.find(fe => fe.fecha === fechaSeleccionada);
+            const nivelId = fObj ? fObj.id_nivel_academico : null;
+            const dateRecord = localState[fechaSeleccionada] || {};
 
-        // Si modifiedState está vacío pero hay asistencias marcadas en localState para la fecha actual, incluirlas
-        if (asistenciasToSend.length === 0 && localState[fechaSeleccionada]) {
-            for (const idAlumno in localState[fechaSeleccionada]) {
-                const rec = localState[fechaSeleccionada][idAlumno];
-                if (rec && rec.estatus !== null) {
-                    const fObj = fechas.find(fe => fe.fecha === fechaSeleccionada);
+            for (const idAlumno in dateRecord) {
+                const rec = dateRecord[idAlumno];
+                if (rec && rec.estatus !== null && rec.estatus !== '') {
                     asistenciasToSend.push({
                         id_alumno: parseInt(idAlumno),
                         fecha: fechaSeleccionada,
+                        id_nivel_academico: nivelId,
+                        estatus: rec.estatus,
+                        observaciones: rec.observaciones || ''
+                    });
+                }
+            }
+        } else {
+            // Recopilar todos los registros modificados del modifiedState
+            for (const fecha in modifiedState) {
+                if (esDocente && estaPaseBloqueado(fecha)) continue; // Omitir fechas no autorizadas
+
+                for (const idAlumno in modifiedState[fecha]) {
+                    const rec = modifiedState[fecha][idAlumno];
+                    const fObj = fechas.find(fe => fe.fecha === fecha);
+                    asistenciasToSend.push({
+                        id_alumno: parseInt(idAlumno),
+                        fecha: fecha,
                         id_nivel_academico: fObj ? fObj.id_nivel_academico : null,
                         estatus: rec.estatus,
                         observaciones: rec.observaciones || ''
                     });
                 }
             }
+
+            // Si modifiedState está vacío pero hay asistencias marcadas en localState para la fecha actual, incluirlas
+            if (asistenciasToSend.length === 0 && localState[fechaSeleccionada]) {
+                const fObj = fechas.find(fe => fe.fecha === fechaSeleccionada);
+                const nivelId = fObj ? fObj.id_nivel_academico : null;
+                for (const idAlumno in localState[fechaSeleccionada]) {
+                    const rec = localState[fechaSeleccionada][idAlumno];
+                    if (rec && rec.estatus !== null && rec.estatus !== '') {
+                        asistenciasToSend.push({
+                            id_alumno: parseInt(idAlumno),
+                            fecha: fechaSeleccionada,
+                            id_nivel_academico: nivelId,
+                            estatus: rec.estatus,
+                            observaciones: rec.observaciones || ''
+                        });
+                    }
+                }
+            }
         }
 
-        // Si no hay cambios, avisar al usuario
+        // Si no hay datos que enviar, avisar al usuario
         if (asistenciasToSend.length === 0) {
             Swal.fire({
                 icon: 'info',
-                title: 'Sin cambios',
-                text: 'No has realizado ninguna modificación en las asistencias.',
+                title: 'Sin datos asignados',
+                text: 'Por favor, asigna al menos una asistencia antes de confirmar el pase de lista.',
                 confirmButtonColor: 'rgb(49, 125, 146)'
             });
             return;
         }
 
+        // Si faltan alumnos por marcar en la fecha seleccionada en vista Listado, advertir amablemente al docente
+        if (esDocente && vistaActual === 'LISTADO') {
+            const totalAlumnos = alumnos.length;
+            const marcados = asistenciasToSend.length;
+            if (marcados < totalAlumnos) {
+                const faltantes = totalAlumnos - marcados;
+                Swal.fire({
+                    icon: 'question',
+                    title: '¿Confirmar pase de lista?',
+                    html: `Hay <b>${faltantes} alumno(s)</b> sin estatus asignado.<br>Al confirmar, tu pase de lista quedará registrado y cerrado.<br>¿Deseas continuar?`,
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, confirmar',
+                    cancelButtonText: 'Revisar lista',
+                    confirmButtonColor: '#22c55e',
+                    cancelButtonColor: '#6b7280'
+                }).then((resAlert) => {
+                    if (resAlert.isConfirmed) {
+                        ejecutarEnvioAsistencias(asistenciasToSend);
+                    }
+                });
+                return;
+            }
+        }
+
+        ejecutarEnvioAsistencias(asistenciasToSend);
+    }
+
+    function ejecutarEnvioAsistencias(asistenciasToSend) {
         // Mostrar indicador de carga
         Swal.fire({
             title: 'Guardando asistencias...',
