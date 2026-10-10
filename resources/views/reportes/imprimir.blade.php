@@ -545,9 +545,19 @@
                                     <!-- Se puebla según el CCT seleccionado -->
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-4 position-relative">
                                 <label class="form-label fw-semibold text-slate-700">Docente</label>
-                                <select id="asistenciaDocenteSelect" class="form-select shadow-sm" onchange="onAsistenciaDocenteChange()">
+                                <div class="input-group shadow-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-chalkboard-user"></i></span>
+                                    <input type="text" id="asistenciaDocenteInput" class="form-control border-start-0" placeholder="Escriba o busque docente..." autocomplete="off" oninput="buscarDocentesAsistencia(this.value)" onfocus="buscarDocentesAsistencia(this.value)">
+                                    <button class="btn btn-outline-secondary border-start-0 bg-white text-muted" type="button" id="btn-limpiar-asistencia-docente" onclick="limpiarDocenteAsistencia()" style="display: none;" title="Limpiar docente">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                                <div id="asistencia-docente-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 240px; overflow-y: auto;">
+                                    <!-- Cargado por JS -->
+                                </div>
+                                <select id="asistenciaDocenteSelect" style="display: none;" onchange="onAsistenciaDocenteChange()">
                                     <option value="">Seleccione Docente</option>
                                     @if(isset($docentes))
                                         @foreach($docentes as $d)
@@ -564,9 +574,18 @@
                                     @endif
                                 </select>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3 position-relative">
                                 <label class="form-label fw-semibold text-slate-700">Asignatura</label>
-                                <input type="text" id="asistenciaMateriaInput" class="form-control shadow-sm" placeholder="Escriba o seleccione materia..." oninput="actualizarAsistenciaPreview()">
+                                <div class="input-group shadow-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-book-open"></i></span>
+                                    <input type="text" id="asistenciaMateriaInput" class="form-control border-start-0" placeholder="Escriba o seleccione materia..." autocomplete="off" oninput="buscarMateriasAsistencia(this.value)" onfocus="buscarMateriasAsistencia(this.value)">
+                                    <button class="btn btn-outline-secondary border-start-0 bg-white text-muted" type="button" id="btn-limpiar-asistencia-materia" onclick="limpiarMateriaAsistencia()" style="display: none;" title="Limpiar materia">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                                <div id="asistencia-materia-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 240px; overflow-y: auto;">
+                                    <!-- Cargado por JS -->
+                                </div>
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label fw-semibold text-slate-700" id="lbl-asistencia-ciclo-label">Trimestre</label>
@@ -1077,6 +1096,9 @@
     }
 
     function poblarSelectDocentes(lista) {
+        if (lista && Array.isArray(lista) && lista.length > 0) {
+            window.docentesDb = lista;
+        }
         const sel = document.getElementById('asistenciaDocenteSelect');
         if (!sel || sel.options.length > 1) return;
         lista.forEach(d => {
@@ -1104,11 +1126,23 @@
         
         // Limpiar controles de Asistencia
         const docenteSelect = document.getElementById('asistenciaDocenteSelect');
+        const docenteInput = document.getElementById('asistenciaDocenteInput');
         const grupoSelect = document.getElementById('asistenciaGrupoSelect');
         const materiaInput = document.getElementById('asistenciaMateriaInput');
         if (docenteSelect) docenteSelect.value = '';
+        if (docenteInput) docenteInput.value = '';
         if (grupoSelect) grupoSelect.value = '';
         if (materiaInput) materiaInput.value = '';
+
+        const btnClearDoc = document.getElementById('btn-limpiar-asistencia-docente');
+        if (btnClearDoc) btnClearDoc.style.display = 'none';
+        const sugDoc = document.getElementById('asistencia-docente-sugerencia');
+        if (sugDoc) { sugDoc.innerHTML = ''; sugDoc.style.display = 'none'; }
+
+        const btnClearMat = document.getElementById('btn-limpiar-asistencia-materia');
+        if (btnClearMat) btnClearMat.style.display = 'none';
+        const sugMat = document.getElementById('asistencia-materia-sugerencia');
+        if (sugMat) { sugMat.innerHTML = ''; sugMat.style.display = 'none'; }
     }
 
     // Carga dinámica de la barra de navegación lateral según el CCT seleccionado
@@ -3191,25 +3225,10 @@ window.imprimirKardex = function() {
         const grupo = (window.gruposDb || []).find(g => g.id == grupoId);
         if (!grupo) return;
 
-        // Auto-seleccionar docente y materia si existen en tb_horarios
-        const asignaciones = (window.horariosDb || []).filter(h => h.id_grupo == grupoId);
-        const docenteSelect = document.getElementById('asistenciaDocenteSelect');
-        const materiaInput = document.getElementById('asistenciaMateriaInput');
-
-        if (asignaciones.length > 0) {
-            if (docenteSelect && !docenteSelect.value) {
-                docenteSelect.value = asignaciones[0].id_docente;
-            }
-            if (materiaInput && !materiaInput.value) {
-                const match = asignaciones.find(a => a.id_docente == docenteSelect.value);
-                materiaInput.value = match ? match.nombreMateria : asignaciones[0].nombreMateria;
-            }
-        }
-
         // Auto-seleccionar trimestre/semestre según id_nivel_academico del grupo
         const cicloSelect = document.getElementById('asistenciaCicloSelect');
         if (cicloSelect && grupo.id_nivel_academico) {
-            const isBti = grupo.id_centroTrabajo == 2;
+            const isBti = (grupo.id_centroTrabajo == 2) || (cctSeleccionado === 'BTI');
             const num = isBti ? (grupo.id_nivel_academico - 6) : grupo.id_nivel_academico;
             const targetVal = isBti ? `${num}° Semestre` : `${num}° Trimestre`;
             for (let opt of cicloSelect.options) {
@@ -3217,6 +3236,33 @@ window.imprimirKardex = function() {
                     cicloSelect.value = targetVal;
                     break;
                 }
+            }
+        }
+
+        // Auto-seleccionar docente y materia si existen en tb_horarios
+        const asignaciones = (window.horariosDb || []).filter(h => h.id_grupo == grupoId);
+        const docenteSelect = document.getElementById('asistenciaDocenteSelect');
+        const docenteInput = document.getElementById('asistenciaDocenteInput');
+        const materiaInput = document.getElementById('asistenciaMateriaInput');
+
+        if (asignaciones.length > 0) {
+            if (docenteSelect && !docenteSelect.value) {
+                docenteSelect.value = asignaciones[0].id_docente;
+            }
+            if (docenteInput && !docenteInput.value.trim()) {
+                const docObj = (window.docentesDb || []).find(d => (d.idDocente || d.id) == asignaciones[0].id_docente);
+                if (docObj) {
+                    const fullNom = `${docObj.nombreDocente || docObj.nombre || ''} ${docObj.apPaternoDocente || docObj.apPaterno || ''} ${docObj.apMaternoDocente || docObj.apMaterno || ''}`.replace(/\s+/g, ' ').trim();
+                    docenteInput.value = fullNom;
+                    const btnClearDoc = document.getElementById('btn-limpiar-asistencia-docente');
+                    if (btnClearDoc) btnClearDoc.style.display = 'block';
+                }
+            }
+            if (materiaInput && !materiaInput.value.trim()) {
+                const match = asignaciones.find(a => a.id_docente == (docenteSelect ? docenteSelect.value : null));
+                materiaInput.value = match ? match.nombreMateria : asignaciones[0].nombreMateria;
+                const btnClearMat = document.getElementById('btn-limpiar-asistencia-materia');
+                if (btnClearMat) btnClearMat.style.display = 'block';
             }
         }
 
@@ -3240,20 +3286,297 @@ window.imprimirKardex = function() {
     }
 
     function onAsistenciaDocenteChange() {
-        const grupoId = document.getElementById('asistenciaGrupoSelect').value;
-        const docenteId = document.getElementById('asistenciaDocenteSelect').value;
+        const grupoId = document.getElementById('asistenciaGrupoSelect')?.value;
+        const docenteSelect = document.getElementById('asistenciaDocenteSelect');
+        const docenteId = docenteSelect ? docenteSelect.value : '';
         const materiaInput = document.getElementById('asistenciaMateriaInput');
 
-        if (grupoId && docenteId && materiaInput) {
+        if (grupoId && docenteId && materiaInput && !materiaInput.value.trim()) {
             const match = (window.horariosDb || []).find(h => h.id_grupo == grupoId && h.id_docente == docenteId);
             if (match) {
                 materiaInput.value = match.nombreMateria;
+                const btnClearMat = document.getElementById('btn-limpiar-asistencia-materia');
+                if (btnClearMat) btnClearMat.style.display = 'block';
             }
         }
         actualizarAsistenciaPreview();
     }
 
     function onAsistenciaCicloChange() {
+        const matInput = document.getElementById('asistenciaMateriaInput');
+        const cicloSelect = document.getElementById('asistenciaCicloSelect');
+        const semVal = cicloSelect ? cicloSelect.value : '';
+
+        // Si la materia actual no pertenece al nuevo semestre seleccionado, limpiarla
+        if (matInput && matInput.value.trim() && semVal) {
+            const materias = obtenerMateriasFiltradasAsistencia();
+            const coincide = materias.some(m => (m.nombreMateria || '').toLowerCase().trim() === matInput.value.toLowerCase().trim());
+            if (!coincide) {
+                matInput.value = '';
+                const btnClearMat = document.getElementById('btn-limpiar-asistencia-materia');
+                if (btnClearMat) btnClearMat.style.display = 'none';
+            }
+        }
+
+        // Desplegar de inmediato las materias de ese semestre bajo el campo de Asignatura
+        buscarMateriasAsistencia('', true);
+
+        actualizarAsistenciaPreview();
+    }
+
+    function obtenerMateriasFiltradasAsistencia(query = '') {
+        const materias = window.materiasDb || [];
+        const cicloSelect = document.getElementById('asistenciaCicloSelect');
+        const cicloVal = cicloSelect ? cicloSelect.value : '';
+        const match = cicloVal.match(/\d+/);
+        const semNum = match ? parseInt(match[0]) : null;
+
+        const normQ = (query || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+        const targetCentroId = cctSeleccionado === 'BTI' ? 2 : (cctSeleccionado === 'BGNE' ? 3 : null);
+
+        return materias.filter(m => {
+            if (targetCentroId) {
+                const cid = m.idCentroTrabajo ?? m.id_centro_trabajo ?? m.id_centroTrabajo;
+                if (cid && cid != targetCentroId) return false;
+            }
+
+            if (semNum !== null) {
+                const nivel = parseInt(m.id_nivel_academico);
+                if (cctSeleccionado === 'BTI') {
+                    if (nivel !== (semNum + 6) && nivel !== semNum) return false;
+                } else if (cctSeleccionado === 'BGNE') {
+                    if (nivel !== semNum) return false;
+                } else {
+                    if (nivel !== semNum && nivel !== (semNum + 6)) return false;
+                }
+            }
+
+            if (!normQ) return true;
+            const nomNorm = (m.nombreMateria || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            const claveNorm = (m.clave || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            return nomNorm.includes(normQ) || claveNorm.includes(normQ);
+        });
+    }
+
+    function buscarMateriasAsistencia(query = '', forceOpen = false) {
+        const div = document.getElementById('asistencia-materia-sugerencia');
+        const btnClear = document.getElementById('btn-limpiar-asistencia-materia');
+        if (btnClear) {
+            btnClear.style.display = query ? 'block' : 'none';
+        }
+        if (!div) return;
+
+        // Si materiasDb está vacío, cargar diferido
+        if (!window.materiasDb || window.materiasDb.length === 0) {
+            fetch('/materias/lista?limit=1000')
+                .then(r => r.json())
+                .then(res => {
+                    if (res && res.data) {
+                        window.materiasDb = res.data;
+                        buscarMateriasAsistencia(query, forceOpen);
+                    }
+                }).catch(() => {});
+        }
+
+        const cicloSelect = document.getElementById('asistenciaCicloSelect');
+        const cicloVal = cicloSelect ? cicloSelect.value : '';
+        const match = cicloVal.match(/\d+/);
+        const semNum = match ? parseInt(match[0]) : null;
+
+        const filtered = obtenerMateriasFiltradasAsistencia(query);
+
+        div.innerHTML = '';
+        div.style.display = 'block';
+
+        const cicloLabel = document.getElementById('lbl-asistencia-ciclo-label')?.innerText || 'Periodo';
+        const headerNotice = document.createElement('div');
+        headerNotice.className = 'p-2 bg-light text-primary fw-bold fs-9 border-bottom text-center d-flex justify-content-between align-items-center px-3';
+        
+        if (semNum !== null) {
+            headerNotice.innerHTML = `
+                <span><i class="fa-solid fa-layer-group me-1 text-info"></i> ${cicloVal} (${filtered.length} materias)</span>
+                <span class="badge bg-primary-subtle text-primary">${cctSeleccionado || 'Plan'}</span>
+            `;
+        } else {
+            headerNotice.innerHTML = `
+                <span><i class="fa-solid fa-info-circle me-1 text-info"></i> Seleccione un ${cicloLabel.toLowerCase()} para filtrar materias</span>
+                <span class="badge bg-secondary-subtle text-secondary">${filtered.length} totales</span>
+            `;
+        }
+        div.appendChild(headerNotice);
+
+        if (filtered.length === 0) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'p-3 text-muted fs-8 text-center';
+            emptyDiv.innerText = semNum !== null ? `No hay materias registradas para ${cicloVal}` : 'No se encontraron materias';
+            div.appendChild(emptyDiv);
+            return;
+        }
+
+        filtered.slice(0, 30).forEach(m => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action py-2 text-start d-flex justify-content-between align-items-center';
+            btn.style.borderLeft = '3px solid #0284c7';
+            
+            let semBadge = '';
+            if (m.id_nivel_academico) {
+                const num = m.id_nivel_academico >= 7 ? (m.id_nivel_academico - 6) : m.id_nivel_academico;
+                semBadge = `${num}º Sem/Trim`;
+            }
+
+            btn.innerHTML = `
+                <div>
+                    <span class="fw-semibold text-slate-800 fs-8 d-block">${m.nombreMateria}</span>
+                    ${m.clave ? `<small class="text-muted fs-9">Clave: ${m.clave}</small>` : ''}
+                </div>
+                <div>
+                    ${semBadge ? `<span class="badge bg-light text-secondary border fs-9">${semBadge}</span>` : ''}
+                </div>
+            `;
+
+            btn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                seleccionarMateriaAsistencia(m);
+            };
+            div.appendChild(btn);
+        });
+    }
+
+    function seleccionarMateriaAsistencia(materia) {
+        const input = document.getElementById('asistenciaMateriaInput');
+        const div = document.getElementById('asistencia-materia-sugerencia');
+        const btnClear = document.getElementById('btn-limpiar-asistencia-materia');
+
+        if (input) input.value = materia.nombreMateria;
+        if (btnClear) btnClear.style.display = 'block';
+        if (div) div.style.display = 'none';
+
+        // Si hay grupo seleccionado, intentar auto-asignar docente de tb_horarios
+        const grupoId = document.getElementById('asistenciaGrupoSelect')?.value;
+        if (grupoId && window.horariosDb) {
+            const matId = materia.id || materia.idMateria;
+            const matchH = window.horariosDb.find(h => h.id_grupo == grupoId && (h.id_materia == matId || (h.nombreMateria && h.nombreMateria.toLowerCase() === materia.nombreMateria.toLowerCase())));
+            if (matchH && matchH.id_docente) {
+                const docObj = (window.docentesDb || []).find(d => (d.idDocente || d.id) == matchH.id_docente);
+                if (docObj) {
+                    const fullNom = `${docObj.nombreDocente || docObj.nombre || ''} ${docObj.apPaternoDocente || docObj.apPaterno || ''} ${docObj.apMaternoDocente || docObj.apMaterno || ''}`.replace(/\s+/g, ' ').trim();
+                    seleccionarDocenteAsistencia(matchH.id_docente, fullNom);
+                }
+            }
+        }
+
+        actualizarAsistenciaPreview();
+    }
+
+    function limpiarMateriaAsistencia() {
+        const input = document.getElementById('asistenciaMateriaInput');
+        const div = document.getElementById('asistencia-materia-sugerencia');
+        const btnClear = document.getElementById('btn-limpiar-asistencia-materia');
+
+        if (input) input.value = '';
+        if (btnClear) btnClear.style.display = 'none';
+        if (div) { div.innerHTML = ''; div.style.display = 'none'; }
+
+        actualizarAsistenciaPreview();
+    }
+
+    function buscarDocentesAsistencia(query = '') {
+        const div = document.getElementById('asistencia-docente-sugerencia');
+        const btnClear = document.getElementById('btn-limpiar-asistencia-docente');
+        if (btnClear) {
+            btnClear.style.display = query ? 'block' : 'none';
+        }
+        if (!div) return;
+
+        let docentes = window.docentesDb || [];
+        if (docentes.length === 0) {
+            const sel = document.getElementById('asistenciaDocenteSelect');
+            if (sel && sel.options.length > 1) {
+                docentes = Array.from(sel.options).slice(1).map(opt => ({
+                    id: opt.value,
+                    idDocente: opt.value,
+                    nombreDocente: opt.text
+                }));
+                window.docentesDb = docentes;
+            }
+        }
+
+        const normQ = (query || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+        let filtered = docentes.filter(d => {
+            if (!normQ) return true;
+            const nom = `${d.nombreDocente || d.nombre || ''} ${d.apPaternoDocente || d.apPaterno || ''} ${d.apMaternoDocente || d.apMaterno || ''}`;
+            const nomNorm = nom.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            return nomNorm.includes(normQ);
+        });
+
+        div.innerHTML = '';
+        div.style.display = 'block';
+
+        if (filtered.length === 0) {
+            div.innerHTML = '<div class="p-2 text-muted fs-8 text-center">No se encontraron docentes</div>';
+            return;
+        }
+
+        filtered.slice(0, 25).forEach(d => {
+            const dId = d.idDocente || d.id;
+            const fullName = `${d.nombreDocente || d.nombre || ''} ${d.apPaternoDocente || d.apPaterno || ''} ${d.apMaternoDocente || d.apMaterno || ''}`.replace(/\s+/g, ' ').trim();
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action py-2 text-start d-flex justify-content-between align-items-center';
+            btn.style.borderLeft = '3px solid #0284c7';
+            btn.innerHTML = `
+                <div>
+                    <span class="fw-semibold text-slate-800 fs-8 d-block">${fullName}</span>
+                </div>
+                <i class="fa-solid fa-check text-muted fs-9 opacity-50"></i>
+            `;
+
+            btn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                seleccionarDocenteAsistencia(dId, fullName);
+            };
+            div.appendChild(btn);
+        });
+    }
+
+    function seleccionarDocenteAsistencia(dId, fullName) {
+        const input = document.getElementById('asistenciaDocenteInput');
+        const sel = document.getElementById('asistenciaDocenteSelect');
+        const div = document.getElementById('asistencia-docente-sugerencia');
+        const btnClear = document.getElementById('btn-limpiar-asistencia-docente');
+
+        if (input) input.value = fullName;
+        if (sel) {
+            sel.value = dId;
+            if (sel.value != dId) {
+                const opt = document.createElement('option');
+                opt.value = dId;
+                opt.text = fullName;
+                sel.appendChild(opt);
+                sel.value = dId;
+            }
+        }
+        if (btnClear) btnClear.style.display = 'block';
+        if (div) div.style.display = 'none';
+
+        onAsistenciaDocenteChange();
+    }
+
+    function limpiarDocenteAsistencia() {
+        const input = document.getElementById('asistenciaDocenteInput');
+        const sel = document.getElementById('asistenciaDocenteSelect');
+        const div = document.getElementById('asistencia-docente-sugerencia');
+        const btnClear = document.getElementById('btn-limpiar-asistencia-docente');
+
+        if (input) input.value = '';
+        if (sel) sel.value = '';
+        if (btnClear) btnClear.style.display = 'none';
+        if (div) { div.innerHTML = ''; div.style.display = 'none'; }
+
         actualizarAsistenciaPreview();
     }
 
@@ -3279,6 +3602,7 @@ window.imprimirKardex = function() {
     function actualizarAsistenciaPreview() {
         const grupoSelect = document.getElementById('asistenciaGrupoSelect');
         const docenteSelect = document.getElementById('asistenciaDocenteSelect');
+        const docenteInput = document.getElementById('asistenciaDocenteInput');
         const materiaInput = document.getElementById('asistenciaMateriaInput');
         const cicloSelect = document.getElementById('asistenciaCicloSelect');
         const card = document.getElementById('asistencia-preview-card');
@@ -3295,9 +3619,12 @@ window.imprimirKardex = function() {
             return;
         }
 
-        const docenteNombre = docenteSelect && docenteSelect.selectedIndex > 0 
-            ? docenteSelect.options[docenteSelect.selectedIndex].text.trim() 
-            : 'Docente no seleccionado (general)';
+        let docenteNombre = 'Docente no seleccionado (general)';
+        if (docenteInput && docenteInput.value.trim()) {
+            docenteNombre = docenteInput.value.trim();
+        } else if (docenteSelect && docenteSelect.selectedIndex > 0) {
+            docenteNombre = docenteSelect.options[docenteSelect.selectedIndex].text.trim();
+        }
             
         const materiaNombre = (materiaInput && materiaInput.value.trim()) ? materiaInput.value.trim() : 'Materia General';
         const ciclo = cicloSelect ? cicloSelect.value : '1° Periodo';
@@ -3341,8 +3668,23 @@ window.imprimirKardex = function() {
         const fechaIni = grupo.fechaInicio || '';
 
         const docenteSelect = document.getElementById('asistenciaDocenteSelect');
-        const docenteId = docenteSelect ? docenteSelect.value : '';
-        const docenteNombre = docenteSelect && docenteSelect.selectedIndex > 0 ? docenteSelect.options[docenteSelect.selectedIndex].text.trim() : '';
+        const docenteInput = document.getElementById('asistenciaDocenteInput');
+        let docenteId = docenteSelect ? docenteSelect.value : '';
+        let docenteNombre = docenteInput && docenteInput.value.trim() 
+            ? docenteInput.value.trim() 
+            : (docenteSelect && docenteSelect.selectedIndex > 0 ? docenteSelect.options[docenteSelect.selectedIndex].text.trim() : '');
+
+        if (!docenteId && docenteNombre && window.docentesDb) {
+            const normDN = docenteNombre.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+            const foundDoc = window.docentesDb.find(d => {
+                const nom = `${d.nombreDocente || d.nombre || ''} ${d.apPaternoDocente || d.apPaterno || ''} ${d.apMaternoDocente || d.apMaterno || ''}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+                return nom === normDN;
+            });
+            if (foundDoc) {
+                docenteId = foundDoc.idDocente || foundDoc.id || '';
+            }
+        }
+
         const materia = (document.getElementById('asistenciaMateriaInput') ? document.getElementById('asistenciaMateriaInput').value.trim() : '');
         const ciclo = document.getElementById('asistenciaCicloSelect') ? document.getElementById('asistenciaCicloSelect').value : '';
         const matchTrim = ciclo.match(/\d+/);
@@ -3811,6 +4153,24 @@ window.imprimirKardex = function() {
             win.close();
         }, 400);
     };
+
+    // Cerrar sugerencias al hacer click fuera
+    document.addEventListener('click', function(e) {
+        const sugDoc = document.getElementById('asistencia-docente-sugerencia');
+        const inputDoc = document.getElementById('asistenciaDocenteInput');
+        const btnClearDoc = document.getElementById('btn-limpiar-asistencia-docente');
+        if (sugDoc && inputDoc && !sugDoc.contains(e.target) && !inputDoc.contains(e.target) && (!btnClearDoc || !btnClearDoc.contains(e.target))) {
+            sugDoc.style.display = 'none';
+        }
+
+        const sugMat = document.getElementById('asistencia-materia-sugerencia');
+        const inputMat = document.getElementById('asistenciaMateriaInput');
+        const cicloSel = document.getElementById('asistenciaCicloSelect');
+        const btnClearMat = document.getElementById('btn-limpiar-asistencia-materia');
+        if (sugMat && inputMat && !sugMat.contains(e.target) && !inputMat.contains(e.target) && (!cicloSel || !cicloSel.contains(e.target)) && (!btnClearMat || !btnClearMat.contains(e.target))) {
+            sugMat.style.display = 'none';
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof asegurarCatalogosAsistencia === 'function') {
