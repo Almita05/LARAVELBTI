@@ -6,7 +6,7 @@
     <style>
         @page {
             size: letter landscape;
-            margin: 10mm 12mm 10mm 12mm;
+            margin: 4mm 6mm 4mm 6mm;
         }
 
         * {
@@ -21,20 +21,21 @@
             padding: 0;
             color: #000;
             background: #fff;
-            font-size: 8pt;
+            font-size: 7.2pt;
+            line-height: 1.15;
         }
 
         .header-container {
             width: 100%;
-            margin-bottom: 8px;
+            margin-bottom: 2px;
             position: relative;
         }
 
         .school-title {
             text-align: center;
-            font-size: 15pt;
+            font-size: 11.5pt;
             font-weight: 800;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
             margin: 0;
             color: #000;
@@ -42,101 +43,109 @@
 
         .sheet-title {
             text-align: center;
-            font-size: 12pt;
+            font-size: 9.5pt;
             font-weight: 700;
             letter-spacing: 0.5px;
             text-transform: uppercase;
-            margin: 3px 0 0 0;
+            margin: 1px 0 0 0;
             color: #000;
         }
 
         .logo-box {
             position: absolute;
             right: 0;
-            top: -5px;
-            width: 75px;
+            top: -2px;
+            width: 55px;
             text-align: right;
         }
 
         .logo-img {
-            height: 70px;
+            height: 42px;
             object-fit: contain;
         }
 
         /* Metadatos (Docente, Asignatura, Grupo) */
         .meta-table {
-            width: 58%;
+            width: 60%;
             border-collapse: separate;
-            border-spacing: 0 3px;
-            margin-top: 5px;
-            margin-bottom: 8px;
-            font-size: 8pt;
+            border-spacing: 0 1.5px;
+            margin-top: 2px;
+            margin-bottom: 4px;
+            font-size: 7.2pt;
         }
 
         .meta-label {
             font-weight: bold;
             text-transform: uppercase;
-            padding-right: 6px;
-            width: 20%;
+            padding-right: 5px;
+            width: 18%;
             vertical-align: middle;
-            font-size: 7.8pt;
+            font-size: 7pt;
         }
 
         .meta-val-box {
-            border: 1.2px solid #000;
-            padding: 2.5px 8px;
+            border: 1px solid #000;
+            padding: 1.5px 6px;
             background: #fff;
             text-transform: uppercase;
             font-weight: 600;
-            font-size: 8pt;
-            border-radius: 3px;
+            font-size: 7.2pt;
+            border-radius: 2px;
         }
 
         /* Tabla de Asistencia */
         .attendance-grid {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 2px;
-            font-size: 7.2pt;
+            margin-top: 1px;
+            font-size: 6.5pt;
         }
 
         .attendance-grid th, 
         .attendance-grid td {
-            border: 1px solid #000;
-            padding: 2.5px 2px;
+            border: 0.8px solid #000;
+            padding: 1px 1px;
             text-align: center;
             vertical-align: middle;
+        }
+
+        .th-num {
+            background-color: #dae3f3;
+            color: #000;
+            font-weight: bold;
+            font-size: 6.8pt;
+            width: 16px;
         }
 
         .th-alumnos {
             background-color: #dae3f3;
             color: #000;
             font-weight: bold;
-            font-size: 8pt;
+            font-size: 7.2pt;
             text-align: center;
-            width: 250px;
+            width: {{ ($isEscolarizado ?? false) ? '175px' : '230px' }};
         }
 
         .th-mes {
             background-color: #dae3f3;
             font-weight: bold;
-            font-size: 7.5pt;
+            font-size: 6.5pt;
             text-transform: uppercase;
-            padding: 3px 1px;
+            padding: 1.5px 1px;
         }
 
         .th-dia {
             font-weight: bold;
-            font-size: 7.2pt;
+            font-size: 6.2pt;
             background-color: #f2f2f2;
-            height: 16px;
+            height: 12px;
         }
 
         .th-letra {
             font-weight: bold;
-            font-size: 7pt;
+            font-size: 5.8pt;
             background-color: #ffffff;
-            height: 15px;
+            height: 11px;
         }
 
         .eval-highlight {
@@ -144,11 +153,17 @@
             font-weight: bold;
         }
 
+        .td-num {
+            font-size: 6.2pt;
+            font-weight: bold;
+            width: 16px;
+        }
+
         .td-alumno-nombre {
             text-align: left !important;
-            padding-left: 6px !important;
-            font-size: 7.2pt;
-            height: 17px;
+            padding-left: 4px !important;
+            font-size: 6.5pt;
+            height: 13.5px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -156,17 +171,7 @@
         }
 
         .td-check-cell {
-            width: 23px;
-            height: 17px;
-        }
-
-        /* Indicador de evaluaciones arriba de la tabla */
-        .eval-top-bar {
-            width: 100%;
-            margin-bottom: 2px;
-            border-collapse: collapse;
-            font-size: 6.8pt;
-            font-weight: bold;
+            height: 13.5px;
         }
 
         .eval-badge-cell {
@@ -175,22 +180,22 @@
             border: 1px solid #000;
             text-align: center;
             padding: 1px 0;
-            font-size: 7pt;
+            font-size: 6.8pt;
             font-weight: 800;
         }
 
         /* Firmas */
         .footer-signatures {
             width: 100%;
-            margin-top: 25px;
+            margin-top: 8px;
             border-collapse: collapse;
-            font-size: 7.5pt;
+            font-size: 6.5pt;
         }
 
         .sig-line {
-            border-top: 1px solid #000;
-            width: 70%;
-            margin: 0 auto 3px auto;
+            border-top: 0.8px solid #000;
+            width: 55%;
+            margin: 0 auto 2px auto;
         }
     </style>
 </head>
@@ -230,22 +235,25 @@
 <!-- Tabla de Asistencia -->
 <table class="attendance-grid">
     <thead>
-        <!-- Fila de evaluaciones P.1 y P.2 alineadas con sus semanas -->
-        <tr>
-            <th style="border: none; background: transparent;" rowspan="1"></th>
-            @foreach($columnasFechas as $f)
-                @if($f['eval'])
-                    <th class="eval-badge-cell" style="border: 1px solid #000; background-color: #b4c6e7; font-size: 7.2pt;">
-                        {{ $f['eval'] }}
-                    </th>
-                @else
-                    <th style="border: none; background: transparent; height: 14px;"></th>
-                @endif
-            @endforeach
-        </tr>
+        @if(!($isEscolarizado ?? false) && collect($columnasFechas)->contains(fn($f) => !empty($f['eval'])))
+            <!-- Fila de evaluaciones P.1 y P.2 solo para sabatino/dominical -->
+            <tr>
+                <th style="border: none; background: transparent;" colspan="2"></th>
+                @foreach($columnasFechas as $f)
+                    @if($f['eval'])
+                        <th class="eval-badge-cell" style="border: 1px solid #000; background-color: #b4c6e7;">
+                            {{ $f['eval'] }}
+                        </th>
+                    @else
+                        <th style="border: none; background: transparent; height: 11px;"></th>
+                    @endif
+                @endforeach
+            </tr>
+        @endif
 
         <!-- Fila 1: Meses agrupados -->
         <tr>
+            <th class="th-num" rowspan="3">#</th>
             <th class="th-alumnos" rowspan="3">NOMBRE DEL ALUMNO</th>
             @foreach($mesesAgrupados as $m)
                 <th class="th-mes" colspan="{{ $m['colspan'] }}">
@@ -263,7 +271,7 @@
             @endforeach
         </tr>
 
-        <!-- Fila 3: Letra del día (D / S / etc.) -->
+        <!-- Fila 3: Letra del día (L, M, M, J, V / S / D) -->
         <tr>
             @foreach($columnasFechas as $f)
                 <th class="th-letra {{ $f['eval'] ? 'eval-highlight' : '' }}">
@@ -275,6 +283,7 @@
     <tbody>
         @foreach($alumnos as $idx => $al)
             <tr>
+                <td class="td-num">{{ $al['num'] }}</td>
                 <td class="td-alumno-nombre">
                     @if(!empty($al['nombre']))
                         {{ $al['nombre'] }}
@@ -282,9 +291,9 @@
                         &nbsp;
                     @endif
                 </td>
-                @for($col = 0; $col < $totalSemanas; $col++)
+                @foreach($columnasFechas as $f)
                     <td class="td-check-cell"></td>
-                @endfor
+                @endforeach
             </tr>
         @endforeach
     </tbody>
@@ -296,13 +305,13 @@
         <td style="width: 40%; text-align: center;">
             <div class="sig-line"></div>
             <strong>Firma del Docente</strong><br>
-            <span style="font-size: 6.8pt; color: #333;">{{ $docente }}</span>
+            <span style="font-size: 6.2pt; color: #333;">{{ $docente }}</span>
         </td>
         <td style="width: 20%;"></td>
         <td style="width: 40%; text-align: center;">
             <div class="sig-line"></div>
             <strong>Control Escolar / Dirección</strong><br>
-            <span style="font-size: 6.8pt; color: #333;">Sello y Firma de Validación</span>
+            <span style="font-size: 6.2pt; color: #333;">Sello y Firma de Validación</span>
         </td>
     </tr>
 </table>

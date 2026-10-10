@@ -3581,20 +3581,42 @@ window.imprimirKardex = function() {
     }
 
     function calcularFechasTrimestrePreview(grupo, trimestreNum) {
-        if (!grupo || !grupo.fechaInicio) return 'Fechas por definir';
+        if (!grupo) return 'Fechas por definir';
 
-        // Parse UTC de fechaInicio (ej. 2026-02-08)
+        const modalidad = (grupo.modalidadHorario || '').toUpperCase();
+        const isSabatino = modalidad.includes('SABADO') || modalidad.includes('SÁBADO');
+        const isDominical = modalidad.includes('DOMINGO');
+        const isEscolarizado = !isSabatino && !isDominical;
+
+        const pad = (n) => String(n).padStart(2, '0');
+        const fmt = (d) => `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
+
+        if (isEscolarizado) {
+            // Escolarizado: Lunes a Viernes comenzando el 31 de Agosto (o fecha de inicio del grupo)
+            let startDate = null;
+            if (grupo.fechaInicio) {
+                const parts = grupo.fechaInicio.split('-');
+                if (parts.length >= 3) {
+                    startDate = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
+                }
+            }
+            if (!startDate) {
+                startDate = new Date(Date.UTC(new Date().getFullYear(), 7, 31)); // 31 de agosto
+            }
+            // 45 días hábiles = 9 semanas completas (60 días naturales)
+            const periodEnd = new Date(startDate.getTime() + (60 * 24 * 60 * 60 * 1000));
+            return `${fmt(startDate)} al ${fmt(periodEnd)} (9 semanas / 45 días hábiles)`;
+        }
+
+        if (!grupo.fechaInicio) return 'Fechas por definir';
         const parts = grupo.fechaInicio.split('-');
         if (parts.length < 3) return 'Fechas por definir';
         const startDate = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
 
-        // Cada trimestre dura exactamente 13 semanas (mismo algoritmo oficial de horarios)
+        // Cada trimestre dura exactamente 13 semanas (Sabatino / Dominical)
         const weeksOffset = (trimestreNum - 1) * 13;
         const periodStart = new Date(startDate.getTime() + (weeksOffset * 7 * 24 * 60 * 60 * 1000));
         const periodEnd = new Date(periodStart.getTime() + (12 * 7 * 24 * 60 * 60 * 1000));
-
-        const pad = (n) => String(n).padStart(2, '0');
-        const fmt = (d) => `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
 
         return `${fmt(periodStart)} al ${fmt(periodEnd)} (13 semanas)`;
     }

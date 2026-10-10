@@ -233,54 +233,107 @@ class ListasAsistenciasController extends Controller
         $claveGrupo = $grupo->clave ?? 'GRUPO';
         $grupoDisplay = "{$claveGrupo} {$periodLabel}";
 
-        // Calcular las 13 semanas (BGNE) o fechas del semestre (BTI)
-        $fechaInicioStr = $request->get('fecha_inicio', $grupo->fechaInicio ?? date('Y-m-d'));
-        try {
-            $startDate = Carbon::parse($fechaInicioStr);
-        } catch (\Throwable $e) {
-            $startDate = Carbon::now();
-        }
-
-        $weeksOffset = ($trimestreNum - 1) * 13;
-        $periodStartDate = $startDate->copy()->addWeeks($weeksOffset);
-
-        // Detectar si el grupo es de Sábado o Domingo
-        $modalidad = strtoupper($grupo->modalidadHorario ?? '');
+        // Detectar si el grupo es Escolarizado (Lunes a Viernes) o Sabatino / Dominical
+        $modalidad = strtoupper($grupo->modalidadHorario ?? $request->get('modalidad', ''));
         $isDomingo = str_contains($modalidad, 'DOMINGO');
         $isSabado = str_contains($modalidad, 'SABADO') || str_contains($modalidad, 'SÁBADO');
+        $isEscolarizado = !$isDomingo && !$isSabado;
 
-        $dayLetter = $isDomingo ? 'D' : ($isSabado ? 'S' : 'D');
+        // Determinar fecha de inicio
+        $fechaInicioParam = $request->get('fecha_inicio');
+        $fechaInicioGrupo = $grupo->fechaInicio ?? null;
+
+        if ($isEscolarizado) {
+            // Escolarizado: Lunes a Viernes. Inicia el 31 de Agosto o según la fecha del grupo
+            $fechaBase = $fechaInicioParam ?: ($fechaInicioGrupo ?: null);
+            if (!empty($fechaBase) && $fechaBase !== '0000-00-00') {
+                try {
+                    $startDate = Carbon::parse($fechaBase);
+                } catch (\Throwable $e) {
+                    $startDate = Carbon::create(Carbon::now()->year, 8, 31);
+                }
+            } else {
+                $startDate = Carbon::create(Carbon::now()->year, 8, 31);
+            }
+
+            // Si la fecha cae en fin de semana, comenzar el lunes siguiente
+            if ($startDate->isWeekend()) {
+                $startDate = $startDate->next(Carbon::MONDAY);
+            }
+        } else {
+            // Sabatino / Dominical
+            $fechaInicioStr = $fechaInicioParam ?: ($fechaInicioGrupo ?: date('Y-m-d'));
+            try {
+                $startDate = Carbon::parse($fechaInicioStr);
+            } catch (\Throwable $e) {
+                $startDate = Carbon::now();
+            }
+            $weeksOffset = ($trimestreNum - 1) * 13;
+            $startDate = $startDate->copy()->addWeeks($weeksOffset);
+        }
 
         $mesesNombres = [
             1 => 'ENE', 2 => 'FEB', 3 => 'MAR', 4 => 'ABR',
             5 => 'MAY', 6 => 'JUN', 7 => 'JUL', 8 => 'AGO',
             9 => 'SEP', 10 => 'OCT', 11 => 'NOV', 12 => 'DIC'
         ];
+        $letrasDiasSemana = [
+            1 => 'L', 2 => 'M', 3 => 'M', 4 => 'J', 5 => 'V'
+        ];
 
         $columnasFechas = [];
-        $totalSemanas = 13;
 
-        for ($i = 0; $i < $totalSemanas; $i++) {
-            $date = $periodStartDate->copy()->addWeeks($i);
-            $mesNum = $date->month;
-            $mesNom = $mesesNombres[$mesNum] ?? strtoupper($date->translatedFormat('F'));
+        if ($isEscolarizado) {
+            // Escolarizado: Fechas de Lunes a Viernes sin división de parciales
+            // Máxima cantidad posible de días en una sola hoja (45 días hábiles = 9 semanas)
+            $totalDias = 45;
+            $curDate = $startDate->copy();
 
-            $eval = null;
-            if ($i == 5 || $i == 6) {
-                $eval = 'P.1';
-            } elseif ($i == 11 || $i == 12) {
-                $eval = 'P.2';
+            while (count($columnasFechas) < $totalDias) {
+                if ($curDate->isWeekday()) {
+                    $mesNum = $curDate->month;
+                    $mesNom = $mesesNombres[$mesNum] ?? strtoupper($curDate->translatedFormat('M'));
+                    $letra = $letrasDiasSemana[$curDate->dayOfWeekIso] ?? 'L';
+
+                    $columnasFechas[] = [
+                        'index' => count($columnasFechas),
+                        'fecha_full' => $curDate->format('Y-m-d'),
+                        'dia' => $curDate->format('j'),
+                        'mes' => $mesNom,
+                        'mes_num' => $mesNum,
+                        'letra_dia' => $letra,
+                        'eval' => null // En escolarizado no se dividen por evaluaciones
+                    ];
+                }
+                $curDate->addDay();
             }
+        } else {
+            // Sabatino o Dominical (13 semanas por trimestre con evaluaciones P.1 y P.2)
+            $dayLetter = $isDomingo ? 'D' : ($isSabado ? 'S' : 'D');
+            $totalSemanas = 13;
 
-            $columnasFechas[] = [
-                'index' => $i,
-                'fecha_full' => $date->format('Y-m-d'),
-                'dia' => $date->format('j'),
-                'mes' => $mesNom,
-                'mes_num' => $mesNum,
-                'letra_dia' => $dayLetter,
-                'eval' => $eval
-            ];
+            for ($i = 0; $i < $totalSemanas; $i++) {
+                $date = $startDate->copy()->addWeeks($i);
+                $mesNum = $date->month;
+                $mesNom = $mesesNombres[$mesNum] ?? strtoupper($date->translatedFormat('M'));
+
+                $eval = null;
+                if ($i == 5 || $i == 6) {
+                    $eval = 'P.1';
+                } elseif ($i == 11 || $i == 12) {
+                    $eval = 'P.2';
+                }
+
+                $columnasFechas[] = [
+                    'index' => $i,
+                    'fecha_full' => $date->format('Y-m-d'),
+                    'dia' => $date->format('j'),
+                    'mes' => $mesNom,
+                    'mes_num' => $mesNum,
+                    'letra_dia' => $dayLetter,
+                    'eval' => $eval
+                ];
+            }
         }
 
         // Agrupar meses consecutivos para colspan
@@ -359,9 +412,14 @@ class ListasAsistenciasController extends Controller
             $listaAlumnos[$k]['num'] = $k + 1;
         }
 
-        // Asegurar un mínimo de 22 filas para que la hoja conserve su estructura física
-        $totalFilasDeseadas = max(22, count($listaAlumnos) + 3);
-        $currNum = count($listaAlumnos) + 1;
+        // Asegurar que la estructura quepa en exactamente 1 sola hoja
+        $numAlumnosReales = count($listaAlumnos);
+        if ($numAlumnosReales < 22) {
+            $totalFilasDeseadas = 22;
+        } else {
+            $totalFilasDeseadas = min(26, $numAlumnosReales + 1);
+        }
+        $currNum = $numAlumnosReales + 1;
         while (count($listaAlumnos) < $totalFilasDeseadas) {
             $listaAlumnos[] = [
                 'num' => $currNum++,
@@ -379,8 +437,9 @@ class ListasAsistenciasController extends Controller
             'columnasFechas' => $columnasFechas,
             'mesesAgrupados' => $mesesAgrupados,
             'alumnos' => $listaAlumnos,
-            'totalSemanas' => $totalSemanas,
-            'cct' => $cctLabel
+            'totalSemanas' => count($columnasFechas),
+            'cct' => $cctLabel,
+            'isEscolarizado' => $isEscolarizado
         ])->setPaper('letter', 'landscape');
 
         return $pdf->stream("lista_asistencia_{$claveGrupo}.pdf");
