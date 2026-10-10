@@ -187,15 +187,19 @@
         /* Firmas */
         .footer-signatures {
             width: 100%;
-            margin-top: 8px;
+            margin-top: 16px;
             border-collapse: collapse;
-            font-size: 6.5pt;
+            font-size: 6.8pt;
+        }
+
+        .sig-space {
+            height: 48px;
         }
 
         .sig-line {
-            border-top: 0.8px solid #000;
-            width: 55%;
-            margin: 0 auto 2px auto;
+            border-top: 1px solid #000;
+            width: 65%;
+            margin: 0 auto 3px auto;
         }
     </style>
 </head>
@@ -299,19 +303,21 @@
     </tbody>
 </table>
 
-<!-- Firmas al pie -->
+<!-- Firmas al pie con amplio espacio para firma física y sello -->
 <table class="footer-signatures">
     <tr>
-        <td style="width: 40%; text-align: center;">
+        <td style="width: 42%; text-align: center; vertical-align: bottom;">
+            <div class="sig-space"></div>
             <div class="sig-line"></div>
             <strong>Firma del Docente</strong><br>
-            <span style="font-size: 6.2pt; color: #333;">{{ $docente }}</span>
+            <span style="font-size: 6.5pt; color: #222;">{{ $docente }}</span>
         </td>
-        <td style="width: 20%;"></td>
-        <td style="width: 40%; text-align: center;">
+        <td style="width: 16%;"></td>
+        <td style="width: 42%; text-align: center; vertical-align: bottom;">
+            <div class="sig-space"></div>
             <div class="sig-line"></div>
             <strong>Control Escolar / Dirección</strong><br>
-            <span style="font-size: 6.2pt; color: #333;">Sello y Firma de Validación</span>
+            <span style="font-size: 6.5pt; color: #222;">Sello y Firma de Validación</span>
         </td>
     </tr>
 </table>

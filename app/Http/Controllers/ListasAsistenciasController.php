@@ -412,12 +412,12 @@ class ListasAsistenciasController extends Controller
             $listaAlumnos[$k]['num'] = $k + 1;
         }
 
-        // Asegurar que la estructura quepa en exactamente 1 sola hoja
+        // Asegurar que la estructura quepa en exactamente 1 sola hoja y deje espacio óptimo para firmar
         $numAlumnosReales = count($listaAlumnos);
-        if ($numAlumnosReales < 22) {
-            $totalFilasDeseadas = 22;
+        if ($numAlumnosReales < 18) {
+            $totalFilasDeseadas = max(18, $numAlumnosReales + 2);
         } else {
-            $totalFilasDeseadas = min(26, $numAlumnosReales + 1);
+            $totalFilasDeseadas = min(22, $numAlumnosReales + 1);
         }
         $currNum = $numAlumnosReales + 1;
         while (count($listaAlumnos) < $totalFilasDeseadas) {
