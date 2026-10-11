@@ -532,8 +532,25 @@
                                             </h6>
                                             
                                             <div class="mb-3">
-                                                <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">Modalidad del Alumno</label>
-                                                <input type="text" id="inputCredModalidad" class="form-control form-control-sm shadow-sm" value="ESCOLARIZADO" oninput="actualizarCamposCredencialDinamicos()">
+                                                <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">
+                                                    <i class="fa-solid fa-user text-primary me-1"></i> Nombre del Alumno
+                                                </label>
+                                                <input type="text" id="inputCredNombre" class="form-control form-control-sm shadow-sm" value="DANIEL IGNACIO FERNÁNDEZ PARRA" oninput="actualizarCamposCredencialDinamicos()" placeholder="Nombre completo del alumno">
+                                            </div>
+
+                                            <div class="row g-2 mb-3">
+                                                <div class="col-sm-6">
+                                                    <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">
+                                                        <i class="fa-solid fa-id-card text-primary me-1"></i> Matrícula
+                                                    </label>
+                                                    <input type="text" id="inputCredMatricula" class="form-control form-control-sm shadow-sm" value="419012603" oninput="actualizarCamposCredencialDinamicos()" placeholder="Ej. 419012603">
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">
+                                                        <i class="fa-solid fa-graduation-cap text-primary me-1"></i> Modalidad
+                                                    </label>
+                                                    <input type="text" id="inputCredModalidad" class="form-control form-control-sm shadow-sm" value="ESCOLARIZADO" oninput="actualizarCamposCredencialDinamicos()">
+                                                </div>
                                             </div>
 
                                             <div class="mb-3">
@@ -2053,6 +2070,10 @@
             // Datos del frente
             document.getElementById('cred-nombre-val').innerText = fullName;
             document.getElementById('cred-matricula-val').innerText = alumno.numeroControl || alumno.idAlumno;
+            const inputNom = document.getElementById('inputCredNombre');
+            if (inputNom) inputNom.value = fullName;
+            const inputMat = document.getElementById('inputCredMatricula');
+            if (inputMat) inputMat.value = alumno.numeroControl || alumno.idAlumno;
             
             // Modalidad
             const modVal = (alumno.modalidadHorario || alumno.modalidad_estudio || 'ESCOLARIZADO').toUpperCase();
@@ -2075,12 +2096,16 @@
     }
 
     function actualizarCamposCredencialDinamicos() {
-        const mod = document.getElementById('inputCredModalidad').value;
-        const vig = document.getElementById('inputCredVigencia').value;
-        const accNom = document.getElementById('inputCredAccidenteNombre').value;
-        const accTel = document.getElementById('inputCredAccidenteTel').value;
-        const dir = document.getElementById('inputCredDirector').value;
+        const nom = document.getElementById('inputCredNombre')?.value || '';
+        const mat = document.getElementById('inputCredMatricula')?.value || '';
+        const mod = document.getElementById('inputCredModalidad')?.value || 'ESCOLARIZADO';
+        const vig = document.getElementById('inputCredVigencia')?.value || '';
+        const accNom = document.getElementById('inputCredAccidenteNombre')?.value || '';
+        const accTel = document.getElementById('inputCredAccidenteTel')?.value || '';
+        const dir = document.getElementById('inputCredDirector')?.value || '';
 
+        if (document.getElementById('cred-nombre-val')) document.getElementById('cred-nombre-val').innerText = nom.toUpperCase();
+        if (document.getElementById('cred-matricula-val')) document.getElementById('cred-matricula-val').innerText = mat;
         if (document.getElementById('cred-modalidad-val')) document.getElementById('cred-modalidad-val').innerText = mod.toUpperCase();
         if (document.getElementById('cred-vigencia-val')) document.getElementById('cred-vigencia-val').innerText = vig.toUpperCase();
         if (document.getElementById('cred-accidente-nombre-val')) document.getElementById('cred-accidente-nombre-val').innerText = accNom;
