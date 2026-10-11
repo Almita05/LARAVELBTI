@@ -369,70 +369,226 @@
                         </div>
                     </div>
 
-                    <!-- PANE: CREDENCIAL -->
+                    <!-- PANE: CREDENCIAL ESCOLARIZADO BTI -->
                     <div class="tab-pane fade" id="pane-credencial" role="tabpanel">
                         <div class="glass-header mb-4">
-                            <h5 class="fw-bold mb-1 text-slate-800">
-                                <i class="fa-solid fa-id-card text-info me-2"></i>Credenciales Escolares
-                            </h5>
-                            <p class="text-muted mb-0">Buscador y visor de credenciales oficiales para impresión física.</p>
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <h5 class="fw-bold mb-1 text-slate-800">
+                                        <i class="fa-solid fa-id-card text-primary me-2"></i>Credencial Escolar Oficial
+                                    </h5>
+                                    <p class="text-muted mb-0">Emisión de credenciales oficiales institucionales en formato estándar PVC / Opalina (Sistema Escolarizado).</p>
+                                </div>
+                                <span class="badge px-3 py-2 text-white fw-bold rounded-pill" style="background: #15285f; font-size: 0.82rem;">
+                                    <i class="fa-solid fa-award me-1 text-warning"></i> Formato Oficial Escolarizado
+                                </span>
+                            </div>
                         </div>
+
                         <div class="row g-3">
                             <div class="col-md-12">
-                                <label class="form-label fw-semibold">Buscar Alumno para Credencial</label>
-                                <input type="text" id="credencialAlumnoSearch" class="form-control" placeholder="Escriba matrícula o nombre del alumno..." onkeyup="simularBusquedaAlumnoCredencial(this.value)">
+                                <label class="form-label fw-semibold text-slate-700">Buscar Alumno para Credencial</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                                    <input type="text" id="credencialAlumnoSearch" class="form-control border-start-0 shadow-sm" placeholder="Escriba matrícula o nombre del alumno..." onkeyup="simularBusquedaAlumnoCredencial(this.value)">
+                                </div>
                                 <div id="credencial-alumno-sugerencia" class="list-group mt-2 shadow-sm" style="display: none;">
                                     <!-- Cargado por JS -->
                                 </div>
                             </div>
-                            <div class="col-12 mt-4" id="credencial-info-alumno" style="display: none;">
-                                <div class="row">
-                                    <!-- Vista Previa de la Credencial (Diseño CSS Premium) -->
-                                    <div class="col-md-7 d-flex justify-content-center align-items-center mb-3">
-                                        <div class="credential-card shadow-lg position-relative" id="mock-credencial">
-                                            <!-- Encabezado de la Credencial -->
-                                            <div class="cred-header d-flex align-items-center p-2 text-white">
-                                                <i class="fa-solid fa-school me-2 text-warning fs-6"></i>
-                                                <div>
-                                                    <span class="d-block fw-bold" style="font-size: 0.65rem; line-height: 1.1;">COLEGIO INTERAMERICANO</span>
-                                                    <span class="d-block text-warning fw-semibold" style="font-size: 0.52rem; letter-spacing:0.5px;" id="cred-cct-badge">PLAN BTI</span>
+
+                            <div class="col-12 mt-4" id="credencial-info-alumno" style="display: block;">
+                                <div class="row g-4 align-items-start">
+                                    
+                                    <!-- Vista Previa de Ambas Caras (Anverso y Reverso) -->
+                                    <div class="col-lg-7">
+                                        <div class="card border-0 shadow-sm rounded-4 p-4" style="background: rgba(248, 250, 252, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8) !important;">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="fw-bold text-slate-800 mb-0">
+                                                    <i class="fa-solid fa-eye text-primary me-1"></i> Vista Previa en Tiempo Real
+                                                </h6>
+                                                <span class="badge bg-light text-slate-600 border px-2 py-1 fs-9">Estándar CR80 Vertical (54 x 85.6 mm)</span>
+                                            </div>
+
+                                            <div class="d-flex flex-wrap justify-content-center align-items-center gap-4 py-2">
+                                                <!-- ANVERSO -->
+                                                <div class="d-flex flex-column align-items-center">
+                                                    <span class="text-uppercase fw-bold text-slate-500 fs-9 mb-2 letter-spacing-1">
+                                                        <i class="fa-solid fa-id-badge text-primary me-1"></i> Frente (Anverso)
+                                                    </span>
+                                                    <div class="bti-card bti-card-front shadow-lg position-relative" id="cred-card-front-preview">
+                                                        <!-- Franja institucional izquierda -->
+                                                        <div class="bti-front-stripes"></div>
+
+                                                        <!-- Fondo mapa continental -->
+                                                        <div class="bti-map-bg"></div>
+
+                                                        <!-- Encabezado superior azul -->
+                                                        <div class="bti-header-banner">
+                                                            <div class="bti-header-title">BACHILLERATO TECNOLOGICO</div>
+                                                            <div class="bti-header-subtitle">INTERAMERICANO</div>
+                                                        </div>
+
+                                                        <!-- CCT y Logos oficiales -->
+                                                        <div class="bti-sub-header">
+                                                            <div class="bti-cct-text">C.C.T. 21PCT0073R</div>
+                                                            <div class="bti-official-logos">
+                                                                <div class="bti-logos-row">
+                                                                    <img src="/img/credencial/logo_puebla.png" class="bti-logo-puebla" alt="Puebla Gobierno">
+                                                                    <img src="/img/credencial/logo_sep.png" class="bti-logo-sep" alt="Secretaría de Educación">
+                                                                </div>
+                                                                <div class="bti-sep-text">EDUCACIÓN PÚBLICA</div>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Cuerpo de Datos -->
+                                                        <div class="bti-front-body">
+                                                            <!-- Logo BTI en esquina inferior derecha -->
+                                                            <img src="/img/credencial/logo_bti.png" class="bti-corner-logo" alt="Logo BTI">
+
+                                                            <!-- Campo NOMBRE -->
+                                                            <div class="bti-field-group">
+                                                                <span class="bti-field-label">NOMBRE</span>
+                                                                <div class="bti-capsule bti-capsule-full" id="cred-nombre-val">DANIEL IGNACIO FERNÁNDEZ PARRA</div>
+                                                            </div>
+
+                                                            <!-- Campo MODALIDAD -->
+                                                            <div class="bti-field-group">
+                                                                <span class="bti-field-label">MODALIDAD</span>
+                                                                <div class="bti-capsule bti-capsule-sm" id="cred-modalidad-val">ESCOLARIZADO</div>
+                                                            </div>
+
+                                                            <!-- Campo MATRICULA -->
+                                                            <div class="bti-field-group">
+                                                                <span class="bti-field-label">MATRICULA</span>
+                                                                <div class="bti-capsule bti-capsule-sm" id="cred-matricula-val">419012603</div>
+                                                            </div>
+
+                                                            <!-- Campo VIGENCIA -->
+                                                            <div class="bti-field-group">
+                                                                <span class="bti-field-label">VIGENCIA</span>
+                                                                <div class="bti-capsule bti-capsule-full" id="cred-vigencia-val">JULIO 2026 - SEPTIEMBRE 2026</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- REVERSO -->
+                                                <div class="d-flex flex-column align-items-center">
+                                                    <span class="text-uppercase fw-bold text-slate-500 fs-9 mb-2 letter-spacing-1">
+                                                        <i class="fa-solid fa-shield text-info me-1"></i> Reverso (Atrás)
+                                                    </span>
+                                                    <div class="bti-card bti-card-back shadow-lg position-relative" id="cred-card-back-preview">
+                                                        <!-- Franja institucional derecha -->
+                                                        <div class="bti-back-stripes"></div>
+
+                                                        <!-- Marca de agua BTI central -->
+                                                        <img src="/img/credencial/logo_bti.png" class="bti-back-watermark" alt="Watermark BTI">
+
+                                                        <!-- Contenido Reverso -->
+                                                        <div class="bti-back-content">
+                                                            <div>
+                                                                <div class="bti-important-title">IMPORTANTE:</div>
+                                                                <div class="bti-important-text">
+                                                                    Esta credencial es personal y debe portarse en lugar visible mientras usted permanezca dentro de la institución.<br>
+                                                                    Debe mostrarse al personal de seguridad, a la autoridad del BTI para fines de identificación. no es transferible y deberá devolverse al causar baja el usuario.
+                                                                </div>
+
+                                                                <div class="bti-accident-title">EN CASO DE ACCIDENTE LLAMAR A:</div>
+                                                                <div class="bti-accident-capsule">
+                                                                    <span class="bti-accident-name" id="cred-accidente-nombre-val">Ignacio Fernández Neville</span>
+                                                                    <span class="bti-accident-phone" id="cred-accidente-tel-val">231 108 9100</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div>
+                                                                <div class="bti-signature-section">
+                                                                    <div class="bti-signature-line"></div>
+                                                                    <div class="bti-director-title">DIRECTOR</div>
+                                                                    <div class="bti-director-name" id="cred-director-val">ING. FAUSTO MAURO LEYVA FLORES</div>
+                                                                </div>
+
+                                                                <div class="bti-address-footer">
+                                                                    AV. JUÁREZ 901 ESQ. LEÓN GUZMÁN<br>
+                                                                    COL. CENTRO TEZIUTLÁN, PUEBLA.
+                                                                </div>
+                                                                <div class="bti-phone-footer">
+                                                                    TEL: 01 231 31 2 39 79
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Panel de Ajustes y Acciones de Impresión -->
+                                    <div class="col-lg-5">
+                                        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                            <h6 class="fw-bold text-slate-800 mb-3 d-flex align-items-center">
+                                                <i class="fa-solid fa-sliders text-primary me-2"></i> Personalización y Ajustes
+                                            </h6>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">Modalidad del Alumno</label>
+                                                <input type="text" id="inputCredModalidad" class="form-control form-control-sm shadow-sm" value="ESCOLARIZADO" oninput="actualizarCamposCredencialDinamicos()">
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">Periodo de Vigencia</label>
+                                                <input type="text" id="inputCredVigencia" class="form-control form-control-sm shadow-sm mb-1" value="JULIO 2026 - SEPTIEMBRE 2026" oninput="actualizarCamposCredencialDinamicos()">
+                                                <div class="d-flex gap-1 flex-wrap">
+                                                    <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2 fs-9 rounded-pill" onclick="setCredVigencia('JULIO 2026 - SEPTIEMBRE 2026')">Jul - Sep 2026</button>
+                                                    <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2 fs-9 rounded-pill" onclick="setCredVigencia('AGOSTO 2026 - ENERO 2027')">Ago 2026 - Ene 2027</button>
+                                                    <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2 fs-9 rounded-pill" onclick="setCredVigencia('FEBRERO 2027 - JULIO 2027')">Feb 2027 - Jul 2027</button>
                                                 </div>
                                             </div>
-                                            <!-- Cuerpo -->
-                                            <div class="cred-body p-3 d-flex gap-3 align-items-center">
-                                                <!-- Foto del Alumno -->
-                                                <div class="cred-photo-container">
-                                                    <i class="fa-solid fa-user-tie text-secondary fa-3x mt-2"></i>
+
+                                            <div class="row g-2 mb-3">
+                                                <div class="col-sm-7">
+                                                    <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">Contacto Emergencia</label>
+                                                    <input type="text" id="inputCredAccidenteNombre" class="form-control form-control-sm shadow-sm" value="Ignacio Fernández Neville" oninput="actualizarCamposCredencialDinamicos()">
                                                 </div>
-                                                <!-- Datos -->
-                                                <div class="cred-details flex-grow-1">
-                                                    <span class="cred-label">NOMBRE</span>
-                                                    <span class="cred-value fw-bold text-slate-800" id="cred-nombre-val">Pérez López Juan</span>
-                                                    
-                                                    <span class="cred-label mt-1">MATRÍCULA</span>
-                                                    <span class="cred-value text-slate-700 fw-semibold" id="cred-matricula-val">20260001</span>
-                                                    
-                                                    <span class="cred-label mt-1">PROGRAMA</span>
-                                                    <span class="cred-value text-slate-600" id="cred-plan-val">Informática e Interfaces</span>
+                                                <div class="col-sm-5">
+                                                    <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">Tel. Emergencia</label>
+                                                    <input type="text" id="inputCredAccidenteTel" class="form-control form-control-sm shadow-sm" value="231 108 9100" oninput="actualizarCamposCredencialDinamicos()">
                                                 </div>
                                             </div>
-                                            <!-- Footer -->
-                                            <div class="cred-footer d-flex justify-content-between align-items-center px-3 py-2 text-white" style="background: #0f172a;">
-                                                <span class="fs-9 font-monospace" style="opacity:0.85;">Vigencia: 2026-2027</span>
-                                                <div class="cred-barcode d-flex align-items-center">
-                                                    <i class="fa-solid fa-barcode fa-lg"></i>
+
+                                            <div class="mb-4">
+                                                <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">Director del Plantel</label>
+                                                <input type="text" id="inputCredDirector" class="form-control form-control-sm shadow-sm" value="ING. FAUSTO MAURO LEYVA FLORES" oninput="actualizarCamposCredencialDinamicos()">
+                                            </div>
+
+                                            <hr class="my-3 text-slate-200">
+
+                                            <h6 class="fw-bold text-slate-800 mb-2">
+                                                <i class="fa-solid fa-print text-success me-1"></i> Opciones de Impresión
+                                            </h6>
+                                            <p class="text-muted fs-9 mb-3">Formato listo para impresión física en alta definición (resolución vectorial para tarjetas PVC o papel opalina con marcas de corte).</p>
+
+                                            <div class="d-grid gap-2">
+                                                <button type="button" class="btn btn-success fw-bold py-2.5 shadow-sm rounded-3" onclick="imprimirCredencialOficialBTI('ambas')">
+                                                    <i class="fa-solid fa-print me-2"></i> Imprimir Ambas Caras (Frente y Reverso)
+                                                </button>
+                                                <div class="row g-2">
+                                                    <div class="col-6">
+                                                        <button type="button" class="btn btn-outline-primary fw-semibold py-2 w-100 fs-9 rounded-3" onclick="imprimirCredencialOficialBTI('frente')">
+                                                            <i class="fa-solid fa-id-badge me-1"></i> Solo Frente (PVC)
+                                                        </button>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <button type="button" class="btn btn-outline-secondary fw-semibold py-2 w-100 fs-9 rounded-3" onclick="imprimirCredencialOficialBTI('reverso')">
+                                                            <i class="fa-solid fa-shield me-1"></i> Solo Reverso (PVC)
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- Acciones de Credencial -->
-                                    <div class="col-md-5 d-flex flex-column justify-content-center gap-2">
-                                        <h6 class="fw-bold text-slate-800">Acciones de Impresión</h6>
-                                        <p class="text-muted fs-8">Genera un PDF con formato de credencial listo para imprimir en PVC o papel opalina.</p>
-                                        <button type="button" class="btn btn-success fw-bold py-2 w-100" onclick="printDoc('Credencial Escolar', document.getElementById('cred-nombre-val').innerText)">
-                                            <i class="fa-solid fa-print me-2"></i> Imprimir Credencial
-                                        </button>
-                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -860,48 +1016,326 @@
         background: linear-gradient(135deg, #38bdf8, #0284c7) !important;
     }
 
-    /* DISEÑO DE CREDENCIAL ESCOLAR EN CSS */
-    .credential-card {
-        width: 320px;
-        height: 200px;
+    /* DISEÑO OFICIAL DE CREDENCIAL ESCOLARIZADO BTI */
+    .bti-card {
+        width: 250px;
+        height: 396px;
         background: #ffffff;
-        border-radius: 16px;
+        border-radius: 12px;
+        position: relative;
         overflow: hidden;
-        border: 2px solid #0f172a;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        transition: all 0.3s ease;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 1px solid #cbd5e1;
+        display: flex;
+        flex-direction: column;
+        user-select: none;
     }
 
-    .cred-header {
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        height: 48px;
-        border-bottom: 2.5px solid #e2e8f0;
+    /* Frente (Anverso) */
+    .bti-card-front {
+        background: linear-gradient(135deg, #f0f7fd 0%, #e6f2fb 50%, #ffffff 100%);
     }
 
-    .cred-photo-container {
-        width: 80px;
-        height: 100px;
-        border: 1.5px solid #cbd5e1;
-        background: #f8fafc;
-        border-radius: 8px;
+    .bti-front-stripes {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 14px;
+        background: #15285f;
+        display: flex;
+        border-right: 1.5px solid #60a5fa;
+        box-shadow: 1px 0 3px rgba(0,0,0,0.15);
+        z-index: 5;
+    }
+    .bti-front-stripes::after {
+        content: '';
+        position: absolute;
+        right: -4px;
+        top: 0;
+        bottom: 0;
+        width: 1.5px;
+        background: #15285f;
+    }
+
+    .bti-map-bg {
+        position: absolute;
+        left: 12px;
+        top: 35px;
+        right: 0;
+        bottom: 0;
+        background-image: url('/img/credencial/mapa_america.svg');
+        background-size: 260% auto;
+        background-position: 70% 32%;
+        background-repeat: no-repeat;
+        opacity: 0.35;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .bti-header-banner {
+        background: #15285f;
+        color: #ffffff;
+        text-align: center;
+        padding: 6px 8px 5px 18px;
+        position: relative;
+        z-index: 6;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .bti-header-title {
+        font-size: 9.5px;
+        font-weight: 900;
+        letter-spacing: 0.3px;
+        line-height: 1.15;
+        text-transform: uppercase;
+        font-family: 'Montserrat', Arial, sans-serif;
+    }
+    .bti-header-subtitle {
+        font-size: 9.5px;
+        font-weight: 900;
+        letter-spacing: 0.7px;
+        line-height: 1.15;
+        text-transform: uppercase;
+        font-family: 'Montserrat', Arial, sans-serif;
+    }
+
+    .bti-sub-header {
         display: flex;
         align-items: center;
-        justify-content: center;
-        overflow: hidden;
+        justify-content: space-between;
+        padding: 4px 8px 3px 22px;
+        position: relative;
+        z-index: 6;
     }
-
-    .cred-label {
-        font-size: 0.52rem;
-        color: #94a3b8;
+    .bti-cct-text {
+        font-size: 8.5px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: 0.2px;
+        font-family: 'Montserrat', Arial, sans-serif;
+    }
+    .bti-official-logos {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+    .bti-logos-row {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .bti-logo-puebla {
+        height: 16px;
+        width: auto;
+        object-fit: contain;
+    }
+    .bti-logo-sep {
+        height: 14px;
+        width: auto;
+        object-fit: contain;
+    }
+    .bti-sep-text {
+        font-size: 5px;
         font-weight: 700;
+        color: #64748b;
         letter-spacing: 0.3px;
-        display: block;
+        text-transform: uppercase;
+        margin-top: 1px;
     }
 
-    .cred-value {
-        font-size: 0.72rem;
+    .bti-front-body {
+        flex: 1;
+        padding: 8px 8px 10px 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        position: relative;
+        z-index: 6;
+    }
+    .bti-corner-logo {
+        position: absolute;
+        right: 4px;
+        bottom: 20px;
+        width: 82px;
+        height: 82px;
+        z-index: 2;
+        pointer-events: none;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.12));
+    }
+    .bti-field-group {
+        margin-bottom: 6px;
+        position: relative;
+        z-index: 6;
+    }
+    .bti-field-group:last-child {
+        margin-bottom: 0;
+    }
+    .bti-field-label {
+        font-size: 7.8px;
+        font-weight: 800;
+        color: #15285f;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+        display: block;
+        font-family: 'Montserrat', Arial, sans-serif;
+    }
+    .bti-capsule {
+        background: #ffffff;
+        border: 1.5px solid #38bdf8;
+        border-radius: 7px;
+        padding: 3.5px 6px;
+        font-size: 7.8px;
+        font-weight: 800;
+        color: #0f172a;
+        box-shadow: 0 1.5px 3px rgba(56, 189, 248, 0.18);
+        text-align: center;
+        text-transform: uppercase;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        font-family: 'Montserrat', Arial, sans-serif;
+    }
+    .bti-capsule-sm { width: 72%; }
+    .bti-capsule-md { width: 82%; }
+    .bti-capsule-full { width: 92%; }
+
+    /* Reverso (Atrás) */
+    .bti-card-back {
+        background: #ffffff;
+        padding: 10px 22px 10px 12px;
+        justify-content: space-between;
+    }
+    .bti-back-stripes {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 14px;
+        background: #15285f;
+        border-left: 1.5px solid #60a5fa;
+        box-shadow: -1px 0 3px rgba(0,0,0,0.15);
+        z-index: 5;
+    }
+    .bti-back-stripes::before {
+        content: '';
+        position: absolute;
+        left: -4px;
+        top: 0;
+        bottom: 0;
+        width: 1.5px;
+        background: #15285f;
+    }
+    .bti-back-watermark {
+        position: absolute;
+        left: 45%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 135px;
+        height: 135px;
+        opacity: 0.18;
+        z-index: 1;
+        pointer-events: none;
+    }
+    .bti-back-content {
+        position: relative;
+        z-index: 6;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        text-align: center;
+    }
+    .bti-important-title {
+        font-size: 11px;
+        font-weight: 800;
+        color: #1e293b;
+        letter-spacing: 0.6px;
+        margin-bottom: 5px;
+        font-family: 'Montserrat', Arial, sans-serif;
+    }
+    .bti-important-text {
+        font-size: 6.2px;
+        line-height: 1.32;
+        color: #334155;
+        font-weight: 600;
+        margin-bottom: 10px;
+        text-align: justify;
+        padding: 0 4px;
+        font-family: 'Montserrat', Arial, sans-serif;
+    }
+    .bti-accident-title {
+        font-size: 6.8px;
+        font-weight: 800;
+        color: #1e293b;
+        letter-spacing: 0.3px;
+        margin-bottom: 3px;
+        font-family: 'Montserrat', Arial, sans-serif;
+    }
+    .bti-accident-capsule {
+        background: #ffffff;
+        border: 1.5px solid #38bdf8;
+        border-radius: 7px;
+        padding: 4px 6px;
+        margin: 0 auto 10px auto;
+        width: 90%;
+        box-shadow: 0 1.5px 4px rgba(56, 189, 248, 0.2);
+    }
+    .bti-accident-name {
+        font-size: 7.5px;
+        font-weight: 800;
+        color: #0f172a;
         display: block;
         line-height: 1.2;
+        font-family: 'Montserrat', Arial, sans-serif;
+    }
+    .bti-accident-phone {
+        font-size: 8px;
+        font-weight: 800;
+        color: #0284c7;
+        display: block;
+        margin-top: 1px;
+        font-family: 'Montserrat', Arial, sans-serif;
+    }
+    .bti-signature-section {
+        margin-top: auto;
+        margin-bottom: 8px;
+    }
+    .bti-signature-line {
+        width: 120px;
+        height: 1px;
+        background: #64748b;
+        margin: 0 auto 3px auto;
+    }
+    .bti-director-title {
+        font-size: 7px;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: 0.3px;
+        font-family: 'Montserrat', Arial, sans-serif;
+    }
+    .bti-director-name {
+        font-size: 7px;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.2;
+        font-family: 'Montserrat', Arial, sans-serif;
+    }
+    .bti-address-footer {
+        font-size: 5.8px;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1.25;
+        letter-spacing: 0.2px;
+        font-family: 'Montserrat', Arial, sans-serif;
+    }
+    .bti-phone-footer {
+        font-size: 6.2px;
+        font-weight: 800;
+        color: #0f172a;
+        margin-top: 1px;
+        font-family: 'Montserrat', Arial, sans-serif;
     }
 
     /* Utilidades */
@@ -1039,7 +1473,7 @@
 
         // Actualizar textos en la UI
         document.getElementById('lbl-cct-activo').innerText = cct;
-        document.getElementById('cred-cct-badge').innerText = `PLAN ${cct}`;
+        const credBadge = document.getElementById('cred-cct-badge'); if (credBadge) credBadge.innerText = `PLAN ${cct}`;
 
         // Actualizar etiqueta de ciclo en Asistencia
         const label = document.getElementById('lbl-asistencia-ciclo-label');
@@ -1212,12 +1646,16 @@
                 if (window.bootstrap && bootstrap.Tab) {
                     bootstrap.Tab.getOrCreateInstance(button).show();
                 }
-                // Si cambiamos de pestaña, resetear inputs visibles
-                document.querySelectorAll('#submodulos-tab-content input:not([type="hidden"])').forEach(input => input.value = '');
+                // Si cambiamos de pestaña, resetear inputs de búsqueda (sin borrar configuraciones de credencial)
+                document.querySelectorAll('#submodulos-tab-content input:not([type="hidden"]):not([id^="inputCred"])').forEach(input => input.value = '');
                 document.querySelectorAll('.list-group').forEach(list => list.style.display = 'none');
                 
                 if (sub.id === 'reporte_indisciplina') {
                     cargarHistorialReportes();
+                }
+                if (sub.id === 'credencial') {
+                    const credInfo = document.getElementById('credencial-info-alumno');
+                    if (credInfo) credInfo.style.display = 'block';
                 }
             });
 
@@ -1604,16 +2042,485 @@
         });
     }
 
+    let alumnoCredencialSeleccionado = null;
+
     function simularBusquedaAlumnoCredencial(query) {
         buscarAlumnosReal(query, 'credencial-alumno-sugerencia', (alumno) => {
-            const fullName = `${alumno.nombre} ${alumno.apPaterno} ${alumno.apMaterno || ''}`.trim();
+            alumnoCredencialSeleccionado = alumno;
+            const fullName = `${alumno.nombre} ${alumno.apPaterno} ${alumno.apMaterno || ''}`.trim().toUpperCase();
             document.getElementById('credencialAlumnoSearch').value = fullName;
-            
-            document.getElementById('cred-nombre-val').innerText = fullName.toUpperCase();
+
+            // Datos del frente
+            document.getElementById('cred-nombre-val').innerText = fullName;
             document.getElementById('cred-matricula-val').innerText = alumno.numeroControl || alumno.idAlumno;
-            document.getElementById('cred-plan-val').innerText = (alumno.nombreNivelIngreso || alumno.nombreGrupoTexto || 'PLAN GENERAL').toUpperCase();
+            
+            // Modalidad
+            const modVal = (alumno.modalidadHorario || alumno.modalidad_estudio || 'ESCOLARIZADO').toUpperCase();
+            document.getElementById('cred-modalidad-val').innerText = modVal.includes('SAB') ? 'SABATINO' : 'ESCOLARIZADO';
+            const inputMod = document.getElementById('inputCredModalidad');
+            if (inputMod) inputMod.value = document.getElementById('cred-modalidad-val').innerText;
+
+            // Contacto de emergencia (tutor o default)
+            const tutorNombre = (alumno.tutor || 'Ignacio Fernández Neville').trim();
+            const tutorTel = (alumno.telefonoTutor || alumno.celularAlumno || '231 108 9100').trim();
+            document.getElementById('cred-accidente-nombre-val').innerText = tutorNombre;
+            document.getElementById('cred-accidente-tel-val').innerText = tutorTel;
+            const inputAccNombre = document.getElementById('inputCredAccidenteNombre');
+            const inputAccTel = document.getElementById('inputCredAccidenteTel');
+            if (inputAccNombre) inputAccNombre.value = tutorNombre;
+            if (inputAccTel) inputAccTel.value = tutorTel;
+
             document.getElementById('credencial-info-alumno').style.display = 'block';
         });
+    }
+
+    function actualizarCamposCredencialDinamicos() {
+        const mod = document.getElementById('inputCredModalidad').value;
+        const vig = document.getElementById('inputCredVigencia').value;
+        const accNom = document.getElementById('inputCredAccidenteNombre').value;
+        const accTel = document.getElementById('inputCredAccidenteTel').value;
+        const dir = document.getElementById('inputCredDirector').value;
+
+        if (document.getElementById('cred-modalidad-val')) document.getElementById('cred-modalidad-val').innerText = mod.toUpperCase();
+        if (document.getElementById('cred-vigencia-val')) document.getElementById('cred-vigencia-val').innerText = vig.toUpperCase();
+        if (document.getElementById('cred-accidente-nombre-val')) document.getElementById('cred-accidente-nombre-val').innerText = accNom;
+        if (document.getElementById('cred-accidente-tel-val')) document.getElementById('cred-accidente-tel-val').innerText = accTel;
+        if (document.getElementById('cred-director-val')) document.getElementById('cred-director-val').innerText = dir.toUpperCase();
+    }
+
+    function setCredVigencia(texto) {
+        const input = document.getElementById('inputCredVigencia');
+        if (input) {
+            input.value = texto;
+            actualizarCamposCredencialDinamicos();
+        }
+    }
+
+    function imprimirCredencialOficialBTI(modo = 'ambas') {
+        const nombre = document.getElementById('cred-nombre-val').innerText || 'DANIEL IGNACIO FERNÁNDEZ PARRA';
+        const modalidad = document.getElementById('cred-modalidad-val').innerText || 'ESCOLARIZADO';
+        const matricula = document.getElementById('cred-matricula-val').innerText || '419012603';
+        const vigencia = document.getElementById('cred-vigencia-val').innerText || 'JULIO 2026 - SEPTIEMBRE 2026';
+        const accNombre = document.getElementById('cred-accidente-nombre-val').innerText || 'Ignacio Fernández Neville';
+        const accTel = document.getElementById('cred-accidente-tel-val').innerText || '231 108 9100';
+        const director = document.getElementById('cred-director-val').innerText || 'ING. FAUSTO MAURO LEYVA FLORES';
+
+        const win = window.open('', '_blank');
+        if (!win) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Ventana emergente bloqueada',
+                text: 'Por favor, permite ventanas emergentes en tu navegador para ver la impresión.',
+                confirmButtonColor: '#0284c7'
+            });
+            return;
+        }
+
+        const htmlFrente = `
+            <div class="print-card-wrapper">
+                <div class="bti-print-card bti-card-front">
+                    <div class="bti-front-stripes"></div>
+                    <div class="bti-map-bg"></div>
+                    <div class="bti-header-banner">
+                        <div class="bti-header-title">BACHILLERATO TECNOLOGICO</div>
+                        <div class="bti-header-subtitle">INTERAMERICANO</div>
+                    </div>
+                    <div class="bti-sub-header">
+                        <div class="bti-cct-text">C.C.T. 21PCT0073R</div>
+                        <div class="bti-official-logos">
+                            <div class="bti-logos-row">
+                                <img src="/img/credencial/logo_puebla.png" class="bti-logo-puebla" alt="Puebla">
+                                <img src="/img/credencial/logo_sep.png" class="bti-logo-sep" alt="SEP">
+                            </div>
+                            <div class="bti-sep-text">EDUCACIÓN PÚBLICA</div>
+                        </div>
+                    </div>
+                    <div class="bti-front-body">
+                        <img src="/img/credencial/logo_bti.png" class="bti-corner-logo" alt="BTI">
+                        <div class="bti-field-group">
+                            <span class="bti-field-label">NOMBRE</span>
+                            <div class="bti-capsule bti-capsule-full">${nombre}</div>
+                        </div>
+                        <div class="bti-field-group">
+                            <span class="bti-field-label">MODALIDAD</span>
+                            <div class="bti-capsule bti-capsule-sm">${modalidad}</div>
+                        </div>
+                        <div class="bti-field-group">
+                            <span class="bti-field-label">MATRICULA</span>
+                            <div class="bti-capsule bti-capsule-sm">${matricula}</div>
+                        </div>
+                        <div class="bti-field-group">
+                            <span class="bti-field-label">VIGENCIA</span>
+                            <div class="bti-capsule bti-capsule-full">${vigencia}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const htmlReverso = `
+            <div class="print-card-wrapper">
+                <div class="bti-print-card bti-card-back">
+                    <div class="bti-back-stripes"></div>
+                    <img src="/img/credencial/logo_bti.png" class="bti-back-watermark" alt="BTI Watermark">
+                    <div class="bti-back-content">
+                        <div>
+                            <div class="bti-important-title">IMPORTANTE:</div>
+                            <div class="bti-important-text">
+                                Esta credencial es personal y debe portarse en lugar visible mientras usted permanezca dentro de la institución.<br>
+                                Debe mostrarse al personal de seguridad, a la autoridad del BTI para fines de identificación. no es transferible y deberá devolverse al causar baja el usuario.
+                            </div>
+                            <div class="bti-accident-title">EN CASO DE ACCIDENTE LLAMAR A:</div>
+                            <div class="bti-accident-capsule">
+                                <span class="bti-accident-name">${accNombre}</span>
+                                <span class="bti-accident-phone">${accTel}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="bti-signature-section">
+                                <div class="bti-signature-line"></div>
+                                <div class="bti-director-title">DIRECTOR</div>
+                                <div class="bti-director-name">${director}</div>
+                            </div>
+                            <div class="bti-address-footer">
+                                AV. JUÁREZ 901 ESQ. LEÓN GUZMÁN<br>
+                                COL. CENTRO TEZIUTLÁN, PUEBLA.
+                            </div>
+                            <div class="bti-phone-footer">
+                                TEL: 01 231 31 2 39 79
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        let cardsHtml = '';
+        if (modo === 'ambas') {
+            cardsHtml = `<div class="cards-layout">${htmlFrente}${htmlReverso}</div>`;
+        } else if (modo === 'frente') {
+            cardsHtml = `<div class="cards-layout single-card">${htmlFrente}</div>`;
+        } else {
+            cardsHtml = `<div class="cards-layout single-card">${htmlReverso}</div>`;
+        }
+
+        win.document.write(`
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="utf-8">
+                <title>Credencial Escolar - ${nombre}</title>
+                <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+                <style>
+                    * {
+                        box-sizing: border-box;
+                        margin: 0;
+                        padding: 0;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    body {
+                        font-family: 'Montserrat', Arial, sans-serif;
+                        background: #ffffff;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        min-height: 100vh;
+                        padding: 10mm;
+                    }
+                    @page {
+                        size: auto;
+                        margin: 10mm;
+                    }
+                    .cards-layout {
+                        display: flex;
+                        gap: 15mm;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .cards-layout.single-card {
+                        gap: 0;
+                    }
+                    .print-card-wrapper {
+                        padding: 1px;
+                        border: 1px dashed #cbd5e1;
+                    }
+                    .bti-print-card {
+                        width: 54mm;
+                        height: 85.6mm;
+                        position: relative;
+                        overflow: hidden;
+                        display: flex;
+                        flex-direction: column;
+                        background: #ffffff;
+                    }
+                    .bti-card-front {
+                        background: linear-gradient(135deg, #f0f7fd 0%, #e6f2fb 50%, #ffffff 100%);
+                    }
+                    .bti-front-stripes {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        bottom: 0;
+                        width: 3.2mm;
+                        background: #15285f;
+                        border-right: 0.3mm solid #60a5fa;
+                        z-index: 5;
+                    }
+                    .bti-front-stripes::after {
+                        content: '';
+                        position: absolute;
+                        right: -0.9mm;
+                        top: 0;
+                        bottom: 0;
+                        width: 0.4mm;
+                        background: #15285f;
+                    }
+                    .bti-map-bg {
+                        position: absolute;
+                        left: 3mm;
+                        top: 8mm;
+                        right: 0;
+                        bottom: 0;
+                        background-image: url('/img/credencial/mapa_america.svg');
+                        background-size: 260% auto;
+                        background-position: 70% 32%;
+                        background-repeat: no-repeat;
+                        opacity: 0.35;
+                        z-index: 1;
+                    }
+                    .bti-header-banner {
+                        background: #15285f;
+                        color: #ffffff;
+                        text-align: center;
+                        padding: 1.4mm 1mm 1.2mm 4mm;
+                        position: relative;
+                        z-index: 6;
+                    }
+                    .bti-header-title, .bti-header-subtitle {
+                        font-size: 2.1mm;
+                        font-weight: 900;
+                        letter-spacing: 0.08mm;
+                        line-height: 1.15;
+                        text-transform: uppercase;
+                    }
+                    .bti-sub-header {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 0.9mm 1.5mm 0.8mm 5mm;
+                        position: relative;
+                        z-index: 6;
+                    }
+                    .bti-cct-text {
+                        font-size: 1.9mm;
+                        font-weight: 800;
+                        color: #0f172a;
+                    }
+                    .bti-official-logos {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: flex-end;
+                    }
+                    .bti-logos-row {
+                        display: flex;
+                        align-items: center;
+                        gap: 1.2mm;
+                    }
+                    .bti-logo-puebla {
+                        height: 3.6mm;
+                        width: auto;
+                        object-fit: contain;
+                    }
+                    .bti-logo-sep {
+                        height: 3.2mm;
+                        width: auto;
+                        object-fit: contain;
+                    }
+                    .bti-sep-text {
+                        font-size: 1.1mm;
+                        font-weight: 700;
+                        color: #64748b;
+                        letter-spacing: 0.05mm;
+                    }
+                    .bti-front-body {
+                        flex: 1;
+                        padding: 1.5mm 1.5mm 2.2mm 5.2mm;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: flex-end;
+                        position: relative;
+                        z-index: 6;
+                    }
+                    .bti-corner-logo {
+                        position: absolute;
+                        right: 1mm;
+                        bottom: 4.5mm;
+                        width: 17.5mm;
+                        height: 17.5mm;
+                        z-index: 2;
+                    }
+                    .bti-field-group {
+                        margin-bottom: 1.3mm;
+                        position: relative;
+                        z-index: 6;
+                    }
+                    .bti-field-group:last-child {
+                        margin-bottom: 0;
+                    }
+                    .bti-field-label {
+                        font-size: 1.7mm;
+                        font-weight: 800;
+                        color: #15285f;
+                        text-transform: uppercase;
+                        margin-bottom: 0.4mm;
+                        display: block;
+                    }
+                    .bti-capsule {
+                        background: #ffffff;
+                        border: 0.35mm solid #38bdf8;
+                        border-radius: 1.4mm;
+                        padding: 0.7mm 1.2mm;
+                        font-size: 1.7mm;
+                        font-weight: 800;
+                        color: #0f172a;
+                        text-align: center;
+                        text-transform: uppercase;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        display: block;
+                    }
+                    .bti-capsule-sm { width: 72%; }
+                    .bti-capsule-full { width: 92%; }
+
+                    /* REVERSO */
+                    .bti-card-back {
+                        background: #ffffff;
+                        padding: 2.2mm 4.8mm 2.2mm 2.6mm;
+                        justify-content: space-between;
+                    }
+                    .bti-back-stripes {
+                        position: absolute;
+                        right: 0;
+                        top: 0;
+                        bottom: 0;
+                        width: 3.2mm;
+                        background: #15285f;
+                        border-left: 0.3mm solid #60a5fa;
+                        z-index: 5;
+                    }
+                    .bti-back-stripes::before {
+                        content: '';
+                        position: absolute;
+                        left: -0.9mm;
+                        top: 0;
+                        bottom: 0;
+                        width: 0.4mm;
+                        background: #15285f;
+                    }
+                    .bti-back-watermark {
+                        position: absolute;
+                        left: 45%;
+                        top: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 29mm;
+                        height: 29mm;
+                        opacity: 0.18;
+                        z-index: 1;
+                    }
+                    .bti-back-content {
+                        position: relative;
+                        z-index: 6;
+                        height: 100%;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                        text-align: center;
+                    }
+                    .bti-important-title {
+                        font-size: 2.4mm;
+                        font-weight: 800;
+                        color: #1e293b;
+                        margin-bottom: 1.1mm;
+                    }
+                    .bti-important-text {
+                        font-size: 1.35mm;
+                        line-height: 1.32;
+                        color: #334155;
+                        font-weight: 600;
+                        margin-bottom: 2mm;
+                        text-align: justify;
+                        padding: 0 0.8mm;
+                    }
+                    .bti-accident-title {
+                        font-size: 1.5mm;
+                        font-weight: 800;
+                        color: #1e293b;
+                        margin-bottom: 0.6mm;
+                    }
+                    .bti-accident-capsule {
+                        background: #ffffff;
+                        border: 0.35mm solid #38bdf8;
+                        border-radius: 1.4mm;
+                        padding: 0.8mm 1.2mm;
+                        margin: 0 auto 2mm auto;
+                        width: 90%;
+                    }
+                    .bti-accident-name {
+                        font-size: 1.65mm;
+                        font-weight: 800;
+                        color: #0f172a;
+                        display: block;
+                        line-height: 1.2;
+                    }
+                    .bti-accident-phone {
+                        font-size: 1.75mm;
+                        font-weight: 800;
+                        color: #0284c7;
+                        display: block;
+                        margin-top: 0.2mm;
+                    }
+                    .bti-signature-section {
+                        margin-top: auto;
+                        margin-bottom: 1.6mm;
+                    }
+                    .bti-signature-line {
+                        width: 26mm;
+                        height: 0.2mm;
+                        background: #64748b;
+                        margin: 0 auto 0.6mm auto;
+                    }
+                    .bti-director-title, .bti-director-name {
+                        font-size: 1.5mm;
+                        font-weight: 800;
+                        color: #0f172a;
+                        line-height: 1.2;
+                    }
+                    .bti-address-footer {
+                        font-size: 1.25mm;
+                        font-weight: 700;
+                        color: #1e293b;
+                        line-height: 1.25;
+                    }
+                    .bti-phone-footer {
+                        font-size: 1.35mm;
+                        font-weight: 800;
+                        color: #0f172a;
+                        margin-top: 0.2mm;
+                    }
+                </style>
+            </head>
+            <body>
+                ${cardsHtml}
+            </body>
+            </html>
+        `);
+        win.document.close();
+        win.focus();
+        setTimeout(() => {
+            win.print();
+        }, 500);
     }
 
     function simularBusquedaAlumnoExtraordinario(query) {
