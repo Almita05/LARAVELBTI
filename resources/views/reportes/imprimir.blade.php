@@ -595,6 +595,46 @@
                             </div>
                         </div>
 
+                        <!-- Selector de Periodo y Rango de Fechas para Sistema Escolarizado -->
+                        <div class="card p-3 border-0 bg-white shadow-sm mb-4 rounded-3" id="asistencia-periodo-escolarizado-row" style="display: none; border-left: 4px solid #0284c7 !important;">
+                            <div class="row g-3 align-items-center">
+                                <div class="col-md-5">
+                                    <label class="form-label fw-semibold text-slate-700 mb-1">
+                                        <i class="fa-solid fa-calendar-week text-info me-1"></i> Periodo de Asistencias (Escolarizado)
+                                    </label>
+                                    <select id="asistenciaPeriodoSelect" class="form-select shadow-sm" onchange="onAsistenciaPeriodoSelectChange()">
+                                        <option value="1">1° Periodo: 31 Ago - 30 Oct (45 días hábiles)</option>
+                                        <option value="2">2° Periodo: 02 Nov - 18 Dic (35 días hábiles)</option>
+                                        <option value="custom">📅 Rango Personalizado en Calendario...</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-7" id="asistencia-custom-fechas-container" style="display: none;">
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-sm-5">
+                                            <label class="form-label fw-semibold text-slate-600 fs-9 mb-1">Desde (Fecha Inicio)</label>
+                                            <input type="date" id="asistenciaFechaInicioInput" class="form-control form-control-sm shadow-sm" value="2026-08-31" onchange="onAsistenciaCustomFechasChange()">
+                                        </div>
+                                        <div class="col-sm-5">
+                                            <label class="form-label fw-semibold text-slate-600 fs-9 mb-1">Hasta (Fecha Fin)</label>
+                                            <input type="date" id="asistenciaFechaFinInput" class="form-control form-control-sm shadow-sm" value="2026-10-30" onchange="onAsistenciaCustomFechasChange()">
+                                        </div>
+                                        <div class="col-sm-2 text-center text-sm-start">
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-2 w-100 fs-9" id="asistencia-dias-badge" title="Días hábiles de lunes a viernes">
+                                                45 días
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="asistencia-exceso-alerta" class="alert alert-warning py-1.5 px-3 mt-2 mb-0 fs-8 d-flex align-items-center rounded-2" style="display: none;">
+                                <i class="fa-solid fa-triangle-exclamation text-warning me-2 fs-7"></i>
+                                <div>
+                                    <strong id="asistencia-exceso-titulo">Rango excede el límite de 1 hoja.</strong> 
+                                    <span id="asistencia-exceso-mensaje">Se abarcarán un máximo de 45 días hábiles para garantizar que quepa en 1 sola página.</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="col-12 mt-4" id="asistencia-preview-card" style="display: none;">
                             <div class="card p-4 border-0 bg-light shadow-sm" style="border-radius: 16px; border-left: 5px solid #0284c7 !important;">
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
@@ -1017,6 +1057,12 @@
                     select.innerHTML += `<option value="${i}° Trimestre">${i}° Trimestre</option>`;
                 }
             }
+        }
+
+        // Mostrar o esconder selector de periodos de escolarizado según CCT
+        const escolarizadoRow = document.getElementById('asistencia-periodo-escolarizado-row');
+        if (escolarizadoRow) {
+            escolarizadoRow.style.display = (cct === 'BTI') ? 'block' : 'none';
         }
 
         // Cargar los grupos del CCT seleccionado
@@ -3239,6 +3285,16 @@ window.imprimirKardex = function() {
             }
         }
 
+        // Ajustar visibilidad de periodos escolarizados según modalidad del grupo
+        const modUpper = (grupo.modalidadHorario || '').toUpperCase();
+        const isSabatino = modUpper.includes('SABADO') || modUpper.includes('SÁBADO');
+        const isDominical = modUpper.includes('DOMINGO');
+        const isEscolarizado = (grupo.id_centroTrabajo == 2) || (cctSeleccionado === 'BTI') || (!isSabatino && !isDominical);
+        const escolarizadoRow = document.getElementById('asistencia-periodo-escolarizado-row');
+        if (escolarizadoRow) {
+            escolarizadoRow.style.display = isEscolarizado ? 'block' : 'none';
+        }
+
         // Auto-seleccionar docente y materia si existen en tb_horarios
         const asignaciones = (window.horariosDb || []).filter(h => h.id_grupo == grupoId);
         const docenteSelect = document.getElementById('asistenciaDocenteSelect');
@@ -3580,32 +3636,137 @@ window.imprimirKardex = function() {
         actualizarAsistenciaPreview();
     }
 
+    function contarDiasHabiles(startDateStr, endDateStr) {
+        if (!startDateStr || !endDateStr) return { dias: 0, fechaCorte: null };
+        const p1 = startDateStr.split('-');
+        const p2 = endDateStr.split('-');
+        if (p1.length < 3 || p2.length < 3) return { dias: 0, fechaCorte: null };
+
+        let cur = new Date(Date.UTC(parseInt(p1[0]), parseInt(p1[1]) - 1, parseInt(p1[2])));
+        const end = new Date(Date.UTC(parseInt(p2[0]), parseInt(p2[1]) - 1, parseInt(p2[2])));
+
+        if (cur > end) return { dias: 0, fechaCorte: null };
+
+        let count = 0;
+        let fechaCorte = null;
+
+        while (cur <= end) {
+            const dayOfWeek = cur.getUTCDay(); // 0: Dom, 6: Sab
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                count++;
+                if (count === 45) {
+                    fechaCorte = new Date(cur.getTime());
+                }
+            }
+            cur.setUTCDate(cur.getUTCDate() + 1);
+        }
+
+        return { dias: count, fechaCorte: fechaCorte };
+    }
+
+    function onAsistenciaPeriodoSelectChange() {
+        const sel = document.getElementById('asistenciaPeriodoSelect');
+        const val = sel ? sel.value : '1';
+        const customContainer = document.getElementById('asistencia-custom-fechas-container');
+        const excesoAlerta = document.getElementById('asistencia-exceso-alerta');
+        const fIniInput = document.getElementById('asistenciaFechaInicioInput');
+        const fFinInput = document.getElementById('asistenciaFechaFinInput');
+
+        if (val === 'custom') {
+            if (customContainer) customContainer.style.display = 'block';
+            onAsistenciaCustomFechasChange();
+        } else {
+            if (customContainer) customContainer.style.display = 'none';
+            if (excesoAlerta) excesoAlerta.style.display = 'none';
+
+            const anioActual = new Date().getFullYear();
+            if (val === '1') {
+                if (fIniInput) fIniInput.value = `${anioActual}-08-31`;
+                if (fFinInput) fFinInput.value = `${anioActual}-10-30`;
+            } else if (val === '2') {
+                if (fIniInput) fIniInput.value = `${anioActual}-11-02`;
+                if (fFinInput) fFinInput.value = `${anioActual}-12-18`;
+            }
+            actualizarAsistenciaPreview();
+        }
+    }
+
+    function onAsistenciaCustomFechasChange() {
+        const fIniInput = document.getElementById('asistenciaFechaInicioInput');
+        const fFinInput = document.getElementById('asistenciaFechaFinInput');
+        const badge = document.getElementById('asistencia-dias-badge');
+        const excesoAlerta = document.getElementById('asistencia-exceso-alerta');
+        const excesoMsg = document.getElementById('asistencia-exceso-mensaje');
+
+        if (!fIniInput || !fFinInput) return;
+
+        const info = contarDiasHabiles(fIniInput.value, fFinInput.value);
+        const dias = info.dias;
+
+        if (badge) {
+            if (dias > 45) {
+                badge.className = 'badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-2 w-100 fs-9';
+                badge.innerText = `${dias} días`;
+            } else {
+                badge.className = 'badge bg-success-subtle text-success border border-success-subtle px-2 py-2 w-100 fs-9';
+                badge.innerText = `${dias} días (1 hoja)`;
+            }
+        }
+
+        if (excesoAlerta) {
+            if (dias > 45) {
+                const pad = (n) => String(n).padStart(2, '0');
+                const corteStr = info.fechaCorte 
+                    ? `${pad(info.fechaCorte.getUTCDate())}/${pad(info.fechaCorte.getUTCMonth() + 1)}/${info.fechaCorte.getUTCFullYear()}`
+                    : '';
+                if (excesoMsg) {
+                    excesoMsg.innerText = `Ha seleccionado ${dias} días hábiles. Por límites de impresión (1 página), el reporte abarcará los primeros 45 días hábiles ${corteStr ? `(hasta el ${corteStr})` : ''}.`;
+                }
+                excesoAlerta.style.display = 'flex';
+            } else {
+                excesoAlerta.style.display = 'none';
+            }
+        }
+
+        actualizarAsistenciaPreview();
+    }
+
     function calcularFechasTrimestrePreview(grupo, trimestreNum) {
         if (!grupo) return 'Fechas por definir';
 
         const modalidad = (grupo.modalidadHorario || '').toUpperCase();
         const isSabatino = modalidad.includes('SABADO') || modalidad.includes('SÁBADO');
         const isDominical = modalidad.includes('DOMINGO');
-        const isEscolarizado = !isSabatino && !isDominical;
+        const isEscolarizado = (grupo.id_centroTrabajo == 2) || (cctSeleccionado === 'BTI') || (!isSabatino && !isDominical);
 
         const pad = (n) => String(n).padStart(2, '0');
         const fmt = (d) => `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
 
         if (isEscolarizado) {
-            // Escolarizado: Lunes a Viernes comenzando el 31 de Agosto (o fecha de inicio del grupo)
-            let startDate = null;
+            const periodoSel = document.getElementById('asistenciaPeriodoSelect')?.value || '1';
+            let anio = new Date().getFullYear();
             if (grupo.fechaInicio) {
-                const parts = grupo.fechaInicio.split('-');
-                if (parts.length >= 3) {
-                    startDate = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
+                const p = grupo.fechaInicio.split('-');
+                if (p.length >= 1 && parseInt(p[0]) > 2000) anio = parseInt(p[0]);
+            }
+
+            if (periodoSel === '1') {
+                return `31/08/${anio} al 30/10/${anio} (1° Periodo: 45 días hábiles)`;
+            } else if (periodoSel === '2') {
+                return `02/11/${anio} al 18/12/${anio} (2° Periodo: 35 días hábiles)`;
+            } else {
+                const fIni = document.getElementById('asistenciaFechaInicioInput')?.value;
+                const fFin = document.getElementById('asistenciaFechaFinInput')?.value;
+                if (fIni && fFin) {
+                    const info = contarDiasHabiles(fIni, fFin);
+                    const p1 = fIni.split('-');
+                    const p2 = fFin.split('-');
+                    const d1 = new Date(Date.UTC(parseInt(p1[0]), parseInt(p1[1]) - 1, parseInt(p1[2])));
+                    const d2 = new Date(Date.UTC(parseInt(p2[0]), parseInt(p2[1]) - 1, parseInt(p2[2])));
+                    return `${fmt(d1)} al ${fmt(d2)} (Personalizado: ${info.dias} días hábiles${info.dias > 45 ? ' / tope 45' : ''})`;
                 }
+                return `31/08/${anio} al 30/10/${anio} (45 días hábiles)`;
             }
-            if (!startDate) {
-                startDate = new Date(Date.UTC(new Date().getFullYear(), 7, 31)); // 31 de agosto
-            }
-            // 45 días hábiles = 9 semanas completas (60 días naturales)
-            const periodEnd = new Date(startDate.getTime() + (60 * 24 * 60 * 60 * 1000));
-            return `${fmt(startDate)} al ${fmt(periodEnd)} (9 semanas / 45 días hábiles)`;
         }
 
         if (!grupo.fechaInicio) return 'Fechas por definir';
@@ -3712,7 +3873,22 @@ window.imprimirKardex = function() {
         const matchTrim = ciclo.match(/\d+/);
         const trimestreNum = matchTrim ? matchTrim[0] : '1';
 
-        const url = `/reportes/asistencia-pdf?id_grupo=${encodeURIComponent(grupoId)}&clave_grupo=${encodeURIComponent(clave)}&id_centro_trabajo=${encodeURIComponent(cctId)}&modalidad=${encodeURIComponent(modalidad)}&fecha_inicio=${encodeURIComponent(fechaIni)}&id_docente=${encodeURIComponent(docenteId)}&docente_nombre=${encodeURIComponent(docenteNombre)}&materia=${encodeURIComponent(materia)}&trimestre=${encodeURIComponent(trimestreNum)}`;
+        const modUpper = (modalidad || '').toUpperCase();
+        const isSabatino = modUpper.includes('SABADO') || modUpper.includes('SÁBADO');
+        const isDominical = modUpper.includes('DOMINGO');
+        const isEscolarizado = (grupo.id_centroTrabajo == 2) || (cctSeleccionado === 'BTI') || (!isSabatino && !isDominical);
+
+        let extraParams = '';
+        if (isEscolarizado) {
+            const periodoSel = document.getElementById('asistenciaPeriodoSelect')?.value || '1';
+            const fIni = document.getElementById('asistenciaFechaInicioInput')?.value || '';
+            const fFin = document.getElementById('asistenciaFechaFinInput')?.value || '';
+            extraParams = `&periodo_escolarizado=${encodeURIComponent(periodoSel)}&fecha_inicio=${encodeURIComponent(fIni)}&fecha_fin=${encodeURIComponent(fFin)}`;
+        } else {
+            extraParams = `&fecha_inicio=${encodeURIComponent(fechaIni)}`;
+        }
+
+        const url = `/reportes/asistencia-pdf?id_grupo=${encodeURIComponent(grupoId)}&clave_grupo=${encodeURIComponent(clave)}&id_centro_trabajo=${encodeURIComponent(cctId)}&modalidad=${encodeURIComponent(modalidad)}${extraParams}&id_docente=${encodeURIComponent(docenteId)}&docente_nombre=${encodeURIComponent(docenteNombre)}&materia=${encodeURIComponent(materia)}&trimestre=${encodeURIComponent(trimestreNum)}`;
         
         window.open(url, '_blank');
     }

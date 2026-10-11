@@ -239,21 +239,39 @@ class ListasAsistenciasController extends Controller
         $isSabado = str_contains($modalidad, 'SABADO') || str_contains($modalidad, 'SÁBADO');
         $isEscolarizado = !$isDomingo && !$isSabado;
 
-        // Determinar fecha de inicio
+        // Determinar fecha de inicio y fin
         $fechaInicioParam = $request->get('fecha_inicio');
+        $fechaFinParam = $request->get('fecha_fin');
+        $periodoEscolarizado = $request->get('periodo_escolarizado', '1');
         $fechaInicioGrupo = $grupo->fechaInicio ?? null;
 
         if ($isEscolarizado) {
-            // Escolarizado: Lunes a Viernes. Inicia el 31 de Agosto o según la fecha del grupo
-            $fechaBase = $fechaInicioParam ?: ($fechaInicioGrupo ?: null);
-            if (!empty($fechaBase) && $fechaBase !== '0000-00-00') {
+            // Determinar año base
+            $year = Carbon::now()->year;
+            if (!empty($fechaInicioGrupo) && $fechaInicioGrupo !== '0000-00-00') {
                 try {
-                    $startDate = Carbon::parse($fechaBase);
+                    $year = Carbon::parse($fechaInicioGrupo)->year;
+                } catch (\Throwable $e) {}
+            }
+
+            if ($periodoEscolarizado === '2') {
+                $startDate = Carbon::create($year, 11, 2);
+                $endDate = Carbon::create($year, 12, 18);
+            } elseif ($periodoEscolarizado === 'custom' || (!empty($fechaInicioParam) && !empty($fechaFinParam))) {
+                try {
+                    $startDate = Carbon::parse($fechaInicioParam);
                 } catch (\Throwable $e) {
-                    $startDate = Carbon::create(Carbon::now()->year, 8, 31);
+                    $startDate = Carbon::create($year, 8, 31);
+                }
+                try {
+                    $endDate = !empty($fechaFinParam) ? Carbon::parse($fechaFinParam) : null;
+                } catch (\Throwable $e) {
+                    $endDate = null;
                 }
             } else {
-                $startDate = Carbon::create(Carbon::now()->year, 8, 31);
+                // 1° Periodo por defecto (31 de Agosto al 30 de Octubre)
+                $startDate = Carbon::create($year, 8, 31);
+                $endDate = Carbon::create($year, 10, 30);
             }
 
             // Si la fecha cae en fin de semana, comenzar el lunes siguiente
@@ -270,6 +288,7 @@ class ListasAsistenciasController extends Controller
             }
             $weeksOffset = ($trimestreNum - 1) * 13;
             $startDate = $startDate->copy()->addWeeks($weeksOffset);
+            $endDate = null;
         }
 
         $mesesNombres = [
@@ -290,6 +309,9 @@ class ListasAsistenciasController extends Controller
             $curDate = $startDate->copy();
 
             while (count($columnasFechas) < $totalDias) {
+                if ($endDate && $curDate->gt($endDate)) {
+                    break;
+                }
                 if ($curDate->isWeekday()) {
                     $mesNum = $curDate->month;
                     $mesNom = $mesesNombres[$mesNum] ?? strtoupper($curDate->translatedFormat('M'));
@@ -334,6 +356,14 @@ class ListasAsistenciasController extends Controller
                     'eval' => $eval
                 ];
             }
+        }
+
+        // Si es escolarizado, agregar el rango de fechas reales al nombre del grupo
+        if ($isEscolarizado && !empty($columnasFechas)) {
+            $primerDia = $columnasFechas[0];
+            $ultimoDia = end($columnasFechas);
+            $rangoTexto = "({$primerDia['dia']}/{$primerDia['mes']} - {$ultimoDia['dia']}/{$ultimoDia['mes']})";
+            $grupoDisplay = "{$claveGrupo} {$periodLabel} {$rangoTexto}";
         }
 
         // Agrupar meses consecutivos para colspan
