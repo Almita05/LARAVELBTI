@@ -25,6 +25,7 @@ use App\Http\Controllers\PermisosCapturaController;
 use App\Http\Controllers\PersonalController;
 use App\Http\Controllers\QrpController;
 use App\Http\Controllers\ReporteIndisciplinaController;
+use App\Http\Controllers\DashboardController;
 
 
 
@@ -58,12 +59,8 @@ Route::middleware('auth.session')->group(function () {
         ->header('Expires', '0');
     });
 
-    Route::get('/home', function () {
-        if (session('rol') === 'DOCENTE') {
-            return redirect()->route('horarios_docentes');
-        }
-        return view('principal.home');
-    })->name('home');
+    Route::get('/home', [DashboardController::class, 'index'])->name('home');
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats'])->name('dashboard.stats');
 
     Route::get('/editarPerfil', [PerfilController::class, 'index']);
 
