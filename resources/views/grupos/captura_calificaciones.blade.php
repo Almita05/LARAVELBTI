@@ -389,11 +389,327 @@
     </div>
 </div>
 
+<!-- MODAL: CAPTURA DE ASISTENCIAS POR SEMESTRE / GRUPO -->
+<div class="modal fade" id="modalCapturaAsistenciasGrupo" tabindex="-1" aria-labelledby="modalCapturaAsistenciasLabel" aria-hidden="true" style="z-index: 1250;">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); padding: 16px 24px;">
+                <div>
+                    <h5 class="modal-title fw-bold mb-0" id="modalCapturaAsistenciasLabel">
+                        <i class="fa-solid fa-calendar-check me-2"></i>Captura de Asistencias del Periodo
+                    </h5>
+                    <small class="text-white-50">Grupo: <strong id="lblAsistenciasGrupoClave" class="text-white">---</strong></small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-4" style="background: #f8fafc;">
+                <!-- Controles -->
+                <div class="card p-3 border-0 shadow-sm mb-3" style="border-radius: 12px; background: #ffffff;">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold text-slate-700 fs-7 mb-1">
+                                <i class="fa-solid fa-graduation-cap text-indigo me-1"></i>Periodo / Semestre:
+                            </label>
+                            <select id="selSemestreAsistenciasGrupo" class="form-select" onchange="recargarAlumnosAsistenciasModal()">
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-slate-700 fs-7 mb-1">
+                                <i class="fa-solid fa-calendar-days text-primary me-1"></i>Clases Impartidas (Hubieron):
+                            </label>
+                            <input type="number" id="inpTotalClasesGlobal" class="form-control" placeholder="Ej. 50" min="0">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-outline-primary w-100 fw-bold" onclick="aplicarTotalClasesATodos()">
+                                <i class="fa-solid fa-arrows-rotate me-1"></i> Aplicar a todos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de alumnos -->
+                <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden; background: #ffffff;">
+                    <div class="table-responsive" style="max-height: 380px;">
+                        <table class="table table-hover align-middle mb-0" id="tablaAsistenciasGrupoModal">
+                            <thead style="background: #e2e8f0; font-size: 0.8rem; text-transform: uppercase;" class="sticky-top">
+                                <tr>
+                                    <th class="text-center" style="width: 45px;">#</th>
+                                    <th style="width: 140px;">Matrícula</th>
+                                    <th>Nombre del Alumno</th>
+                                    <th class="text-center" style="width: 130px;">Clases que Hubieron</th>
+                                    <th class="text-center" style="width: 130px;">Asistencias que Tuvo</th>
+                                    <th class="text-center" style="width: 100px;">% Asistencia</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyAsistenciasGrupoModal">
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">
+                                        <i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando alumnos...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-white border-top d-flex justify-content-between p-3">
+                <button type="button" class="btn btn-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary px-4 fw-bold" id="btnGuardarAsistenciasModal" onclick="guardarAsistenciasGrupoModal()" style="background: #4f46e5; border-color: #4f46e5;">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Asistencias
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 let listaTodosGrupos = [];
 let filtroCctActual = '';
 let grupoCapturaActualId = null;
 let datosGrupoMateriaActual = null;
+
+
+// ==========================================
+// CAPTURA DE ASISTENCIAS DEL PERIODO POR GRUPO
+// ==========================================
+let grupoAsistenciasActual = null;
+
+function abrirModalAsistenciasGrupo(idGrupo, claveGrupo, idCct, idNivelActivo) {
+    grupoAsistenciasActual = {
+        id: idGrupo,
+        clave: claveGrupo,
+        idCct: idCct,
+        idNivelActivo: idNivelActivo
+    };
+
+    const lbl = document.getElementById('lblAsistenciasGrupoClave');
+    if (lbl) lbl.innerText = claveGrupo;
+
+    const select = document.getElementById('selSemestreAsistenciasGrupo');
+    if (select) {
+        select.innerHTML = '';
+        const isSemestral = (idCct === 2 || (claveGrupo && (claveGrupo.includes('BTI') || claveGrupo.includes('LV'))));
+
+        if (isSemestral) {
+            const semestres = [
+                { id: 7, nombre: '1er Semestre' },
+                { id: 8, nombre: '2° Semestre' },
+                { id: 9, nombre: '3er Semestre' },
+                { id: 10, nombre: '4° Semestre' },
+                { id: 11, nombre: '5to Semestre' },
+                { id: 12, nombre: '6to Semestre' }
+            ];
+            semestres.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.nombre;
+                if (s.id === idNivelActivo) opt.selected = true;
+                select.appendChild(opt);
+            });
+        } else {
+            const trimestres = [
+                { id: 1, nombre: '1er Trimestre' },
+                { id: 2, nombre: '2° Trimestre' },
+                { id: 3, nombre: '3er Trimestre' },
+                { id: 4, nombre: '4to Trimestre' },
+                { id: 5, nombre: '5to Trimestre' },
+                { id: 6, nombre: '6to Trimestre' }
+            ];
+            trimestres.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.nombre;
+                if (t.id === idNivelActivo) opt.selected = true;
+                select.appendChild(opt);
+            });
+        }
+    }
+
+    let modalEl = document.getElementById('modalCapturaAsistenciasGrupo');
+    if (modalEl) {
+        let modal = bootstrap.Modal.getInstance(modalEl);
+        if (!modal) modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+
+    recargarAlumnosAsistenciasModal();
+}
+
+function recargarAlumnosAsistenciasModal() {
+    if (!grupoAsistenciasActual) return;
+    const tbody = document.getElementById('tbodyAsistenciasGrupoModal');
+    if (!tbody) return;
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-2" style="color: #4f46e5;"></i>Cargando lista de alumnos...</td></tr>`;
+
+    const idNivel = document.getElementById('selSemestreAsistenciasGrupo') ? document.getElementById('selSemestreAsistenciasGrupo').value : 7;
+
+    fetch(`/grupos/${grupoAsistenciasActual.id}/asistencias-semestre?id_nivel_academico=${idNivel}`)
+        .then(r => r.json())
+        .then(resp => {
+            const alumnos = resp.alumnos || [];
+            if (!alumnos.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No hay alumnos inscritos en este grupo.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            alumnos.forEach((al, idx) => {
+                const totVal = al.total_asistencias !== null && al.total_asistencias !== undefined ? al.total_asistencias : '';
+                const asistVal = al.asistencias !== null && al.asistencias !== undefined ? al.asistencias : '';
+                const pct = al.porcentaje !== null && al.porcentaje !== undefined ? `${al.porcentaje}%` : '---';
+                let badgeClass = 'bg-secondary';
+                if (al.porcentaje !== null) {
+                    if (al.porcentaje >= 80) badgeClass = 'bg-success';
+                    else if (al.porcentaje >= 60) badgeClass = 'bg-warning text-dark';
+                    else badgeClass = 'bg-danger';
+                }
+
+                html += `
+                    <tr data-alumno-id="${al.idAlumno}">
+                        <td class="text-center fw-bold text-muted">${idx + 1}</td>
+                        <td><span class="badge bg-light text-dark border font-monospace">${al.numeroControl || al.idAlumno}</span></td>
+                        <td class="fw-semibold text-slate-800">${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}</td>
+                        <td class="text-center">
+                            <input type="number" min="0" class="form-control form-control-sm text-center inp-tot-asist fw-bold" value="${totVal}" placeholder="Hubieron" oninput="actualizarPorcentajeFila(this)" style="max-width: 100px; margin: 0 auto;">
+                        </td>
+                        <td class="text-center">
+                            <input type="number" min="0" class="form-control form-control-sm text-center inp-asist fw-bold text-primary" value="${asistVal}" placeholder="Tuvo" oninput="actualizarPorcentajeFila(this)" style="max-width: 100px; margin: 0 auto;">
+                        </td>
+                        <td class="text-center td-pct">
+                            <span class="badge ${badgeClass} px-2 py-1">${pct}</span>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        })
+        .catch(err => {
+            console.error(err);
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i>Error al cargar las asistencias del grupo.</td></tr>`;
+        });
+}
+
+function actualizarPorcentajeFila(inputEl) {
+    const tr = inputEl.closest('tr');
+    if (!tr) return;
+    const totInp = tr.querySelector('.inp-tot-asist');
+    const asistInp = tr.querySelector('.inp-asist');
+    const tdPct = tr.querySelector('.td-pct');
+
+    const tot = parseFloat(totInp ? totInp.value : 0);
+    const asist = parseFloat(asistInp ? asistInp.value : 0);
+
+    if (!isNaN(tot) && !isNaN(asist) && tot > 0) {
+        const pct = Math.round((asist / tot) * 100);
+        let badgeClass = pct >= 80 ? 'bg-success' : (pct >= 60 ? 'bg-warning text-dark' : 'bg-danger');
+        if (tdPct) tdPct.innerHTML = `<span class="badge ${badgeClass} px-2 py-1">${pct}%</span>`;
+    } else {
+        if (tdPct) tdPct.innerHTML = `<span class="badge bg-secondary px-2 py-1">---</span>`;
+    }
+}
+
+function aplicarTotalClasesATodos() {
+    const inp = document.getElementById('inpTotalClasesGlobal');
+    const val = inp ? inp.value.trim() : '';
+    if (!val) {
+        Swal.fire({
+            icon: 'info',
+            title: 'Ingrese un valor',
+            text: 'Por favor, escriba el total de clases impartidas en el campo superior.',
+            confirmButtonColor: '#4f46e5'
+        });
+        return;
+    }
+    const inputs = document.querySelectorAll('#tbodyAsistenciasGrupoModal .inp-tot-asist');
+    inputs.forEach(i => {
+        i.value = val;
+        actualizarPorcentajeFila(i);
+    });
+}
+
+function guardarAsistenciasGrupoModal() {
+    if (!grupoAsistenciasActual) return;
+    const sel = document.getElementById('selSemestreAsistenciasGrupo');
+    const idNivel = sel ? parseInt(sel.value) : 7;
+    const rows = document.querySelectorAll('#tbodyAsistenciasGrupoModal tr[data-alumno-id]');
+
+    if (!rows.length) {
+        Swal.fire({ icon: 'warning', title: 'Sin alumnos', text: 'No hay alumnos para guardar.' });
+        return;
+    }
+
+    const payloadList = [];
+    rows.forEach(tr => {
+        const idAlumno = parseInt(tr.getAttribute('data-alumno-id'));
+        const totInp = tr.querySelector('.inp-tot-asist');
+        const asistInp = tr.querySelector('.inp-asist');
+        const totVal = totInp ? totInp.value.trim() : '';
+        const asistVal = asistInp ? asistInp.value.trim() : '';
+
+        payloadList.push({
+            idAlumno: idAlumno,
+            total_asistencias: totVal !== '' ? parseInt(totVal, 10) : null,
+            asistencias: asistVal !== '' ? parseInt(asistVal, 10) : null
+        });
+    });
+
+    const btn = document.getElementById('btnGuardarAsistenciasModal');
+    const originalText = btn ? btn.innerHTML : 'Guardar Asistencias';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Guardando...`;
+    }
+
+    fetch(`/grupos/${grupoAsistenciasActual.id}/asistencias-semestre`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : ''
+        },
+        body: JSON.stringify({
+            id_nivel_academico: idNivel,
+            asistencias: payloadList
+        })
+    })
+    .then(r => r.json())
+    .then(resp => {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+
+        if (resp.success) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Asistencias Guardadas!',
+                text: 'Las asistencias del periodo fueron actualizadas exitosamente y se reflejarán en las boletas.',
+                confirmButtonColor: '#4f46e5'
+            });
+            recargarAlumnosAsistenciasModal();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al guardar',
+                text: resp.message || resp.error || 'Ocurrió un error inesperado.'
+            });
+        }
+    })
+    .catch(err => {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+        console.error(err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de conexión',
+            text: 'No se pudo comunicar con el servidor.'
+        });
+    });
+}
+
 
 // ==========================================
 // CÁLCULO DE PROGRESO DE PERIODO
@@ -776,10 +1092,15 @@ function renderTablaGrupos(grupos) {
             <td>
                 <span class="badge ${statusBadgeClass}">${status}</span>
             </td>
-            <td class="text-center">
-                <button type="button" class="btn btn-sm btn-primary fw-bold px-3 py-2 shadow-sm w-100" onclick="abrirCapturaGrupoMateria(${g.id})" style="background: rgb(49, 125, 146); border: none; border-radius: 8px;">
-                    <i class="fa-solid fa-pen-to-square me-1"></i> Capturar Calificaciones
-                </button>
+            <td class="text-center" style="min-width: 270px;">
+                <div class="d-flex flex-column flex-xl-row gap-1 justify-content-center">
+                    <button type="button" class="btn btn-sm btn-primary fw-bold px-2 py-2 shadow-sm flex-fill" onclick="abrirCapturaGrupoMateria(${g.id})" style="background: rgb(49, 125, 146); border: none; border-radius: 8px;" title="Capturar calificaciones por materia">
+                        <i class="fa-solid fa-pen-to-square me-1"></i> Capturar Calificaciones
+                    </button>
+                    <button type="button" class="btn btn-sm text-white fw-bold px-2 py-2 shadow-sm flex-fill" onclick="abrirModalAsistenciasGrupo(${g.id}, '${g.clave}', ${g.id_centroTrabajo}, ${g.id_nivel_academico || 7})" style="background: #4f46e5; border: none; border-radius: 8px;" title="Capturar asistencias del periodo para todo el grupo">
+                        <i class="fa-solid fa-calendar-check me-1"></i> Capturar Asistencias
+                    </button>
+                </div>
             </td>
         </tr>
         `;
@@ -1181,7 +1502,7 @@ function renderDatosControlOficial(data) {
 
     // Detectar si el grupo es Semestral (BTI o Informatica)
     const isSemestral = (grupo.id_tipoPeriodo === 1 || grupo.id_centroTrabajo === 2 || grupo.id_centroTrabajo === 1);
-    const mostrarAsistencias = true;
+    const mostrarAsistencias = false;
 
     // Ajustar thead dinámicamente
     const thead = document.getElementById('theadCalificacionesOficial');
@@ -1775,7 +2096,7 @@ function recalcularEstadisticasMateria() {
         if (isSemestral) {
             const grupo = (datosGrupoMateriaActual && datosGrupoMateriaActual.grupo) || {};
             const isBti = (parseInt(grupo.id_centroTrabajo) === 2 || (grupo.nombreCentroTrabajo || '').toUpperCase().includes('BTI'));
-            const mostrarAsistencias = true;
+            const mostrarAsistencias = false;
 
             tfoot.innerHTML = `
                 <tr>
@@ -2065,9 +2386,22 @@ function inicializarModuloCaptura() {
 
     // Mover modales a document.body para evitar stacking context con navbar y sidebar fijos
     const modal = document.getElementById('modalCapturaMateriaGrupo');
+    const modalAsist = document.getElementById('modalCapturaAsistenciasGrupo');
     const modalContainer = document.getElementById('contenedorModal') || document.body;
     if (modal && modal.parentElement !== modalContainer) {
         modalContainer.appendChild(modal);
+    }
+    if (modalAsist && modalAsist.parentElement !== modalContainer) {
+        modalContainer.appendChild(modalAsist);
+    }
+
+    if (modalAsist) {
+        modalAsist.addEventListener('hidden.bs.modal', function () {
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        });
     }
 
     if (modal) {
