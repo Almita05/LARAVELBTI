@@ -215,6 +215,8 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::get('/grupos/captura_calificaciones', [GrupoController::class, 'capturaCalificaciones'])->name('grupos.captura_calificaciones');
     Route::get('/grupos/{id_grupo}/calificaciones-materia', [GrupoController::class, 'getCalificacionesGrupoMateria']);
     Route::post('/grupos/{id_grupo}/calificaciones-materia/{id_materia}', [GrupoController::class, 'saveCalificacionesGrupoMateria']);
+    Route::get('/grupos/{id_grupo}/asistencias-semestre', [GrupoController::class, 'getAsistenciasSemestre']);
+    Route::post('/grupos/{id_grupo}/asistencias-semestre', [GrupoController::class, 'saveAsistenciasSemestre']);
     Route::get('/grupos/lista', [GrupoController::class, 'lista']);
     Route::post('/grupos', [GrupoController::class, 'store']);
     Route::get('/grupos/modalAlta', [GrupoController::class, 'modalAlta']);

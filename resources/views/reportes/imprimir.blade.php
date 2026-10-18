@@ -243,18 +243,33 @@
                                 <button class="btn btn-info w-100 text-white fw-bold py-2 shadow-sm" onclick="simularFiltrarBoletas()"><i class="fa-solid fa-magnifying-glass me-1"></i> Buscar</button>
                             </div>
                         </div>
-                        <div id="boleta-tabla-resultados" style="display: none;">
+                                                <div id="boleta-tabla-resultados" style="display: none;">
                             <div class="card p-3 border-0 bg-light shadow-sm" style="border-radius: 12px;">
-                                <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                                     <div>
                                         <h6 class="fw-bold mb-1 text-slate-800" id="lbl-boleta-alumno-nombre">Pérez López Juan</h6>
                                         <small class="text-muted">Matrícula: <strong id="lbl-boleta-alumno-matricula">20260001</strong> | Semestre Seleccionado: <strong id="lbl-boleta-semestre-val">3er Semestre</strong></small>
+                                        <div class="d-flex align-items-center gap-4 mt-2">
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" id="chkBoletaIncluirAsistencias" checked>
+                                                <label class="form-check-label small fw-bold text-slate-700" for="chkBoletaIncluirAsistencias">
+                                                    <i class="fa-solid fa-calendar-check text-primary me-1"></i> Incluir Asistencias
+                                                </label>
+                                            </div>
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" id="chkBoletaIncluirReportes" checked>
+                                                <label class="form-check-label small fw-bold text-slate-700" for="chkBoletaIncluirReportes">
+                                                    <i class="fa-solid fa-shield-halved text-warning me-1"></i> Incluir Reportes de Conducta
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="text-end d-flex gap-2 flex-wrap">
-                                        <button class="btn btn-primary btn-sm fw-bold" onclick="generarBoletaBTIDesdeSelect()"><i class="fa-solid fa-print me-1"></i> Imprimir Boleta</button>
+                                        <button class="btn btn-primary btn-sm fw-bold px-3 py-2 shadow-sm" onclick="generarBoletaBTIDesdeSelect()"><i class="fa-solid fa-print me-1"></i> Imprimir Boleta</button>
                                     </div>
                                 </div>
                             </div>
+                        </div>
                         </div>
                     </div>
 
@@ -3182,24 +3197,45 @@ window.imprimirKardex = function() {
     }, 450);
 };
 
-    window.imprimirBoletaBTISemestre = function(data, idNivelSemestre, reportesCounts) {
+        window.imprimirBoletaBTISemestre = function(data, idNivelSemestre, reportesCounts, opciones = {}) {
         const al = data.alumno;
         const repCounts = reportesCounts || { 1: 0, 2: 0, 3: 0 };
         const totalReportes = (repCounts[1] || 0) + (repCounts[2] || 0) + (repCounts[3] || 0);
+
+        const incAsist = opciones.incluirAsistencias !== false;
+        const incRep = opciones.incluirReportes !== false;
+
         let boxReportesHtml = '';
-        if (totalReportes > 0) {
-            boxReportesHtml = `
-                <!-- Box Reportes de Indisciplina -->
-                <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: -10px;">
-                    <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">REPORTES POR CONDUCTA</span>
-                    <span style="font-size: 8pt; font-weight: 800; padding: 8px 5px; color: #0f172a; display: block; word-spacing: 3px;">
-                        P1: <strong style="color: #1e6fa8; font-size: 9pt;">${repCounts[1] || 0}</strong> &nbsp;|&nbsp; 
-                        P2: <strong style="color: #1e6fa8; font-size: 9pt;">${repCounts[2] || 0}</strong> &nbsp;|&nbsp; 
-                        P3: <strong style="color: #1e6fa8; font-size: 9pt;">${repCounts[3] || 0}</strong>
-                    </span>
-                </div>
-            `;
+        if (incRep) {
+            if (totalReportes > 0) {
+                boxReportesHtml = `
+                    <!-- Box Reportes de Indisciplina (Con reportes) -->
+                    <div style="border: 1.5px solid #dc2626; background: #fff5f5; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <span style="font-size: 6.8pt; font-weight: 800; background: #b91c1c; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">CONDUCTA Y DISCIPLINA</span>
+                        <span style="font-size: 8.5pt; font-weight: 900; padding: 6px 5px 2px 5px; color: #b91c1c; display: block;">
+                            ${totalReportes} REPORTE${totalReportes > 1 ? 'S' : ''} ACUMULADO${totalReportes > 1 ? 'S' : ''}
+                        </span>
+                        <span style="font-size: 7.5pt; font-weight: 700; padding: 2px 5px 6px 5px; color: #475569; display: block; word-spacing: 3px;">
+                            P1: <strong style="color: #b91c1c; font-size: 8.5pt;">${repCounts[1] || 0}</strong> &nbsp;|&nbsp; 
+                            P2: <strong style="color: #b91c1c; font-size: 8.5pt;">${repCounts[2] || 0}</strong> &nbsp;|&nbsp; 
+                            P3: <strong style="color: #b91c1c; font-size: 8.5pt;">${repCounts[3] || 0}</strong>
+                        </span>
+                    </div>
+                `;
+            } else {
+                boxReportesHtml = `
+                    <!-- Box Reportes de Indisciplina (Sin reportes) -->
+                    <div style="border: 1.5px solid #16a34a; background: #f0fdf4; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <span style="font-size: 6.8pt; font-weight: 800; background: #15803d; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">CONDUCTA Y DISCIPLINA</span>
+                        <span style="font-size: 8pt; font-weight: 800; padding: 8px 5px; color: #166534; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                            <span style="display: inline-block; width: 7px; height: 7px; background: #22c55e; border-radius: 50%;"></span>
+                            0 REPORTES DE INDISCIPLINA
+                        </span>
+                    </div>
+                `;
+            }
         }
+
         const periodos = data.periodos || [];
         const p = periodos.find(x => x.idNivel === idNivelSemestre);
         const materias = p ? p.materias || [] : [];
@@ -3217,6 +3253,8 @@ window.imprimirKardex = function() {
         let filasMateriasHtml = '';
         let p1Vals = []; let p2Vals = []; let p3Vals = []; let semVals = []; let extVals = []; let finalVals = [];
         let totalAsist = 0; let totalTotAsist = 0;
+        let allAsistVals = [];
+        let allTotVals = [];
 
         materias.forEach(m => {
             const isEquiv = m.es_equivalencia === true;
@@ -3246,8 +3284,16 @@ window.imprimirKardex = function() {
             parseVal(ext, extVals);
             parseVal(finalVal, finalVals);
 
-            if (m.asistencias !== null) totalAsist += parseInt(m.asistencias) || 0;
-            if (m.total_asistencias !== null) totalTotAsist += parseInt(m.total_asistencias) || 0;
+            if (m.asistencias !== null && m.asistencias !== undefined) {
+                const a = parseInt(m.asistencias) || 0;
+                totalAsist += a;
+                allAsistVals.push(a);
+            }
+            if (m.total_asistencias !== null && m.total_asistencias !== undefined) {
+                const t = parseInt(m.total_asistencias) || 0;
+                totalTotAsist += t;
+                allTotVals.push(t);
+            }
 
             const p1Text = p1 !== null ? p1.toFixed(1) : '—';
             const p2Text = p2 !== null ? p2.toFixed(1) : '—';
@@ -3281,8 +3327,38 @@ window.imprimirKardex = function() {
         const extAvg = getAvg(extVals);
         const finalAvg = getAvg(finalVals);
 
-        const totalAsistVal = totalAsist;
-        const totalTotAsistVal = totalTotAsist;
+        const allSameTot = allTotVals.length > 0 && allTotVals.every(v => v === allTotVals[0]);
+        const allSameAsist = allAsistVals.length > 0 && allAsistVals.every(v => v === allAsistVals[0]);
+
+        const displayAsist = (allSameTot && allSameAsist && allAsistVals.length > 0) ? allAsistVals[0] : totalAsist;
+        const displayTotAsist = (allSameTot && allTotVals.length > 0) ? allTotVals[0] : totalTotAsist;
+        const pctAsist = displayTotAsist > 0 ? Math.round((displayAsist / displayTotAsist) * 100) : 0;
+
+        let badgesHtml = '';
+        if (incAsist) {
+            badgesHtml = `
+                <div style="display: flex; gap: 15px; width: 100%; justify-content: center;">
+                    <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block;">ASISTENCIAS</span>
+                        <span style="font-size: 11pt; font-weight: 800; padding: 6px 5px 2px 5px; color: #0f172a; display: block;">${displayAsist} / ${displayTotAsist}</span>
+                        <span style="font-size: 6.8pt; font-weight: 700; color: #2563eb; padding-bottom: 6px; display: block;">${pctAsist}% ASISTENCIA</span>
+                    </div>
+                    <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; line-height: 1.1;">PROMEDIO FINAL<br>DEL SEMESTRE</span>
+                        <span style="font-size: 13pt; font-weight: 900; padding: 10px 5px; color: #1e3a8a; display: block;">${finalAvg}</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            badgesHtml = `
+                <div style="display: flex; width: 100%; justify-content: center;">
+                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <span style="font-size: 7.2pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 5px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">PROMEDIO FINAL DEL SEMESTRE</span>
+                        <span style="font-size: 15pt; font-weight: 900; padding: 12px 5px; color: #1e3a8a; display: block;">${finalAvg}</span>
+                    </div>
+                </div>
+            `;
+        }
 
         const win = window.open('', '', 'height=850,width=1100');
         win.document.write(`
@@ -3405,31 +3481,21 @@ window.imprimirKardex = function() {
                             </div>
 
                             <!-- Sidebar details -->
-                            <div style="width: 250px; display: flex; flex-direction: column; gap: 25px; align-items: center;">
+                            <div style="width: 250px; display: flex; flex-direction: column; gap: 20px; align-items: center;">
                                 
-                                <!-- Badges -->
-                                <div style="display: flex; gap: 15px; width: 100%; justify-content: center;">
-                                    <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                                        <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block;">ASISTENCIAS</span>
-                                        <span style="font-size: 11pt; font-weight: 800; padding: 12px 5px; color: #0f172a; display: block;">${totalAsistVal} / ${totalTotAsistVal}</span>
-                                    </div>
-                                    <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                                        <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; line-height: 1.1;">PROMEDIO FINAL<br>DEL SEMESTRE</span>
-                                        <span style="font-size: 13pt; font-weight: 900; padding: 10px 5px; color: #1e3a8a; display: block;">${finalAvg}</span>
-                                    </div>
-                                </div>
+                                ${badgesHtml}
 
                                 ${boxReportesHtml}
 
                                 <!-- Director Signature -->
-                                <div style="margin-top: 15px; width: 100%; text-align: center;">
+                                <div style="margin-top: 10px; width: 100%; text-align: center;">
                                     <div style="border-bottom: 1px solid #000; width: 160px; margin: 0 auto 5px auto; height: 45px;"></div>
                                     <div style="font-size: 7.8pt; font-weight: 800; text-transform: uppercase; color: #0f172a;">ING. FAUSTO LEYVA FLORES</div>
                                     <div style="font-size: 7.2pt; font-weight: 700; color: #475569; text-transform: uppercase; margin-top: 1px;">DIRECTOR</div>
                                 </div>
 
                                 <!-- Date info -->
-                                <div style="font-size: 7.5pt; font-weight: bold; color: #1e293b; margin-top: 10px; text-transform: uppercase; text-align: center; border: 1px dashed #cbd5e1; padding: 4px 8px; border-radius: 4px;">
+                                <div style="font-size: 7.5pt; font-weight: bold; color: #1e293b; margin-top: 5px; text-transform: uppercase; text-align: center; border: 1px dashed #cbd5e1; padding: 4px 8px; border-radius: 4px;">
                                     TEZIUTLÁN PUEBLA A ${new Date().toLocaleDateString('es-MX', {day: 'numeric', month: 'long', year: 'numeric'}).toUpperCase()}
                                 </div>
 
@@ -3557,17 +3623,24 @@ window.imprimirKardex = function() {
             }
         });
 
+        const chkAsist = document.getElementById('chkBoletaIncluirAsistencias');
+        const chkRep = document.getElementById('chkBoletaIncluirReportes');
+        const opciones = {
+            incluirAsistencias: chkAsist ? chkAsist.checked : true,
+            incluirReportes: chkRep ? chkRep.checked : true
+        };
+
         fetch(`/alumnos/${alId}/reportes-conteo`)
             .then(r => r.json())
             .then(resp => {
                 Swal.close();
                 const counts = resp.success && resp.counts ? resp.counts : { 1: 0, 2: 0, 3: 0 };
-                imprimirBoletaBTISemestre(datosKardexActual, idNivel, counts);
+                imprimirBoletaBTISemestre(datosKardexActual, idNivel, counts, opciones);
             })
             .catch(err => {
                 console.error(err);
                 Swal.close();
-                imprimirBoletaBTISemestre(datosKardexActual, idNivel, { 1: 0, 2: 0, 3: 0 });
+                imprimirBoletaBTISemestre(datosKardexActual, idNivel, { 1: 0, 2: 0, 3: 0 }, opciones);
             });
     }
 

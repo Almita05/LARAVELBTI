@@ -1181,7 +1181,7 @@ function renderDatosControlOficial(data) {
 
     // Detectar si el grupo es Semestral (BTI o Informatica)
     const isSemestral = (grupo.id_tipoPeriodo === 1 || grupo.id_centroTrabajo === 2 || grupo.id_centroTrabajo === 1);
-    const mostrarAsistencias = !isBti;
+    const mostrarAsistencias = true;
 
     // Ajustar thead dinámicamente
     const thead = document.getElementById('theadCalificacionesOficial');
@@ -1658,6 +1658,8 @@ function recalcularFilaOficial(inputEl) {
         if (vals.length > 0 && pFinalInp) {
             const prom = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
             pFinalInp.value = prom;
+        } else if (pFinalInp) {
+            pFinalInp.value = "";
         }
     }
 
@@ -1765,7 +1767,7 @@ function recalcularEstadisticasMateria() {
         if (isSemestral) {
             const grupo = (datosGrupoMateriaActual && datosGrupoMateriaActual.grupo) || {};
             const isBti = (parseInt(grupo.id_centroTrabajo) === 2 || (grupo.nombreCentroTrabajo || '').toUpperCase().includes('BTI'));
-            const mostrarAsistencias = !isBti;
+            const mostrarAsistencias = true;
 
             tfoot.innerHTML = `
                 <tr>
@@ -1917,11 +1919,11 @@ function enviarPeticionGuardar(finalizar) {
             }
         }
 
-        if (idAlumno && califFinal !== '' && califFinal !== 'EQUIV') {
+        if (idAlumno && califFinal !== 'EQUIV') {
             const esExtra = extInp && extInp.value !== '' && !extInp.disabled;
             const dataObj = {
                 idAlumno: parseInt(idAlumno),
-                calificacion: parseInt(califFinal, 10),
+                calificacion: (califFinal !== '' && califFinal !== null) ? parseInt(califFinal, 10) : null,
                 tipoAcreditacion: esExtra ? 'EXTRAORDINARIO' : 'ORDINARIO',
                 observaciones: obs
             };

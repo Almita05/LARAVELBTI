@@ -62,6 +62,40 @@ class GrupoController extends Controller
         return response()->json($response->json(), $response->status());
     }
 
+        public function getAsistenciasSemestre(Request $request, $id_grupo)
+    {
+        $idNivel = $request->query('id_nivel_academico');
+        $url = config('services.api.base_url') . '/grupos/' . $id_grupo . '/asistencias-semestre';
+        $params = [];
+        if ($idNivel) {
+            $params['id_nivel_academico'] = $idNivel;
+        }
+
+        $response = Http::get($url, $params);
+        return response()->json($response->json(), $response->status());
+    }
+
+    public function saveAsistenciasSemestre(Request $request, $id_grupo)
+    {
+        $payload = $request->all();
+        $payload['user'] = session('nombre') ?: session('usuario') ?: 'SISTEMA';
+        $url = config('services.api.base_url') . '/grupos/' . $id_grupo . '/asistencias-semestre';
+
+        try {
+            $response = Http::timeout(30)->withHeaders([
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json'
+            ])->post($url, $payload);
+
+            return response()->json($response->json(), $response->status());
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de conexión con el servidor de asistencias: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function saveCalificacionesGrupoMateria(Request $request, $id_grupo, $id_materia)
     {
         $payload = $request->all();
