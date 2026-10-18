@@ -1488,6 +1488,14 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
 
 function validarRangoInput(inputEl) {
     if (!inputEl) return true;
+
+    // Si es un campo de asistencias, no validar rango 0-10 de calificaciones
+    if (inputEl.classList.contains('inp-asistencias') || inputEl.classList.contains('inp-total-asistencias')) {
+        inputEl.style.borderColor = '';
+        inputEl.style.backgroundColor = '';
+        return true;
+    }
+
     const cctId = datosGrupoMateriaActual && datosGrupoMateriaActual.grupo ? datosGrupoMateriaActual.grupo.id_centroTrabajo : null;
     const enforceRange = (cctId === 2 || cctId === 3);
     if (!enforceRange) return true;
@@ -1815,7 +1823,7 @@ function guardarCalificacionesMateriaSeleccionada() {
         const isEquiv = tr.getAttribute('data-is-equivalencia') === 'true';
         if (isEquiv) return;
 
-        const inputs = tr.querySelectorAll('.input-calif-celda');
+        const inputs = tr.querySelectorAll('.input-calif-celda:not(.inp-asistencias):not(.inp-total-asistencias)');
         inputs.forEach(inp => {
             if (!validarRangoInput(inp)) {
                 valid = false;
