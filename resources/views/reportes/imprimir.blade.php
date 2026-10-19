@@ -252,15 +252,11 @@
                                         <div class="d-flex align-items-center gap-4 mt-2">
                                             <div class="form-check form-switch mb-0">
                                                 <input class="form-check-input" type="checkbox" id="chkBoletaIncluirAsistencias" checked>
-                                                <label class="form-check-label small fw-bold text-slate-700" for="chkBoletaIncluirAsistencias">
-                                                    <i class="fa-solid fa-calendar-check text-primary me-1"></i> Incluir Asistencias
-                                                </label>
+                                                <label class="form-check-label small fw-bold text-slate-700" for="chkBoletaIncluirAsistencias">Incluir Asistencias</label>
                                             </div>
                                             <div class="form-check form-switch mb-0">
                                                 <input class="form-check-input" type="checkbox" id="chkBoletaIncluirReportes" checked>
-                                                <label class="form-check-label small fw-bold text-slate-700" for="chkBoletaIncluirReportes">
-                                                    <i class="fa-solid fa-shield-halved text-warning me-1"></i> Incluir Reportes de Conducta
-                                                </label>
+                                                <label class="form-check-label small fw-bold text-slate-700" for="chkBoletaIncluirReportes">Incluir Reportes de Conducta</label>
                                             </div>
                                         </div>
                                     </div>
@@ -3210,25 +3206,24 @@ window.imprimirKardex = function() {
             if (totalReportes > 0) {
                 boxReportesHtml = `
                     <!-- Box Reportes de Indisciplina (Con reportes) -->
-                    <div style="border: 1.5px solid #dc2626; background: #fff5f5; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <span style="font-size: 6.8pt; font-weight: 800; background: #b91c1c; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">CONDUCTA Y DISCIPLINA</span>
-                        <span style="font-size: 8.5pt; font-weight: 900; padding: 6px 5px 2px 5px; color: #b91c1c; display: block;">
+                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">CONDUCTA Y DISCIPLINA</span>
+                        <span style="font-size: 8.5pt; font-weight: 900; padding: 6px 5px 2px 5px; color: #dc2626; display: block;">
                             ${totalReportes} REPORTE${totalReportes > 1 ? 'S' : ''} ACUMULADO${totalReportes > 1 ? 'S' : ''}
                         </span>
                         <span style="font-size: 7.5pt; font-weight: 700; padding: 2px 5px 6px 5px; color: #475569; display: block; word-spacing: 3px;">
-                            P1: <strong style="color: #b91c1c; font-size: 8.5pt;">${repCounts[1] || 0}</strong> &nbsp;|&nbsp; 
-                            P2: <strong style="color: #b91c1c; font-size: 8.5pt;">${repCounts[2] || 0}</strong> &nbsp;|&nbsp; 
-                            P3: <strong style="color: #b91c1c; font-size: 8.5pt;">${repCounts[3] || 0}</strong>
+                            P1: <strong style="color: #dc2626; font-size: 8.5pt;">${repCounts[1] || 0}</strong> &nbsp;|&nbsp; 
+                            P2: <strong style="color: #dc2626; font-size: 8.5pt;">${repCounts[2] || 0}</strong> &nbsp;|&nbsp; 
+                            P3: <strong style="color: #dc2626; font-size: 8.5pt;">${repCounts[3] || 0}</strong>
                         </span>
                     </div>
                 `;
             } else {
                 boxReportesHtml = `
                     <!-- Box Reportes de Indisciplina (Sin reportes) -->
-                    <div style="border: 1.5px solid #16a34a; background: #f0fdf4; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <span style="font-size: 6.8pt; font-weight: 800; background: #15803d; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">CONDUCTA Y DISCIPLINA</span>
-                        <span style="font-size: 8pt; font-weight: 800; padding: 8px 5px; color: #166534; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                            <span style="display: inline-block; width: 7px; height: 7px; background: #22c55e; border-radius: 50%;"></span>
+                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">CONDUCTA Y DISCIPLINA</span>
+                        <span style="font-size: 8pt; font-weight: 800; padding: 8px 5px; color: #0f172a; display: flex; align-items: center; justify-content: center; gap: 4px;">
                             0 REPORTES DE INDISCIPLINA
                         </span>
                     </div>
@@ -3256,6 +3251,19 @@ window.imprimirKardex = function() {
         let allAsistVals = [];
         let allTotVals = [];
 
+        const formatNota = (val, isExtra = false) => {
+            if (val === null || val === undefined || isNaN(val)) {
+                return {
+                    text: isExtra ? '0.0' : '—',
+                    style: 'color: #000;'
+                };
+            }
+            const num = parseFloat(val);
+            const text = num.toFixed(1);
+            const style = num <= 5.0 ? 'color: #dc2626; font-weight: bold;' : 'color: #000;';
+            return { text, style, num };
+        };
+
         materias.forEach(m => {
             const isEquiv = m.es_equivalencia === true;
             if (isEquiv) {
@@ -3269,14 +3277,14 @@ window.imprimirKardex = function() {
                 return;
             }
 
-            const p1 = m.parcial1 !== null ? parseFloat(m.parcial1) : null;
-            const p2 = m.parcial2 !== null ? parseFloat(m.parcial2) : null;
-            const p3 = m.parcial3 !== null ? parseFloat(m.parcial3) : null;
-            const sem = m.semestral !== null ? parseFloat(m.semestral) : null;
-            const ext = m.extraordinario !== null ? parseFloat(m.extraordinario) : null;
-            const finalVal = m.calificacion !== null ? parseFloat(m.calificacion) : null;
+            const p1 = (m.parcial1 !== null && m.parcial1 !== undefined && m.parcial1 !== '') ? parseFloat(m.parcial1) : null;
+            const p2 = (m.parcial2 !== null && m.parcial2 !== undefined && m.parcial2 !== '') ? parseFloat(m.parcial2) : null;
+            const p3 = (m.parcial3 !== null && m.parcial3 !== undefined && m.parcial3 !== '') ? parseFloat(m.parcial3) : null;
+            const sem = (m.semestral !== null && m.semestral !== undefined && m.semestral !== '') ? parseFloat(m.semestral) : null;
+            const ext = (m.extraordinario !== null && m.extraordinario !== undefined && m.extraordinario !== '') ? parseFloat(m.extraordinario) : null;
+            const finalVal = (m.calificacion !== null && m.calificacion !== undefined && m.calificacion !== '') ? parseFloat(m.calificacion) : null;
 
-            const parseVal = (v, arr) => { if (v !== null) arr.push(v); };
+            const parseVal = (v, arr) => { if (v !== null && !isNaN(v)) arr.push(v); };
             parseVal(p1, p1Vals);
             parseVal(p2, p2Vals);
             parseVal(p3, p3Vals);
@@ -3295,25 +3303,22 @@ window.imprimirKardex = function() {
                 allTotVals.push(t);
             }
 
-            const p1Text = p1 !== null ? p1.toFixed(1) : '—';
-            const p2Text = p2 !== null ? p2.toFixed(1) : '—';
-            const p3Text = p3 !== null ? p3.toFixed(1) : '—';
-            const semText = sem !== null ? sem.toFixed(1) : '—';
-            const extText = ext !== null ? ext.toFixed(1) : '0.0';
-            
-            const extStyle = ext !== null && ext > 0 ? 'color: #dc2626; font-weight: bold;' : 'color: #000;';
-            const finalStyle = finalVal !== null && finalVal < 6.0 ? 'color: #dc2626; font-weight: bold;' : 'color: #000;';
-            const finalText = finalVal !== null ? finalVal.toFixed(1) : '—';
+            const c1 = formatNota(p1);
+            const c2 = formatNota(p2);
+            const c3 = formatNota(p3);
+            const cSem = formatNota(sem);
+            const cExt = formatNota(ext, true);
+            const cFinal = formatNota(finalVal);
 
             filasMateriasHtml += `
                 <tr style="text-align: center; height: 32px;">
                     <td style="border: 1px solid #000; padding: 6px 8px; text-align: left; text-transform: uppercase; font-weight: 700; font-size: 8.5pt;">${m.nombreMateria}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt;">${p1Text}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt;">${p2Text}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt;">${p3Text}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt;">${semText}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${extStyle}">${extText}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; background: #f8fafc; ${finalStyle}">${finalText}</td>
+                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${c1.style}">${c1.text}</td>
+                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${c2.style}">${c2.text}</td>
+                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${c3.style}">${c3.text}</td>
+                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${cSem.style}">${cSem.text}</td>
+                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${cExt.style}">${cExt.text}</td>
+                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; background: #f8fafc; ${cFinal.style}">${cFinal.text}</td>
                 </tr>
             `;
         });
@@ -3326,6 +3331,21 @@ window.imprimirKardex = function() {
         const semAvg = getAvg(semVals);
         const extAvg = getAvg(extVals);
         const finalAvg = getAvg(finalVals);
+
+        const formatAvgStyle = (avgStr, defaultColor = '#000') => {
+            if (avgStr === '—' || isNaN(avgStr)) return `color: ${defaultColor};`;
+            const n = parseFloat(avgStr);
+            return n <= 5.0 ? 'color: #dc2626; font-weight: bold;' : `color: ${defaultColor};`;
+        };
+
+        const p1AvgStyle = formatAvgStyle(p1Avg);
+        const p2AvgStyle = formatAvgStyle(p2Avg);
+        const p3AvgStyle = formatAvgStyle(p3Avg);
+        const semAvgStyle = formatAvgStyle(semAvg);
+        const extAvgStyle = formatAvgStyle(extAvg);
+        const finalAvgStyle = formatAvgStyle(finalAvg, '#1e293b');
+
+        const badgeFinalColor = (finalAvg !== '—' && !isNaN(finalAvg) && parseFloat(finalAvg) <= 5.0) ? '#dc2626' : '#1e3a8a';
 
         const allSameTot = allTotVals.length > 0 && allTotVals.every(v => v === allTotVals[0]);
         const allSameAsist = allAsistVals.length > 0 && allAsistVals.every(v => v === allAsistVals[0]);
@@ -3345,7 +3365,7 @@ window.imprimirKardex = function() {
                     </div>
                     <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
                         <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; line-height: 1.1;">PROMEDIO FINAL<br>DEL SEMESTRE</span>
-                        <span style="font-size: 13pt; font-weight: 900; padding: 10px 5px; color: #1e3a8a; display: block;">${finalAvg}</span>
+                        <span style="font-size: 13pt; font-weight: 900; padding: 10px 5px; color: ${badgeFinalColor}; display: block;">${finalAvg}</span>
                     </div>
                 </div>
             `;
@@ -3354,7 +3374,7 @@ window.imprimirKardex = function() {
                 <div style="display: flex; width: 100%; justify-content: center;">
                     <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
                         <span style="font-size: 7.2pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 5px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">PROMEDIO FINAL DEL SEMESTRE</span>
-                        <span style="font-size: 15pt; font-weight: 900; padding: 12px 5px; color: #1e3a8a; display: block;">${finalAvg}</span>
+                        <span style="font-size: 15pt; font-weight: 900; padding: 12px 5px; color: ${badgeFinalColor}; display: block;">${finalAvg}</span>
                     </div>
                 </div>
             `;
@@ -3469,12 +3489,12 @@ window.imprimirKardex = function() {
                                         ${filasMateriasHtml}
                                         <tr style="font-weight: bold; background: #e2e8f0; text-align: center; font-size: 8pt; border-top: 1.5px solid #000; height: 32px;">
                                             <td style="border: 1px solid #000; padding: 6px; text-align: right; text-transform: uppercase; font-weight: 800;">PROMEDIO</td>
-                                            <td style="border: 1px solid #000; padding: 5px;">${p1Avg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px;">${p2Avg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px;">${p3Avg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px;">${semAvg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; color: #dc2626; border-left: 1.5px solid #000;">${extAvg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; background: #cbd5e1; color: #1e293b; border-left: 1.5px solid #000;">${finalAvg}</td>
+                                            <td style="border: 1px solid #000; padding: 5px; ${p1AvgStyle}">${p1Avg}</td>
+                                            <td style="border: 1px solid #000; padding: 5px; ${p2AvgStyle}">${p2Avg}</td>
+                                            <td style="border: 1px solid #000; padding: 5px; ${p3AvgStyle}">${p3Avg}</td>
+                                            <td style="border: 1px solid #000; padding: 5px; ${semAvgStyle}">${semAvg}</td>
+                                            <td style="border: 1px solid #000; padding: 5px; ${extAvgStyle} border-left: 1.5px solid #000;">${extAvg}</td>
+                                            <td style="border: 1px solid #000; padding: 5px; background: #cbd5e1; ${finalAvgStyle} border-left: 1.5px solid #000;">${finalAvg}</td>
                                         </tr>
                                     </tbody>
                                 </table>
