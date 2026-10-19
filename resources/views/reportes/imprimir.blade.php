@@ -266,7 +266,6 @@
                                 </div>
                             </div>
                         </div>
-                        </div>
                     </div>
 
                     <!-- PANE: REPORTE INDISCIPLINA -->
