@@ -889,12 +889,18 @@ async function cargarMetricasDashboard() {
     if (icon) icon.classList.add('rotating-icon');
 
     try {
-        const response = await fetch('/dashboard/stats', {
+        const response = await fetch("{{ route('dashboard.stats') }}", {
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             }
         });
+
+        if (response.status === 401) {
+            console.warn('Sesión expirada');
+            window.location.href = "{{ route('login') }}";
+            return;
+        }
 
         if (!response.ok) {
             throw new Error(`HTTP error ${response.status}`);
@@ -910,6 +916,12 @@ async function cargarMetricasDashboard() {
         }
     } catch (err) {
         console.error('Error al cargar métricas del dashboard:', err);
+        ['kpi-activos', 'kpi-docentes', 'kpi-grupos', 'kpi-asistencia'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.querySelector('.kpi-skeleton')) {
+                el.innerHTML = '<span class="text-muted fs-5">0</span>';
+            }
+        });
     } finally {
         if (icon) {
             setTimeout(() => icon.classList.remove('rotating-icon'), 500);

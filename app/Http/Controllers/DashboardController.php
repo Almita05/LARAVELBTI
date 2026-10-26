@@ -28,7 +28,7 @@ class DashboardController extends Controller
         // 1. Intentar obtener datos desde el backend Flask
         try {
             $url = rtrim(config('services.api.base_url', 'http://127.0.0.1:5000'), '/') . '/dashboard/stats';
-            $response = Http::timeout(4)->get($url);
+            $response = Http::timeout(2.5)->connectTimeout(1.5)->get($url);
 
             if ($response->successful()) {
                 return response()->json($response->json());

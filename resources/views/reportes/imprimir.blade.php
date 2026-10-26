@@ -3418,9 +3418,7 @@ window.imprimirKardex = function() {
                                 <div style="font-size: 11pt; font-weight: 800; color: #0f172a; margin-top: 6px; text-transform: uppercase;">BOLETA DE CALIFICACIONES DEL ${semestreNombreLargo} SEMESTRE</div>
                                 <div style="font-size: 8.5pt; font-weight: bold; color: #475569; margin-top: 3px; text-transform: uppercase;">Ciclo Escolar 2025-2026</div>
                             </div>
-                            <div style="width: 100px; text-align: right;">
-                                <img src="/img/logo.png" style="height: 60px; width: auto; object-fit: contain;">
-                            </div>
+                            <div style="width: 100px;"></div>
                         </div>
 
                         <!-- Details Row 1 -->
@@ -3460,6 +3458,29 @@ window.imprimirKardex = function() {
                                 <div style="display: flex; flex-direction: column; width: 90px;">
                                     <span style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 2px; text-transform: uppercase;">${al.claveCentroTrabajo || '21PCT0073R'}</span>
                                     <span style="font-size: 7pt; color: #475569; font-weight: bold; margin-top: 2px;">CCT</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Periodos de Evaluacion Parcial -->
+                        <div style="border: 1.5px solid #000; background: #ffffff; margin-bottom: 18px; border-radius: 4px; overflow: hidden;">
+                            <div style="background: #2e596b; color: #ffffff; font-size: 7.2pt; font-weight: 800; text-align: center; padding: 3px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                                PERIODOS DE EVALUACIÓN PARCIAL (FECHAS)
+                            </div>
+                            <div style="display: flex; justify-content: space-around; align-items: center; background: #f8fafc; padding: 6px 12px; font-size: 7.8pt;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">1ER. PARCIAL:</span>
+                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">01/09/2025 al 10/10/2025</span>
+                                </div>
+                                <div style="height: 14px; border-left: 1.5px solid #cbd5e1;"></div>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">2DO. PARCIAL:</span>
+                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">13/10/2025 al 21/11/2025</span>
+                                </div>
+                                <div style="height: 14px; border-left: 1.5px solid #cbd5e1;"></div>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">3ER. PARCIAL:</span>
+                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">24/11/2025 al 16/01/2026</span>
                                 </div>
                             </div>
                         </div>
