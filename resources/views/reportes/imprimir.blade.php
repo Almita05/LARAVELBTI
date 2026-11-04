@@ -3344,7 +3344,7 @@ window.imprimirKardex = function() {
         const extAvgStyle = formatAvgStyle(extAvg);
         const finalAvgStyle = formatAvgStyle(finalAvg, '#1e293b');
 
-        const badgeFinalColor = (finalAvg !== '—' && !isNaN(finalAvg) && parseFloat(finalAvg) <= 5.0) ? '#dc2626' : '#1e3a8a';
+        const badgeFinalColor = (finalAvg !== '—' && !isNaN(finalAvg) && parseFloat(finalAvg) <= 5.0) ? '#dc2626' : '#2e596b';
 
         const allSameTot = allTotVals.length > 0 && allTotVals.every(v => v === allTotVals[0]);
         const allSameAsist = allAsistVals.length > 0 && allAsistVals.every(v => v === allAsistVals[0]);
@@ -3414,15 +3414,16 @@ window.imprimirKardex = function() {
             }
         };
 
-        const renderListaFechas = (items, tipo) => {
+                const renderListaFechas = (items, tipo) => {
             if (!items || items.length === 0) {
-                return `<div style="font-size: 7.5pt; color: #94a3b8; font-style: italic; padding-left: 10px;">Sin ${tipo} registradas</div>`;
+                const txt = (tipo === 'retardos' || tipo === 'justificantes') ? `Sin ${tipo} registrados` : `Sin ${tipo} registradas`;
+                return `<div style="font-size: 7.2pt; color: #64748b; font-style: italic; padding-left: 8px;">${txt}</div>`;
             }
             return items.map(item => {
                 if (typeof item === 'object') {
-                    return `<div style="font-size: 7.5pt; color: #475569; padding-left: 10px; line-height: 1.4;">• ${item.fecha} <span style="font-size: 6.8pt; color: #64748b;">(${item.motivo})</span></div>`;
+                    return `<div style="font-size: 7.2pt; color: #000000; padding-left: 8px; line-height: 1.4;">• ${item.fecha} <span style="font-size: 6.8pt; color: #475569;">(${item.motivo})</span></div>`;
                 }
-                return `<div style="font-size: 7.5pt; color: #475569; padding-left: 10px; line-height: 1.4;">• ${item}</div>`;
+                return `<div style="font-size: 7.2pt; color: #000000; padding-left: 8px; line-height: 1.4;">• ${item}</div>`;
             }).join('');
         };
 
@@ -3612,124 +3613,124 @@ window.imprimirKardex = function() {
                             </table>
                         </div>
 
-                        ${incAsist ? `
+                                                ${incAsist ? `
                         <!-- ==================== SALTO DE PÁGINA OBLIGATORIO ==================== -->
                         <div style="page-break-before: always; break-before: page; height: 1px;"></div>
 
                         <!-- ==================== PÁGINA 2: ANEXO DE ASISTENCIA Y PUNTUALIDAD ==================== -->
                         <div style="padding-top: 15px;">
                             <!-- Header Hoja 2 -->
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000000; padding-bottom: 12px; margin-bottom: 16px;">
                                 <div style="width: 100px; text-align: left;">
                                     <img src="/img/logo.png" style="height: 55px; width: auto; object-fit: contain;">
                                 </div>
                                 <div style="text-align: center; flex: 1;">
-                                    <div style="font-size: 9.5pt; font-weight: bold; color: #000; letter-spacing: 0.5px; text-transform: uppercase;">BACHILLERATO TECNOLÓGICO INTERAMERICANO</div>
-                                    <div style="font-size: 11pt; font-weight: 800; color: #0f172a; margin-top: 4px; text-transform: uppercase;">REPORTE DETALLADO DE ASISTENCIA, PUNTUALIDAD E INCIDENCIAS</div>
-                                    <div style="font-size: 8.5pt; font-weight: bold; color: #475569; margin-top: 3px; text-transform: uppercase;">ANEXO A LA BOLETA DE CALIFICACIONES — ${semestreNombreLargo} SEMESTRE</div>
+                                    <div style="font-size: 9.5pt; font-weight: bold; color: #000000; letter-spacing: 0.5px; text-transform: uppercase;">BACHILLERATO TECNOLÓGICO INTERAMERICANO</div>
+                                    <div style="font-size: 11pt; font-weight: 800; color: #000000; margin-top: 4px; text-transform: uppercase;">REPORTE DETALLADO DE ASISTENCIA, PUNTUALIDAD E INCIDENCIAS</div>
+                                    <div style="font-size: 8.5pt; font-weight: bold; color: #334155; margin-top: 3px; text-transform: uppercase;">ANEXO A LA BOLETA DE CALIFICACIONES — ${semestreNombreLargo} SEMESTRE</div>
                                 </div>
                                 <div style="width: 100px;"></div>
                             </div>
 
                             <!-- Datos Resumidos del Alumno en Hoja 2 -->
-                            <div style="display: flex; justify-content: space-between; background: #f8fafc; border: 1.5px solid #000; padding: 8px 15px; border-radius: 4px; font-size: 8.5pt; margin-bottom: 18px;">
+                            <div style="display: flex; justify-content: space-between; background: #f8fafc; border: 1px solid #000000; padding: 7px 14px; font-size: 8pt; margin-bottom: 18px;">
                                 <div>
-                                    <span style="font-weight: 800; color: #475569;">ALUMNO:</span>
-                                    <strong style="color: #0f172a; text-transform: uppercase; margin-left: 5px;">${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}</strong>
+                                    <span style="font-weight: bold; color: #334155;">ALUMNO:</span>
+                                    <strong style="color: #000000; text-transform: uppercase; margin-left: 4px;">${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}</strong>
                                 </div>
                                 <div>
-                                    <span style="font-weight: 800; color: #475569;">MATRÍCULA:</span>
-                                    <strong style="color: #0f172a; margin-left: 5px;">${al.numeroControl || al.idAlumno || '—'}</strong>
+                                    <span style="font-weight: bold; color: #334155;">MATRÍCULA:</span>
+                                    <strong style="color: #000000; margin-left: 4px;">${al.numeroControl || al.idAlumno || '—'}</strong>
                                 </div>
                                 <div>
-                                    <span style="font-weight: 800; color: #475569;">GRUPO:</span>
-                                    <strong style="color: #0f172a; margin-left: 5px;">${al.nombreGrupoTexto || '—'} (${al.modalidadHorario || 'MATUTINO'})</strong>
+                                    <span style="font-weight: bold; color: #334155;">GRUPO:</span>
+                                    <strong style="color: #000000; margin-left: 4px;">${al.nombreGrupoTexto || '—'} (${al.modalidadHorario || 'MATUTINO'})</strong>
                                 </div>
                                 <div>
-                                    <span style="font-weight: 800; color: #475569;">CICLO:</span>
-                                    <strong style="color: #0f172a; margin-left: 5px;">2025-2026</strong>
+                                    <span style="font-weight: bold; color: #334155;">CICLO:</span>
+                                    <strong style="color: #000000; margin-left: 4px;">2025-2026</strong>
                                 </div>
                             </div>
 
-                            <!-- Banner Informativo -->
-                            <div style="background: #2e596b; color: #ffffff; padding: 5px 12px; font-size: 8pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; border-radius: 3px 3px 0 0;">
+                            <!-- Encabezado Institucional de Sección -->
+                            <div style="background: #2e596b; color: #ffffff; padding: 6px 12px; font-size: 8pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; border: 1px solid #000000; border-bottom: none;">
                                 DESGLOSE DE INCIDENCIAS POR PERIODO PARCIAL
                             </div>
 
-                            <!-- Las 3 Columnas por Parcial (Opción 1 en Hoja 2) -->
-                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; border: 1.5px solid #000; border-top: none; margin-bottom: 20px; font-size: 8pt;">
+                            <!-- 3 Columnas por Periodo Parcial (Estilo Institucional y Proporcional) -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; border: 1px solid #000000; margin-bottom: 45px; font-size: 8pt; background: #ffffff;">
                                 
                                 <!-- Columna 1: 1er Parcial -->
-                                <div style="border-right: 1.5px solid #000; display: flex; flex-direction: column;">
-                                    <div style="background: #e2e8f0; font-weight: 800; text-align: center; padding: 6px; font-size: 8.5pt; border-bottom: 1px solid #000; text-transform: uppercase;">
+                                <div style="border-right: 1px solid #000000; display: flex; flex-direction: column;">
+                                    <div style="background: #e2e8f0; font-weight: 800; text-align: center; padding: 7px 6px; font-size: 8.5pt; border-bottom: 1px solid #000000; text-transform: uppercase; color: #000000;">
                                         1ER. PARCIAL
-                                        <div style="font-size: 7pt; font-weight: 600; color: #475569; margin-top: 1px;">${incidenciasAsistencia[1]?.inicio || '01/09/2025'} al ${incidenciasAsistencia[1]?.fin || '10/10/2025'}</div>
+                                        <div style="font-size: 6.8pt; font-weight: 600; color: #334155; margin-top: 1px;">${incidenciasAsistencia[1]?.inicio || '01/09/2025'} AL ${incidenciasAsistencia[1]?.fin || '10/10/2025'}</div>
                                     </div>
                                     
-                                    <div style="padding: 8px; background: #f1f5f9; border-bottom: 1px solid #cbd5e1; text-align: center;">
-                                        <span style="font-size: 7.5pt; font-weight: 700; color: #334155; text-transform: uppercase; display: block;">Asistencia del Periodo:</span>
-                                        <strong style="font-size: 11pt; color: #0f172a;">${incidenciasAsistencia[1]?.asistencias || 0} / ${incidenciasAsistencia[1]?.total || 0}</strong>
-                                        <span style="font-size: 7.5pt; font-weight: bold; color: #2563eb; margin-left: 4px;">(${incidenciasAsistencia[1]?.pct || 0}%)</span>
+                                    <div style="padding: 7px 10px; background: #f8fafc; border-bottom: 1px solid #000000; text-align: center; font-size: 7.5pt;">
+                                        <span style="font-weight: bold; color: #334155;">ASISTENCIA DEL PERIODO:</span>
+                                        <strong style="font-size: 9.5pt; color: #000000; margin-left: 4px;">${incidenciasAsistencia[1]?.asistencias || 0} / ${incidenciasAsistencia[1]?.total || 0}</strong>
+                                        <span style="font-weight: bold; color: #334155; margin-left: 3px;">(${incidenciasAsistencia[1]?.pct || 0}%)</span>
                                     </div>
 
-                                    <div style="padding: 8px 10px; border-bottom: 1px dashed #cbd5e1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                            <span style="font-weight: 800; color: #dc2626;">• FALTAS:</span>
-                                            <span style="background: #fee2e2; color: #b91c1c; font-weight: 800; padding: 1px 6px; border-radius: 10px; font-size: 7.5pt;">${incidenciasAsistencia[1]?.faltas?.length || 0}</span>
+                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• FALTAS:</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[1]?.faltas?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[1]?.faltas, 'faltas')}
                                     </div>
 
-                                    <div style="padding: 8px 10px; border-bottom: 1px dashed #cbd5e1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                            <span style="font-weight: 800; color: #d97706;">• RETARDOS:</span>
-                                            <span style="background: #fef3c7; color: #b45309; font-weight: 800; padding: 1px 6px; border-radius: 10px; font-size: 7.5pt;">${incidenciasAsistencia[1]?.retardos?.length || 0}</span>
+                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• RETARDOS:</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[1]?.retardos?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[1]?.retardos, 'retardos')}
                                     </div>
 
-                                    <div style="padding: 8px 10px; flex: 1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                            <span style="font-weight: 800; color: #0284c7;">• JUSTIFICANTES:</span>
-                                            <span style="background: #e0f2fe; color: #0369a1; font-weight: 800; padding: 1px 6px; border-radius: 10px; font-size: 7.5pt;">${incidenciasAsistencia[1]?.justificantes?.length || 0}</span>
+                                    <div style="padding: 10px 12px; flex: 1;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• JUSTIFICANTES:</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[1]?.justificantes?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[1]?.justificantes, 'justificantes')}
                                     </div>
                                 </div>
 
                                 <!-- Columna 2: 2do Parcial -->
-                                <div style="border-right: 1.5px solid #000; display: flex; flex-direction: column;">
-                                    <div style="background: #e2e8f0; font-weight: 800; text-align: center; padding: 6px; font-size: 8.5pt; border-bottom: 1px solid #000; text-transform: uppercase;">
+                                <div style="border-right: 1px solid #000000; display: flex; flex-direction: column;">
+                                    <div style="background: #e2e8f0; font-weight: 800; text-align: center; padding: 7px 6px; font-size: 8.5pt; border-bottom: 1px solid #000000; text-transform: uppercase; color: #000000;">
                                         2DO. PARCIAL
-                                        <div style="font-size: 7pt; font-weight: 600; color: #475569; margin-top: 1px;">${incidenciasAsistencia[2]?.inicio || '13/Oct/2025'} al ${incidenciasAsistencia[2]?.fin || '21/Nov/2025'}</div>
+                                        <div style="font-size: 6.8pt; font-weight: 600; color: #334155; margin-top: 1px;">${incidenciasAsistencia[2]?.inicio || '13/10/2025'} AL ${incidenciasAsistencia[2]?.fin || '21/11/2025'}</div>
                                     </div>
                                     
-                                    <div style="padding: 8px; background: #f1f5f9; border-bottom: 1px solid #cbd5e1; text-align: center;">
-                                        <span style="font-size: 7.5pt; font-weight: 700; color: #334155; text-transform: uppercase; display: block;">Asistencia del Periodo:</span>
-                                        <strong style="font-size: 11pt; color: #0f172a;">${incidenciasAsistencia[2]?.asistencias || 0} / ${incidenciasAsistencia[2]?.total || 0}</strong>
-                                        <span style="font-size: 7.5pt; font-weight: bold; color: #16a34a; margin-left: 4px;">(${incidenciasAsistencia[2]?.pct || 0}%)</span>
+                                    <div style="padding: 7px 10px; background: #f8fafc; border-bottom: 1px solid #000000; text-align: center; font-size: 7.5pt;">
+                                        <span style="font-weight: bold; color: #334155;">ASISTENCIA DEL PERIODO:</span>
+                                        <strong style="font-size: 9.5pt; color: #000000; margin-left: 4px;">${incidenciasAsistencia[2]?.asistencias || 0} / ${incidenciasAsistencia[2]?.total || 0}</strong>
+                                        <span style="font-weight: bold; color: #334155; margin-left: 3px;">(${incidenciasAsistencia[2]?.pct || 0}%)</span>
                                     </div>
 
-                                    <div style="padding: 8px 10px; border-bottom: 1px dashed #cbd5e1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                            <span style="font-weight: 800; color: #dc2626;">• FALTAS:</span>
-                                            <span style="background: #f1f5f9; color: #475569; font-weight: 800; padding: 1px 6px; border-radius: 10px; font-size: 7.5pt;">${incidenciasAsistencia[2]?.faltas?.length || 0}</span>
+                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• FALTAS:</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[2]?.faltas?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[2]?.faltas, 'faltas')}
                                     </div>
 
-                                    <div style="padding: 8px 10px; border-bottom: 1px dashed #cbd5e1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                            <span style="font-weight: 800; color: #d97706;">• RETARDOS:</span>
-                                            <span style="background: #f1f5f9; color: #475569; font-weight: 800; padding: 1px 6px; border-radius: 10px; font-size: 7.5pt;">${incidenciasAsistencia[2]?.retardos?.length || 0}</span>
+                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• RETARDOS:</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[2]?.retardos?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[2]?.retardos, 'retardos')}
                                     </div>
 
-                                    <div style="padding: 8px 10px; flex: 1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                            <span style="font-weight: 800; color: #0284c7;">• JUSTIFICANTES:</span>
-                                            <span style="background: #f1f5f9; color: #475569; font-weight: 800; padding: 1px 6px; border-radius: 10px; font-size: 7.5pt;">${incidenciasAsistencia[2]?.justificantes?.length || 0}</span>
+                                    <div style="padding: 10px 12px; flex: 1;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• JUSTIFICANTES:</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[2]?.justificantes?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[2]?.justificantes, 'justificantes')}
                                     </div>
@@ -3737,37 +3738,37 @@ window.imprimirKardex = function() {
 
                                 <!-- Columna 3: 3er Parcial -->
                                 <div style="display: flex; flex-direction: column;">
-                                    <div style="background: #e2e8f0; font-weight: 800; text-align: center; padding: 6px; font-size: 8.5pt; border-bottom: 1px solid #000; text-transform: uppercase;">
+                                    <div style="background: #e2e8f0; font-weight: 800; text-align: center; padding: 7px 6px; font-size: 8.5pt; border-bottom: 1px solid #000000; text-transform: uppercase; color: #000000;">
                                         3ER. PARCIAL
-                                        <div style="font-size: 7pt; font-weight: 600; color: #475569; margin-top: 1px;">${incidenciasAsistencia[3]?.inicio || '24/Nov/2025'} al ${incidenciasAsistencia[3]?.fin || '16/Ene/2026'}</div>
+                                        <div style="font-size: 6.8pt; font-weight: 600; color: #334155; margin-top: 1px;">${incidenciasAsistencia[3]?.inicio || '24/11/2025'} AL ${incidenciasAsistencia[3]?.fin || '16/01/2026'}</div>
                                     </div>
                                     
-                                    <div style="padding: 8px; background: #f1f5f9; border-bottom: 1px solid #cbd5e1; text-align: center;">
-                                        <span style="font-size: 7.5pt; font-weight: 700; color: #334155; text-transform: uppercase; display: block;">Asistencia del Periodo:</span>
-                                        <strong style="font-size: 11pt; color: #0f172a;">${incidenciasAsistencia[3]?.asistencias || 0} / ${incidenciasAsistencia[3]?.total || 0}</strong>
-                                        <span style="font-size: 7.5pt; font-weight: bold; color: #2563eb; margin-left: 4px;">(${incidenciasAsistencia[3]?.pct || 0}%)</span>
+                                    <div style="padding: 7px 10px; background: #f8fafc; border-bottom: 1px solid #000000; text-align: center; font-size: 7.5pt;">
+                                        <span style="font-weight: bold; color: #334155;">ASISTENCIA DEL PERIODO:</span>
+                                        <strong style="font-size: 9.5pt; color: #000000; margin-left: 4px;">${incidenciasAsistencia[3]?.asistencias || 0} / ${incidenciasAsistencia[3]?.total || 0}</strong>
+                                        <span style="font-weight: bold; color: #334155; margin-left: 3px;">(${incidenciasAsistencia[3]?.pct || 0}%)</span>
                                     </div>
 
-                                    <div style="padding: 8px 10px; border-bottom: 1px dashed #cbd5e1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                            <span style="font-weight: 800; color: #dc2626;">• FALTAS:</span>
-                                            <span style="background: #fee2e2; color: #b91c1c; font-weight: 800; padding: 1px 6px; border-radius: 10px; font-size: 7.5pt;">${incidenciasAsistencia[3]?.faltas?.length || 0}</span>
+                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• FALTAS:</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[3]?.faltas?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[3]?.faltas, 'faltas')}
                                     </div>
 
-                                    <div style="padding: 8px 10px; border-bottom: 1px dashed #cbd5e1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                            <span style="font-weight: 800; color: #d97706;">• RETARDOS:</span>
-                                            <span style="background: #fef3c7; color: #b45309; font-weight: 800; padding: 1px 6px; border-radius: 10px; font-size: 7.5pt;">${incidenciasAsistencia[3]?.retardos?.length || 0}</span>
+                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• RETARDOS:</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[3]?.retardos?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[3]?.retardos, 'retardos')}
                                     </div>
 
-                                    <div style="padding: 8px 10px; flex: 1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                            <span style="font-weight: 800; color: #0284c7;">• JUSTIFICANTES:</span>
-                                            <span style="background: #f1f5f9; color: #475569; font-weight: 800; padding: 1px 6px; border-radius: 10px; font-size: 7.5pt;">${incidenciasAsistencia[3]?.justificantes?.length || 0}</span>
+                                    <div style="padding: 10px 12px; flex: 1;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• JUSTIFICANTES:</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[3]?.justificantes?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[3]?.justificantes, 'justificantes')}
                                     </div>
@@ -3775,74 +3776,29 @@ window.imprimirKardex = function() {
 
                             </div>
 
-                            <!-- Tabla de Resumen Acumulado del Semestre -->
-                            <div style="margin-bottom: 25px;">
-                                <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 8pt; text-align: center;">
-                                    <thead>
-                                        <tr style="background: #2e596b; color: #ffffff; font-weight: 800; text-transform: uppercase;">
-                                            <th style="border: 1px solid #000; padding: 6px; text-align: left; width: 220px;">CONCEPTO</th>
-                                            <th style="border: 1px solid #000; padding: 6px; width: 100px;">1ER. PARCIAL</th>
-                                            <th style="border: 1px solid #000; padding: 6px; width: 100px;">2DO. PARCIAL</th>
-                                            <th style="border: 1px solid #000; padding: 6px; width: 100px;">3ER. PARCIAL</th>
-                                            <th style="border: 1px solid #000; padding: 6px; width: 120px; background: #1e3a8a;">TOTAL SEMESTRE</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td style="border: 1px solid #000; padding: 5px 8px; text-align: left; font-weight: bold;">Asistencias Registradas</td>
-                                            <td style="border: 1px solid #000; padding: 5px;">${incidenciasAsistencia[1]?.asistencias || 0} / ${incidenciasAsistencia[1]?.total || 0}</td>
-                                            <td style="border: 1px solid #000; padding: 5px;">${incidenciasAsistencia[2]?.asistencias || 0} / ${incidenciasAsistencia[2]?.total || 0}</td>
-                                            <td style="border: 1px solid #000; padding: 5px;">${incidenciasAsistencia[3]?.asistencias || 0} / ${incidenciasAsistencia[3]?.total || 0}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; font-weight: 800; background: #f8fafc;">${totAsist} / ${totTotalAsist} (${pctGlobal}%)</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="border: 1px solid #000; padding: 5px 8px; text-align: left; font-weight: bold; color: #b91c1c;">Faltas Injustificadas</td>
-                                            <td style="border: 1px solid #000; padding: 5px; color: #b91c1c; font-weight: bold;">${incidenciasAsistencia[1]?.faltas?.length || 0}</td>
-                                            <td style="border: 1px solid #000; padding: 5px;">${incidenciasAsistencia[2]?.faltas?.length || 0}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; color: #b91c1c; font-weight: bold;">${incidenciasAsistencia[3]?.faltas?.length || 0}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; font-weight: 800; background: #fee2e2; color: #b91c1c;">${totFaltas}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="border: 1px solid #000; padding: 5px 8px; text-align: left; font-weight: bold; color: #b45309;">Retardos Acumulados</td>
-                                            <td style="border: 1px solid #000; padding: 5px; color: #b45309; font-weight: bold;">${incidenciasAsistencia[1]?.retardos?.length || 0}</td>
-                                            <td style="border: 1px solid #000; padding: 5px;">${incidenciasAsistencia[2]?.retardos?.length || 0}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; color: #b45309; font-weight: bold;">${incidenciasAsistencia[3]?.retardos?.length || 0}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; font-weight: 800; background: #fef3c7; color: #b45309;">${totRetardos}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="border: 1px solid #000; padding: 5px 8px; text-align: left; font-weight: bold; color: #0369a1;">Justificantes Presentados</td>
-                                            <td style="border: 1px solid #000; padding: 5px; color: #0369a1; font-weight: bold;">${incidenciasAsistencia[1]?.justificantes?.length || 0}</td>
-                                            <td style="border: 1px solid #000; padding: 5px;">${incidenciasAsistencia[2]?.justificantes?.length || 0}</td>
-                                            <td style="border: 1px solid #000; padding: 5px;">${incidenciasAsistencia[3]?.justificantes?.length || 0}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; font-weight: 800; background: #e0f2fe; color: #0369a1;">${totJustif}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
                             <!-- Firmas Hoja 2 -->
-                            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 35px; padding: 0 30px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 55px; padding: 0 30px;">
                                 <div style="text-align: center; width: 220px;">
-                                    <div style="border-bottom: 1px solid #000; margin-bottom: 6px; height: 40px;"></div>
-                                    <div style="font-size: 7.8pt; font-weight: 800; text-transform: uppercase;">PREFECTURA / CONTROL ESCOLAR</div>
+                                    <div style="border-bottom: 1px solid #000000; margin-bottom: 6px; height: 50px;"></div>
+                                    <div style="font-size: 7.8pt; font-weight: 800; text-transform: uppercase; color: #000000;">PREFECTURA / CONTROL ESCOLAR</div>
                                     <div style="font-size: 7pt; color: #475569; text-transform: uppercase;">RESPONSABLE DE ASISTENCIA</div>
                                 </div>
 
                                 <div style="text-align: center; width: 140px;">
-                                    <div style="border: 1px dashed #94a3b8; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 4px;">
-                                        <span style="font-size: 6.8pt; color: #94a3b8; font-weight: bold;">SELLO ESCOLAR</span>
+                                    <div style="border: 1px dashed #64748b; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 4px;">
+                                        <span style="font-size: 7pt; color: #64748b; font-weight: bold; text-transform: uppercase;">SELLO ESCOLAR</span>
                                     </div>
                                 </div>
 
                                 <div style="text-align: center; width: 220px;">
-                                    <div style="border-bottom: 1px solid #000; margin-bottom: 6px; height: 40px;"></div>
-                                    <div style="font-size: 7.8pt; font-weight: 800; text-transform: uppercase;">PADRE DE FAMILIA O TUTOR</div>
+                                    <div style="border-bottom: 1px solid #000000; margin-bottom: 6px; height: 50px;"></div>
+                                    <div style="font-size: 7.8pt; font-weight: 800; text-transform: uppercase; color: #000000;">PADRE DE FAMILIA O TUTOR</div>
                                     <div style="font-size: 7pt; color: #475569; text-transform: uppercase;">FIRMA DE ENTERADO</div>
                                 </div>
                             </div>
 
                             <!-- Pie con fecha -->
-                            <div style="text-align: center; font-size: 7pt; color: #64748b; margin-top: 25px;">
+                            <div style="text-align: center; font-size: 7pt; color: #64748b; margin-top: 40px; text-transform: uppercase; letter-spacing: 0.5px;">
                                 DOCUMENTO OFICIAL ANEXO — TEZIUTLÁN, PUEBLA A ${new Date().toLocaleDateString('es-MX', {day: 'numeric', month: 'long', year: 'numeric'}).toUpperCase()}
                             </div>
                         </div>
