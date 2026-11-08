@@ -725,8 +725,8 @@
                             </h5>
                             <div id="groupPeriodsList" style="display: flex; flex-direction: column; gap: 10px; width: 100%;"></div>
                             
-                            <!-- Fechas de Periodos de Evaluación -->
-                            <div class="mt-3 pt-3" style="border-top: 1px dashed #cbd5e1;">
+                            <!-- Fechas de Periodos de Evaluación (Solo grupos BTI) -->
+                            <div class="mt-3 pt-3" id="seccionFechasEvaluacion" style="border-top: 1px dashed #cbd5e1; display: none;">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <h6 style="font-size: 0.88rem; font-weight: 700; color: #2e596b; margin: 0; display: flex; align-items: center; gap: 6px;">
                                         <i class="fa-solid fa-calendar-check"></i> Fechas Evaluaciones
@@ -1548,6 +1548,8 @@ document.addEventListener("DOMContentLoaded", function() {
         // Ocultar elementos temporalmente hasta que se carguen los detalles extendidos
         document.getElementById("progressContainer").style.display = "none";
         selectedGroupNivel.style.display = "none";
+        const seccionEvalInit = document.getElementById("seccionFechasEvaluacion");
+        if (seccionEvalInit) seccionEvalInit.style.display = "none";
         
         const items = groupListContainer.getElementsByClassName("group-item");
         Array.from(items).forEach(item => {
@@ -1674,19 +1676,50 @@ document.addEventListener("DOMContentLoaded", function() {
                     // Render dynamically calculated group calendar in right panel empty state
                     renderGroupCalendar(g);
                     redrawCalendarGrid();
+
+                    // La sección de fechas de evaluación solo aplica para grupos del CCT BTI
+                    const esBti = esGrupoBti(group, g);
+                    const seccionEval = document.getElementById("seccionFechasEvaluacion");
+                    if (seccionEval) {
+                        seccionEval.style.display = esBti ? "block" : "none";
+                    }
+                    if (esBti) {
+                        window.cargarConfiguracionFechasEvaluacion(group.id);
+                    }
                 }
             })
             .catch(err => {
                 console.error("Error al obtener progreso de nivel:", err);
             });
+    }
 
-        // Cargar configuración de fechas de evaluación del grupo seleccionado
-        window.cargarConfiguracionFechasEvaluacion(group.id);
+    function esGrupoBti(group, gDetails) {
+        if (!group && !gDetails) return false;
+        const cctId = parseInt((gDetails && gDetails.id_centroTrabajo) || (group && group.id_centroTrabajo) || 0);
+        if (cctId === 2) return true;
+        if (cctId === 3 || cctId === 1) return false;
+
+        const cctNombre = String((gDetails && gDetails.nombreCentroTrabajo) || (group && group.nombreCentroTrabajo) || '').toUpperCase();
+        if (cctNombre.includes('BTI')) return true;
+        if (cctNombre.includes('BGNE')) return false;
+
+        const clave = String((group && group.clave) || (gDetails && gDetails.clave) || '').toUpperCase();
+        if (clave.startsWith('BTI')) return true;
+        if (clave.startsWith('BGNE')) return false;
+
+        return false;
     }
 
     window.currentGrupoConfig = null;
 
     window.cargarConfiguracionFechasEvaluacion = function(grupoId) {
+        const seccionEval = document.getElementById("seccionFechasEvaluacion");
+        if (!activeGroup || !esGrupoBti(activeGroup)) {
+            if (seccionEval) seccionEval.style.display = "none";
+            return;
+        }
+        if (seccionEval) seccionEval.style.display = "block";
+
         const badge = document.getElementById("badgeFechasEvaluacionStatus");
         const container = document.getElementById("resumenFechasEvaluacionList");
         if (!container || !badge) return;
@@ -1806,6 +1839,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 icon: 'info',
                 title: 'Selecciona un Grupo',
                 text: 'Por favor selecciona un grupo del panel izquierdo para configurar sus periodos de evaluación.',
+                confirmButtonColor: '#2e596b'
+            });
+            return;
+        }
+
+        if (!esGrupoBti(activeGroup)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Aplica',
+                text: 'La sección de fechas de evaluación solo aplica para grupos pertenecientes al CCT BTI.',
                 confirmButtonColor: '#2e596b'
             });
             return;
