@@ -420,13 +420,23 @@
                                                 <span class="badge bg-light text-slate-600 border px-2 py-1 fs-9">Estándar CR80 Vertical (54 x 85.6 mm)</span>
                                             </div>
 
-                                            <div class="d-flex flex-wrap justify-content-center align-items-center gap-4 py-2">
-                                                <!-- ANVERSO -->
-                                                <div class="d-flex flex-column align-items-center">
-                                                    <span class="text-uppercase fw-bold text-slate-500 fs-9 mb-2 letter-spacing-1">
+                                            <div class="d-flex flex-column align-items-center py-2">
+                                                <div class="d-flex justify-content-between align-items-center mb-2 px-1" style="width: 500px; max-width: 100%;">
+                                                    <span class="text-uppercase fw-bold text-slate-600 fs-9 letter-spacing-1">
                                                         <i class="fa-solid fa-id-badge text-primary me-1"></i> Frente (Anverso)
                                                     </span>
-                                                    <div class="bti-card bti-card-front shadow-lg position-relative" id="cred-card-front-preview">
+                                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0.5 fs-10 fw-bold">
+                                                        <i class="fa-solid fa-link me-1"></i>Formato Dúplex Continuo (Juntas)
+                                                    </span>
+                                                    <span class="text-uppercase fw-bold text-slate-600 fs-9 letter-spacing-1">
+                                                        <i class="fa-solid fa-shield text-info me-1"></i> Reverso (Atrás)
+                                                    </span>
+                                                </div>
+
+                                                <!-- Contenedor Unificado Dúplex (Ambas Caras Juntas) -->
+                                                <div class="bti-card-spread shadow-lg position-relative">
+                                                    <!-- ANVERSO -->
+                                                    <div class="bti-card bti-card-front bti-card-preview-left position-relative" id="cred-card-front-preview">
                                                         <!-- Franja institucional izquierda -->
                                                         <div class="bti-front-stripes"></div>
 
@@ -481,14 +491,9 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
 
-                                                <!-- REVERSO -->
-                                                <div class="d-flex flex-column align-items-center">
-                                                    <span class="text-uppercase fw-bold text-slate-500 fs-9 mb-2 letter-spacing-1">
-                                                        <i class="fa-solid fa-shield text-info me-1"></i> Reverso (Atrás)
-                                                    </span>
-                                                    <div class="bti-card bti-card-back shadow-lg position-relative" id="cred-card-back-preview">
+                                                    <!-- REVERSO -->
+                                                    <div class="bti-card bti-card-back bti-card-preview-right position-relative" id="cred-card-back-preview">
                                                         <!-- Franja institucional derecha -->
                                                         <div class="bti-back-stripes"></div>
 
@@ -529,7 +534,6 @@
                                                         </div>
                                                     </div>
                                                 </div>
-
                                             </div>
                                         </div>
                                     </div>
@@ -1044,6 +1048,38 @@
     }
 
     /* DISEÑO OFICIAL DE CREDENCIAL ESCOLARIZADO BTI */
+    .bti-card-spread {
+        display: flex;
+        flex-direction: row;
+        width: 500px;
+        height: 396px;
+        background: #ffffff;
+        border-radius: 14px;
+        border: 1.5px solid #64748b;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+        user-select: none;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+    .bti-card-spread .bti-card {
+        width: 250px;
+        height: 396px;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        flex-shrink: 0;
+    }
+    .bti-card-spread .bti-card-preview-left {
+        border-right: 1.5px solid #64748b !important;
+    }
+    @media (max-width: 576px) {
+        .bti-card-spread {
+            transform: scale(0.65);
+            transform-origin: top center;
+            margin-bottom: -130px;
+        }
+    }
     .bti-card {
         width: 250px;
         height: 396px;
@@ -2140,6 +2176,8 @@
         const accTel = document.getElementById('cred-accidente-tel-val').innerText || '231 108 9100';
         const director = document.getElementById('cred-director-val').innerText || 'ING. FAUSTO MAURO LEYVA FLORES';
 
+        const origin = window.location.origin;
+
         const win = window.open('', '_blank');
         if (!win) {
             Swal.fire({
@@ -2151,79 +2189,75 @@
             return;
         }
 
-        const htmlFrente = `
-            <div class="print-card-wrapper">
-                <div class="bti-print-card bti-card-front">
-                    <div class="bti-front-stripes"></div>
-                    <div class="bti-map-bg"></div>
-                    <div class="bti-header-banner">
-                        <div class="bti-header-title">BACHILLERATO TECNOLOGICO</div>
-                        <div class="bti-header-subtitle">INTERAMERICANO</div>
+        const cardFrenteHtml = `
+            <div class="bti-print-card bti-card-front">
+                <div class="bti-front-stripes"></div>
+                <div class="bti-map-bg"></div>
+                <div class="bti-header-banner">
+                    <div class="bti-header-title">BACHILLERATO TECNOLOGICO</div>
+                    <div class="bti-header-subtitle">INTERAMERICANO</div>
+                </div>
+                <div class="bti-sub-header">
+                    <div class="bti-cct-text">C.C.T. 21PCT0073R</div>
+                    <div class="bti-official-logos">
+                        <div class="bti-logos-row">
+                            <img src="${origin}/img/credencial/logo_puebla.png" class="bti-logo-puebla" alt="Puebla">
+                            <img src="${origin}/img/credencial/logo_sep.png" class="bti-logo-sep" alt="SEP">
+                        </div>
+                        <div class="bti-sep-text">EDUCACIÓN PÚBLICA</div>
                     </div>
-                    <div class="bti-sub-header">
-                        <div class="bti-cct-text">C.C.T. 21PCT0073R</div>
-                        <div class="bti-official-logos">
-                            <div class="bti-logos-row">
-                                <img src="/img/credencial/logo_puebla.png" class="bti-logo-puebla" alt="Puebla">
-                                <img src="/img/credencial/logo_sep.png" class="bti-logo-sep" alt="SEP">
-                            </div>
-                            <div class="bti-sep-text">EDUCACIÓN PÚBLICA</div>
-                        </div>
+                </div>
+                <div class="bti-front-body">
+                    <img src="${origin}/img/credencial/logo_bti.png" class="bti-corner-logo" alt="BTI">
+                    <div class="bti-field-group">
+                        <span class="bti-field-label">NOMBRE</span>
+                        <div class="bti-capsule bti-capsule-full">${nombre}</div>
                     </div>
-                    <div class="bti-front-body">
-                        <img src="/img/credencial/logo_bti.png" class="bti-corner-logo" alt="BTI">
-                        <div class="bti-field-group">
-                            <span class="bti-field-label">NOMBRE</span>
-                            <div class="bti-capsule bti-capsule-full">${nombre}</div>
-                        </div>
-                        <div class="bti-field-group">
-                            <span class="bti-field-label">MODALIDAD</span>
-                            <div class="bti-capsule bti-capsule-sm">${modalidad}</div>
-                        </div>
-                        <div class="bti-field-group">
-                            <span class="bti-field-label">MATRICULA</span>
-                            <div class="bti-capsule bti-capsule-sm">${matricula}</div>
-                        </div>
-                        <div class="bti-field-group">
-                            <span class="bti-field-label">VIGENCIA</span>
-                            <div class="bti-capsule bti-capsule-full">${vigencia}</div>
-                        </div>
+                    <div class="bti-field-group">
+                        <span class="bti-field-label">MODALIDAD</span>
+                        <div class="bti-capsule bti-capsule-sm">${modalidad}</div>
+                    </div>
+                    <div class="bti-field-group">
+                        <span class="bti-field-label">MATRICULA</span>
+                        <div class="bti-capsule bti-capsule-sm">${matricula}</div>
+                    </div>
+                    <div class="bti-field-group">
+                        <span class="bti-field-label">VIGENCIA</span>
+                        <div class="bti-capsule bti-capsule-full">${vigencia}</div>
                     </div>
                 </div>
             </div>
         `;
 
-        const htmlReverso = `
-            <div class="print-card-wrapper">
-                <div class="bti-print-card bti-card-back">
-                    <div class="bti-back-stripes"></div>
-                    <img src="/img/credencial/logo_bti.png" class="bti-back-watermark" alt="BTI Watermark">
-                    <div class="bti-back-content">
-                        <div>
-                            <div class="bti-important-title">IMPORTANTE:</div>
-                            <div class="bti-important-text">
-                                Esta credencial es personal y debe portarse en lugar visible mientras usted permanezca dentro de la institución.<br>
-                                Debe mostrarse al personal de seguridad, a la autoridad del BTI para fines de identificación. no es transferible y deberá devolverse al causar baja el usuario.
-                            </div>
-                            <div class="bti-accident-title">EN CASO DE ACCIDENTE LLAMAR A:</div>
-                            <div class="bti-accident-capsule">
-                                <span class="bti-accident-name">${accNombre}</span>
-                                <span class="bti-accident-phone">${accTel}</span>
-                            </div>
+        const cardReversoHtml = `
+            <div class="bti-print-card bti-card-back">
+                <div class="bti-back-stripes"></div>
+                <img src="${origin}/img/credencial/logo_bti.png" class="bti-back-watermark" alt="BTI Watermark">
+                <div class="bti-back-content">
+                    <div>
+                        <div class="bti-important-title">IMPORTANTE:</div>
+                        <div class="bti-important-text">
+                            Esta credencial es personal y debe portarse en lugar visible mientras usted permanezca dentro de la institución.<br>
+                            Debe mostrarse al personal de seguridad, a la autoridad del BTI para fines de identificación. no es transferible y deberá devolverse al causar baja el usuario.
                         </div>
-                        <div>
-                            <div class="bti-signature-section">
-                                <div class="bti-signature-line"></div>
-                                <div class="bti-director-title">DIRECTOR</div>
-                                <div class="bti-director-name">${director}</div>
-                            </div>
-                            <div class="bti-address-footer">
-                                AV. JUÁREZ 901 ESQ. LEÓN GUZMÁN<br>
-                                COL. CENTRO TEZIUTLÁN, PUEBLA.
-                            </div>
-                            <div class="bti-phone-footer">
-                                TEL: 01 231 31 2 39 79
-                            </div>
+                        <div class="bti-accident-title">EN CASO DE ACCIDENTE LLAMAR A:</div>
+                        <div class="bti-accident-capsule">
+                            <span class="bti-accident-name">${accNombre}</span>
+                            <span class="bti-accident-phone">${accTel}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="bti-signature-section">
+                            <div class="bti-signature-line"></div>
+                            <div class="bti-director-title">DIRECTOR</div>
+                            <div class="bti-director-name">${director}</div>
+                        </div>
+                        <div class="bti-address-footer">
+                            AV. JUÁREZ 901 ESQ. LEÓN GUZMÁN<br>
+                            COL. CENTRO TEZIUTLÁN, PUEBLA.
+                        </div>
+                        <div class="bti-phone-footer">
+                            TEL: 01 231 31 2 39 79
                         </div>
                     </div>
                 </div>
@@ -2232,11 +2266,30 @@
 
         let cardsHtml = '';
         if (modo === 'ambas') {
-            cardsHtml = `<div class="cards-layout">${htmlFrente}${htmlReverso}</div>`;
+            cardsHtml = `
+                <div class="cards-print-container">
+                    <div class="bti-credencial-spread">
+                        ${cardFrenteHtml}
+                        ${cardReversoHtml}
+                    </div>
+                </div>
+            `;
         } else if (modo === 'frente') {
-            cardsHtml = `<div class="cards-layout single-card">${htmlFrente}</div>`;
+            cardsHtml = `
+                <div class="cards-print-container">
+                    <div class="bti-single-card-spread">
+                        ${cardFrenteHtml}
+                    </div>
+                </div>
+            `;
         } else {
-            cardsHtml = `<div class="cards-layout single-card">${htmlReverso}</div>`;
+            cardsHtml = `
+                <div class="cards-print-container">
+                    <div class="bti-single-card-spread">
+                        ${cardReversoHtml}
+                    </div>
+                </div>
+            `;
         }
 
         win.document.write(`
@@ -2244,6 +2297,7 @@
             <html lang="es">
             <head>
                 <meta charset="utf-8">
+                <base href="${origin}">
                 <title>Credencial Escolar - ${nombre}</title>
                 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
                 <style>
@@ -2265,20 +2319,56 @@
                     }
                     @page {
                         size: auto;
-                        margin: 10mm;
+                        margin: 8mm;
                     }
-                    .cards-layout {
+                    @media print {
+                        body {
+                            min-height: auto;
+                            padding: 0;
+                            margin: 0;
+                        }
+                        .cards-print-container {
+                            padding-top: 10mm;
+                        }
+                    }
+                    .cards-print-container {
                         display: flex;
-                        gap: 15mm;
-                        align-items: center;
                         justify-content: center;
+                        align-items: center;
+                        width: 100%;
                     }
-                    .cards-layout.single-card {
-                        gap: 0;
+                    /* AMBAS CARAS JUNTAS (CONTINUAS DÚPLEX) */
+                    .bti-credencial-spread {
+                        display: flex;
+                        flex-direction: row;
+                        flex-wrap: nowrap;
+                        width: 108mm;
+                        height: 85.6mm;
+                        border: 0.35mm solid #64748b;
+                        border-radius: 3.5mm;
+                        overflow: hidden;
+                        background: #ffffff;
+                        box-sizing: content-box;
+                        position: relative;
+                        page-break-inside: avoid;
+                        break-inside: avoid;
                     }
-                    .print-card-wrapper {
-                        padding: 1px;
-                        border: 1px dashed #cbd5e1;
+                    .bti-credencial-spread .bti-card-front {
+                        border-right: 0.35mm solid #64748b;
+                    }
+                    /* FORMATO INDIVIDUAL */
+                    .bti-single-card-spread {
+                        display: flex;
+                        width: 54mm;
+                        height: 85.6mm;
+                        border: 0.35mm solid #64748b;
+                        border-radius: 3.5mm;
+                        overflow: hidden;
+                        background: #ffffff;
+                        box-sizing: content-box;
+                        position: relative;
+                        page-break-inside: avoid;
+                        break-inside: avoid;
                     }
                     .bti-print-card {
                         width: 54mm;
@@ -2288,6 +2378,8 @@
                         display: flex;
                         flex-direction: column;
                         background: #ffffff;
+                        box-sizing: border-box;
+                        flex-shrink: 0;
                     }
                     .bti-card-front {
                         background: linear-gradient(135deg, #f0f7fd 0%, #e6f2fb 50%, #ffffff 100%);
@@ -2317,7 +2409,7 @@
                         top: 8mm;
                         right: 0;
                         bottom: 0;
-                        background-image: url('/img/credencial/mapa_america.svg');
+                        background-image: url('${origin}/img/credencial/mapa_america.svg');
                         background-size: 260% auto;
                         background-position: 70% 32%;
                         background-repeat: no-repeat;

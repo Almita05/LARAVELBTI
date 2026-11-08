@@ -174,11 +174,6 @@
                 <i class="fa-solid fa-user-plus"></i>Agregar Alumno
             </button>
 
-            <!-- Botón Imprimir (PDF) -->
-            <button id="btn-imprimir-asistencias" type="button" class="btn btn-outline-primary py-2 px-4 fw-semibold d-flex align-items-center gap-2 d-none" onclick="imprimirReporte()" style="border-radius: 12px; font-size: 0.82rem; border-color: rgba(49, 125, 146, 0.35); color: rgb(38, 104, 123); background-color: rgba(255,255,255,0.3);">
-                <i class="fa-solid fa-print"></i>Imprimir Reporte
-            </button>
-
             <!-- Botón Descargar Excel -->
             <button id="btn-excel-asistencias" type="button" class="btn btn-outline-success py-2 px-4 fw-semibold d-flex align-items-center gap-2 d-none" onclick="descargarExcelAsistencias()" style="border-radius: 12px; font-size: 0.82rem; border-color: rgba(34, 197, 94, 0.35); color: rgb(21, 128, 61); background-color: rgba(255,255,255,0.3);">
                 <i class="fa-solid fa-file-excel"></i>Descargar Excel
