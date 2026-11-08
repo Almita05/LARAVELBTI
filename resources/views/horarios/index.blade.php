@@ -725,6 +725,26 @@
                             </h5>
                             <div id="groupPeriodsList" style="display: flex; flex-direction: column; gap: 10px; width: 100%;"></div>
                             
+                            <!-- Fechas de Periodos de Evaluación -->
+                            <div class="mt-3 pt-3" style="border-top: 1px dashed #cbd5e1;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 style="font-size: 0.88rem; font-weight: 700; color: #2e596b; margin: 0; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fa-solid fa-calendar-check"></i> Fechas Evaluaciones
+                                    </h6>
+                                    <span id="badgeFechasEvaluacionStatus" class="badge bg-secondary" style="font-size: 0.65rem; border-radius: 6px;">Cargando...</span>
+                                </div>
+                                
+                                <div id="resumenFechasEvaluacionList" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; font-size: 0.75rem;">
+                                    <div class="text-secondary text-center py-2" style="font-size: 0.75rem;">
+                                        <i class="fa-solid fa-spinner fa-spin me-1"></i> Consultando fechas...
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn btn-sm w-100" id="btnConfigurarFechasEvaluacion" onclick="abrirModalFechasEvaluacion()" style="background-color: #2e596b; color: #ffffff; font-weight: 600; font-size: 0.8rem; border-radius: 8px; padding: 7px 12px; box-shadow: 0 2px 4px rgba(46,89,107,0.2); border: none; transition: all 0.2s ease;">
+                                    <i class="fa-solid fa-calendar-plus me-1"></i> Fechas Periodos Evaluaciones
+                                </button>
+                            </div>
+                            
                             <hr style="margin: 15px 0; opacity: 0.15;">
                             <div class="text-center text-secondary" style="font-size: 0.8rem; padding: 10px 15px; background: rgba(38,104,123,0.03); border-radius: 8px; border: 1px dashed rgba(38,104,123,0.2);">
                                 <i class="fa-solid fa-circle-info me-1"></i> Selecciona una celda de horario para agregar o editar una clase.
@@ -815,7 +835,178 @@
 
 </div>
 
-<!-- Scripts Section for Interaction -->
+<!-- Modal Configuración Fechas Periodos Evaluaciones -->
+<div class="modal fade" id="modalFechasPeriodosEvaluacion" tabindex="-1" aria-labelledby="modalFechasPeriodosEvaluacionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="border-radius: 14px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden;">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #2e596b 0%, #1e3d4a 100%); padding: 14px 20px;">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="modalFechasPeriodosEvaluacionLabel" style="font-size: 1.05rem;">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span>Fechas de Periodos de Evaluación — Grupo: <span id="modalEvalGrupoClave" class="badge bg-light text-dark px-2 py-1 ms-1"></span></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            
+            <form id="formFechasPeriodosEvaluacion" onsubmit="guardarFechasPeriodosEvaluacion(event)">
+                <div class="modal-body p-4" style="background-color: #f8fafc; max-height: 75vh; overflow-y: auto;">
+                    <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center gap-2" style="font-size: 0.8rem; border-radius: 8px; border-left: 4px solid #2e596b; background: rgba(46, 89, 107, 0.08); color: #1e3d4a; border-color: #2e596b;">
+                        <i class="fa-solid fa-circle-info" style="font-size: 1.2rem; color: #2e596b;"></i>
+                        <div>
+                            Define los periodos de evaluación para este grupo. Las fechas se sincronizan con las ventanas de captura y se reflejarán automáticamente en las <strong>Boletas Oficiales de Calificaciones</strong>.
+                        </div>
+                    </div>
+
+                    <!-- Fila 1er Parcial -->
+                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #2e596b;">
+                            <span class="fw-bold text-dark" style="font-size: 0.88rem;">
+                                <i class="fa-solid fa-1 me-1" style="color: #2e596b;"></i> Primer Parcial (1ER. PARCIAL)
+                            </span>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" id="evalP1Habilitado" checked>
+                                <label class="form-check-label text-secondary small" for="evalP1Habilitado">Habilitar captura</label>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Inicio:</label>
+                                    <input type="date" class="form-control form-control-sm" id="evalP1FechaInicio" style="border-radius: 6px;">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Fin / Límite:</label>
+                                    <input type="date" class="form-control form-control-sm" id="evalP1FechaFin" style="border-radius: 6px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fila 2do Parcial -->
+                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #2e596b;">
+                            <span class="fw-bold text-dark" style="font-size: 0.88rem;">
+                                <i class="fa-solid fa-2 me-1" style="color: #2e596b;"></i> Segundo Parcial (2DO. PARCIAL)
+                            </span>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" id="evalP2Habilitado" checked>
+                                <label class="form-check-label text-secondary small" for="evalP2Habilitado">Habilitar captura</label>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Inicio:</label>
+                                    <input type="date" class="form-control form-control-sm" id="evalP2FechaInicio" style="border-radius: 6px;">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Fin / Límite:</label>
+                                    <input type="date" class="form-control form-control-sm" id="evalP2FechaFin" style="border-radius: 6px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fila 3er Parcial -->
+                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #2e596b;">
+                            <span class="fw-bold text-dark" style="font-size: 0.88rem;">
+                                <i class="fa-solid fa-3 me-1" style="color: #2e596b;"></i> Tercer Parcial (3ER. PARCIAL)
+                            </span>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input" type="checkbox" id="evalP3Habilitado" checked>
+                                <label class="form-check-label text-secondary small" for="evalP3Habilitado">Habilitar captura</label>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Inicio:</label>
+                                    <input type="date" class="form-control form-control-sm" id="evalP3FechaInicio" style="border-radius: 6px;">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Fin / Límite:</label>
+                                    <input type="date" class="form-control form-control-sm" id="evalP3FechaFin" style="border-radius: 6px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fila Semestral y Extraordinario (Grid de 2 columnas) -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                                <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #0284c7;">
+                                    <span class="fw-bold text-dark" style="font-size: 0.85rem;">
+                                        <i class="fa-solid fa-graduation-cap text-info me-1"></i> Examen Semestral
+                                    </span>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" id="evalSemestralHabilitado" checked>
+                                    </div>
+                                </div>
+                                <div class="card-body p-3">
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-semibold text-secondary mb-1">Fecha Inicio:</label>
+                                        <input type="date" class="form-control form-control-sm" id="evalSemestralFechaInicio" style="border-radius: 6px;">
+                                    </div>
+                                    <div>
+                                        <label class="form-label small fw-semibold text-secondary mb-1">Fecha Fin:</label>
+                                        <input type="date" class="form-control form-control-sm" id="evalSemestralFechaFin" style="border-radius: 6px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                                <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #f59e0b;">
+                                    <span class="fw-bold text-dark" style="font-size: 0.85rem;">
+                                        <i class="fa-solid fa-file-signature text-warning me-1"></i> Extraordinario
+                                    </span>
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" id="evalExtraordinarioHabilitado" checked>
+                                    </div>
+                                </div>
+                                <div class="card-body p-3">
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-semibold text-secondary mb-1">Fecha Inicio:</label>
+                                        <input type="date" class="form-control form-control-sm" id="evalExtraordinarioFechaInicio" style="border-radius: 6px;">
+                                    </div>
+                                    <div>
+                                        <label class="form-label small fw-semibold text-secondary mb-1">Fecha Fin:</label>
+                                        <input type="date" class="form-control form-control-sm" id="evalExtraordinarioFechaFin" style="border-radius: 6px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opción de Replicación a otros grupos del mismo semestre -->
+                    <div class="p-3 bg-white rounded-3 border d-flex align-items-start gap-2 shadow-sm" style="border-color: #cbd5e1 !important;">
+                        <input class="form-check-input mt-1" type="checkbox" id="evalReplicarMismoSemestre" checked style="cursor: pointer;">
+                        <div>
+                            <label class="form-check-label fw-bold text-dark mb-0" for="evalReplicarMismoSemestre" style="cursor: pointer; font-size: 0.85rem;">
+                                <i class="fa-solid fa-copy text-primary me-1"></i> Replicar estas fechas a todos los grupos de este mismo semestre / CCT
+                            </label>
+                            <div class="text-secondary small mt-1" style="font-size: 0.75rem;">
+                                Si está marcado, se aplicará automáticamente este mismo calendario de evaluaciones a los grupos paralelos activos del mismo nivel académico.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer bg-light px-4 py-2 border-top d-flex justify-content-between">
+                    <button type="button" class="btn btn-sm btn-outline-secondary px-3" data-bs-dismiss="modal" style="border-radius: 6px;">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-sm px-4 fw-bold text-white" id="btnGuardarFechasEvaluacionModal" style="background-color: #2e596b; border-radius: 6px; box-shadow: 0 2px 6px rgba(46,89,107,0.25);">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Fechas
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     let groups = [];
@@ -1488,7 +1679,252 @@ document.addEventListener("DOMContentLoaded", function() {
             .catch(err => {
                 console.error("Error al obtener progreso de nivel:", err);
             });
+
+        // Cargar configuración de fechas de evaluación del grupo seleccionado
+        window.cargarConfiguracionFechasEvaluacion(group.id);
     }
+
+    window.currentGrupoConfig = null;
+
+    window.cargarConfiguracionFechasEvaluacion = function(grupoId) {
+        const badge = document.getElementById("badgeFechasEvaluacionStatus");
+        const container = document.getElementById("resumenFechasEvaluacionList");
+        if (!container || !badge) return;
+
+        badge.className = "badge bg-secondary";
+        badge.textContent = "Cargando...";
+        container.innerHTML = `
+            <div class="text-secondary text-center py-2" style="font-size: 0.75rem;">
+                <i class="fa-solid fa-spinner fa-spin me-1"></i> Consultando fechas...
+            </div>
+        `;
+
+        fetch(`/permisos-captura/grupo-config/${grupoId}`)
+            .then(res => res.json())
+            .then(resp => {
+                if (resp && resp.success && resp.config) {
+                    window.currentGrupoConfig = resp.config;
+                    renderResumenFechasEvaluacion(resp.config);
+                } else {
+                    window.currentGrupoConfig = null;
+                    badge.className = "badge bg-secondary";
+                    badge.textContent = "Sin fechas";
+                    container.innerHTML = `
+                        <div class="text-muted text-center py-2" style="font-size: 0.75rem;">
+                            No se encontraron periodos configurados.
+                        </div>
+                    `;
+                }
+            })
+            .catch(err => {
+                console.error("Error al cargar configuración de captura:", err);
+                badge.className = "badge bg-warning text-dark";
+                badge.textContent = "Error";
+                container.innerHTML = `
+                    <div class="text-danger text-center py-2" style="font-size: 0.75rem;">
+                        No fue posible consultar las fechas.
+                    </div>
+                `;
+            });
+    };
+
+    function formatDMY(dateStr) {
+        if (!dateStr) return null;
+        const s = String(dateStr).trim();
+        const parts = s.substring(0, 10).split('-');
+        if (parts.length === 3) {
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return s;
+    }
+
+    function renderResumenFechasEvaluacion(cfg) {
+        const badge = document.getElementById("badgeFechasEvaluacionStatus");
+        const container = document.getElementById("resumenFechasEvaluacionList");
+        if (!container || !badge) return;
+
+        const fmtRango = (ini, fin) => {
+            const dIni = formatDMY(ini);
+            const dFin = formatDMY(fin);
+            if (dIni && dFin) return `${dIni} al ${dFin}`;
+            if (dIni) return `Desde ${dIni}`;
+            if (dFin) return `Hasta ${dFin}`;
+            return `<span class="text-muted fst-italic">Sin definir</span>`;
+        };
+
+        const hasAnyDate = cfg.p1_fecha_inicio || cfg.p2_fecha_inicio || cfg.p3_fecha_inicio || cfg.semestral_fecha_inicio || cfg.extraordinario_fecha_inicio;
+        if (hasAnyDate) {
+            badge.className = "badge bg-success";
+            badge.textContent = "Configurado";
+        } else {
+            badge.className = "badge bg-secondary";
+            badge.textContent = "Sin fechas";
+        }
+
+        container.innerHTML = `
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 8px;">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong style="color: #2e596b; font-size: 0.72rem;">1ER. PARCIAL</strong>
+                    <span class="badge ${cfg.p1_habilitado ? 'bg-primary' : 'bg-light text-secondary'}" style="font-size: 0.6rem;">${cfg.p1_habilitado ? 'Activo' : 'Cerrado'}</span>
+                </div>
+                <div style="font-size: 0.72rem; color: #1e293b;">${fmtRango(cfg.p1_fecha_inicio, cfg.p1_fecha_fin)}</div>
+            </div>
+
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 8px;">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong style="color: #2e596b; font-size: 0.72rem;">2DO. PARCIAL</strong>
+                    <span class="badge ${cfg.p2_habilitado ? 'bg-primary' : 'bg-light text-secondary'}" style="font-size: 0.6rem;">${cfg.p2_habilitado ? 'Activo' : 'Cerrado'}</span>
+                </div>
+                <div style="font-size: 0.72rem; color: #1e293b;">${fmtRango(cfg.p2_fecha_inicio, cfg.p2_fecha_fin)}</div>
+            </div>
+
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 8px;">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong style="color: #2e596b; font-size: 0.72rem;">3ER. PARCIAL</strong>
+                    <span class="badge ${cfg.p3_habilitado ? 'bg-primary' : 'bg-light text-secondary'}" style="font-size: 0.6rem;">${cfg.p3_habilitado ? 'Activo' : 'Cerrado'}</span>
+                </div>
+                <div style="font-size: 0.72rem; color: #1e293b;">${fmtRango(cfg.p3_fecha_inicio, cfg.p3_fecha_fin)}</div>
+            </div>
+
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 8px;">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong style="color: #0284c7; font-size: 0.72rem;">SEMESTRAL / EXTRA</strong>
+                </div>
+                <div style="font-size: 0.7rem; color: #475569;">
+                    Sem: ${fmtRango(cfg.semestral_fecha_inicio, cfg.semestral_fecha_fin)}
+                </div>
+                <div style="font-size: 0.7rem; color: #475569;">
+                    Ext: ${fmtRango(cfg.extraordinario_fecha_inicio, cfg.extraordinario_fecha_fin)}
+                </div>
+            </div>
+        `;
+    }
+
+    window.abrirModalFechasEvaluacion = function() {
+        if (!activeGroup) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Selecciona un Grupo',
+                text: 'Por favor selecciona un grupo del panel izquierdo para configurar sus periodos de evaluación.',
+                confirmButtonColor: '#2e596b'
+            });
+            return;
+        }
+
+        document.getElementById("modalEvalGrupoClave").textContent = activeGroup.clave;
+
+        const cfg = window.currentGrupoConfig || {};
+        document.getElementById("evalP1FechaInicio").value = cfg.p1_fecha_inicio ? cfg.p1_fecha_inicio.substring(0, 10) : '';
+        document.getElementById("evalP1FechaFin").value = cfg.p1_fecha_fin ? cfg.p1_fecha_fin.substring(0, 10) : '';
+        document.getElementById("evalP1Habilitado").checked = cfg.p1_habilitado === undefined ? true : (cfg.p1_habilitado == 1);
+
+        document.getElementById("evalP2FechaInicio").value = cfg.p2_fecha_inicio ? cfg.p2_fecha_inicio.substring(0, 10) : '';
+        document.getElementById("evalP2FechaFin").value = cfg.p2_fecha_fin ? cfg.p2_fecha_fin.substring(0, 10) : '';
+        document.getElementById("evalP2Habilitado").checked = cfg.p2_habilitado === undefined ? true : (cfg.p2_habilitado == 1);
+
+        document.getElementById("evalP3FechaInicio").value = cfg.p3_fecha_inicio ? cfg.p3_fecha_inicio.substring(0, 10) : '';
+        document.getElementById("evalP3FechaFin").value = cfg.p3_fecha_fin ? cfg.p3_fecha_fin.substring(0, 10) : '';
+        document.getElementById("evalP3Habilitado").checked = cfg.p3_habilitado === undefined ? true : (cfg.p3_habilitado == 1);
+
+        document.getElementById("evalSemestralFechaInicio").value = cfg.semestral_fecha_inicio ? cfg.semestral_fecha_inicio.substring(0, 10) : '';
+        document.getElementById("evalSemestralFechaFin").value = cfg.semestral_fecha_fin ? cfg.semestral_fecha_fin.substring(0, 10) : '';
+        document.getElementById("evalSemestralHabilitado").checked = cfg.semestral_habilitado === undefined ? true : (cfg.semestral_habilitado == 1);
+
+        document.getElementById("evalExtraordinarioFechaInicio").value = cfg.extraordinario_fecha_inicio ? cfg.extraordinario_fecha_inicio.substring(0, 10) : '';
+        document.getElementById("evalExtraordinarioFechaFin").value = cfg.extraordinario_fecha_fin ? cfg.extraordinario_fecha_fin.substring(0, 10) : '';
+        document.getElementById("evalExtraordinarioHabilitado").checked = cfg.extraordinario_habilitado === undefined ? true : (cfg.extraordinario_habilitado == 1);
+
+        const modalEl = document.getElementById("modalFechasPeriodosEvaluacion");
+        let modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (!modalInstance) {
+            modalInstance = new bootstrap.Modal(modalEl);
+        }
+        modalInstance.show();
+    };
+
+    window.guardarFechasPeriodosEvaluacion = function(event) {
+        event.preventDefault();
+        if (!activeGroup) return;
+
+        const btn = document.getElementById("btnGuardarFechasEvaluacionModal");
+        const originalBtnHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Guardando...`;
+
+        const payload = {
+            id_nivel_academico: selectedPeriodNivel || activeGroup.id_nivel_academico,
+            captura_habilitada: 1,
+            p1_habilitado: document.getElementById("evalP1Habilitado").checked ? 1 : 0,
+            p1_fecha_inicio: document.getElementById("evalP1FechaInicio").value || null,
+            p1_fecha_fin: document.getElementById("evalP1FechaFin").value || null,
+            p2_habilitado: document.getElementById("evalP2Habilitado").checked ? 1 : 0,
+            p2_fecha_inicio: document.getElementById("evalP2FechaInicio").value || null,
+            p2_fecha_fin: document.getElementById("evalP2FechaFin").value || null,
+            p3_habilitado: document.getElementById("evalP3Habilitado").checked ? 1 : 0,
+            p3_fecha_inicio: document.getElementById("evalP3FechaInicio").value || null,
+            p3_fecha_fin: document.getElementById("evalP3FechaFin").value || null,
+            semestral_habilitado: document.getElementById("evalSemestralHabilitado").checked ? 1 : 0,
+            semestral_fecha_inicio: document.getElementById("evalSemestralFechaInicio").value || null,
+            semestral_fecha_fin: document.getElementById("evalSemestralFechaFin").value || null,
+            extraordinario_habilitado: document.getElementById("evalExtraordinarioHabilitado").checked ? 1 : 0,
+            extraordinario_fecha_inicio: document.getElementById("evalExtraordinarioFechaInicio").value || null,
+            extraordinario_fecha_fin: document.getElementById("evalExtraordinarioFechaFin").value || null,
+            replicar_mismo_semestre: document.getElementById("evalReplicarMismoSemestre").checked ? 1 : 0
+        };
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '';
+
+        fetch(`/permisos-captura/grupo-config/${activeGroup.id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(resp => {
+            btn.disabled = false;
+            btn.innerHTML = originalBtnHtml;
+
+            if (resp && resp.success) {
+                const modalEl = document.getElementById("modalFechasPeriodosEvaluacion");
+                const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Fechas Guardadas!',
+                    text: resp.message || 'Periodos de evaluación actualizados exitosamente.',
+                    timer: 2500,
+                    showConfirmButton: false
+                });
+
+                window.cargarConfiguracionFechasEvaluacion(activeGroup.id);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: (resp && resp.message) ? resp.message : (resp && resp.error ? resp.error : 'Ocurrió un error al guardar las fechas.'),
+                    confirmButtonColor: '#2e596b'
+                });
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerHTML = originalBtnHtml;
+            console.error("Error al guardar fechas de evaluación:", err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Red',
+                text: 'No se pudo comunicar con el servidor para guardar las fechas.',
+                confirmButtonColor: '#2e596b'
+            });
+        });
+    };
 
     function calcularPeriodoNivel(g) {
         if (!g.fechaInicio) return null;

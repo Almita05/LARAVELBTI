@@ -13,8 +13,10 @@ class PermisosCapturaController extends Controller implements HasMiddleware
     {
         return [
             new Middleware(function ($request, $next) {
-                if (strtoupper(session('rol')) !== 'ADMIN') {
-                    abort(403, 'Acceso denegado. Solo administradores pueden gestionar permisos.');
+                $rol = strtoupper(session('rol') ?? '');
+                $permitidos = ['ADMIN', 'COORDINADOR', 'COORDINACION', 'COORDINADOR ACADÉMICO', 'COORDINADOR ACADEMICO', 'CONTROL ESCOLAR', 'DIRECTOR'];
+                if (!in_array($rol, $permitidos)) {
+                    abort(403, 'Acceso denegado. No tienes permisos para gestionar configuraciones de captura.');
                 }
                 return $next($request);
             }),

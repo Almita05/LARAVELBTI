@@ -2980,11 +2980,16 @@ function mostrarKardexConDatos(data) {
             `;
         }
 
-        // Datos de incidencias de asistencia por parcial (fechas y conteos de prueba / random)
+        // Datos de fechas de periodos de evaluación configuradas para el grupo
+        const pe = data.periodosEvaluacion || opciones.periodosEvaluacion || {};
+        const p1RangoText = pe.p1_rango || (pe.p1_inicio && pe.p1_fin ? `${pe.p1_inicio} al ${pe.p1_fin}` : '01/09/2025 al 10/10/2025');
+        const p2RangoText = pe.p2_rango || (pe.p2_inicio && pe.p2_fin ? `${pe.p2_inicio} al ${pe.p2_fin}` : '13/10/2025 al 21/11/2025');
+        const p3RangoText = pe.p3_rango || (pe.p3_inicio && pe.p3_fin ? `${pe.p3_inicio} al ${pe.p3_fin}` : '24/11/2025 al 16/01/2026');
+
         const incidenciasAsistencia = opciones.incidenciasAsistencia || {
             1: {
-                inicio: '01/09/2025',
-                fin: '10/10/2025',
+                inicio: pe.p1_inicio || '01/09/2025',
+                fin: pe.p1_fin || '10/10/2025',
                 asistencias: 48,
                 total: 50,
                 pct: 96,
@@ -2993,8 +2998,8 @@ function mostrarKardexConDatos(data) {
                 justificantes: [{ fecha: '29 de Septiembre, 2025', motivo: 'Cita Médica' }]
             },
             2: {
-                inicio: '13/10/2025',
-                fin: '21/11/2025',
+                inicio: pe.p2_inicio || '13/10/2025',
+                fin: pe.p2_fin || '21/11/2025',
                 asistencias: 50,
                 total: 50,
                 pct: 100,
@@ -3003,8 +3008,8 @@ function mostrarKardexConDatos(data) {
                 justificantes: []
             },
             3: {
-                inicio: '24/11/2025',
-                fin: '16/01/2026',
+                inicio: pe.p3_inicio || '24/11/2025',
+                fin: pe.p3_fin || '16/01/2026',
                 asistencias: 47,
                 total: 50,
                 pct: 94,
@@ -3125,17 +3130,17 @@ function mostrarKardexConDatos(data) {
                             <div style="display: flex; justify-content: space-around; align-items: center; background: #f8fafc; padding: 6px 12px; font-size: 7.8pt;">
                                 <div style="display: flex; align-items: center; gap: 6px;">
                                     <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">1ER. PARCIAL:</span>
-                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">01/09/2025 al 10/10/2025</span>
+                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">${p1RangoText}</span>
                                 </div>
                                 <div style="height: 14px; border-left: 1.5px solid #cbd5e1;"></div>
                                 <div style="display: flex; align-items: center; gap: 6px;">
                                     <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">2DO. PARCIAL:</span>
-                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">13/10/2025 al 21/11/2025</span>
+                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">${p2RangoText}</span>
                                 </div>
                                 <div style="height: 14px; border-left: 1.5px solid #cbd5e1;"></div>
                                 <div style="display: flex; align-items: center; gap: 6px;">
                                     <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">3ER. PARCIAL:</span>
-                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">24/11/2025 al 16/01/2026</span>
+                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">${p3RangoText}</span>
                                 </div>
                             </div>
                         </div>
