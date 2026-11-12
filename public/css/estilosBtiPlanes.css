@@ -141,9 +141,10 @@
     overflow: hidden;
 }
 
-.accordion-button,
-.accordion-button.collapsed,
-.accordion-button:not(.collapsed) {
+.main-content .accordion-button,
+.modal .accordion-button,
+.content-area .accordion-button,
+:not(.sidebar) > .accordion .accordion-button {
     background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
     color: #fff !important;
     font-weight: 600;

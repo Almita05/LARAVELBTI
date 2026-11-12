@@ -7,7 +7,7 @@ $modulosValidos = explode(',', $modulosValidos);
 $modulosValidos = array_map('trim', $modulosValidos);
 @endphp
 
-<link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
+<link rel="stylesheet" href="{{ asset('css/sidebar.css') }}?v=2.2">
 
 
 <div class="sidebar" id="sidebar">

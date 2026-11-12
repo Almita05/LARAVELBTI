@@ -91,6 +91,8 @@
 /* --------------------------------------------------------------------------
    Botones Principales de Menú (Nivel 1)
    -------------------------------------------------------------------------- */
+#sidebar .accordion-button,
+#sidebar a.accordion-button,
 .sidebar .accordion-button,
 .sidebar a.accordion-button {
     padding: 11px 16px !important;
@@ -103,6 +105,7 @@
     gap: 12px !important;
     background: transparent !important;
     background-color: transparent !important;
+    background-image: none !important;
     box-shadow: none !important;
     border: none !important;
     width: 100% !important;
@@ -113,30 +116,45 @@
     cursor: pointer;
 }
 
+#sidebar .accordion-button.collapsed,
 .sidebar .accordion-button.collapsed {
     background: transparent !important;
     background-color: transparent !important;
+    background-image: none !important;
 }
 
+#sidebar .accordion-button:hover,
+#sidebar a.accordion-button:hover,
 .sidebar .accordion-button:hover,
 .sidebar a.accordion-button:hover {
     background: rgba(255, 255, 255, 0.12) !important;
+    background-color: rgba(255, 255, 255, 0.12) !important;
+    background-image: none !important;
     color: #FFFFFF !important;
     transform: translateX(3px);
 }
 
+#sidebar button.accordion-button:not(.collapsed),
 .sidebar button.accordion-button:not(.collapsed) {
     background: rgba(0, 0, 0, 0.12) !important;
+    background-color: rgba(0, 0, 0, 0.12) !important;
+    background-image: none !important;
     color: #FFFFFF !important;
     box-shadow: none !important;
 }
 
+#sidebar a.accordion-button,
 .sidebar a.accordion-button {
     background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
 }
 
+#sidebar a.accordion-button.active,
 .sidebar a.accordion-button.active {
     background: rgba(0, 0, 0, 0.18) !important;
+    background-color: rgba(0, 0, 0, 0.18) !important;
+    background-image: none !important;
     color: #FFFFFF !important;
 }
 
