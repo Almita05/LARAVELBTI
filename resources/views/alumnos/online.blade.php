@@ -205,7 +205,7 @@
                     <button type="button" class="btn btn-sm btn-outline-secondary px-3" onclick="mostrarMatrizTrimestre(3)" id="btnTabTrim3">3° Trimestre</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary px-3" onclick="mostrarMatrizTrimestre(4)" id="btnTabTrim4">4° Trimestre</button>
                     <button type="button" class="btn btn-sm btn-outline-secondary px-3" onclick="mostrarMatrizTrimestre(5)" id="btnTabTrim5">5° Trimestre</button>
-                    <button type="button" class="btn btn-sm btn-primary px-3" onclick="mostrarMatrizTrimestre(6)" id="btnTabTrim6">6° Trimestre (Excel)</button>
+                    <button type="button" class="btn btn-sm btn-primary px-3" onclick="mostrarMatrizTrimestre(6)" id="btnTabTrim6">6° Trimestre </button>
                 </div>
 
                 {{-- Contenedor dinámico de la matriz del trimestre seleccionado --}}
