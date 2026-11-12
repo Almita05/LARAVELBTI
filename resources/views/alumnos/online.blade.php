@@ -1328,16 +1328,29 @@
                 });
                 const data = await res.json();
                 if (data.success) {
+                    const nuevoCursoId = data.id_curso_moodle !== undefined ? data.id_curso_moodle : (nuevoId ? parseInt(nuevoId) : null);
+                    if (distribucionMateriasGlobal && distribucionMateriasGlobal[trimestreMatrizActivo]) {
+                        ['mes_1', 'mes_2', 'mes_3'].forEach(mesKey => {
+                            const lista = distribucionMateriasGlobal[trimestreMatrizActivo][mesKey] || [];
+                            lista.forEach(m => {
+                                if (m && m.id == idMateria) {
+                                    m.id_curso_moodle = nuevoCursoId;
+                                }
+                            });
+                        });
+                    }
+
                     Swal.fire({
                         toast: true,
                         position: 'top-end',
                         icon: 'success',
-                        title: data.message,
+                        title: data.message || 'Curso Moodle vinculado correctamente.',
                         showConfirmButton: false,
                         timer: 2200
                     });
-                    await precargarDistribucion();
+
                     mostrarMatrizTrimestre(trimestreMatrizActivo);
+                    precargarDistribucion();
                 } else {
                     Swal.fire('Error', data.message || 'No se pudo guardar el ID.', 'error');
                 }

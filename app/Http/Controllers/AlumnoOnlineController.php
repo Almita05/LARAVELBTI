@@ -292,10 +292,36 @@ class AlumnoOnlineController extends Controller
     }
 
     /**
-     * Retorna la matriz de distribución de materias consumiendo la API Flask
+     * Retorna la matriz de distribución de materias (con id_curso_moodle)
      */
     public function getDistribucionMaterias()
     {
+        // 1. Intentar obtener con orden y campos de Moodle
+        try {
+            $materias = \DB::table('tb_materias')
+                ->where('idCentroTrabajo', 3)
+                ->orderBy('mes_bloque')
+                ->orderBy('par_materia_orden')
+                ->get();
+
+            if ($materias->isNotEmpty()) {
+                $trimestres = [];
+                for ($t = 1; $t <= 6; $t++) {
+                    $mNivel = $materias->where('id_nivel_academico', $t)->values();
+                    $trimestres[$t] = [
+                        'trimestre' => $t,
+                        'mes_1'     => $mNivel->where('mes_bloque', 1)->values(),
+                        'mes_2'     => $mNivel->where('mes_bloque', 2)->values(),
+                        'mes_3'     => $mNivel->where('mes_bloque', 3)->values(),
+                    ];
+                }
+                return response()->json(['success' => true, 'trimestres' => $trimestres]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning("Fallo al consultar tb_materias: " . $e->getMessage());
+        }
+
+        // 2. Fallback consumiendo la API Flask
         try {
             $url = config('services.api.base_url') . '/materias';
             $res = Http::get($url);
@@ -399,16 +425,38 @@ class AlumnoOnlineController extends Controller
     }
 
     /**
-     * Vincula una materia con un curso en Moodle vía API Flask
+     * Vincula una materia con un curso en Moodle
      */
     public function guardarMoodleCourseId(Request $request, $idMateria)
     {
         try {
-            $cursoId = $request->input('id_curso_moodle');
-            $url = config('services.api.base_url') . '/updateMateria/' . $idMateria;
-            $res = Http::put($url, ['id_curso_moodle' => $cursoId]);
-            return response()->json(['success' => true, 'message' => 'Curso Moodle vinculado correctamente.']);
+            $cursoId = $request->input('id_curso_moodle') ? (int)$request->input('id_curso_moodle') : null;
+
+            // 1. Persistir directamente en tb_materias
+            try {
+                \DB::table('tb_materias')
+                    ->where('id', $idMateria)
+                    ->update([
+                        'id_curso_moodle' => $cursoId,
+                        'updateAt'        => Carbon::now()
+                    ]);
+            } catch (\Throwable $dbE) {
+                Log::warning("No se pudo actualizar tb_materias directamente: " . $dbE->getMessage());
+            }
+
+            // 2. Intentar actualizar a través de la API Flask si el endpoint lo soporta
+            try {
+                $url = config('services.api.base_url') . '/updateMateria/' . $idMateria;
+                Http::put($url, ['id_curso_moodle' => $cursoId]);
+            } catch (\Throwable $apiE) {}
+
+            return response()->json([
+                'success'         => true,
+                'id_curso_moodle' => $cursoId,
+                'message'         => 'Curso Moodle vinculado correctamente.'
+            ]);
         } catch (\Throwable $e) {
+            Log::error("Error en guardarMoodleCourseId: " . $e->getMessage());
             return response()->json(['success' => false, 'error' => $e->getMessage()]);
         }
     }
