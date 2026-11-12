@@ -432,23 +432,15 @@ class AlumnoOnlineController extends Controller
         try {
             $cursoId = $request->input('id_curso_moodle') ? (int)$request->input('id_curso_moodle') : null;
 
-            // 1. Persistir directamente en tb_materias
+            // Persistir directamente en tb_materias
+            $campos = ['id_curso_moodle' => $cursoId];
             try {
-                \DB::table('tb_materias')
-                    ->where('id', $idMateria)
-                    ->update([
-                        'id_curso_moodle' => $cursoId,
-                        'updateAt'        => Carbon::now()
-                    ]);
-            } catch (\Throwable $dbE) {
-                Log::warning("No se pudo actualizar tb_materias directamente: " . $dbE->getMessage());
+                $campos['updateAt'] = Carbon::now();
+                \DB::table('tb_materias')->where('id', $idMateria)->update($campos);
+            } catch (\Throwable $eUpdate) {
+                // Si la columna updateAt no existe o falla, intentar solo con id_curso_moodle
+                \DB::table('tb_materias')->where('id', $idMateria)->update(['id_curso_moodle' => $cursoId]);
             }
-
-            // 2. Intentar actualizar a través de la API Flask si el endpoint lo soporta
-            try {
-                $url = config('services.api.base_url') . '/updateMateria/' . $idMateria;
-                Http::put($url, ['id_curso_moodle' => $cursoId]);
-            } catch (\Throwable $apiE) {}
 
             return response()->json([
                 'success'         => true,
@@ -457,7 +449,11 @@ class AlumnoOnlineController extends Controller
             ]);
         } catch (\Throwable $e) {
             Log::error("Error en guardarMoodleCourseId: " . $e->getMessage());
-            return response()->json(['success' => false, 'error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'error'   => 'Error al guardar en base de datos: ' . $e->getMessage(),
+                'message' => 'Error al guardar en base de datos: ' . $e->getMessage()
+            ], 500);
         }
     }
 

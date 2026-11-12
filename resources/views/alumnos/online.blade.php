@@ -1352,7 +1352,7 @@
                     mostrarMatrizTrimestre(trimestreMatrizActivo);
                     precargarDistribucion();
                 } else {
-                    Swal.fire('Error', data.message || 'No se pudo guardar el ID.', 'error');
+                    Swal.fire('Error', data.message || data.error || 'No se pudo guardar el ID.', 'error');
                 }
             } catch (e) {
                 Swal.fire('Error', 'Fallo de conexión al guardar ID del curso.', 'error');
