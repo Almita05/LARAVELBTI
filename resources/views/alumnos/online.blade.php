@@ -60,6 +60,7 @@
         color: #FFFFFF;
     }
     #inputBuscarAlumnoPresencial:focus,
+    #inputMoodleUsernameNuevo:focus,
     #inputPassMoodleNuevo:focus {
         border-color: #1E5B66 !important;
         box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12) !important;
@@ -560,11 +561,11 @@
                         <div class="row g-2">
                             <div class="col-6">
                                 <label for="inputMoodleUsernameNuevo" style="font-size: 0.72rem; font-weight: 600; color: #64748B; margin-bottom: 4px; display: block;">Usuario Moodle:</label>
-                                <input type="text" id="inputMoodleUsernameNuevo" readonly placeholder="alu..." style="background: #F1F5F9; border: 1px solid #E2E8F0; color: #475569; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; height: 36px; padding: 0 12px; border-radius: 6px; width: 100%;">
+                                <input type="text" id="inputMoodleUsernameNuevo" placeholder="alu..." style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #1E293B; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; height: 36px; padding: 0 12px; border-radius: 6px; width: 100%;">
                             </div>
                             <div class="col-6">
                                 <label for="inputPassMoodleNuevo" style="font-size: 0.72rem; font-weight: 600; color: #64748B; margin-bottom: 4px; display: block;">Contraseña:</label>
-                                <input type="text" id="inputPassMoodleNuevo" placeholder="Autogenerada (Bti.xxx*)" style="background: #F1F5F9; border: 1px solid #E2E8F0; color: #475569; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; height: 36px; padding: 0 12px; border-radius: 6px; width: 100%;">
+                                <input type="text" id="inputPassMoodleNuevo" placeholder="Autogenerada (Bti.xxx*)" style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #1E293B; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; height: 36px; padding: 0 12px; border-radius: 6px; width: 100%;">
                             </div>
                         </div>
                     </div>
@@ -1754,6 +1755,7 @@
         const payload = {
             dia_pago: document.getElementById('selectDiaPagoNuevo').value,
             trimestre_inicio: document.getElementById('selectTrimestreInicioNuevo').value,
+            moodle_username: (document.getElementById('inputMoodleUsernameNuevo').value || '').trim(),
             moodle_password: document.getElementById('inputPassMoodleNuevo').value
         };
 
