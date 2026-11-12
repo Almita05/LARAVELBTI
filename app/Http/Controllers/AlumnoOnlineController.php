@@ -296,7 +296,7 @@ class AlumnoOnlineController extends Controller
      */
     public function getDistribucionMaterias()
     {
-        // 1. Intentar obtener con orden y campos de Moodle
+        // 1. Intentar consultar directamente de tb_materias si hay conexión
         try {
             $materias = \DB::table('tb_materias')
                 ->where('idCentroTrabajo', 3)
@@ -304,7 +304,7 @@ class AlumnoOnlineController extends Controller
                 ->orderBy('par_materia_orden')
                 ->get();
 
-            if ($materias->isNotEmpty()) {
+            if ($materias->isNotEmpty() && $materias->whereNotNull('mes_bloque')->count() > 0) {
                 $trimestres = [];
                 for ($t = 1; $t <= 6; $t++) {
                     $mNivel = $materias->where('id_nivel_academico', $t)->values();
@@ -318,24 +318,48 @@ class AlumnoOnlineController extends Controller
                 return response()->json(['success' => true, 'trimestres' => $trimestres]);
             }
         } catch (\Throwable $e) {
-            Log::warning("Fallo al consultar tb_materias: " . $e->getMessage());
+            // Sin DB directa en Laravel, continuar con consumo de API Flask
         }
 
-        // 2. Fallback consumiendo la API Flask
+        // 2. Consumo de la API Flask
         try {
-            $url = config('services.api.base_url') . '/materias';
+            $url = config('services.api.base_url') . '/materias?limit=1000';
             $res = Http::get($url);
             $todas = $res->successful() ? ($res->json()['data'] ?? $res->json()) : [];
 
             $trimestres = [];
             for ($t = 1; $t <= 6; $t++) {
                 $materiasNivel = array_values(array_filter($todas, function ($m) use ($t) {
-                    return (int)($m['id_nivel_academico'] ?? 0) === $t;
+                    $cct = (int)($m['idCentroTrabajo'] ?? 3);
+                    return (int)($m['id_nivel_academico'] ?? 0) === $t && ($cct === 3 || $cct === 0);
                 }));
 
-                $mes1 = array_slice($materiasNivel, 0, 2);
-                $mes2 = array_slice($materiasNivel, 2, 2);
-                $mes3 = array_slice($materiasNivel, 4, 2);
+                if (empty($materiasNivel)) {
+                    $materiasNivel = array_values(array_filter($todas, function ($m) use ($t) {
+                        return (int)($m['id_nivel_academico'] ?? 0) === $t;
+                    }));
+                }
+
+                // Si tienen mes_bloque asignado, ordenarlas por bloque y par
+                $conBloques = array_filter($materiasNivel, fn($m) => !empty($m['mes_bloque']));
+                if (!empty($conBloques)) {
+                    usort($materiasNivel, function($a, $b) {
+                        $mbA = (int)($a['mes_bloque'] ?? 99);
+                        $mbB = (int)($b['mes_bloque'] ?? 99);
+                        if ($mbA === $mbB) {
+                            return ((int)($a['par_materia_orden'] ?? 1)) <=> ((int)($b['par_materia_orden'] ?? 1));
+                        }
+                        return $mbA <=> $mbB;
+                    });
+
+                    $mes1 = array_values(array_filter($materiasNivel, fn($m) => (int)($m['mes_bloque'] ?? 0) === 1));
+                    $mes2 = array_values(array_filter($materiasNivel, fn($m) => (int)($m['mes_bloque'] ?? 0) === 2));
+                    $mes3 = array_values(array_filter($materiasNivel, fn($m) => (int)($m['mes_bloque'] ?? 0) === 3));
+                } else {
+                    $mes1 = array_slice($materiasNivel, 0, 2);
+                    $mes2 = array_slice($materiasNivel, 2, 2);
+                    $mes3 = array_slice($materiasNivel, 4, 2);
+                }
 
                 $trimestres[$t] = [
                     'trimestre' => $t,
@@ -425,34 +449,73 @@ class AlumnoOnlineController extends Controller
     }
 
     /**
-     * Vincula una materia con un curso en Moodle
+     * Vincula una materia con un curso en Moodle vía API Flask
      */
     public function guardarMoodleCourseId(Request $request, $idMateria)
     {
         try {
             $cursoId = $request->input('id_curso_moodle') ? (int)$request->input('id_curso_moodle') : null;
 
-            // Persistir directamente en tb_materias
-            $campos = ['id_curso_moodle' => $cursoId];
+            // 1. Intentar actualizar a través de la API Flask (Consumo prioritario de API)
             try {
-                $campos['updateAt'] = Carbon::now();
-                \DB::table('tb_materias')->where('id', $idMateria)->update($campos);
-            } catch (\Throwable $eUpdate) {
-                // Si la columna updateAt no existe o falla, intentar solo con id_curso_moodle
-                \DB::table('tb_materias')->where('id', $idMateria)->update(['id_curso_moodle' => $cursoId]);
+                $url = config('services.api.base_url') . '/materias/' . $idMateria . '/moodle-curso';
+                $res = Http::put($url, ['id_curso_moodle' => $cursoId]);
+                if ($res->successful()) {
+                    return response()->json([
+                        'success'         => true,
+                        'id_curso_moodle' => $cursoId,
+                        'message'         => 'Curso Moodle vinculado correctamente.'
+                    ]);
+                }
+            } catch (\Throwable $apiE) {
+                Log::warning("Fallo al actualizar via API /moodle-curso: " . $apiE->getMessage());
+            }
+
+            // 2. Fallback: intentar con /updateMateria
+            try {
+                $urlUpdate = config('services.api.base_url') . '/updateMateria/' . $idMateria;
+                $resUpdate = Http::put($urlUpdate, ['id_curso_moodle' => $cursoId]);
+                if ($resUpdate->successful()) {
+                    return response()->json([
+                        'success'         => true,
+                        'id_curso_moodle' => $cursoId,
+                        'message'         => 'Curso Moodle vinculado correctamente.'
+                    ]);
+                }
+            } catch (\Throwable $apiU) {
+                Log::warning("Fallo al actualizar via API /updateMateria: " . $apiU->getMessage());
+            }
+
+            // 3. Fallback directo a DB si la conexión está configurada en Laravel
+            try {
+                $campos = ['id_curso_moodle' => $cursoId];
+                try {
+                    $campos['updateAt'] = Carbon::now();
+                    \DB::table('tb_materias')->where('id', $idMateria)->update($campos);
+                } catch (\Throwable $eUpdate) {
+                    \DB::table('tb_materias')->where('id', $idMateria)->update(['id_curso_moodle' => $cursoId]);
+                }
+
+                return response()->json([
+                    'success'         => true,
+                    'id_curso_moodle' => $cursoId,
+                    'message'         => 'Curso Moodle vinculado correctamente.'
+                ]);
+            } catch (\Throwable $dbE) {
+                Log::error("Fallo directo en DB: " . $dbE->getMessage());
             }
 
             return response()->json([
-                'success'         => true,
-                'id_curso_moodle' => $cursoId,
-                'message'         => 'Curso Moodle vinculado correctamente.'
-            ]);
+                'success' => false,
+                'error'   => 'No se pudo comunicar con el servidor API ni la base de datos.',
+                'message' => 'No se pudo comunicar con el servidor API ni la base de datos.'
+            ], 500);
         } catch (\Throwable $e) {
             Log::error("Error en guardarMoodleCourseId: " . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'error'   => 'Error al guardar en base de datos: ' . $e->getMessage(),
-                'message' => 'Error al guardar en base de datos: ' . $e->getMessage()
+                'error'   => $e->getMessage(),
+                'message' => $e->getMessage()
             ], 500);
         }
     }
