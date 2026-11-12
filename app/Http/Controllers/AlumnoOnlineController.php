@@ -15,48 +15,65 @@ class AlumnoOnlineController extends Controller
      */
     public function index()
     {
-        // Estadísticas para KPIs
-        $totalOnline = DB::table('tb_alumnos')
-            ->where('modalidad_estudio', 'ONLINE')
-            ->count();
-
-        $alCorriente = DB::table('tb_alumnos')
-            ->where('modalidad_estudio', 'ONLINE')
-            ->where(function ($q) {
-                $q->whereNull('fecha_proximo_pago')
-                  ->orWhere('fecha_proximo_pago', '>=', Carbon::today()->toDateString());
-            })
-            ->count();
-
-        $pendientes = DB::table('tb_alumnos')
-            ->where('modalidad_estudio', 'ONLINE')
-            ->whereNotNull('fecha_proximo_pago')
-            ->where('fecha_proximo_pago', '<', Carbon::today()->toDateString())
-            ->count();
-
-        $semanasPagadasTotal = DB::table('tb_alumnos')
-            ->where('modalidad_estudio', 'ONLINE')
-            ->sum('semanas_totales_pagadas') ?? 0;
-
-        // Alumnos con rezago académico: al corriente en colegiatura pero deben 2 o más actividades
-        $alumnosOnline = DB::table('tb_alumnos')
-            ->where('modalidad_estudio', 'ONLINE')
-            ->get();
-
-        $hoy = Carbon::today()->toDateString();
+        $totalOnline = 0;
+        $alCorriente = 0;
+        $pendientes = 0;
+        $semanasPagadasTotal = 0;
         $enRiesgoTotal = 0;
 
-        foreach ($alumnosOnline as $al) {
-            $esAlCorriente = empty($al->fecha_proximo_pago) || $al->fecha_proximo_pago >= $hoy;
-            if ($esAlCorriente) {
-                $pendientesAct = DB::table('tb_alumno_actividades_online')
-                    ->where('id_alumno', $al->idAlumno)
-                    ->where('estatus', 'LIBERADA')
-                    ->count();
-                if ($pendientesAct >= 2) {
-                    $enRiesgoTotal++;
+        try {
+            // Estadísticas para KPIs
+            $totalOnline = DB::table('tb_alumnos')
+                ->where('modalidad_estudio', 'ONLINE')
+                ->count();
+
+            $alCorriente = DB::table('tb_alumnos')
+                ->where('modalidad_estudio', 'ONLINE')
+                ->where(function ($q) {
+                    $q->whereNull('fecha_proximo_pago')
+                      ->orWhere('fecha_proximo_pago', '>=', Carbon::today()->toDateString());
+                })
+                ->count();
+
+            $pendientes = DB::table('tb_alumnos')
+                ->where('modalidad_estudio', 'ONLINE')
+                ->whereNotNull('fecha_proximo_pago')
+                ->where('fecha_proximo_pago', '<', Carbon::today()->toDateString())
+                ->count();
+
+            try {
+                $semanasPagadasTotal = DB::table('tb_alumnos')
+                    ->where('modalidad_estudio', 'ONLINE')
+                    ->sum('semanas_totales_pagadas') ?? 0;
+            } catch (\Throwable $e) {
+                $semanasPagadasTotal = 0;
+            }
+
+            // Alumnos con rezago académico: al corriente en colegiatura pero deben 2 o más actividades
+            $alumnosOnline = DB::table('tb_alumnos')
+                ->where('modalidad_estudio', 'ONLINE')
+                ->get();
+
+            $hoy = Carbon::today()->toDateString();
+
+            foreach ($alumnosOnline as $al) {
+                $esAlCorriente = empty($al->fecha_proximo_pago) || $al->fecha_proximo_pago >= $hoy;
+                if ($esAlCorriente) {
+                    try {
+                        $pendientesAct = DB::table('tb_alumno_actividades_online')
+                            ->where('id_alumno', $al->idAlumno)
+                            ->where('estatus', 'LIBERADA')
+                            ->count();
+                        if ($pendientesAct >= 2) {
+                            $enRiesgoTotal++;
+                        }
+                    } catch (\Throwable $e) {
+                        // Tabla de actividades aún no creada
+                    }
                 }
             }
+        } catch (\Throwable $e) {
+            Log::error("Error cargando métricas en AlumnoOnlineController@index: " . $e->getMessage());
         }
 
         return view('alumnos.online', compact(
@@ -73,120 +90,139 @@ class AlumnoOnlineController extends Controller
      */
     public function getAlumnos(Request $request)
     {
-        $query = DB::table('tb_alumnos as a')
-            ->leftJoin('tb_grupos as g', 'a.idGrupo', '=', 'g.id')
-            ->where('a.modalidad_estudio', 'ONLINE')
-            ->select(
-                'a.idAlumno',
-                'a.nombre',
-                'a.apPaterno',
-                'a.apMaterno',
-                'a.numeroControl',
-                'a.curp',
-                'a.celularAlumno',
-                'a.correoAlumno',
-                'a.statusAlumno',
-                'a.modalidad_estudio',
-                'a.dia_pago',
-                'a.moodle_user_id',
-                'a.moodle_username',
-                'a.trimestre_inicio_online',
-                'a.semana_actual_pagada',
-                'a.semanas_totales_pagadas',
-                'a.fecha_proximo_pago',
-                'g.clave as clave_grupo'
-            );
+        try {
+            $query = DB::table('tb_alumnos as a')
+                ->leftJoin('tb_grupos as g', 'a.idGrupo', '=', 'g.id')
+                ->where('a.modalidad_estudio', 'ONLINE')
+                ->select(
+                    'a.idAlumno',
+                    'a.nombre',
+                    'a.apPaterno',
+                    'a.apMaterno',
+                    'a.numeroControl',
+                    'a.curp',
+                    'a.celularAlumno',
+                    'a.correoAlumno',
+                    'a.statusAlumno',
+                    'a.modalidad_estudio',
+                    'a.dia_pago',
+                    'a.moodle_user_id',
+                    'a.moodle_username',
+                    'a.trimestre_inicio_online',
+                    'a.semana_actual_pagada',
+                    'a.semanas_totales_pagadas',
+                    'a.fecha_proximo_pago',
+                    'g.clave as clave_grupo'
+                );
 
-        if ($request->filled('search')) {
-            $s = trim($request->search);
-            $query->where(function ($q) use ($s) {
-                $q->where('a.nombre', 'LIKE', "%{$s}%")
-                  ->orWhere('a.apPaterno', 'LIKE', "%{$s}%")
-                  ->orWhere('a.apMaterno', 'LIKE', "%{$s}%")
-                  ->orWhere('a.numeroControl', 'LIKE', "%{$s}%")
-                  ->orWhere('a.correoAlumno', 'LIKE', "%{$s}%");
-            });
-        }
-
-        if ($request->filled('trimestre')) {
-            $query->where('a.trimestre_inicio_online', (int)$request->trimestre);
-        }
-
-        $alumnos = $query->orderBy('a.idAlumno', 'desc')->get();
-
-        $today = Carbon::today();
-
-        $alumnos->transform(function ($al) use ($today) {
-            $trimInicio = max(1, min(6, (int)($al->trimestre_inicio_online ?: 1)));
-            $semanasTotales = max(0, (int)($al->semanas_totales_pagadas ?: 0));
-
-            // 12 semanas por trimestre
-            $trimestresAvanzados = (int)floor($semanasTotales / 12);
-            $trimestreActual = min(6, $trimInicio + $trimestresAvanzados);
-
-            // Mes dentro del trimestre (1, 2 o 3)
-            $semanasEnTrimestreActual = $semanasTotales % 12;
-            $mesActual = min(3, (int)floor($semanasEnTrimestreActual / 4) + 1);
-
-            // Semana dentro del mes actual (1 a 4)
-            $semanaMesActual = ($semanasEnTrimestreActual % 4) + 1;
-
-            // Estatus de pago
-            $estatusPago = 'AL_CORRIENTE';
-            $diasDiferencia = 0;
-            if (!empty($al->fecha_proximo_pago)) {
-                $proximo = Carbon::parse($al->fecha_proximo_pago);
-                $diasDiferencia = $today->diffInDays($proximo, false);
-                if ($diasDiferencia < 0) {
-                    $estatusPago = 'VENCIDO';
-                } elseif ($diasDiferencia <= 2) {
-                    $estatusPago = 'POR_VENCER';
-                }
+            if ($request->filled('search')) {
+                $s = trim($request->search);
+                $query->where(function ($q) use ($s) {
+                    $q->where('a.nombre', 'LIKE', "%{$s}%")
+                      ->orWhere('a.apPaterno', 'LIKE', "%{$s}%")
+                      ->orWhere('a.apMaterno', 'LIKE', "%{$s}%")
+                      ->orWhere('a.numeroControl', 'LIKE', "%{$s}%")
+                      ->orWhere('a.correoAlumno', 'LIKE', "%{$s}%");
+                });
             }
 
-            // Último pago
-            $ultimoPago = DB::table('tb_alumno_pagos')
-                ->where('id_alumno', $al->idAlumno)
-                ->orderBy('id', 'desc')
-                ->first();
+            if ($request->filled('trimestre')) {
+                $query->where('a.trimestre_inicio_online', (int)$request->trimestre);
+            }
 
-            $totalPagado = DB::table('tb_alumno_pagos')
-                ->where('id_alumno', $al->idAlumno)
-                ->sum('monto') ?? 0;
+            $alumnos = $query->orderBy('a.idAlumno', 'desc')->get();
 
-            // Conteo granular de actividades liberadas vs entregadas vs pendientes
-            $acts = DB::table('tb_alumno_actividades_online')
-                ->where('id_alumno', $al->idAlumno)
-                ->get();
+            $today = Carbon::today();
 
-            $totalLiberadas = $acts->where('estatus', '!=', 'BLOQUEADA')->count();
-            $totalEntregadas = $acts->whereIn('estatus', ['ENTREGADA', 'CALIFICADA'])->count();
-            $totalPendientes = $acts->where('estatus', 'LIBERADA')->count();
-            $totalCalificadas = $acts->where('estatus', 'CALIFICADA')->count();
+            $alumnos->transform(function ($al) use ($today) {
+                $trimInicio = max(1, min(6, (int)($al->trimestre_inicio_online ?? 1)));
+                $semanasTotales = max(0, (int)($al->semanas_totales_pagadas ?? 0));
 
-            $al->nombreCompleto = trim("{$al->nombre} {$al->apPaterno} {$al->apMaterno}");
-            $al->trimestre_inicio = $trimInicio;
-            $al->trimestre_actual = $trimestreActual;
-            $al->mes_actual = $mesActual;
-            $al->semana_mes_actual = $semanaMesActual;
-            $al->estatus_pago = $estatusPago;
-            $al->dias_para_pago = $diasDiferencia;
-            $al->total_pagado = (float)$totalPagado;
-            $al->actividades_totales = $totalLiberadas;
-            $al->actividades_entregadas = $totalEntregadas;
-            $al->actividades_pendientes = $totalPendientes;
-            $al->actividades_calificadas = $totalCalificadas;
-            $al->en_riesgo_academico = ($estatusPago !== 'VENCIDO' && $totalPendientes >= 2);
-            $al->ultimo_pago_fecha = $ultimoPago ? $ultimoPago->fecha_pago : null;
-            $al->ultimo_pago_ticket = $ultimoPago ? $ultimoPago->folio_ticket : null;
+                // 12 semanas por trimestre
+                $trimestresAvanzados = (int)floor($semanasTotales / 12);
+                $trimestreActual = min(6, $trimInicio + $trimestresAvanzados);
 
-            return $al;
-        });
+                // Mes dentro del trimestre (1, 2 o 3)
+                $semanasEnTrimestreActual = $semanasTotales % 12;
+                $mesActual = min(3, (int)floor($semanasEnTrimestreActual / 4) + 1);
 
-        return response()->json([
-            'success' => true,
-            'alumnos' => $alumnos
-        ]);
+                // Semana dentro del mes actual (1 a 4)
+                $semanaMesActual = ($semanasEnTrimestreActual % 4) + 1;
+
+                // Estatus de pago
+                $estatusPago = 'AL_CORRIENTE';
+                $diasDiferencia = 0;
+                if (!empty($al->fecha_proximo_pago)) {
+                    $proximo = Carbon::parse($al->fecha_proximo_pago);
+                    $diasDiferencia = $today->diffInDays($proximo, false);
+                    if ($diasDiferencia < 0) {
+                        $estatusPago = 'VENCIDO';
+                    } elseif ($diasDiferencia <= 2) {
+                        $estatusPago = 'POR_VENCER';
+                    }
+                }
+
+                // Último pago
+                $ultimoPago = null;
+                $totalPagado = 0;
+                try {
+                    $ultimoPago = DB::table('tb_alumno_pagos')
+                        ->where('id_alumno', $al->idAlumno)
+                        ->orderBy('id', 'desc')
+                        ->first();
+
+                    $totalPagado = DB::table('tb_alumno_pagos')
+                        ->where('id_alumno', $al->idAlumno)
+                        ->sum('monto') ?? 0;
+                } catch (\Throwable $e) {}
+
+                // Conteo granular de actividades
+                $totalLiberadas = 0;
+                $totalEntregadas = 0;
+                $totalPendientes = 0;
+                $totalCalificadas = 0;
+                try {
+                    $acts = DB::table('tb_alumno_actividades_online')
+                        ->where('id_alumno', $al->idAlumno)
+                        ->get();
+
+                    $totalLiberadas = $acts->where('estatus', '!=', 'BLOQUEADA')->count();
+                    $totalEntregadas = $acts->whereIn('estatus', ['ENTREGADA', 'CALIFICADA'])->count();
+                    $totalPendientes = $acts->where('estatus', 'LIBERADA')->count();
+                    $totalCalificadas = $acts->where('estatus', 'CALIFICADA')->count();
+                } catch (\Throwable $e) {}
+
+                $al->nombreCompleto = trim("{$al->nombre} {$al->apPaterno} {$al->apMaterno}");
+                $al->trimestre_inicio = $trimInicio;
+                $al->trimestre_actual = $trimestreActual;
+                $al->mes_actual = $mesActual;
+                $al->semana_mes_actual = $semanaMesActual;
+                $al->estatus_pago = $estatusPago;
+                $al->dias_para_pago = $diasDiferencia;
+                $al->total_pagado = (float)$totalPagado;
+                $al->actividades_totales = $totalLiberadas;
+                $al->actividades_entregadas = $totalEntregadas;
+                $al->actividades_pendientes = $totalPendientes;
+                $al->actividades_calificadas = $totalCalificadas;
+                $al->en_riesgo_academico = ($estatusPago !== 'VENCIDO' && $totalPendientes >= 2);
+                $al->ultimo_pago_fecha = $ultimoPago ? $ultimoPago->fecha_pago : null;
+                $al->ultimo_pago_ticket = $ultimoPago ? $ultimoPago->folio_ticket : null;
+
+                return $al;
+            });
+
+            return response()->json([
+                'success' => true,
+                'alumnos' => $alumnos
+            ]);
+        } catch (\Throwable $e) {
+            Log::error("Error en AlumnoOnlineController@getAlumnos: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'alumnos' => [],
+                'error' => $e->getMessage()
+            ], 200);
+        }
     }
 
     /**
