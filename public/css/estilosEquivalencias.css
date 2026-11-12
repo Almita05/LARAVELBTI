@@ -108,8 +108,9 @@
 }
 
 .modal-header {
-     background: rgb(49, 125, 146) !important;
-    color: white;
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    border-bottom: 1px solid #E2E8F0 !important;
 }
 
 .glass-modal {
@@ -122,8 +123,9 @@
 }
 
 .glass-modal .modal-header {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
-    color: #fff;
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    border-bottom: 1px solid #E2E8F0 !important;
 }
 
 .glass-modal .modal-body {

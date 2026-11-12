@@ -1,58 +1,69 @@
-@extends('layouts.app')
-
-@section('content')
-
-
-<head>
-    <link rel="stylesheet" href="{{ asset('css/estilosModal.css') }}">
-</head>
 <div class="modal fade" id="modalCalificaciones" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content glass-modal">
-            <div class="modal-header modal-header-system">
-                <h5 class="modal-title">
-                    Captura de Calificaciones
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-content" style="border-radius: 14px; overflow: hidden;">
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 36px; height: 36px; border-radius: 8px; background: #F0F7F8; border: 1px solid #CBE4E8; color: #1E5B66; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                        <i class="ti ti-checklist"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold" style="font-size: 1.05rem; color: #0F172A; margin: 0;">
+                            Captura de Calificaciones
+                        </h5>
+                        <small style="font-size: 0.75rem; color: #64748B;">Sábana de calificaciones parciales y semestrales</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
 
-            <div class="modal-body">
-                <div class="materia-info text-center mb-4">
+            <div class="modal-body p-4" style="background: #F8FAFC;">
+                <div class="materia-info mb-4 p-3 bg-white border rounded-3 shadow-xs" style="border-color: #E2E8F0 !important;">
 
                     @if(strtolower(session('rol')) === 'admin')
-                    <select id="selectorMateria" class="form-select w-50 mx-auto"></select>
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <label class="form-label mb-0 fw-semibold text-slate-700 fs-8"><i class="ti ti-book me-1"></i> Materia Seleccionada:</label>
+                        </div>
+                        <div class="col-md-9">
+                            <select id="selectorMateria" class="form-select form-select-sm" style="height: 38px; border-color: #CBD5E1;"></select>
+                        </div>
+                    </div>
                     @else
-                    <span class="badge px-3 py-2 mb-2" id="contadorMateria"></span>
-                    <h4 id="tituloMateria" class="mt-2 fw-bold"></h4>
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <h5 id="tituloMateria" class="mb-0 fw-bold text-slate-800 fs-6"></h5>
+                        <span class="badge" id="contadorMateria" style="background: #F0F7F8; color: #1E5B66; border: 1px solid #CBE4E8; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem;"></span>
+                    </div>
                     @endif
 
                 </div>
-                <div class="table-responsive">
-
-                    <table class="table table-hover align-middle text-center tabla-calificaciones">
-                        <thead>
-                            <tr data-alumno="${alumno.id}">
-                                <th>#</th>
-                                <th>Alumno</th>
-                                <th>P1</th>
-                                <th>P2</th>
-                                <th>P3</th>
-                                <th>Semestral</th>
-                                <th>Extraordinario</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaAlumnos">
-                        </tbody>
-                    </table>
+                <div class="card border shadow-xs" style="border-radius: 8px; overflow: hidden; border-color: #E2E8F0 !important;">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle text-center tabla-calificaciones mb-0">
+                            <thead style="background: #F8FAFC;">
+                                <tr style="font-size: 0.75rem; text-transform: uppercase; color: #475569; letter-spacing: 0.04em;">
+                                    <th style="width: 50px;">#</th>
+                                    <th class="text-start">Alumno</th>
+                                    <th style="width: 100px;">P1</th>
+                                    <th style="width: 100px;">P2</th>
+                                    <th style="width: 100px;">P3</th>
+                                    <th style="width: 110px;">Semestral</th>
+                                    <th style="width: 120px;">Extraordinario</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaAlumnos" class="bg-white">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn" id="guardarCalificaciones">
-                    Guardar
-                </button>
-                <button class="btn" data-bs-dismiss="modal">
+            <div class="modal-footer" style="background: #FFFFFF; border-top: 1px solid #E2E8F0; padding: 14px 24px;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     Cerrar
                 </button>
+                <button type="button" class="btn btn-primary" id="guardarCalificaciones" style="background: #1E5B66; border-color: #1E5B66;">
+                    <i class="ti ti-device-floppy me-1"></i> Guardar
+                </button>
+            </div>
             </div>
         </div>
     </div>

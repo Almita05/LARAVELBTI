@@ -5,101 +5,69 @@
 <!-- SweetAlert2 para diálogos estéticos -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<div class="page-container py-4">
-    <!-- Encabezado de Página -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{{ url()->previous() }}" class="btn btn-regresar">
-            <i class="fa-solid fa-arrow-left me-2"></i>
-            Regresar
-        </a>
-
-        <h3 class="page-title mb-0">
-            <i class="fa-solid fa-print me-2 text-info"></i>
-            Módulo "Imprimir"
-        </h3>
-
-        <div style="width: 100px;"></div> {{-- Spacer --}}
+<div class="page-container py-3">
+    <!-- Encabezado de Página Estandarizado -->
+    <div class="page-header-standard">
+        <div class="page-header-left">
+            <a href="{{ url()->previous() }}" class="btn-regresar">
+                <i class="ti ti-arrow-left"></i>
+                <span>Regresar</span>
+            </a>
+            <h1 class="page-heading">Módulo de Impresión</h1>
+        </div>
+        <div></div>
     </div>
 
-    <!-- SECCIÓN 1: SELECCIONAR CCT -->
-    <div class="glass-card p-4 mb-4">
-        <div class="glass-header text-center mb-4">
-            <h4 class="fw-bold text-slate-800 mb-2">
-                <i class="fa-solid fa-school text-info me-2"></i>
-                Selecciona el CCT para formatos
-            </h4>
-            <p class="text-muted mb-0">Elige la modalidad / Bachillerato para cargar los formatos de impresión autorizados.</p>
-        </div>
-
-        <div class="row g-3 justify-content-center">
-            <!-- Card BTI -->
-            <div class="col-md-4">
-                <div class="cct-card text-center p-4" id="cct-bti" onclick="selectCCT('BTI')">
-                    <div class="cct-icon-wrapper bg-primary-subtle text-primary mb-3">
-                        <i class="fa-solid fa-laptop-code fa-2x"></i>
-                    </div>
-                    <h5 class="fw-bold mb-1 text-slate-800">BTI</h5>
-                    <span class="text-muted fs-8">Bachillerato Tecnológico Interamericano</span>
-                </div>
-            </div>
-
-            <!-- Card BGNE -->
-            <div class="col-md-4">
-                <div class="cct-card text-center p-4" id="cct-bgne" onclick="selectCCT('BGNE')">
-                    <div class="cct-icon-wrapper bg-success-subtle text-success mb-3">
-                        <i class="fa-solid fa-book-reader fa-2x"></i>
-                    </div>
-                    <h5 class="fw-bold mb-1 text-slate-800">BGNE</h5>
-                    <span class="text-muted fs-8">Bachillerato General No Escolarizado</span>
-                </div>
-            </div>
-
-            <!-- Card INF. Y COMP. -->
-            <div class="col-md-4">
-                <div class="cct-card text-center p-4" id="cct-inf" onclick="selectCCT('INF')">
-                    <div class="cct-icon-wrapper bg-warning-subtle text-warning mb-3">
-                        <i class="fa-solid fa-microchip fa-2x"></i>
-                    </div>
-                    <h5 class="fw-bold mb-1 text-slate-800">Informática y Computación</h5>
-                    <span class="text-muted fs-8">Especialidad Técnica</span>
-                </div>
-            </div>
+    <!-- Segmented Control Horizontal para CCT -->
+    <div class="d-flex align-items-center mb-3">
+        <div class="cct-segmented-control" role="tablist">
+            <button type="button" class="cct-card cct-tab selected-cct active" id="cct-bti" onclick="selectCCT('BTI')">
+                BTI
+            </button>
+            <button type="button" class="cct-card cct-tab" id="cct-bgne" onclick="selectCCT('BGNE')">
+                BGNE
+            </button>
+            <button type="button" class="cct-card cct-tab" id="cct-inf" onclick="selectCCT('INF')">
+                Informática y Computación
+            </button>
         </div>
     </div>
 
-    <!-- PLACEHOLDER INICIAL (OCULTO CUANDO SE SELECCIONA UN CCT) -->
-    <div class="glass-card p-5 text-center text-muted" id="placeholder-select-cct">
-        <i class="fa-solid fa-circle-info fa-3x mb-3 text-info"></i>
-        <h5 class="fw-bold text-slate-700">Esperando Selección de CCT</h5>
-        <p class="mb-0">Por favor, haz clic en una de las modalidades superiores para visualizar sus formatos disponibles.</p>
-    </div>
+    <!-- Elemento auxiliar para mantener compatibilidad con scripts existentes -->
+    <div id="placeholder-select-cct" style="display: none;"></div>
 
-    <!-- SECCIÓN 2: SUBMÓDULOS DE IMPRESIÓN (DINÁMICOS) -->
-    <div class="row g-4" id="formatos-container" style="display: none;">
-        <!-- Menú Lateral de Submódulos -->
-        <div class="col-md-3">
-            <div class="glass-card p-3 h-100">
-                <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3">
-                    <i class="fa-solid fa-folder-open me-2 text-info"></i>Formatos <span id="lbl-cct-activo" class="badge bg-info text-white"></span>
-                </h6>
+    <!-- SECCIÓN 2: SUBMÓDULOS DE IMPRESIÓN (MASTER-DETAIL GRID) -->
+    <div class="formatos-master-detail" id="formatos-container">
+        <!-- Menú Lateral de Submódulos (260px) -->
+        <div class="formatos-sidebar">
+            <div class="saas-card p-3">
+                <div class="d-flex align-items-center justify-content-between pb-2 mb-3 border-bottom border-light">
+                    <span class="fs-8 fw-bold text-secondary text-uppercase letter-spacing-1">
+                        <i class="ti ti-folder me-2"></i>Formatos
+                    </span>
+                    <span id="lbl-cct-activo" class="badge-soft badge-soft-bgne">BTI</span>
+                </div>
                 <div class="nav flex-column nav-pills" id="submodulos-nav" role="tablist" aria-orientation="vertical">
                     <!-- Los enlaces de pestañas se generarán dinámicamente vía JS -->
                 </div>
             </div>
         </div>
 
-        <!-- Contenido de los Submódulos -->
-        <div class="col-md-9">
-            <div class="glass-card p-4 h-100">
+        <!-- Contenido de los Submódulos (Panel de Configuración) -->
+        <div class="formatos-content">
+            <div class="saas-card p-4">
                 <div class="tab-content" id="submodulos-tab-content">
                     
                     <!-- PANE: CONSTANCIA DE ESTUDIOS -->
                     <div class="tab-pane fade" id="pane-constancia" role="tabpanel">
                         <div class="glass-header mb-4">
-                            <h5 class="fw-bold mb-1 text-slate-800">
-                                <i class="fa-solid fa-file-invoice text-info me-2"></i>Constancia de Estudios
-                            </h5>
-                            <p class="text-muted mb-0">Emisión de constancia escolar con o sin historial de calificaciones.</p>
+                            <div class="d-flex align-items-center gap-3 mb-1">
+                                <div style="width: 34px; height: 34px; border-radius: 8px; background: #F0F7F8; color: #1E5B66; border: 1px solid #CBE4E8; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <i class="ti ti-file-certificate" style="font-size: 18px; line-height: 1;"></i>
+                                </div>
+                                <h5 class="fw-bold mb-0 text-slate-800">Constancia de Estudios</h5>
+                            </div>
+                            <p class="text-muted mb-0 ms-1">Emisión de constancia escolar con o sin historial de calificaciones.</p>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-8">
@@ -110,21 +78,33 @@
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold">Tipo de Constancia</label>
+                                <label class="form-label">Tipo de Constancia</label>
                                 <select class="form-select">
                                     <option value="simple">Constancia Simple</option>
                                     <option value="calif">Constancia con Calificaciones</option>
                                     <option value="conducta">Constancia de Buena Conducta</option>
                                 </select>
                             </div>
-                            <div class="col-12 mt-4" id="constancia-info-alumno" style="display: none;">
-                                <div class="alert alert-secondary border-0 p-3" style="border-radius: 12px; background: rgba(0,0,0,0.02);">
-                                    <h6 class="fw-bold mb-1 text-slate-800" id="lbl-constancia-nombre"></h6>
-                                    <span class="text-muted d-block fs-8" id="lbl-constancia-carrera"></span>
-                                    <span class="badge bg-success-subtle text-success fs-9 mt-2">Estatus: Alumno Regular</span>
+
+                            <!-- Placeholder para Visor / Previsualización -->
+                            <div class="col-12 mt-3" id="constancia-preview-placeholder">
+                                <div class="document-preview-placeholder">
+                                    <i class="ti ti-file-certificate mb-2" style="font-size: 32px; color: var(--text-muted);"></i>
+                                    <p class="mb-0 fw-medium">Busca y selecciona un alumno para previsualizar o descargar el formato oficial.</p>
                                 </div>
-                                <button type="button" class="btn btn-primary fw-bold" onclick="printDoc('Constancia de Estudios', document.getElementById('lbl-constancia-nombre').innerText)">
-                                    <i class="fa-solid fa-file-pdf me-2"></i> Generar Constancia (PDF)
+                            </div>
+
+                            <div class="col-12 mt-3" id="constancia-info-alumno" style="display: none;">
+                                <div class="p-3 mb-3 border rounded-3" style="background: var(--bg-muted); border-color: var(--border-subtle) !important;">
+                                    <h6 class="fw-bold mb-1 text-slate-800" id="lbl-constancia-nombre"></h6>
+                                    <span class="text-secondary d-block fs-8" id="lbl-constancia-carrera"></span>
+                                    <span class="badge-soft badge-soft-success mt-2">
+                                        <span style="width:6px; height:6px; border-radius:50%; background:var(--success-text); margin-right:6px; display:inline-block;"></span>
+                                        Estatus: Alumno Regular
+                                    </span>
+                                </div>
+                                <button type="button" class="btn-primary-saas fw-bold" onclick="printDoc('Constancia de Estudios', document.getElementById('lbl-constancia-nombre').innerText)">
+                                    <i class="ti ti-printer me-2"></i> Generar Documento / Vista Previa
                                 </button>
                             </div>
                         </div>
@@ -134,7 +114,7 @@
                     <div class="tab-pane fade" id="pane-kardex" role="tabpanel">
                         <div class="glass-header mb-4">
                             <h5 class="fw-bold mb-1 text-slate-800">
-                                <i class="fa-solid fa-graduation-cap text-info me-2"></i>Kárdex Académico
+                                <i class="ti ti-report me-2"></i>Kárdex Académico
                             </h5>
                             <p class="text-muted mb-0">Historial completo de asignaturas cursadas, calificaciones oficiales y promedios por periodo.</p>
                         </div>
@@ -142,9 +122,9 @@
                             <div class="col-md-12 position-relative">
                                 <label class="form-label fw-semibold">Buscar Alumno para Kárdex</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                                    <span class="input-group-text bg-white border-end-0"><i class="ti ti-search text-muted"></i></span>
                                     <input type="text" id="kardexAlumnoSearch" class="form-control border-start-0" placeholder="Escriba matrícula o nombre del alumno..." onkeyup="simularBusquedaAlumnoKardex(this.value)">
-                                    <button class="btn btn-outline-secondary" type="button" onclick="limpiarBusquedaKardex()"><i class="fa-solid fa-xmark"></i></button>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="limpiarBusquedaKardex()"><i class="ti ti-x"></i></button>
                                 </div>
                                 <div id="kardex-alumno-sugerencia" class="list-group mt-2 shadow-sm position-absolute w-100" style="display: none; z-index: 1050; max-height: 250px; overflow-y: auto;">
                                     <!-- Cargado por JS -->
@@ -174,10 +154,10 @@
                                             </div>
                                             <div class="d-flex gap-2 flex-wrap">
                                                 <button type="button" class="btn btn-outline-primary fw-bold shadow-xs px-3" onclick="mostrarModalKardexManual()">
-                                                    <i class="fa-solid fa-pen-to-square me-1"></i> Ver / Ajustar en Modal
+                                                    <i class="ti ti-edit me-1"></i> Ver / Ajustar en Modal
                                                 </button>
                                                 <button type="button" class="btn btn-primary fw-bold shadow-sm px-3" onclick="imprimirKardex()">
-                                                    <i class="fa-solid fa-print me-1"></i> Imprimir Kárdex
+                                                    <i class="ti ti-printer me-1"></i> Imprimir Kárdex
                                                 </button>
                                             </div>
                                         </div>
@@ -188,12 +168,12 @@
                                 <div class="card border shadow-sm p-4 mb-4 bg-white" style="border-radius: 12px;" id="kardex-preview-wrapper">
                                     <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-wrap gap-2">
                                         <h6 class="fw-bold text-dark mb-0">
-                                            <i class="fa-solid fa-file-invoice text-info me-2"></i>Vista Previa del Formato Oficial de Kárdex
+                                            <i class="ti ti-file-text me-2"></i>Vista Previa del Formato Oficial de Kárdex
                                         </h6>
                                         <div class="d-flex gap-2 align-items-center">
-                                            <span class="text-muted fs-8"><i class="fa-solid fa-circle-check text-success me-1"></i>Documento completo listo para imprimir</span>
+                                            <span class="text-muted fs-8"><i class="ti ti-check text-success me-1"></i>Documento completo listo para imprimir</span>
                                             <button type="button" class="btn btn-sm btn-primary fw-bold" onclick="imprimirKardex()">
-                                                <i class="fa-solid fa-print me-1"></i> Imprimir
+                                                <i class="ti ti-printer me-1"></i> Imprimir
                                             </button>
                                         </div>
                                     </div>
@@ -204,7 +184,7 @@
 
                                     <div class="text-end mt-3 pt-3 border-top">
                                         <button type="button" class="btn btn-primary fw-bold shadow-sm px-4" onclick="imprimirKardex()">
-                                            <i class="fa-solid fa-print me-2"></i> Imprimir Kárdex Oficial
+                                            <i class="ti ti-printer me-2"></i> Imprimir Kárdex Oficial
                                         </button>
                                     </div>
                                 </div>
@@ -216,7 +196,7 @@
                     <div class="tab-pane fade" id="pane-boleta" role="tabpanel">
                         <div class="glass-header mb-4">
                             <h5 class="fw-bold mb-1 text-slate-800">
-                                <i class="fa-solid fa-file-signature text-info me-2"></i>Boletas de Calificaciones (BTI)
+                                <i class="ti ti-file-analytics me-2"></i>Boletas de Calificaciones (BTI)
                             </h5>
                             <p class="text-muted mb-0">Impresión de boleta de calificaciones por alumno y semestre seleccionado.</p>
                         </div>
@@ -240,7 +220,7 @@
                                 </select>
                             </div>
                             <div class="col-md-2 d-flex align-items-end">
-                                <button class="btn btn-info w-100 text-white fw-bold py-2 shadow-sm" onclick="simularFiltrarBoletas()"><i class="fa-solid fa-magnifying-glass me-1"></i> Buscar</button>
+                                <button class="btn btn-info w-100 text-white fw-bold py-2 shadow-sm" onclick="simularFiltrarBoletas()"><i class="ti ti-search me-1"></i> Buscar</button>
                             </div>
                         </div>
                                                 <div id="boleta-tabla-resultados" style="display: none;">
@@ -261,7 +241,7 @@
                                         </div>
                                     </div>
                                     <div class="text-end d-flex gap-2 flex-wrap">
-                                        <button class="btn btn-primary btn-sm fw-bold px-3 py-2 shadow-sm" onclick="generarBoletaBTIDesdeSelect()"><i class="fa-solid fa-print me-1"></i> Imprimir Boleta</button>
+                                        <button class="btn btn-primary btn-sm fw-bold px-3 py-2 shadow-sm" onclick="generarBoletaBTIDesdeSelect()"><i class="ti ti-printer me-1"></i> Imprimir Boleta</button>
                                     </div>
                                 </div>
                             </div>
@@ -272,7 +252,7 @@
                     <div class="tab-pane fade" id="pane-reporte_indisciplina" role="tabpanel">
                         <div class="glass-header mb-4">
                             <h5 class="fw-bold mb-1 text-slate-800">
-                                <i class="fa-solid fa-triangle-exclamation text-warning me-2"></i>Reportes de Indisciplina (BTI)
+                                <i class="ti ti-alert-triangle me-2"></i>Reportes de Indisciplina (BTI)
                             </h5>
                             <p class="text-muted fs-7 mb-0">Registre indisciplinas y genere el formato oficial a doble talón.</p>
                         </div>
@@ -282,14 +262,14 @@
                             <div class="col-12 col-xl-5">
                                 <div class="card border-0 shadow-sm p-4" style="border-radius: 16px; background: #ffffff;">
                                     <h6 class="fw-bold text-slate-800 mb-3 border-bottom pb-2">
-                                        <i class="fa-solid fa-circle-plus text-primary me-2"></i>Registrar Nuevo Reporte
+                                        <i class="ti ti-plus me-2"></i>Registrar Nuevo Reporte
                                     </h6>
                                     <form id="formCrearReporte" onsubmit="registrarReporteIndisciplina(event)">
                                         <!-- Alumno Search -->
                                         <div class="mb-3 position-relative">
                                             <label class="form-label fw-bold text-slate-700 fs-7">Buscar Alumno</label>
                                             <div class="input-group">
-                                                <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-search text-muted"></i></span>
+                                                <span class="input-group-text bg-white border-end-0"><i class="ti ti-search text-muted"></i></span>
                                                 <input type="text" id="reporteAlumnoSearch" class="form-control border-start-0" placeholder="Escriba el nombre del alumno..." onkeyup="buscarAlumnoReporte(this.value)">
                                             </div>
                                             <div id="reporte-alumno-sugerencia" class="list-group mt-2 shadow-sm position-absolute w-100" style="display: none; z-index: 1050; max-height: 200px; overflow-y: auto;">
@@ -306,7 +286,7 @@
                                                     <span class="fw-bold d-block text-slate-800" id="lbl-reporte-alumno-nom"></span>
                                                     <small class="text-muted" id="lbl-reporte-alumno-mat"></small>
                                                 </div>
-                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="deseleccionarAlumnoReporte()"><i class="fa-solid fa-xmark"></i></button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="deseleccionarAlumnoReporte()"><i class="ti ti-x"></i></button>
                                             </div>
                                         </div>
 
@@ -333,7 +313,7 @@
                                         </div>
 
                                         <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
-                                            <i class="fa-solid fa-floppy-disk me-2"></i>Registrar y Generar Reporte
+                                            <i class="ti ti-device-floppy me-2"></i>Registrar y Generar Reporte
                                         </button>
                                     </form>
                                 </div>
@@ -344,11 +324,11 @@
                                 <div class="card border-0 shadow-sm p-4" style="border-radius: 16px; background: #ffffff;">
                                     <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
                                         <h6 class="fw-bold text-slate-800 mb-0">
-                                            <i class="fa-solid fa-clock-rotate-left text-secondary me-2"></i>Historial de Reportes
+                                            <i class="ti ti-history text-secondary me-2"></i>Historial de Reportes
                                         </h6>
                                         <div style="width: 250px;">
                                             <div class="input-group input-group-sm">
-                                                <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-filter text-muted"></i></span>
+                                                <span class="input-group-text bg-white border-end-0"><i class="ti ti-filter text-muted"></i></span>
                                                 <input type="text" id="reportesHistorialSearch" class="form-control border-start-0" placeholder="Buscar por alumno o folio..." onkeyup="cargarHistorialReportes(this.value)">
                                             </div>
                                         </div>
@@ -385,12 +365,12 @@
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div>
                                     <h5 class="fw-bold mb-1 text-slate-800">
-                                        <i class="fa-solid fa-id-card text-primary me-2"></i>Credencial Escolar Oficial
+                                        <i class="ti ti-id-badge-2 me-2"></i>Credencial Escolar Oficial
                                     </h5>
-                                    <p class="text-muted mb-0">Emisión de credenciales oficiales institucionales en formato estándar PVC / Opalina (Sistema Escolarizado).</p>
+                                    <p class="text-muted mb-0" id="cred-descripcion-subtitulo">Emisión de credenciales oficiales institucionales en formato estándar PVC / Opalina (Sistema Escolarizado).</p>
                                 </div>
-                                <span class="badge px-3 py-2 text-white fw-bold rounded-pill" style="background: #15285f; font-size: 0.82rem;">
-                                    <i class="fa-solid fa-award me-1 text-warning"></i> Formato Oficial Escolarizado
+                                <span class="badge px-3 py-2 text-white fw-bold rounded-pill" style="background: #15285f; font-size: 0.82rem;" id="cred-tipo-formato-badge">
+                                    <i class="ti ti-award me-1"></i> Formato Oficial Escolarizado
                                 </span>
                             </div>
                         </div>
@@ -399,7 +379,7 @@
                             <div class="col-md-12">
                                 <label class="form-label fw-semibold text-slate-700">Buscar Alumno para Credencial</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                                    <span class="input-group-text bg-white border-end-0"><i class="ti ti-search text-muted"></i></span>
                                     <input type="text" id="credencialAlumnoSearch" class="form-control border-start-0 shadow-sm" placeholder="Escriba matrícula o nombre del alumno..." onkeyup="simularBusquedaAlumnoCredencial(this.value)">
                                 </div>
                                 <div id="credencial-alumno-sugerencia" class="list-group mt-2 shadow-sm" style="display: none;">
@@ -415,7 +395,7 @@
                                         <div class="card border-0 shadow-sm rounded-4 p-4" style="background: rgba(248, 250, 252, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8) !important;">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <h6 class="fw-bold text-slate-800 mb-0">
-                                                    <i class="fa-solid fa-eye text-primary me-1"></i> Vista Previa en Tiempo Real
+                                                    <i class="ti ti-eye me-1"></i> Vista Previa en Tiempo Real
                                                 </h6>
                                                 <span class="badge bg-light text-slate-600 border px-2 py-1 fs-9">Estándar CR80 Vertical (54 x 85.6 mm)</span>
                                             </div>
@@ -423,13 +403,13 @@
                                             <div class="d-flex flex-column align-items-center py-2">
                                                 <div class="d-flex justify-content-between align-items-center mb-2 px-1" style="width: 500px; max-width: 100%;">
                                                     <span class="text-uppercase fw-bold text-slate-600 fs-9 letter-spacing-1">
-                                                        <i class="fa-solid fa-id-badge text-primary me-1"></i> Frente (Anverso)
+                                                        <i class="ti ti-id-badge-2 me-1"></i> Frente (Anverso)
                                                     </span>
                                                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0.5 fs-10 fw-bold">
-                                                        <i class="fa-solid fa-link me-1"></i>Formato Dúplex Continuo (Juntas)
+                                                        <i class="ti ti-link me-1"></i>Formato Dúplex Continuo (Juntas)
                                                     </span>
                                                     <span class="text-uppercase fw-bold text-slate-600 fs-9 letter-spacing-1">
-                                                        <i class="fa-solid fa-shield text-info me-1"></i> Reverso (Atrás)
+                                                        <i class="ti ti-shield me-1"></i> Reverso (Atrás)
                                                     </span>
                                                 </div>
 
@@ -444,14 +424,14 @@
                                                         <div class="bti-map-bg"></div>
 
                                                         <!-- Encabezado superior azul -->
-                                                        <div class="bti-header-banner">
-                                                            <div class="bti-header-title">BACHILLERATO TECNOLOGICO</div>
-                                                            <div class="bti-header-subtitle">INTERAMERICANO</div>
+                                                        <div class="bti-header-banner" id="cred-header-banner">
+                                                            <div class="bti-header-title" id="cred-header-title">BACHILLERATO TECNOLOGICO</div>
+                                                            <div class="bti-header-subtitle" id="cred-header-subtitle">INTERAMERICANO</div>
                                                         </div>
 
                                                         <!-- CCT y Logos oficiales -->
                                                         <div class="bti-sub-header">
-                                                            <div class="bti-cct-text">C.C.T. 21PCT0073R</div>
+                                                            <div class="bti-cct-text" id="cred-cct-val">C.C.T. 21PCT0073R</div>
                                                             <div class="bti-official-logos">
                                                                 <div class="bti-logos-row">
                                                                     <img src="/img/credencial/logo_puebla.png" class="bti-logo-puebla" alt="Puebla Gobierno">
@@ -504,7 +484,7 @@
                                                         <div class="bti-back-content">
                                                             <div>
                                                                 <div class="bti-important-title">IMPORTANTE:</div>
-                                                                <div class="bti-important-text">
+                                                                <div class="bti-important-text" id="cred-importante-institucion-texto">
                                                                     Esta credencial es personal y debe portarse en lugar visible mientras usted permanezca dentro de la institución.<br>
                                                                     Debe mostrarse al personal de seguridad, a la autoridad del BTI para fines de identificación. no es transferible y deberá devolverse al causar baja el usuario.
                                                                 </div>
@@ -542,26 +522,32 @@
                                     <div class="col-lg-5">
                                         <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
                                             <h6 class="fw-bold text-slate-800 mb-3 d-flex align-items-center">
-                                                <i class="fa-solid fa-sliders text-primary me-2"></i> Personalización y Ajustes
+                                                <i class="ti ti-adjustments me-2"></i> Personalización y Ajustes
                                             </h6>
                                             
                                             <div class="mb-3">
                                                 <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">
-                                                    <i class="fa-solid fa-user text-primary me-1"></i> Nombre del Alumno
+                                                    <i class="ti ti-user me-1"></i> Nombre del Alumno
                                                 </label>
                                                 <input type="text" id="inputCredNombre" class="form-control form-control-sm shadow-sm" value="DANIEL IGNACIO FERNÁNDEZ PARRA" oninput="actualizarCamposCredencialDinamicos()" placeholder="Nombre completo del alumno">
                                             </div>
 
                                             <div class="row g-2 mb-3">
-                                                <div class="col-sm-6">
+                                                <div class="col-sm-4">
                                                     <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">
-                                                        <i class="fa-solid fa-id-card text-primary me-1"></i> Matrícula
+                                                        <i class="ti ti-id-badge-2 me-1"></i> Matrícula
                                                     </label>
                                                     <input type="text" id="inputCredMatricula" class="form-control form-control-sm shadow-sm" value="419012603" oninput="actualizarCamposCredencialDinamicos()" placeholder="Ej. 419012603">
                                                 </div>
-                                                <div class="col-sm-6">
+                                                <div class="col-sm-4">
                                                     <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">
-                                                        <i class="fa-solid fa-graduation-cap text-primary me-1"></i> Modalidad
+                                                        <i class="ti ti-fingerprint me-1"></i> C.C.T.
+                                                    </label>
+                                                    <input type="text" id="inputCredCCT" class="form-control form-control-sm shadow-sm" value="21PCT0073R" oninput="actualizarCamposCredencialDinamicos()" placeholder="C.C.T.">
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">
+                                                        <i class="ti ti-school me-1"></i> Modalidad
                                                     </label>
                                                     <input type="text" id="inputCredModalidad" class="form-control form-control-sm shadow-sm" value="ESCOLARIZADO" oninput="actualizarCamposCredencialDinamicos()">
                                                 </div>
@@ -596,23 +582,23 @@
                                             <hr class="my-3 text-slate-200">
 
                                             <h6 class="fw-bold text-slate-800 mb-2">
-                                                <i class="fa-solid fa-print text-success me-1"></i> Opciones de Impresión
+                                                <i class="ti ti-printer me-1"></i> Opciones de Impresión
                                             </h6>
                                             <p class="text-muted fs-9 mb-3">Formato listo para impresión física en alta definición (resolución vectorial para tarjetas PVC o papel opalina con marcas de corte).</p>
 
                                             <div class="d-grid gap-2">
                                                 <button type="button" class="btn btn-success fw-bold py-2.5 shadow-sm rounded-3" onclick="imprimirCredencialOficialBTI('ambas')">
-                                                    <i class="fa-solid fa-print me-2"></i> Imprimir Ambas Caras (Frente y Reverso)
+                                                    <i class="ti ti-printer me-2"></i> Imprimir Ambas Caras (Frente y Reverso)
                                                 </button>
                                                 <div class="row g-2">
                                                     <div class="col-6">
                                                         <button type="button" class="btn btn-outline-primary fw-semibold py-2 w-100 fs-9 rounded-3" onclick="imprimirCredencialOficialBTI('frente')">
-                                                            <i class="fa-solid fa-id-badge me-1"></i> Solo Frente (PVC)
+                                                            <i class="ti ti-id-badge-2 me-1"></i> Solo Frente (PVC)
                                                         </button>
                                                     </div>
                                                     <div class="col-6">
                                                         <button type="button" class="btn btn-outline-secondary fw-semibold py-2 w-100 fs-9 rounded-3" onclick="imprimirCredencialOficialBTI('reverso')">
-                                                            <i class="fa-solid fa-shield me-1"></i> Solo Reverso (PVC)
+                                                            <i class="ti ti-shield me-1"></i> Solo Reverso (PVC)
                                                         </button>
                                                     </div>
                                                 </div>
@@ -629,7 +615,7 @@
                     <div class="tab-pane fade" id="pane-extraordinario" role="tabpanel">
                         <div class="glass-header mb-4">
                             <h5 class="fw-bold mb-1 text-slate-800">
-                                <i class="fa-solid fa-circle-exclamation text-info me-2"></i>Formato Examen Extraordinario
+                                <i class="ti ti-file-text me-2"></i>Formato Examen Extraordinario
                             </h5>
                             <p class="text-muted mb-0">Emisión de actas y recibos de derecho a exámenes extraordinarios.</p>
                         </div>
@@ -638,7 +624,7 @@
                             <div class="col-md-6 position-relative">
                                 <label class="form-label fw-semibold text-slate-700">Nombre del Alumno</label>
                                 <div class="input-group shadow-sm">
-                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-user-graduate"></i></span>
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="ti ti-school"></i></span>
                                     <input type="text" id="extraordinarioAlumnoSearch" class="form-control border-start-0" placeholder="Escriba matrícula o nombre del alumno..." autocomplete="off" onkeyup="simularBusquedaAlumnoExtraordinario(this.value)">
                                 </div>
                                 <div id="extraordinario-alumno-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 220px; overflow-y: auto;">
@@ -650,7 +636,7 @@
                             <div class="col-md-6 position-relative">
                                 <label class="form-label fw-semibold text-slate-700">Grupo</label>
                                 <div class="input-group shadow-sm">
-                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-users"></i></span>
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="ti ti-users-group"></i></span>
                                     <input type="text" id="extraordinarioGrupoInput" class="form-control border-start-0" placeholder="Escriba o busque grupo (ej. 101, BTI...)" autocomplete="off" oninput="buscarGruposExtraordinario(this.value)" onfocus="buscarGruposExtraordinario(this.value)">
                                 </div>
                                 <div id="extraordinario-grupo-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 220px; overflow-y: auto;">
@@ -676,7 +662,7 @@
                             <div class="col-md-4 position-relative">
                                 <label class="form-label fw-semibold text-slate-700">Materia</label>
                                 <div class="input-group shadow-sm">
-                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-book-open"></i></span>
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="ti ti-books"></i></span>
                                     <input type="text" id="extraordinarioMateriaInput" class="form-control border-start-0" placeholder="Escriba o seleccione materia..." autocomplete="off" oninput="buscarMateriasExtraordinario(this.value)" onfocus="buscarMateriasExtraordinario(this.value)">
                                 </div>
                                 <div id="extraordinario-materia-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 220px; overflow-y: auto;">
@@ -688,7 +674,7 @@
                             <div class="col-md-4 position-relative">
                                 <label class="form-label fw-semibold text-slate-700">Docente</label>
                                 <div class="input-group shadow-sm">
-                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-chalkboard-user"></i></span>
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="ti ti-chalkboard"></i></span>
                                     <input type="text" id="extraordinarioDocenteInput" class="form-control border-start-0" placeholder="Escriba o seleccione docente..." autocomplete="off" oninput="buscarDocentesExtraordinario(this.value)" onfocus="buscarDocentesExtraordinario(this.value)">
                                 </div>
                                 <div id="extraordinario-docente-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 220px; overflow-y: auto;">
@@ -708,7 +694,7 @@
                                     </div>
                                 </div>
                                 <button type="button" class="btn btn-primary fw-bold py-2.5 px-4 shadow-sm" onclick="abrirPrevisualizacionExtraordinario()">
-                                    <i class="fa-solid fa-eye me-2"></i> Previsualizar e Imprimir Formato
+                                    <i class="ti ti-eye me-2"></i> Previsualizar e Imprimir Formato
                                 </button>
                             </div>
                         </div>
@@ -718,7 +704,7 @@
                     <div class="tab-pane fade" id="pane-asistencias" role="tabpanel">
                         <div class="glass-header mb-4">
                             <h5 class="fw-bold mb-1" style="color: #334155;">
-                                <i class="fa-solid fa-user-clock text-info me-2"></i> Formato de Asistencias por Grupo
+                                <i class="ti ti-calendar-stats me-2"></i> Formato de Asistencias por Grupo
                             </h5>
                             <p class="text-muted mb-0">Seleccione los criterios para generar la lista de asistencia del trimestre/semestre correspondiente.</p>
                         </div>
@@ -735,10 +721,10 @@
                             <div class="col-md-4 position-relative">
                                 <label class="form-label fw-semibold text-slate-700">Docente</label>
                                 <div class="input-group shadow-sm">
-                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-chalkboard-user"></i></span>
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="ti ti-chalkboard"></i></span>
                                     <input type="text" id="asistenciaDocenteInput" class="form-control border-start-0" placeholder="Escriba o busque docente..." autocomplete="off" oninput="buscarDocentesAsistencia(this.value)" onfocus="buscarDocentesAsistencia(this.value)">
                                     <button class="btn btn-outline-secondary border-start-0 bg-white text-muted" type="button" id="btn-limpiar-asistencia-docente" onclick="limpiarDocenteAsistencia()" style="display: none;" title="Limpiar docente">
-                                        <i class="fa-solid fa-xmark"></i>
+                                        <i class="ti ti-x"></i>
                                     </button>
                                 </div>
                                 <div id="asistencia-docente-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 240px; overflow-y: auto;">
@@ -748,7 +734,7 @@
                                     <option value="">Seleccione Docente</option>
                                     @if(isset($docentes))
                                         @foreach($docentes as $d)
-                                            @php
+                                             @php
                                                 $dId = is_array($d) ? ($d['idDocente'] ?? $d['id'] ?? '') : ($d->idDocente ?? $d->id ?? '');
                                                 $dNom = is_array($d) ? ($d['nombreDocente'] ?? $d['nombre'] ?? '') : ($d->nombreDocente ?? $d->nombre ?? '');
                                                 $dPat = is_array($d) ? ($d['apPaternoDocente'] ?? $d['apPaterno'] ?? '') : ($d->apPaternoDocente ?? $d->apPaterno ?? '');
@@ -764,10 +750,10 @@
                             <div class="col-md-3 position-relative">
                                 <label class="form-label fw-semibold text-slate-700">Asignatura</label>
                                 <div class="input-group shadow-sm">
-                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-book-open"></i></span>
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="ti ti-books"></i></span>
                                     <input type="text" id="asistenciaMateriaInput" class="form-control border-start-0" placeholder="Escriba o seleccione materia..." autocomplete="off" oninput="buscarMateriasAsistencia(this.value)" onfocus="buscarMateriasAsistencia(this.value)">
                                     <button class="btn btn-outline-secondary border-start-0 bg-white text-muted" type="button" id="btn-limpiar-asistencia-materia" onclick="limpiarMateriaAsistencia()" style="display: none;" title="Limpiar materia">
-                                        <i class="fa-solid fa-xmark"></i>
+                                        <i class="ti ti-x"></i>
                                     </button>
                                 </div>
                                 <div id="asistencia-materia-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 240px; overflow-y: auto;">
@@ -787,7 +773,7 @@
                             <div class="row g-3 align-items-center">
                                 <div class="col-md-5">
                                     <label class="form-label fw-semibold text-slate-700 mb-1">
-                                        <i class="fa-solid fa-calendar-week text-info me-1"></i> Periodo de Asistencias (Escolarizado)
+                                        <i class="ti ti-calendar me-1"></i> Periodo de Asistencias (Escolarizado)
                                     </label>
                                     <select id="asistenciaPeriodoSelect" class="form-select shadow-sm" onchange="onAsistenciaPeriodoSelectChange()">
                                         <option value="1">1° Periodo: 31 Ago - 30 Oct (45 días hábiles)</option>
@@ -814,7 +800,7 @@
                                 </div>
                             </div>
                             <div id="asistencia-exceso-alerta" class="alert alert-warning py-1.5 px-3 mt-2 mb-0 fs-8 d-flex align-items-center rounded-2" style="display: none;">
-                                <i class="fa-solid fa-triangle-exclamation text-warning me-2 fs-7"></i>
+                                <i class="ti ti-alert-triangle text-warning me-2 fs-7"></i>
                                 <div>
                                     <strong id="asistencia-exceso-titulo">Rango excede el límite de 1 hoja.</strong> 
                                     <span id="asistencia-exceso-mensaje">Se abarcarán un máximo de 45 días hábiles para garantizar que quepa en 1 sola página.</span>
@@ -839,7 +825,7 @@
                                     </div>
                                     <div class="text-end">
                                         <button type="button" class="btn btn-primary fw-bold py-2.5 px-4 shadow-sm" onclick="generarListaAsistenciaOficialPdf()">
-                                            <i class="fa-solid fa-file-pdf me-2"></i> Generar Lista (PDF)
+                                            <i class="ti ti-printer me-2"></i> Generar Lista (PDF)
                                         </button>
                                     </div>
                                 </div>
@@ -858,15 +844,15 @@
     <div class="modal fade" id="modalExtraordinarioPreview" tabindex="-1" aria-labelledby="modalExtraordinarioLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background: #f1f5f9;">
-                <div class="modal-header py-3 px-4 d-flex justify-content-between align-items-center" style="background: #1e6fa8 !important; color: #ffffff !important;">
-                    <h5 class="modal-title fw-bold text-white mb-0" id="modalExtraordinarioLabel">
-                        <i class="fa-solid fa-file-circle-check me-2"></i> Vista Previa - Acta y Recibo de Examen Extraordinario
+                <div class="modal-header py-3 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title fw-bold mb-0" id="modalExtraordinarioLabel">
+                        <i class="ti ti-file-certificate me-2" style="color: #1E5B66;"></i> Vista Previa - Acta y Recibo de Examen Extraordinario
                     </h5>
                     <div class="d-flex align-items-center gap-2">
-                        <button type="button" class="btn btn-light btn-sm fw-semibold shadow-sm text-dark px-3" onclick="ejecutarImpresionExtraordinario()">
-                            <i class="fa-solid fa-print me-1 text-primary"></i> Imprimir Documento
+                        <button type="button" class="btn btn-secondary btn-sm fw-semibold shadow-sm px-3" onclick="ejecutarImpresionExtraordinario()">
+                            <i class="ti ti-printer me-1" style="color: #1E5B66;"></i> Imprimir Documento
                         </button>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                 </div>
                 <div class="modal-body p-4 d-flex justify-content-center" style="max-height: calc(85vh - 120px); overflow-y: auto;">
@@ -876,10 +862,10 @@
                 </div>
                 <div class="modal-footer bg-white py-2.5 px-4 d-flex justify-content-between border-top">
                     <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">
-                        <i class="fa-solid fa-xmark me-1"></i> Cerrar
+                        <i class="ti ti-x me-1"></i> Cerrar
                     </button>
                     <button type="button" class="btn btn-primary fw-bold px-4 shadow-sm" onclick="ejecutarImpresionExtraordinario()">
-                        <i class="fa-solid fa-print me-2"></i> Imprimir Formato
+                        <i class="ti ti-printer me-2"></i> Imprimir Formato
                     </button>
                 </div>
             </div>
@@ -902,94 +888,102 @@
     ];
 </script>
 
-<!-- ESTILOS CSS PREMIUM INTEGRADOS (GLASSMORPHISM Y CREDENCIAL) -->
+<!-- ESTILOS SAAS MODERNO PARA MÓDULO IMPRIMIR -->
 <style>
-    /* Tarjetas de CCT */
-    .cct-card {
-        background: rgba(255, 255, 255, 0.6);
-        border: 2px solid rgba(255, 255, 255, 0.4);
-        border-radius: 16px;
+    /* Segmented Control Horizontal CCT */
+    .cct-segmented-control {
+        display: inline-flex;
+        background: var(--bg-muted);
+        padding: 4px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-subtle);
+        margin-bottom: 20px;
+        gap: 4px;
+    }
+
+    .cct-tab {
+        padding: 8px 16px;
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-secondary);
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
-    }
-
-    .cct-card:hover {
-        transform: translateY(-5px);
-        background: #ffffff;
-        border-color: #38bdf8;
-        box-shadow: 0 10px 25px rgba(56, 189, 248, 0.12);
-    }
-
-    .cct-card.selected-cct {
-        background: #ffffff;
-        border-color: #0284c7;
-        box-shadow: 0 10px 30px rgba(2, 132, 199, 0.18);
-        transform: scale(1.02);
-    }
-
-    .cct-icon-wrapper {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        display: flex;
+        transition: all 0.15s ease;
+        border: none;
+        background: transparent;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto;
     }
 
-    /* Contenedor General */
-    .glass-card {
-        background: rgba(255, 255, 255, 0.75);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    .cct-tab:hover {
+        color: var(--text-primary);
     }
 
-    .page-title {
-        font-weight: 750;
-        color: #1e293b;
-        letter-spacing: -0.5px;
+    .cct-tab.selected-cct,
+    .cct-tab.active {
+        background: var(--bg-surface) !important;
+        color: var(--text-primary) !important;
+        font-weight: 600 !important;
+        box-shadow: var(--shadow-card) !important;
     }
 
-    .btn-regresar {
-        background: #f1f5f9;
-        border: 1.5px solid #cbd5e1;
-        color: #475569;
-        font-weight: 600;
-        padding: 8px 18px;
-        border-radius: 12px;
-        transition: all 0.25s ease;
+    /* Master-Detail Layout (260px Submenú + 1fr Panel) */
+    .formatos-master-detail {
+        display: grid !important;
+        grid-template-columns: 260px 1fr;
+        gap: 24px;
+        align-items: start;
     }
 
-    .btn-regresar:hover {
-        background: #e2e8f0;
-        color: #1e293b;
-        transform: translateY(-2px);
+    @media (max-width: 991px) {
+        .formatos-master-detail {
+            grid-template-columns: 1fr;
+        }
     }
 
-    /* Pestañas de Navegación */
-    .nav-pills .nav-link {
-        color: #475569;
+    .saas-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-card);
+    }
+
+    /* Submenú de Formatos (Izquierda) */
+    #submodulos-nav .nav-link {
+        color: var(--text-secondary);
         background: transparent;
-        border-radius: 10px;
-        transition: all 0.25s ease;
-        border: 1.5px solid transparent;
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 9px 12px;
+        transition: all 0.15s ease;
+        border: none;
         text-align: left;
-        margin-bottom: 5px;
+        margin-bottom: 3px;
     }
 
-    .nav-pills .nav-link:hover {
-        color: #0f172a;
-        background: rgba(0, 0, 0, 0.02);
+    #submodulos-nav .nav-link:hover {
+        color: var(--text-primary);
+        background: var(--bg-muted);
     }
 
-    .nav-pills .nav-link.active {
-        color: #ffffff;
-        background: linear-gradient(135deg, #0284c7, #0369a1);
-        box-shadow: 0 4px 12px rgba(3, 105, 161, 0.2);
+    #submodulos-nav .nav-link.active {
+        color: var(--brand-primary) !important;
+        background: var(--brand-primary-subtle) !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }
+
+    /* Placeholder Visor / Estado Vacío */
+    .document-preview-placeholder {
+        margin-top: 20px;
+        border: 1px dashed #CBD5E1;
+        border-radius: var(--radius-md);
+        background: var(--bg-canvas);
+        padding: 36px 24px;
+        text-align: center;
+        color: var(--text-secondary);
     }
 
     /* Tabla Estilizada */
@@ -1413,15 +1407,15 @@
     <div class="modal fade" id="modalKardexAlumno" tabindex="-1" aria-labelledby="modalKardexLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background: #ffffff;">
-                <div class="modal-header py-3 px-4 d-flex justify-content-between align-items-center" style="background: #1e6fa8 !important; color: #ffffff !important;">
-                    <h5 class="modal-title fw-bold text-white mb-0" id="modalKardexLabel">
-                        <i class="fa-solid fa-graduation-cap me-2"></i> Kárdex Oficial y Calificaciones
+                <div class="modal-header py-3 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title fw-bold mb-0" id="modalKardexLabel">
+                        <i class="ti ti-school me-2" style="color: #1E5B66;"></i> Kárdex Oficial y Calificaciones
                     </h5>
                     <div class="d-flex align-items-center gap-2">
-                        <button type="button" class="btn btn-light btn-sm fw-semibold shadow-sm text-dark px-3" onclick="imprimirKardex()">
-                            <i class="fa-solid fa-print me-1 text-primary"></i> Imprimir Kárdex
+                        <button type="button" class="btn btn-secondary btn-sm fw-semibold shadow-sm px-3" onclick="imprimirKardex()">
+                            <i class="ti ti-printer me-1" style="color: #1E5B66;"></i> Imprimir Kárdex
                         </button>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                 </div>
                 <div class="modal-body p-4 bg-white" id="kardexPrintArea" style="max-height: calc(85vh - 130px); overflow-y: auto;">
@@ -1478,12 +1472,12 @@
                 </div>
                 <div class="modal-footer bg-light border-top py-2 px-4 d-flex justify-content-between">
                     <span class="text-muted" style="font-size: 0.82rem;">
-                        <i class="fa-solid fa-circle-info me-1 text-info"></i> Puedes ajustar calificaciones directamente en cada casilla.
+                        <i class="ti ti-info-circle me-1"></i> Puedes ajustar calificaciones directamente en cada casilla.
                     </span>
                     <div>
                         <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cerrar</button>
                         <button type="button" class="btn btn-success px-4 fw-bold shadow-sm" onclick="guardarCalificacionesKardex()" id="btnGuardarKardex">
-                            <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Calificaciones
+                            <i class="ti ti-device-floppy me-1"></i> Guardar Calificaciones
                         </button>
                     </div>
                 </div>
@@ -1496,24 +1490,24 @@
     // Configuración de Submódulos autorizados por CCT
     const submodulosPorCCT = {
         'BTI': [
-            { id: 'constancia', nombre: 'Constancia de Estudios', icon: 'fa-file-invoice' },
-            { id: 'kardex', nombre: 'Kardex Académico', icon: 'fa-graduation-cap' },
-            { id: 'boleta', nombre: 'Boleta de Calificaciones', icon: 'fa-file-signature' },
-            { id: 'reporte_indisciplina', nombre: 'Reportes de Indisciplina', icon: 'fa-triangle-exclamation' },
-            { id: 'credencial', nombre: 'Credencial Escolar', icon: 'fa-id-card' },
-            { id: 'extraordinario', nombre: 'Formato Extraordinario', icon: 'fa-circle-exclamation' },
-            { id: 'asistencias', nombre: 'Formato de Asistencias', icon: 'fa-user-clock' }
+            { id: 'constancia', nombre: 'Constancia de Estudios', icon: 'ti-file-certificate' },
+            { id: 'kardex', nombre: 'Kardex Académico', icon: 'ti-report' },
+            { id: 'boleta', nombre: 'Boleta de Calificaciones', icon: 'ti-file-analytics' },
+            { id: 'reporte_indisciplina', nombre: 'Reportes de Indisciplina', icon: 'ti-alert-triangle' },
+            { id: 'credencial', nombre: 'Credencial Escolar', icon: 'ti-id-badge-2' },
+            { id: 'extraordinario', nombre: 'Formato Extraordinario', icon: 'ti-file-text' },
+            { id: 'asistencias', nombre: 'Formato de Asistencias', icon: 'ti-calendar-stats' }
         ],
         'BGNE': [
-            { id: 'constancia', nombre: 'Constancia de Estudios', icon: 'fa-file-invoice' },
-            { id: 'kardex', nombre: 'Kardex Académico', icon: 'fa-graduation-cap' },
-            { id: 'credencial', nombre: 'Credencial Escolar', icon: 'fa-id-card' },
-            { id: 'extraordinario', nombre: 'Formato Extraordinario', icon: 'fa-circle-exclamation' },
-            { id: 'asistencias', nombre: 'Formato de Asistencias', icon: 'fa-user-clock' }
+            { id: 'constancia', nombre: 'Constancia de Estudios', icon: 'ti-file-certificate' },
+            { id: 'kardex', nombre: 'Kardex Académico', icon: 'ti-report' },
+            { id: 'credencial', nombre: 'Credencial Escolar', icon: 'ti-id-badge-2' },
+            { id: 'extraordinario', nombre: 'Formato Extraordinario', icon: 'ti-file-text' },
+            { id: 'asistencias', nombre: 'Formato de Asistencias', icon: 'ti-calendar-stats' }
         ],
         'INF': [
-            { id: 'credencial', nombre: 'Credencial Escolar', icon: 'fa-id-card' },
-            { id: 'constancia', nombre: 'Constancia de Estudios', icon: 'fa-file-invoice' }
+            { id: 'credencial', nombre: 'Credencial Escolar', icon: 'ti-id-badge-2' },
+            { id: 'constancia', nombre: 'Constancia de Estudios', icon: 'ti-file-certificate' }
         ]
     };
 
@@ -1525,18 +1519,26 @@
         if (typeof limpiarBusquedaKardex === 'function') { limpiarBusquedaKardex(); }
         
         // Actualizar UI del selector
-        document.querySelectorAll('.cct-card').forEach(card => card.classList.remove('selected-cct'));
+        document.querySelectorAll('.cct-tab').forEach(card => card.classList.remove('selected-cct', 'active'));
         
         const activeCardId = cct === 'BTI' ? 'cct-bti' : (cct === 'BGNE' ? 'cct-bgne' : 'cct-inf');
-        document.getElementById(activeCardId).classList.add('selected-cct');
+        const activeCard = document.getElementById(activeCardId);
+        if (activeCard) {
+            activeCard.classList.add('selected-cct', 'active');
+        }
 
-        // Ocultar placeholder y mostrar contenedor principal
-        document.getElementById('placeholder-select-cct').style.display = 'none';
-        document.getElementById('formatos-container').style.display = 'flex';
+        // Ocultar placeholder si existiera y mostrar contenedor principal en grid
+        const placeholder = document.getElementById('placeholder-select-cct');
+        if (placeholder) placeholder.style.display = 'none';
+        const container = document.getElementById('formatos-container');
+        if (container) container.style.display = 'grid';
 
         // Actualizar textos en la UI
         document.getElementById('lbl-cct-activo').innerText = cct;
         const credBadge = document.getElementById('cred-cct-badge'); if (credBadge) credBadge.innerText = `PLAN ${cct}`;
+
+        // Sincronizar plantilla de credenciales escolares según CCT
+        actualizarCredencialPorCCT(cct);
 
         // Actualizar etiqueta de ciclo en Asistencia
         const label = document.getElementById('lbl-asistencia-ciclo-label');
@@ -1659,6 +1661,7 @@
     function resetSubmodulosState() {
         // Ocultar e inhabilitar búsquedas anteriores
         document.getElementById('constancia-info-alumno').style.display = 'none';
+        const constPl = document.getElementById('constancia-preview-placeholder'); if (constPl) constPl.style.display = 'block';
         document.getElementById('kardex-info-alumno').style.display = 'none';
         document.getElementById('boleta-tabla-resultados').style.display = 'none';
         document.getElementById('credencial-info-alumno').style.display = 'none';
@@ -1703,7 +1706,7 @@
             button.setAttribute('data-bs-target', `#pane-${sub.id}`);
             button.setAttribute('type', 'button');
             button.setAttribute('role', 'tab');
-            button.innerHTML = `<i class="fa-solid ${sub.icon}"></i> ${sub.nombre}`;
+            button.innerHTML = `<i class="ti ${sub.icon}"></i> ${sub.nombre}`;
             
             button.addEventListener('click', (e) => {
                 if (window.bootstrap && bootstrap.Tab) {
@@ -1719,6 +1722,7 @@
                 if (sub.id === 'credencial') {
                     const credInfo = document.getElementById('credencial-info-alumno');
                     if (credInfo) credInfo.style.display = 'block';
+                    actualizarCredencialPorCCT(cctSeleccionado);
                 }
             });
 
@@ -1863,6 +1867,7 @@
             document.getElementById('lbl-constancia-nombre').innerText = fullName;
             document.getElementById('lbl-constancia-carrera').innerText = `${alumno.nombreNivelIngreso || 'Carrera general'} | CCT: ${alumno.claveCentroTrabajo || cctSeleccionado}`;
             document.getElementById('constancia-info-alumno').style.display = 'block';
+            const constPl = document.getElementById('constancia-preview-placeholder'); if (constPl) constPl.style.display = 'none';
         });
     }
 
@@ -2107,6 +2112,65 @@
 
     let alumnoCredencialSeleccionado = null;
 
+    function actualizarCredencialPorCCT(cct) {
+        const isBgne = (cct === 'BGNE');
+        
+        // Header de la vista / tarjeta
+        const tipoBadgeEl = document.getElementById('cred-tipo-formato-badge');
+        if (tipoBadgeEl) {
+            tipoBadgeEl.innerHTML = isBgne
+                ? '<i class="ti ti-award me-1"></i> Formato Oficial No Escolarizado'
+                : '<i class="ti ti-award me-1"></i> Formato Oficial Escolarizado';
+        }
+        const descSubtituloEl = document.getElementById('cred-descripcion-subtitulo');
+        if (descSubtituloEl) {
+            descSubtituloEl.innerText = isBgne
+                ? 'Emisión de credenciales oficiales institucionales en formato estándar PVC / Opalina (Modalidad No Escolarizada).'
+                : 'Emisión de credenciales oficiales institucionales en formato estándar PVC / Opalina (Sistema Escolarizado).';
+        }
+
+        // Anverso de la credencial: Escuela y CCT
+        const headerTitleEl = document.getElementById('cred-header-title');
+        if (headerTitleEl) {
+            headerTitleEl.innerText = isBgne ? 'BACHILLERATO' : 'BACHILLERATO TECNOLOGICO';
+        }
+        const headerSubtitleEl = document.getElementById('cred-header-subtitle');
+        if (headerSubtitleEl) {
+            headerSubtitleEl.innerText = 'INTERAMERICANO';
+        }
+        const cctValEl = document.getElementById('cred-cct-val');
+        if (cctValEl) {
+            cctValEl.innerText = isBgne ? 'C.C.T. 21PBH0353G' : 'C.C.T. 21PCT0073R';
+        }
+
+        // Reverso: Texto de institución
+        const impTextoEl = document.getElementById('cred-importante-institucion-texto');
+        if (impTextoEl) {
+            impTextoEl.innerHTML = isBgne
+                ? 'Esta credencial es personal y debe portarse en lugar visible mientras usted permanezca dentro de la institución.<br>Debe mostrarse al personal de seguridad, a la autoridad del Bachillerato Interamericano para fines de identificación. no es transferible y deberá devolverse al causar baja el usuario.'
+                : 'Esta credencial es personal y debe portarse en lugar visible mientras usted permanezca dentro de la institución.<br>Debe mostrarse al personal de seguridad, a la autoridad del BTI para fines de identificación. no es transferible y deberá devolverse al causar baja el usuario.';
+        }
+
+        // Inputs de personalización
+        const inputCctEl = document.getElementById('inputCredCCT');
+        if (inputCctEl) {
+            inputCctEl.value = isBgne ? '21PBH0353G' : '21PCT0073R';
+        }
+
+        const defaultMod = isBgne ? 'NO ESCOLARIZADA' : 'ESCOLARIZADO';
+        const modValEl = document.getElementById('cred-modalidad-val');
+        const inputModEl = document.getElementById('inputCredModalidad');
+        if (!alumnoCredencialSeleccionado) {
+            if (modValEl) modValEl.innerText = defaultMod;
+            if (inputModEl) inputModEl.value = defaultMod;
+        } else {
+            const isAlumnoBgne = isBgne || (alumnoCredencialSeleccionado.id_centroTrabajo === 3) || (alumnoCredencialSeleccionado.claveCentroTrabajo === '21PBH0353G');
+            const mod = isAlumnoBgne ? 'NO ESCOLARIZADA' : ((alumnoCredencialSeleccionado.modalidadHorario || alumnoCredencialSeleccionado.modalidad_estudio || '').toUpperCase().includes('SAB') ? 'SABATINO' : 'ESCOLARIZADO');
+            if (modValEl) modValEl.innerText = mod;
+            if (inputModEl) inputModEl.value = mod;
+        }
+    }
+
     function simularBusquedaAlumnoCredencial(query) {
         buscarAlumnosReal(query, 'credencial-alumno-sugerencia', (alumno) => {
             alumnoCredencialSeleccionado = alumno;
@@ -2121,11 +2185,31 @@
             const inputMat = document.getElementById('inputCredMatricula');
             if (inputMat) inputMat.value = alumno.numeroControl || alumno.idAlumno;
             
+            // Modalidad y CCT según selección actual o del alumno
+            const isBgne = (cctSeleccionado === 'BGNE') || (alumno.id_centroTrabajo === 3) || (alumno.claveCentroTrabajo === '21PBH0353G');
+            
             // Modalidad
-            const modVal = (alumno.modalidadHorario || alumno.modalidad_estudio || 'ESCOLARIZADO').toUpperCase();
-            document.getElementById('cred-modalidad-val').innerText = modVal.includes('SAB') ? 'SABATINO' : 'ESCOLARIZADO';
+            let modalidadTexto = 'ESCOLARIZADO';
+            if (isBgne) {
+                modalidadTexto = 'NO ESCOLARIZADA';
+            } else {
+                const modVal = (alumno.modalidadHorario || alumno.modalidad_estudio || 'ESCOLARIZADO').toUpperCase();
+                modalidadTexto = modVal.includes('SAB') ? 'SABATINO' : 'ESCOLARIZADO';
+            }
+            document.getElementById('cred-modalidad-val').innerText = modalidadTexto;
             const inputMod = document.getElementById('inputCredModalidad');
-            if (inputMod) inputMod.value = document.getElementById('cred-modalidad-val').innerText;
+            if (inputMod) inputMod.value = modalidadTexto;
+
+            // CCT y Nombre de Escuela en credencial
+            const cctClave = isBgne ? (alumno.claveCentroTrabajo || '21PBH0353G') : (alumno.claveCentroTrabajo || '21PCT0073R');
+            const headerTitleEl = document.getElementById('cred-header-title');
+            if (headerTitleEl) headerTitleEl.innerText = isBgne ? 'BACHILLERATO' : 'BACHILLERATO TECNOLOGICO';
+            const headerSubtitleEl = document.getElementById('cred-header-subtitle');
+            if (headerSubtitleEl) headerSubtitleEl.innerText = 'INTERAMERICANO';
+            const cctValEl = document.getElementById('cred-cct-val');
+            if (cctValEl) cctValEl.innerText = `C.C.T. ${cctClave}`;
+            const inputCct = document.getElementById('inputCredCCT');
+            if (inputCct) inputCct.value = cctClave;
 
             // Contacto de emergencia (tutor o default)
             const tutorNombre = (alumno.tutor || 'Ignacio Fernández Neville').trim();
@@ -2144,6 +2228,7 @@
     function actualizarCamposCredencialDinamicos() {
         const nom = document.getElementById('inputCredNombre')?.value || '';
         const mat = document.getElementById('inputCredMatricula')?.value || '';
+        const cctRaw = document.getElementById('inputCredCCT')?.value || '';
         const mod = document.getElementById('inputCredModalidad')?.value || 'ESCOLARIZADO';
         const vig = document.getElementById('inputCredVigencia')?.value || '';
         const accNom = document.getElementById('inputCredAccidenteNombre')?.value || '';
@@ -2152,6 +2237,16 @@
 
         if (document.getElementById('cred-nombre-val')) document.getElementById('cred-nombre-val').innerText = nom.toUpperCase();
         if (document.getElementById('cred-matricula-val')) document.getElementById('cred-matricula-val').innerText = mat;
+        if (document.getElementById('cred-cct-val') && cctRaw) {
+            const cleanCct = cctRaw.replace(/^C\.C\.T\.\s*/i, '').trim().toUpperCase();
+            document.getElementById('cred-cct-val').innerText = `C.C.T. ${cleanCct}`;
+            
+            // Si el CCT introducido es el de BGNE, ajustar nombre de la escuela
+            const isBgneCct = cleanCct === '21PBH0353G' || cctSeleccionado === 'BGNE';
+            if (document.getElementById('cred-header-title')) {
+                document.getElementById('cred-header-title').innerText = isBgneCct ? 'BACHILLERATO' : 'BACHILLERATO TECNOLOGICO';
+            }
+        }
         if (document.getElementById('cred-modalidad-val')) document.getElementById('cred-modalidad-val').innerText = mod.toUpperCase();
         if (document.getElementById('cred-vigencia-val')) document.getElementById('cred-vigencia-val').innerText = vig.toUpperCase();
         if (document.getElementById('cred-accidente-nombre-val')) document.getElementById('cred-accidente-nombre-val').innerText = accNom;
@@ -2168,13 +2263,23 @@
     }
 
     function imprimirCredencialOficialBTI(modo = 'ambas') {
-        const nombre = document.getElementById('cred-nombre-val').innerText || 'DANIEL IGNACIO FERNÁNDEZ PARRA';
-        const modalidad = document.getElementById('cred-modalidad-val').innerText || 'ESCOLARIZADO';
-        const matricula = document.getElementById('cred-matricula-val').innerText || '419012603';
-        const vigencia = document.getElementById('cred-vigencia-val').innerText || 'JULIO 2026 - SEPTIEMBRE 2026';
-        const accNombre = document.getElementById('cred-accidente-nombre-val').innerText || 'Ignacio Fernández Neville';
-        const accTel = document.getElementById('cred-accidente-tel-val').innerText || '231 108 9100';
-        const director = document.getElementById('cred-director-val').innerText || 'ING. FAUSTO MAURO LEYVA FLORES';
+        const nombre = document.getElementById('cred-nombre-val')?.innerText || 'DANIEL IGNACIO FERNÁNDEZ PARRA';
+        const modalidad = document.getElementById('inputCredModalidad')?.value || document.getElementById('cred-modalidad-val')?.innerText || (cctSeleccionado === 'BGNE' ? 'NO ESCOLARIZADA' : 'ESCOLARIZADO');
+        const matricula = document.getElementById('cred-matricula-val')?.innerText || '419012603';
+        const vigencia = document.getElementById('cred-vigencia-val')?.innerText || 'JULIO 2026 - SEPTIEMBRE 2026';
+        const accNombre = document.getElementById('cred-accidente-nombre-val')?.innerText || 'Ignacio Fernández Neville';
+        const accTel = document.getElementById('cred-accidente-tel-val')?.innerText || '231 108 9100';
+        const director = document.getElementById('cred-director-val')?.innerText || 'ING. FAUSTO MAURO LEYVA FLORES';
+
+        const headerTitle = document.getElementById('cred-header-title')?.innerText || (cctSeleccionado === 'BGNE' ? 'BACHILLERATO' : 'BACHILLERATO TECNOLOGICO');
+        const headerSubtitle = document.getElementById('cred-header-subtitle')?.innerText || 'INTERAMERICANO';
+        const cctTexto = document.getElementById('cred-cct-val')?.innerText || (cctSeleccionado === 'BGNE' ? 'C.C.T. 21PBH0353G' : 'C.C.T. 21PCT0073R');
+
+        const isBgne = (cctSeleccionado === 'BGNE') || headerTitle.trim() === 'BACHILLERATO' || cctTexto.includes('21PBH0353G');
+
+        const textoInstitucion = isBgne
+            ? 'Debe mostrarse al personal de seguridad, a la autoridad del Bachillerato Interamericano para fines de identificación. no es transferible y deberá devolverse al causar baja el usuario.'
+            : 'Debe mostrarse al personal de seguridad, a la autoridad del BTI para fines de identificación. no es transferible y deberá devolverse al causar baja el usuario.';
 
         const origin = window.location.origin;
 
@@ -2194,11 +2299,11 @@
                 <div class="bti-front-stripes"></div>
                 <div class="bti-map-bg"></div>
                 <div class="bti-header-banner">
-                    <div class="bti-header-title">BACHILLERATO TECNOLOGICO</div>
-                    <div class="bti-header-subtitle">INTERAMERICANO</div>
+                    <div class="bti-header-title">${headerTitle}</div>
+                    <div class="bti-header-subtitle">${headerSubtitle}</div>
                 </div>
                 <div class="bti-sub-header">
-                    <div class="bti-cct-text">C.C.T. 21PCT0073R</div>
+                    <div class="bti-cct-text">${cctTexto}</div>
                     <div class="bti-official-logos">
                         <div class="bti-logos-row">
                             <img src="${origin}/img/credencial/logo_puebla.png" class="bti-logo-puebla" alt="Puebla">
@@ -2238,7 +2343,7 @@
                         <div class="bti-important-title">IMPORTANTE:</div>
                         <div class="bti-important-text">
                             Esta credencial es personal y debe portarse en lugar visible mientras usted permanezca dentro de la institución.<br>
-                            Debe mostrarse al personal de seguridad, a la autoridad del BTI para fines de identificación. no es transferible y deberá devolverse al causar baja el usuario.
+                            ${textoInstitucion}
                         </div>
                         <div class="bti-accident-title">EN CASO DE ACCIDENTE LLAMAR A:</div>
                         <div class="bti-accident-capsule">
@@ -2954,7 +3059,7 @@ window.guardarCalificacionesKardex = function() {
     })
     .then(resp => {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Guardar Calificaciones';
+        btn.innerHTML = '<i class="ti ti-device-floppy me-1"></i> Guardar Calificaciones';
 
         if (resp && resp.success) {
             Swal.fire({
@@ -2980,7 +3085,7 @@ window.guardarCalificacionesKardex = function() {
     })
     .catch(err => {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> Guardar Calificaciones';
+        btn.innerHTML = '<i class="ti ti-device-floppy me-1"></i> Guardar Calificaciones';
         console.error(err);
         Swal.fire({
             icon: 'error',
@@ -4207,7 +4312,7 @@ window.imprimirKardex = function() {
         if (!semVal && filtered.length > 0) {
             const notice = document.createElement('div');
             notice.className = 'p-2 bg-light text-muted fs-9 border-bottom text-center';
-            notice.innerHTML = '<i class="fa-solid fa-info-circle me-1 text-info"></i> Selecciona un semestre arriba para desglosar materias de ese periodo';
+            notice.innerHTML = '<i class="ti ti-info-circle me-1"></i> Selecciona un semestre arriba para desglosar materias de ese periodo';
             div.appendChild(notice);
         }
 
@@ -4532,7 +4637,7 @@ window.imprimirKardex = function() {
                 <!-- Línea de Corte -->
                 <div style="display: flex; align-items: center; justify-content: center; margin: 10px 0; color: #64748b; font-size: 7pt; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">
                     <span style="border-top: 1.5px dashed #94a3b8; flex-grow: 1;"></span>
-                    <span style="padding: 0 12px;"><i class="fa-solid fa-scissors me-1"></i> CORTE AQUÍ &mdash; TALÓN DE DERECHO A EXAMEN EXTRAORDINARIO</span>
+                    <span style="padding: 0 12px;"><i class="ti ti-scissors me-1"></i> CORTE AQUÍ &mdash; TALÓN DE DERECHO A EXAMEN EXTRAORDINARIO</span>
                     <span style="border-top: 1.5px dashed #94a3b8; flex-grow: 1;"></span>
                 </div>
 
@@ -4839,12 +4944,12 @@ window.imprimirKardex = function() {
         
         if (semNum !== null) {
             headerNotice.innerHTML = `
-                <span><i class="fa-solid fa-layer-group me-1 text-info"></i> ${cicloVal} (${filtered.length} materias)</span>
+                <span><i class="ti ti-stack me-1"></i> ${cicloVal} (${filtered.length} materias)</span>
                 <span class="badge bg-primary-subtle text-primary">${cctSeleccionado || 'Plan'}</span>
             `;
         } else {
             headerNotice.innerHTML = `
-                <span><i class="fa-solid fa-info-circle me-1 text-info"></i> Seleccione un ${cicloLabel.toLowerCase()} para filtrar materias</span>
+                <span><i class="ti ti-info-circle me-1"></i> Seleccione un ${cicloLabel.toLowerCase()} para filtrar materias</span>
                 <span class="badge bg-secondary-subtle text-secondary">${filtered.length} totales</span>
             `;
         }
@@ -4976,7 +5081,7 @@ window.imprimirKardex = function() {
                 <div>
                     <span class="fw-semibold text-slate-800 fs-8 d-block">${fullName}</span>
                 </div>
-                <i class="fa-solid fa-check text-muted fs-9 opacity-50"></i>
+                <i class="ti ti-check text-muted fs-9 opacity-50"></i>
             `;
 
             btn.onclick = (e) => {
@@ -5363,7 +5468,7 @@ window.imprimirKardex = function() {
             html: message,
             icon: 'info',
             showCancelButton: true,
-            confirmButtonText: '<i class="fa-solid fa-print me-1"></i> Descargar PDF',
+            confirmButtonText: '<i class="ti ti-printer me-1"></i> Descargar PDF',
             cancelButtonText: 'Cancelar',
             confirmButtonColor: '#10b981',
             cancelButtonColor: '#64748b'
@@ -5552,10 +5657,10 @@ window.imprimirKardex = function() {
                             <td class="text-center">
                                 <div class="d-flex gap-1 justify-content-center">
                                     <button class="btn btn-sm btn-light text-primary border" onclick="imprimirFormatoReporte(window.reportesCache[${rep.id}])" title="Imprimir Formato">
-                                        <i class="fa-solid fa-print"></i>
+                                        <i class="ti ti-printer"></i>
                                     </button>
                                     <button class="btn btn-sm btn-light text-danger border" onclick="eliminarReporte(${rep.id})" title="Eliminar">
-                                        <i class="fa-solid fa-trash"></i>
+                                        <i class="ti ti-trash"></i>
                                     </button>
                                 </div>
                             </td>
@@ -5763,6 +5868,8 @@ window.imprimirKardex = function() {
         if (typeof asegurarCatalogosAsistencia === 'function') {
             asegurarCatalogosAsistencia();
         }
+        // Pre-seleccionar BTI por defecto para mostrar directamente el área de trabajo
+        selectCCT('BTI');
     });
 </script>
 

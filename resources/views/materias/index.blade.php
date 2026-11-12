@@ -8,69 +8,52 @@
 
 <div class="page-container">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="page-header-standard">
+        <div class="page-header-left">
+            <a href="{{ url()->previous() }}" class="btn btn-regresar">
+                <i class="ti ti-arrow-left"></i>
+                <span>Regresar</span>
+            </a>
+            <h1 class="page-heading">Lista de Materias</h1>
+        </div>
 
-
-        <a href="{{ url()->previous() }}" class="btn btn-azul">
-            <i class="fa-solid fa-arrow-left me-2"></i>
-            Regresar
-        </a>
-
-        <h3 class="page-title">
-            Lista de Materias
-        </h3>
-
-        <button class="btn btn-azul" data-bs-toggle="modal" data-bs-target="#modalMateria">
-            <i class="fa-solid fa-plus me-2"></i>
-            Alta materia
+        <button class="btn btn-primary-saas" data-bs-toggle="modal" data-bs-target="#modalMateria">
+            <i class="ti ti-plus"></i>
+            <span>Alta materia</span>
         </button>
-
     </div>
 
     <div class="glass-card">
 
-
-
-        <div class="glass-header p-3 d-flex justify-content-between align-items-center">
-
-
-            <input type="text" id="buscadorMateria" class="form-control glass-input w-25"
-                placeholder="Buscar materia...">
-
-
-
-
+        <div class="materias-toolbar">
+            <div class="search-input-wrapper">
+                <i class="ti ti-search search-icon"></i>
+                <input type="text" id="buscadorMateria" class="form-control search-input-saas"
+                    placeholder="Buscar materia...">
+            </div>
         </div>
 
         <div class="table-responsive">
-
-            <table class="table table-borderless glass-table align-middle mb-0">
-
+            <table class="table glass-table align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Clave</th>
+                        <th style="width: 60px;">ID</th>
+                        <th style="width: 120px;">Clave</th>
                         <th>Nombre</th>
                         <th>Centro de Trabajo (CCT)</th>
                         <th>Semestre / Periodo</th>
                         <th>Estatus</th>
                         <th>Docentes</th>
-                        <th class="text-center">Acciones</th>
+                        <th class="text-center" style="width: 110px;">Acciones</th>
                     </tr>
                 </thead>
-
                 <tbody id="tablaMaterias"></tbody>
-
             </table>
-
         </div>
 
-        <div class="glass-footer p-3 d-flex justify-content-between align-items-center">
-
+        <div class="glass-footer">
             <small id="infoPaginacionMaterias"></small>
-
             <div id="paginacionMaterias"></div>
-
         </div>
 
     </div>
@@ -84,13 +67,17 @@
 
             <form id="formMateria">
 
-                <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold text-white">
-                        <i class="fa-solid fa-book me-2"></i>
-                        Alta Materia
-                    </h5>
+                <div class="modal-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width: 34px; height: 34px; border-radius: 8px; background: #F0F7F8; border: 1px solid #CBE4E8; color: #1E5B66; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                            <i class="ti ti-book"></i>
+                        </div>
+                        <h5 class="modal-title fw-bold" style="font-size: 1.05rem; color: #0F172A; margin: 0;">
+                            Alta Materia
+                        </h5>
+                    </div>
 
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar">
                     </button>
                 </div>
 
@@ -187,14 +174,14 @@
 
                 </div>
 
-                <div class="modal-footer border-0">
+                <div class="modal-footer">
 
-                    <button type="button" class="btn btn-azul" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-regresar" data-bs-dismiss="modal">
                         Cancelar
                     </button>
 
-                    <button class="btn btn-azul" type="submit">
-                        <i class="fa-solid fa-floppy-disk me-2"></i>
+                    <button class="btn btn-primary-saas" type="submit">
+                        <i class="ti ti-device-floppy me-2"></i>
                         Guardar
                     </button>
 
@@ -421,10 +408,10 @@ document.addEventListener("DOMContentLoaded", function() {
             setFormDisabled(false);
             document.querySelectorAll('.docenteCheck').forEach(cb => cb.checked = false);
             document.querySelector('#modalMateria .modal-title').innerHTML =
-                '<i class="fa-solid fa-book me-2"></i> Alta Materia';
+                '<i class="ti ti-book me-2"></i> Alta Materia';
             const submitBtn = document.querySelector('#formMateria button[type="submit"]');
             submitBtn.style.display = 'inline-block';
-            submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Guardar';
+            submitBtn.innerHTML = '<i class="ti ti-device-floppy me-2"></i> Guardar';
         });
     }
 
@@ -488,7 +475,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     setFormDisabled(true);
 
                     document.querySelector('#modalMateria .modal-title').innerHTML =
-                        '<i class="fa-solid fa-eye me-2"></i> Detalles de Materia';
+                        '<i class="ti ti-eye me-2"></i> Detalles de Materia';
                     const submitBtn = document.querySelector('#formMateria button[type="submit"]');
                     submitBtn.style.display = 'none';
 
@@ -499,7 +486,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         icon: 'error',
                         title: 'Error',
                         text: 'Error al cargar detalles de la materia.',
-                        confirmButtonColor: 'rgb(38, 104, 123)'
+                        confirmButtonColor: '#1E5B66'
                     });
                 }
             })
@@ -508,7 +495,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     icon: 'error',
                     title: 'Error',
                     text: 'Error al cargar detalles de la materia.',
-                    confirmButtonColor: 'rgb(38, 104, 123)'
+                    confirmButtonColor: '#1E5B66'
                 });
             });
     }
@@ -573,10 +560,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     setFormDisabled(false);
 
                     document.querySelector('#modalMateria .modal-title').innerHTML =
-                        '<i class="fa-solid fa-pen-to-square me-2"></i> Editar Materia';
+                        '<i class="ti ti-edit me-2"></i> Editar Materia';
                     const submitBtn = document.querySelector('#formMateria button[type="submit"]');
                     submitBtn.style.display = 'inline-block';
-                    submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Actualizar';
+                    submitBtn.innerHTML = '<i class="ti ti-device-floppy me-2"></i> Actualizar';
 
                     const modal = new bootstrap.Modal(document.getElementById('modalMateria'));
                     modal.show();
@@ -585,7 +572,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         icon: 'error',
                         title: 'Error',
                         text: 'Error al cargar detalles de la materia.',
-                        confirmButtonColor: 'rgb(38, 104, 123)'
+                        confirmButtonColor: '#1E5B66'
                     });
                 }
             })
@@ -594,7 +581,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     icon: 'error',
                     title: 'Error',
                     text: 'Error al cargar detalles de la materia.',
-                    confirmButtonColor: 'rgb(38, 104, 123)'
+                    confirmButtonColor: '#1E5B66'
                 });
             });
     }
@@ -606,7 +593,7 @@ document.addEventListener("DOMContentLoaded", function() {
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
-            cancelButtonColor: 'rgb(38, 104, 123)',
+            cancelButtonColor: '#1E5B66',
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
@@ -626,7 +613,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 title: '¡Eliminado!',
                                 text: data.message ||
                                     'Materia eliminada correctamente.',
-                                confirmButtonColor: 'rgb(38, 104, 123)'
+                                confirmButtonColor: '#1E5B66'
                             });
                             cargarMaterias();
                         } else {
@@ -634,7 +621,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 icon: 'error',
                                 title: 'Error',
                                 text: data.message || 'Error al eliminar.',
-                                confirmButtonColor: 'rgb(38, 104, 123)'
+                                confirmButtonColor: '#1E5B66'
                             });
                         }
                     })
@@ -643,7 +630,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             icon: 'error',
                             title: 'Error',
                             text: 'Error al eliminar materia.',
-                            confirmButtonColor: 'rgb(38, 104, 123)'
+                            confirmButtonColor: '#1E5B66'
                         });
                     });
             }
@@ -670,49 +657,44 @@ document.addEventListener("DOMContentLoaded", function() {
             const cctNombre = materia.nombreCentroTrabajo || 'N/A';
             const nivelNombre = materia.nombreNivelAcademico || 'N/A';
             
-            let cctBadgeClass = 'bg-secondary';
+            let cctBadge = '';
             if (materia.idCentroTrabajo === 2) {
-                cctBadgeClass = 'bg-primary'; // BTI
+                cctBadge = `<span class="badge-soft badge-soft-bti">BTI</span>`;
             } else if (materia.idCentroTrabajo === 3) {
-                cctBadgeClass = 'bg-info'; // BGNE
-            } else if (materia.idCentroTrabajo === 1) {
-                cctBadgeClass = 'bg-success'; // Computación
+                cctBadge = `<span class="badge-soft badge-soft-bgne">BGNE</span>`;
+            } else {
+                cctBadge = `<span class="badge-soft badge-soft-inf">${cctNombre}</span>`;
             }
+
+            const estatusBadge = materia.estatusMateria === 'ACTIVA'
+                ? `<span class="badge-soft-activa">ACTIVA</span>`
+                : `<span class="badge-soft-inactiva">${materia.estatusMateria || 'INACTIVA'}</span>`;
+
+            const docentesHtml = (materia.docentes && materia.docentes.length)
+                ? `<span style="font-size: 0.8125rem; color: #334155;">${materia.docentes.map(d => d.nombreDocente).join(', ')}</span>`
+                : `<span class="docente-sin-asignar"><i class="ti ti-user-off" style="font-size: 14px;"></i> Sin asignar</span>`;
 
             html += `
         <tr>
-            <td><strong>${materia.id}</strong></td>
-            <td><code class="fw-bold">${materia.clave || '—'}</code></td>
-            <td><strong>${materia.nombreMateria}</strong></td>
-            <td>
-                <span class="badge ${cctBadgeClass}">${cctNombre}</span>
-            </td>
-            <td>
-                <span class="badge bg-light text-dark border">${nivelNombre}</span>
-            </td>
-
-            <td>
-                <span class="badge ${materia.estatusMateria === 'ACTIVA' ? 'bg-success' : 'bg-danger'}">
-                    ${materia.estatusMateria}
-                </span>
-            </td>
-
-            <td>
-                ${materia.docentes?.length
-                    ? materia.docentes.map(d => d.nombreDocente).join(', ')
-                    : '<span class="text-muted fst-italic">Sin docentes</span>'}
-            </td>
-
+            <td><span class="id-mono">${materia.id}</span></td>
+            <td><span class="clave-badge">${materia.clave || '—'}</span></td>
+            <td><span class="materia-nombre">${materia.nombreMateria}</span></td>
+            <td>${cctBadge}</td>
+            <td><span class="badge-periodo">${nivelNombre}</span></td>
+            <td>${estatusBadge}</td>
+            <td>${docentesHtml}</td>
             <td class="text-center">
-                <button class="btn btn-secondary btn-sm me-1 shadow-sm" onclick="verMateria(${materia.id})" title="Ver detalles">
-                    <i class="fa-solid fa-eye"></i>
-                </button>
-                <button class="btn btn-warning btn-sm me-1 shadow-sm" onclick="editarMateria(${materia.id})" title="Editar">
-                    <i class="fa-solid fa-pen"></i>
-                </button>
-                <button class="btn btn-danger btn-sm shadow-sm" onclick="eliminarMateria(${materia.id})" title="Eliminar">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
+                <div class="actions-cell">
+                    <button type="button" class="btn-ghost-action" onclick="verMateria(${materia.id})" title="Ver detalles">
+                        <i class="ti ti-eye"></i>
+                    </button>
+                    <button type="button" class="btn-ghost-action" onclick="editarMateria(${materia.id})" title="Editar">
+                        <i class="ti ti-edit"></i>
+                    </button>
+                    <button type="button" class="btn-ghost-action btn-ghost-danger" onclick="eliminarMateria(${materia.id})" title="Eliminar">
+                        <i class="ti ti-trash"></i>
+                    </button>
+                </div>
             </td>
         </tr>
         `;
@@ -730,7 +712,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         for (let i = 1; i <= totalPaginas; i++) {
             html += `
-        <button class="btn btn-sm ${i === paginaMateria ? 'btn-primary' : 'btn-outline-primary'} me-1"
+        <button type="button" class="btn btn-sm ${i === paginaMateria ? 'btn-page-active' : 'btn-page-inactive'} me-1"
             onclick="cambiarPaginaMateria(${i})">
             ${i}
         </button>`;
@@ -764,7 +746,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 icon: 'warning',
                 title: 'Faltan Semestres / Periodos',
                 text: 'Debes seleccionar al menos un semestre o periodo.',
-                confirmButtonColor: 'rgb(38, 104, 123)'
+                confirmButtonColor: '#1E5B66'
             });
             return;
         }
@@ -801,7 +783,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             icon: 'success',
                             title: '¡Éxito!',
                             text: "Materias guardadas correctamente para todos los periodos seleccionados.",
-                            confirmButtonColor: 'rgb(38, 104, 123)'
+                            confirmButtonColor: '#1E5B66'
                         });
                         bootstrap.Modal.getInstance(document.getElementById('modalMateria')).hide();
                         this.reset();
@@ -812,7 +794,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             icon: 'error',
                             title: 'Error',
                             text: 'Error al guardar algunas materias.',
-                            confirmButtonColor: 'rgb(38, 104, 123)'
+                            confirmButtonColor: '#1E5B66'
                         });
                     }
                 })
@@ -822,7 +804,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         icon: 'error',
                         title: 'Error',
                         text: 'Ocurrió un error inesperado al guardar.',
-                        confirmButtonColor: 'rgb(38, 104, 123)'
+                        confirmButtonColor: '#1E5B66'
                     });
                 });
             return;
@@ -868,7 +850,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             icon: 'success',
                             title: '¡Éxito!',
                             text: "Materia actualizada y nuevos periodos agregados correctamente.",
-                            confirmButtonColor: 'rgb(38, 104, 123)'
+                            confirmButtonColor: '#1E5B66'
                         });
                         bootstrap.Modal.getInstance(document.getElementById('modalMateria')).hide();
                         this.reset();
@@ -879,7 +861,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             icon: 'error',
                             title: 'Error',
                             text: 'Error al actualizar la materia o agregar nuevos periodos.',
-                            confirmButtonColor: 'rgb(38, 104, 123)'
+                            confirmButtonColor: '#1E5B66'
                         });
                     }
                 })
@@ -889,7 +871,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         icon: 'error',
                         title: 'Error',
                         text: 'Ocurrió un error inesperado al guardar.',
-                        confirmButtonColor: 'rgb(38, 104, 123)'
+                        confirmButtonColor: '#1E5B66'
                     });
                 });
             return;
@@ -916,7 +898,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         text: modoMateria === 'editar' ?
                             "Materia actualizada correctamente." :
                             "Materia guardada correctamente.",
-                        confirmButtonColor: 'rgb(38, 104, 123)'
+                        confirmButtonColor: '#1E5B66'
                     });
 
                     bootstrap.Modal.getInstance(document.getElementById('modalMateria')).hide();
@@ -928,7 +910,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         icon: 'error',
                         title: 'Error',
                         text: 'Error al guardar materia.',
-                        confirmButtonColor: 'rgb(38, 104, 123)'
+                        confirmButtonColor: '#1E5B66'
                     });
                 }
             });

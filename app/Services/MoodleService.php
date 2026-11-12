@@ -282,4 +282,124 @@ class MoodleService
 
         return $res;
     }
+
+    /**
+     * Enrola a un estudiante en un curso específico de Moodle
+     */
+    public function enrolStudentInCourse(int $moodleUserId, int $courseId, int $roleId = 5): array
+    {
+        return $this->call('enrol_manual_enrol_users', [
+            'enrolments' => [
+                [
+                    'roleid'    => $roleId,
+                    'userid'    => $moodleUserId,
+                    'courseid'  => $courseId,
+                    'timestart' => time(),
+                    'timeend'   => 0,
+                    'suspend'   => 0
+                ]
+            ]
+        ]);
+    }
+
+    /**
+     * Enrola al alumno en las 2 materias activas de su trimestre y mes bloque actual
+     */
+    public function enrolStudentInActiveMaterias(int $idAlumno): array
+    {
+        $alumno = DB::table('tb_alumnos')->where('idAlumno', $idAlumno)->first();
+        if (!$alumno || empty($alumno->moodle_user_id)) {
+            return ['success' => false, 'error' => 'Alumno no cuenta con ID de Moodle'];
+        }
+
+        $trimInicio = max(1, min(6, (int)($alumno->trimestre_inicio_online ?: 1)));
+        $semanasTotales = max(0, (int)($alumno->semanas_totales_pagadas ?: 0));
+
+        $trimestresAvanzados = (int)floor($semanasTotales / 12);
+        $trimestreActual = min(6, $trimInicio + $trimestresAvanzados);
+        $semanasEnTrimestre = $semanasTotales % 12;
+        $mesActual = min(3, (int)floor($semanasEnTrimestre / 4) + 1);
+
+        // Buscar materias de este bloque que tengan ID de Moodle configurado
+        $materias = DB::table('tb_materias')
+            ->where('idCentroTrabajo', 3)
+            ->where('id_nivel_academico', $trimestreActual)
+            ->where('mes_bloque', $mesActual)
+            ->whereNotNull('id_curso_moodle')
+            ->get();
+
+        $enrolados = [];
+        $errores = [];
+
+        foreach ($materias as $mat) {
+            $courseId = (int)$mat->id_curso_moodle;
+            if ($courseId > 1) {
+                $res = $this->enrolStudentInCourse((int)$alumno->moodle_user_id, $courseId);
+                if ($res['success']) {
+                    $enrolados[] = "{$mat->nombreMateria} (Curso {$courseId})";
+                } else {
+                    $errores[] = "{$mat->nombreMateria}: " . ($res['error'] ?? 'Error desconocido');
+                }
+            }
+        }
+
+        return [
+            'success'   => count($errores) === 0,
+            'enrolados' => $enrolados,
+            'errores'   => $errores
+        ];
+    }
+
+    /**
+     * Reactiva la cuenta del alumno en Moodle (suspended = 0) y reasigna su rol online
+     */
+    public function reactivarAlumno($idAlumno): array
+    {
+        $alumno = DB::table('tb_alumnos')->where('idAlumno', $idAlumno)->first();
+        if (!$alumno || empty($alumno->moodle_user_id)) {
+            return ['success' => false, 'error' => 'Alumno no cuenta con cuenta Moodle'];
+        }
+
+        $moodleUserId = (int)$alumno->moodle_user_id;
+
+        // 1. Quitar suspensión en Moodle
+        $res = $this->call('core_user_update_users', [
+            'users' => [
+                [
+                    'id'        => $moodleUserId,
+                    'suspended' => 0
+                ]
+            ]
+        ]);
+
+        // 2. Asignar rol Estudiante Online
+        $this->assignRoleOnline($moodleUserId);
+
+        return $res;
+    }
+
+    /**
+     * Evalúa el estatus de pago y actualiza el acceso a Moodle:
+     * - Si tiene pago vencido: suspende el usuario en Moodle
+     * - Si está al corriente: reactiva el usuario y garantiza que esté activo
+     */
+    public function actualizarEstatusAccesoPorPago(int $idAlumno): array
+    {
+        $alumno = DB::table('tb_alumnos')->where('idAlumno', $idAlumno)->first();
+        if (!$alumno || $alumno->modalidad_estudio !== 'ONLINE' || empty($alumno->moodle_user_id)) {
+            return ['success' => true, 'action' => 'none'];
+        }
+
+        $hoy = \Carbon\Carbon::today();
+        $proximo = !empty($alumno->fecha_proximo_pago) ? \Carbon\Carbon::parse($alumno->fecha_proximo_pago) : null;
+
+        // Si tiene fecha de pago vencida por más de 1 día
+        if ($proximo && $proximo->lt($hoy)) {
+            $this->suspenderAlumno($idAlumno);
+            return ['success' => true, 'action' => 'suspended', 'message' => 'Cuenta suspendida en Moodle por pago vencido'];
+        } else {
+            $this->reactivarAlumno($idAlumno);
+            return ['success' => true, 'action' => 'active', 'message' => 'Cuenta activa en Moodle'];
+        }
+    }
 }

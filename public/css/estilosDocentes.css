@@ -1,188 +1,413 @@
+/* ==========================================================================
+   SaaS Design System - Docentes Styles (shadcn / Linear style)
+   ========================================================================== */
 
 .page-container {
-    padding: 30px;
-    min-height: 100vh;
+    padding: 0;
+    min-height: auto;
 }
 
-
-.page-title {
-    color:rgb(7, 101, 136);
-    font-weight: 700;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+/* Page Header */
+.page-header-standard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 16px;
 }
 
-.glass-card {
-    background: rgba(255, 255, 255, .08);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
-    padding: .5%;
+.page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-
-.glass-footer {
-    border-top: 1px solid rgba(255, 255, 255, .15);
-}
-
-.table-head{
-    background: rgb(49, 125, 146) !important;
-    color: rgb(8, 0, 0) !important;
-}
-
-
-
-.btn-regresar {
-     background: rgb(49, 125, 146) !important;
-    border: none;
+.page-heading {
+    font-size: 1.25rem;
     font-weight: 600;
-    color: white;
+    color: #0F172A;
+    margin: 0;
+    letter-spacing: -0.01em;
 }
 
+/* Secondary Outline Button (Regresar) */
+.btn-regresar {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    color: #475569 !important;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
 
 .btn-regresar:hover {
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
+    background: #F1F5F9 !important;
+    color: #0F172A !important;
+    border-color: #CBD5E1 !important;
 }
 
+/* Primary CTA Button */
+.btn-primary-saas,
 .btn-azul {
-     background: rgb(49, 125, 146) !important;
-    border: none;
-    font-weight: 600;
+    background: #1E5B66 !important;
+    color: #FFFFFF !important;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    text-decoration: none;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
+.btn-primary-saas:hover,
 .btn-azul:hover {
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
+    background: #184A54 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 4px rgba(30, 91, 102, 0.2);
 }
 
-.textoDocentes{
-    color:white;
-}
-
-
-.card {
-    background: transparent !important;
-}
-
-.btn-ver {
-    background: #00BCD4;
-    color: white;
-    border: none;
-}
-
-.btn-ver:hover {
-    background: #0097A7;
-    color: white;
-}
-
-.btn-editar {
-    background: #FF9800;
-    color: white;
-    border: none;
-}
-
-.btn-editar:hover {
-    background: #F57C00;
-    color: white;
-}
-
-.btn-eliminar {
-    background: #E53935;
-    color: white;
-    border: none;
-}
-
-.btn-eliminar:hover {
-    background: #C62828;
-    color: white;
-}
-
-
-/* Modal */
-.modal-content {
-    border: none;
-}
-
-.modal-header {
-     background: rgb(49, 125, 146) !important;
-    color: white;
-}
-
-.glass-modal {
-    border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
+/* Unified Surface: Header Bar + Table Container */
+.glass-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     overflow: hidden;
-    color: white;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
+    padding: 0;
+    backdrop-filter: none;
+}
+
+/* Header Bar (Buscador integrado) */
+.docentes-header-bar {
+    padding: 16px 20px;
+    border-bottom: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: #FFFFFF;
+}
+
+.docentes-search-wrapper {
+    position: relative;
+    width: 320px;
+    max-width: 100%;
+}
+
+.docentes-search-wrapper .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #64748B;
+    pointer-events: none;
+}
+
+.form-control-search,
+#buscador.form-control {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px 0 36px;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    background: #F8FAFC;
+    color: #0F172A;
+    transition: all 0.15s ease;
+}
+
+.form-control-search:focus,
+#buscador.form-control:focus {
+    background: #FFFFFF;
+    border-color: #1E5B66;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.1);
+}
+
+/* Table */
+.glass-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0;
+}
+
+.glass-table th {
+    background: #F8FAFC !important;
+    color: #475569 !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 12px 16px;
+    border-bottom: 1px solid #E2E8F0 !important;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.glass-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #F1F5F9;
+    vertical-align: middle;
+    font-size: 0.875rem;
+    color: #0F172A;
+    background: transparent;
+}
+
+.glass-table tbody tr:hover td {
+    background-color: #F8FAFC !important;
+}
+
+/* Typography Tokens per column */
+.id-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+    color: #64748B;
+    font-weight: 500;
+}
+
+.docente-nombre {
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    color: #0F172A;
+    letter-spacing: 0.01em;
+}
+
+.docente-user-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #0369A1;
+    background: #E0F2FE;
+    padding: 1px 6px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.docente-user-badge i {
+    font-size: 13px;
+}
+
+.docente-no-user {
+    font-size: 0.75rem;
+    color: #94A3B8;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.docente-no-user i {
+    font-size: 13px;
+}
+
+.docente-correo {
+    color: #475569;
+    font-size: 0.8125rem;
+    text-transform: lowercase;
+}
+
+.docente-telefono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+    color: #334155;
+}
+
+.docente-nivel {
+    text-transform: capitalize;
+    font-size: 0.8125rem;
+    color: #334155;
+    font-weight: 500;
+}
+
+.fecha-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+    color: #475569;
+    white-space: nowrap;
+}
+
+/* Soft Badges */
+.badge-soft-success {
+    background: #DCFCE7 !important;
+    color: #15803D !important;
+    border: 1px solid #BBF7D0 !important;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.badge-soft-danger {
+    background: #FEE2E2 !important;
+    color: #B91C1C !important;
+    border: 1px solid #FECACA !important;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+/* Actions Cell & Uniform Ghost Buttons */
+.actions-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-ghost-icon,
+.btn-action {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: transparent !important;
+    border: none !important;
+    color: #64748B !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+    text-decoration: none;
+}
+
+.btn-ghost-icon:hover,
+.btn-action:hover {
+    background: #F1F5F9 !important;
+    color: #0F172A !important;
+}
+
+.btn-ghost-key:hover {
+    background: #F0F7F8 !important;
+    color: #1E5B66 !important;
+}
+
+.btn-ghost-danger:hover {
+    background: #FEF2F2 !important;
+    color: #DC2626 !important;
+}
+
+.btn-ghost-icon i,
+.btn-action i {
+    font-size: 17px !important;
+    line-height: 1 !important;
+    color: currentColor !important;
+}
+
+/* Footer & Pagination */
+.glass-footer {
+    padding: 12px 20px;
+    border-top: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.docentes-info-text {
+    font-size: 0.8125rem;
+    color: #64748B;
+    font-weight: 500;
+}
+
+.docentes-pagination .btn {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border-radius: 6px;
+}
+
+/* Modal Styling */
+.modal-content.glass-modal {
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
 }
 
 .glass-modal .modal-header {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
-    color: #fff;
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    padding: 16px 20px;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.glass-modal .modal-header .modal-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0F172A !important;
 }
 
 .glass-modal .modal-body {
-    background: white;
+    background: #FFFFFF;
+    padding: 20px;
 }
 
-
-.accordion-item {
-    background: rgba(255, 255, 255, .06);
-    border: none;
-    border-radius: 14px;
-    overflow: hidden;
-}
-
-.accordion-button,
-.accordion-button.collapsed,
-.accordion-button:not(.collapsed) {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
-    color: #fff !important;
-    font-weight: 600;
-    box-shadow: none !important;
-    border: none;
-}
-
-.accordion-button:focus {
-    box-shadow: none !important;
-}
-
-.accordion-button::after {
-    filter: brightness(0) invert(1);
-}
-
-.accordion-body {
-    background: white;
+.glass-modal .modal-footer {
+    padding: 14px 20px;
+    border-top: 1px solid #E2E8F0;
+    background: #F8FAFC;
 }
 
 .form-label {
-    font-weight: 500;
-    color: black;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 5px;
 }
 
 .form-control-premium,
 .form-select-premium {
-    background: #fff;
-    color: #212529;
-    min-height: 48px;
-}
-
-.form-control-premium:hover,
-.form-select-premium:hover {
-    border-color: rgb(49, 125, 146) !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 6px !important;
+    padding: 0 12px !important;
+    font-size: 0.875rem !important;
+    color: #0F172A !important;
+    background: #FFFFFF !important;
+    transition: all 0.15s ease;
 }
 
 .form-control-premium:focus,
 .form-select-premium:focus {
-    border-color: rgb(49, 125, 146) !important;
-    box-shadow:
-        0 0 0 3px rgba(102, 201, 255, .20),
-        inset 0 1px 2px rgba(0, 0, 0, .04);
+    outline: none !important;
+    border-color: #1E5B66 !important;
+    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12) !important;
 }
-
-

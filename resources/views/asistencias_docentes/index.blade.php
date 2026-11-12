@@ -661,16 +661,16 @@
     <div class="modal-content-card">
         <div class="modal-header-custom">
             <h5 class="modal-title">
-                <i class="fa-solid fa-file-excel me-1"></i>
+                <i class="ti ti-file-spreadsheet me-2" style="color: #1E5B66;"></i>
                 Importar Registro Biométrico
             </h5>
             <button class="btn-close-modal" id="btnCloseModal">
-                <i class="fa-solid fa-xmark"></i>
+                <i class="ti ti-x"></i>
             </button>
         </div>
         <div class="modal-body-custom">
             <div class="upload-drag-area" id="dragArea">
-                <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                <i class="ti ti-cloud-upload upload-icon"></i>
                 <div class="upload-text-main" id="uploadStatusText">Arrastra tu archivo Excel aquí</div>
                 <div class="upload-text-sub">o haz clic para buscar en tu equipo (.xlsx, .xls)</div>
                 <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;">
@@ -690,7 +690,7 @@
         <div class="modal-footer-custom">
             <button class="btn-form-cancel" id="btnCancelModal">Cancelar</button>
             <button class="btn-action-teal" id="btnProcessImport" disabled>
-                <i class="fa-solid fa-play"></i>
+                <i class="ti ti-player-play me-1"></i>
                 Procesar Archivo
             </button>
         </div>
@@ -702,11 +702,11 @@
     <div class="modal-content-card" style="max-width: 650px;">
         <div class="modal-header-custom">
             <h5 class="modal-title">
-                <i class="fa-solid fa-calendar-day me-1"></i>
+                <i class="ti ti-calendar me-2" style="color: #1E5B66;"></i>
                 Detalle de Horario
             </h5>
             <button class="btn-close-modal" id="btnCloseDetailModal">
-                <i class="fa-solid fa-xmark"></i>
+                <i class="ti ti-x"></i>
             </button>
         </div>
         <div class="modal-body-custom" style="padding: 20px;">

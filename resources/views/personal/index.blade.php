@@ -77,11 +77,11 @@
 <div class="modal fade" id="modalAltaPersonal" tabindex="-1" aria-labelledby="modalAltaPersonalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content" style="border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-            <div class="modal-header bg-dark text-white" style="border-bottom: none;">
+            <div class="modal-header">
                 <h5 class="modal-title fw-bold" id="modalAltaPersonalLabel">
-                    <i class="fa-solid fa-user-plus me-2 text-primary"></i> Registrar Nueva Cuenta de Personal
+                    <i class="ti ti-user-plus me-2" style="color: #1E5B66;"></i> Registrar Nueva Cuenta de Personal
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="formAltaPersonal">
                 @csrf
@@ -380,10 +380,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light" style="border-top: none;">
+                <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary bg-dark border-0 fw-bold">
-                        <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Personal
+                    <button type="submit" class="btn btn-azul text-white fw-bold">
+                        <i class="ti ti-check me-1"></i> Guardar Personal
                     </button>
                 </div>
             </form>
@@ -395,11 +395,11 @@
 <div class="modal fade" id="modalEditarPersonal" tabindex="-1" aria-labelledby="modalEditarPersonalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content" style="border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-            <div class="modal-header bg-dark text-white" style="border-bottom: none;">
+            <div class="modal-header">
                 <h5 class="modal-title fw-bold" id="modalEditarPersonalLabel">
-                    <i class="fa-solid fa-user-pen me-2 text-warning"></i> Editar Cuenta de Personal
+                    <i class="ti ti-user-edit me-2" style="color: #1E5B66;"></i> Editar Cuenta de Personal
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="formEditarPersonal">
                 @csrf
@@ -706,10 +706,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light" style="border-top: none;">
+                <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-warning text-dark fw-bold">
-                        <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Cambios
+                    <button type="submit" class="btn btn-azul text-white fw-bold">
+                        <i class="ti ti-check me-1"></i> Guardar Cambios
                     </button>
                 </div>
             </form>

@@ -308,29 +308,33 @@
 <!-- Modal: Agregar Alumno -->
 <div class="modal fade" id="modalAgregarAlumno" tabindex="-1" aria-labelledby="modalAgregarAlumnoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; background-color: #ffffff; border: 1px solid rgba(49, 125, 146, 0.15) !important;">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title text-dark fw-bold" id="modalAgregarAlumnoLabel">Agregar Nuevo Alumno</h5>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="modalAgregarAlumnoLabel">
+                    <i class="ti ti-user-plus me-2" style="color: #1E5B66;"></i>Agregar Nuevo Alumno
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="form-agregar-alumno" onsubmit="crearAlumno(event)">
-                <div class="modal-body py-4">
+                <div class="modal-body">
                     <div class="mb-3">
-                        <label for="input-nombre" class="form-label text-muted uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">NOMBRE(S)</label>
-                        <input type="text" class="form-control text-dark" id="input-nombre" required placeholder="EJ. JUAN CARLOS" style="background: rgba(255, 255, 255, 0.5); border-radius: 10px; border: 1px solid rgba(49, 125, 146, 0.2); height: 42px; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
+                        <label for="input-nombre" class="form-label">Nombre(s) *</label>
+                        <input type="text" class="form-control" id="input-nombre" required placeholder="Ej. Juan Carlos" oninput="this.value = this.value.toUpperCase()">
                     </div>
                     <div class="mb-3">
-                        <label for="input-paterno" class="form-label text-muted uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">APELLIDO PATERNO</label>
-                        <input type="text" class="form-control text-dark" id="input-paterno" required placeholder="EJ. PÉREZ" style="background: rgba(255, 255, 255, 0.5); border-radius: 10px; border: 1px solid rgba(49, 125, 146, 0.2); height: 42px; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
+                        <label for="input-paterno" class="form-label">Apellido Paterno *</label>
+                        <input type="text" class="form-control" id="input-paterno" required placeholder="Ej. Pérez" oninput="this.value = this.value.toUpperCase()">
                     </div>
                     <div class="mb-3">
-                        <label for="input-materno" class="form-label text-muted uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">APELLIDO MATERNO</label>
-                        <input type="text" class="form-control text-dark" id="input-materno" placeholder="EJ. GÓMEZ" style="background: rgba(255, 255, 255, 0.5); border-radius: 10px; border: 1px solid rgba(49, 125, 146, 0.2); height: 42px; text-transform: uppercase;" oninput="this.value = this.value.toUpperCase()">
+                        <label for="input-materno" class="form-label">Apellido Materno</label>
+                        <input type="text" class="form-control" id="input-materno" placeholder="Ej. Gómez" oninput="this.value = this.value.toUpperCase()">
                     </div>
                 </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-secondary px-4 py-2" data-bs-dismiss="modal" style="border-radius: 10px; font-size: 0.8rem; background-color: rgba(0,0,0,0.05); border: none; color: #1e293b;">Cancelar</button>
-                    <button type="submit" class="btn btn-azul px-4 py-2" style="border-radius: 10px; font-size: 0.8rem; border: none;">Guardar Alumno</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ti ti-check me-1"></i> Guardar Alumno
+                    </button>
                 </div>
             </form>
         </div>

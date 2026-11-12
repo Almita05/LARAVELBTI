@@ -2,79 +2,59 @@
 
 @section('content')
 
-
-<head>
-    <link rel="stylesheet" href="{{ asset('css/estilosDocentes.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
+<link rel="stylesheet" href="{{ asset('css/estilosDocentes.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="page-container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="page-header-standard">
+        <div class="page-header-left">
+            <a href="{{ url()->previous() }}" class="btn btn-regresar">
+                <i class="ti ti-arrow-left"></i>
+                <span>Regresar</span>
+            </a>
+            <h1 class="page-heading">Listado de Docentes</h1>
+        </div>
 
-        <a href="{{ url()->previous() }}" class="btn btn-regresar">
-            <i class="fa-solid fa-arrow-left me-2"></i>
-            Regresar
-        </a>
-
-        <h3 class="page-title mb-0">
-            <i class="fa-solid fa-chalkboard-user me-2"></i>
-            Listado de docentes
-        </h3>
-
-        <button class="btn btn-azul" data-bs-toggle="modal" data-bs-target="#modalDocente">
-            <i class="fa-solid fa-plus me-2"></i>
-            Alta docente
+        <button type="button" class="btn btn-azul btn-primary-saas" data-bs-toggle="modal" data-bs-target="#modalDocente">
+            <i class="ti ti-plus"></i>
+            <span>Alta docente</span>
         </button>
-
     </div>
-
-
-    <div class="glass-header p-3 d-flex justify-content-between align-items-center">
-
-        <h5 class="mb-0 textoDocentes">
-            Lista de docentes
-        </h5>
-
-        <input type="text" id="buscador" class="form-control glass-input w-25" placeholder="Buscar docente...">
-
-    </div>
-
-    <br>
-
-
 
     <div class="glass-card">
+        <div class="docentes-header-bar">
+            <div class="docentes-search-wrapper">
+                <i class="ti ti-search search-icon"></i>
+                <input type="text" id="buscador" class="form-control form-control-search" placeholder="Buscar docente...">
+            </div>
+            <div id="infoDocentesBadge" class="docentes-info-text"></div>
+        </div>
+
         <div class="table-responsive">
-
             <table class="table glass-table align-middle mb-0">
-
-                <thead class="table-head">
+                <thead>
                     <tr>
-                        <th>ID</th>
+                        <th style="width: 75px;">ID</th>
                         <th>NOMBRE</th>
                         <th>CORREO</th>
                         <th>TELÉFONO</th>
                         <th>ESTATUS</th>
                         <th>NIVEL</th>
                         <th>FECHA</th>
-                        <th class="text-center" style="width: 175px; min-width: 175px;">ACCIONES</th>
+                        <th class="text-end" style="width: 175px; min-width: 175px; padding-right: 20px;">ACCIONES</th>
                     </tr>
                 </thead>
-
                 <tbody id="tablaDocentes"></tbody>
-
             </table>
-
         </div>
 
-
-        <div class="glass-footer p-3 d-flex justify-content-between align-items-center">
-            <small id="infoPaginacion"></small>
-            <div id="paginacion"></div>
+        <div class="glass-footer">
+            <small id="infoPaginacion" class="docentes-info-text"></small>
+            <div id="paginacion" class="docentes-pagination"></div>
         </div>
     </div>
-
-    @endsection
+</div>
+@endsection
     <!-- MODAL -->
     <div class="modal fade" id="modalDocente" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -82,9 +62,9 @@
 
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="fas fa-chalkboard-teacher me-2"></i>Alta Docente
+                        <i class="ti ti-chalkboard me-2" style="color: #1E5B66;"></i>Alta Docente
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
                 <div class="modal-body">
@@ -150,7 +130,7 @@
                             <div class="input-group">
                                 <input type="password" class="form-control form-control-premium" name="password" id="formDocentePassword" placeholder="Dejar en blanco para no cambiar">
                                 <button class="btn btn-outline-secondary" type="button" id="btnToggleFormDocentePassword" onclick="togglePasswordVisibility('formDocentePassword')">
-                                    <i class="fa-solid fa-eye" id="toggleIcon_formDocentePassword"></i>
+                                    <i class="ti ti-eye" id="toggleIcon_formDocentePassword"></i>
                                 </button>
                             </div>
                         </div>
@@ -177,17 +157,13 @@
 
                 <div class="modal-footer">
 
-                    <button type="button" class="btn btn-azul" data-bs-dismiss="modal">
-
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         Cancelar
-
                     </button>
 
-                    <button class="btn btn-azul" type="submit">
-
-                        <i class="bi bi-floppy-fill"></i>
-                        Guardar Alumno
-
+                    <button class="btn btn-azul btn-primary-saas" type="submit">
+                        <i class="ti ti-device-floppy me-1"></i>
+                        Guardar
                     </button>
 
                 </div>
@@ -203,10 +179,10 @@
     <div class="modal-dialog modal-dialog-centered">
         <form id="formCredencialesDocente" class="modal-content glass-modal">
             <div class="modal-header">
-                <h5 class="modal-title text-white">
-                    <i class="fa-solid fa-user-lock me-2"></i>Credenciales de Acceso
+                <h5 class="modal-title">
+                    <i class="ti ti-key me-2" style="color: #1E5B66;"></i>Credenciales de Acceso
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body text-dark bg-white" style="border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
                 <input type="hidden" id="credDocenteId" name="idDocente">
@@ -227,7 +203,7 @@
                     <div class="input-group">
                         <input type="password" class="form-control form-control-premium text-dark" id="credPassword" name="password" placeholder="Mínimo 4 caracteres" style="color: #000000 !important; font-weight: 600;">
                         <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('credPassword')">
-                            <i class="fa-solid fa-eye" id="toggleIcon_credPassword"></i>
+                            <i class="ti ti-eye" id="toggleIcon_credPassword"></i>
                         </button>
                     </div>
                     <small class="text-muted" id="helpPasswordCred">Deja en blanco para conservar la contraseña actual.</small>
@@ -235,7 +211,7 @@
 
                 <div class="text-end mb-3">
                     <button type="button" class="btn btn-sm btn-secondary" onclick="generarPasswordAleatoria()">
-                        <i class="fa-solid fa-arrows-rotate me-1"></i> Generar Contraseña Segura
+                        <i class="ti ti-refresh me-1"></i> Generar Contraseña Segura
                     </button>
                 </div>
 
@@ -245,19 +221,19 @@
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="checkbox" name="permisos_modulos[]" value="horarios" id="chkModuloHorarios" checked>
                             <label class="form-check-label text-dark fw-semibold" for="chkModuloHorarios" style="cursor: pointer;">
-                                <i class="fa-solid fa-calendar-days me-1 text-primary"></i> Mi Horario
+                                <i class="ti ti-calendar-stats me-1 text-primary"></i> Mi Horario
                             </label>
                         </div>
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="checkbox" name="permisos_modulos[]" value="pendientes" id="chkModuloPendientes" checked>
                             <label class="form-check-label text-dark fw-semibold" for="chkModuloPendientes" style="cursor: pointer;">
-                                <i class="fa-solid fa-list-check me-1 text-warning"></i> Pendientes
+                                <i class="ti ti-checkbox me-1 text-warning"></i> Pendientes
                             </label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="permisos_modulos[]" value="grupos" id="chkModuloGrupos" checked>
                             <label class="form-check-label text-dark fw-semibold" for="chkModuloGrupos" style="cursor: pointer;">
-                                <i class="fa-solid fa-user-group me-1 text-success"></i> Mis Grupos (Calificaciones, Asistencias)
+                                <i class="ti ti-users-group me-1 text-success"></i> Mis Grupos (Calificaciones, Asistencias)
                             </label>
                         </div>
                     </div>
@@ -266,8 +242,8 @@
             </div>
             <div class="modal-footer bg-light">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary" style="background-color: #0f172a; border: none; font-weight: 600;">
-                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Credenciales
+                <button type="submit" class="btn btn-primary" style="background-color: var(--brand-primary); border: none; font-weight: 600;">
+                    <i class="ti ti-device-floppy me-1"></i> Guardar Credenciales
                 </button>
             </div>
         </form>
@@ -309,6 +285,29 @@ document.addEventListener("DOMContentLoaded", function() {
         renderDocentes();
     });
 
+    function formatearFechaDocente(dateStr) {
+        if (!dateStr || dateStr === 'N/A' || dateStr === 'null' || dateStr === 'undefined') {
+            return '<span style="color: #94A3B8; font-size: 0.8125rem;">N/A</span>';
+        }
+        try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) {
+                if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                    const p = dateStr.split('-');
+                    return `<span class="fecha-mono">${p[2]}/${p[1]}/${p[0]}</span>`;
+                }
+                return `<span class="fecha-mono">${dateStr}</span>`;
+            }
+            const isUtc = typeof dateStr === 'string' && (dateStr.includes('GMT') || dateStr.endsWith('Z') || /^\d{4}-\d{2}-\d{2}$/.test(dateStr));
+            const day = String(isUtc ? d.getUTCDate() : d.getDate()).padStart(2, '0');
+            const month = String((isUtc ? d.getUTCMonth() : d.getMonth()) + 1).padStart(2, '0');
+            const year = isUtc ? d.getUTCFullYear() : d.getFullYear();
+            return `<span class="fecha-mono">${day}/${month}/${year}</span>`;
+        } catch (e) {
+            return `<span class="fecha-mono">${dateStr}</span>`;
+        }
+    }
+
     function renderDocentes() {
         const normalizeStr = str => (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         const filtro = normalizeStr(document.getElementById('buscador').value);
@@ -330,70 +329,87 @@ document.addEventListener("DOMContentLoaded", function() {
 
         datos.forEach(docente => {
             const nombreCompleto =
-                `${docente.nombreDocente} ${docente.apPaternoDocente ?? ''} ${docente.apMaternoDocente ?? ''}`;
+                `${docente.nombreDocente || ''} ${docente.apPaternoDocente ?? ''} ${docente.apMaternoDocente ?? ''}`.trim();
 
             let userBadge = '';
             if (docente.usuario) {
-                userBadge = `<small class="text-primary d-block mt-1" style="font-size: 0.76rem;"><i class="fa-solid fa-user-shield me-1"></i>${docente.usuario}</small>`;
+                userBadge = `<div class="docente-user-badge"><i class="ti ti-user-check"></i><span>${docente.usuario}</span></div>`;
             } else {
-                userBadge = `<small class="text-muted d-block mt-1" style="font-size: 0.74rem;"><i class="fa-solid fa-user-slash me-1"></i>Sin usuario</small>`;
+                userBadge = `<div class="docente-no-user"><i class="ti ti-user-off"></i><span>Sin usuario</span></div>`;
             }
 
-            const colorCircle = `<span class="badge-color-dot" style="display: inline-block; width: 14px; height: 14px; border-radius: 50%; background-color: ${docente.colorDocente || '#FFFFFF'}; border: 1px solid #cbd5e1; margin-right: 8px; vertical-align: middle;" title="Color del Docente"></span>`;
+            const colorCircle = `<span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: ${docente.colorDocente || '#94A3B8'}; border: 1px solid rgba(0,0,0,0.12); margin-right: 6px; vertical-align: middle;" title="Color del Docente"></span>`;
+
+            const isActivo = (docente.statusDocente || 'ACTIVO').toUpperCase() === 'ACTIVO';
+            const statusBadge = isActivo
+                ? `<span class="badge-soft-success"><span class="badge-dot"></span>Activo</span>`
+                : `<span class="badge-soft-danger"><span class="badge-dot"></span>Inactivo</span>`;
+
+            const nivelTexto = (docente.nivelEstudios && docente.nivelEstudios !== 'N/A')
+                ? `<span class="docente-nivel">${docente.nivelEstudios}</span>`
+                : `<span style="color: #94A3B8; font-size: 0.8125rem;">N/A</span>`;
 
             html += `
                 <tr>
-                    <td>${docente.idDocente}</td>
+                    <td><span class="id-mono">${docente.idDocente}</span></td>
                     <td>
-                        ${colorCircle}<strong>${docente.nombreDocente} ${docente.apPaternoDocente ?? ''} ${docente.apMaternoDocente ?? ''}</strong>
+                        <div class="d-flex align-items-center">
+                            ${colorCircle}
+                            <span class="docente-nombre">${nombreCompleto}</span>
+                        </div>
                         ${userBadge}
                     </td>
-                    <td>${docente.correoDocente}</td>
-                    <td>${docente.telefonoDocente ?? ''}</td>
-                    <td>
-                        <span class="badge ${docente.statusDocente === 'ACTIVO' ? 'bg-success' : 'bg-danger'}">
-                            ${docente.statusDocente}
-                        </span>
-                    </td>
-                    <td>${docente.nivelEstudios ?? 'N/A'}</td>
-                    <td>${docente.fechaNacimiento ?? 'N/A'}</td>
-
-                    <td class="text-center" style="white-space: nowrap;">
-                        <button class="btn btn-secondary btn-sm btn-action me-1" onclick="verDocente(${docente.idDocente})" title="Ver detalles">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>
-                        <button class="btn btn-warning btn-sm btn-action me-1" onclick="editarDocente(${docente.idDocente})" title="Editar">
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                        <button class="btn btn-primary btn-sm btn-action me-1" onclick="abrirModalCredenciales(${docente.idDocente}, '${docente.nombreDocente.replace(/'/g, "\\'")}', '${docente.apPaternoDocente ? docente.apPaternoDocente.replace(/'/g, "\\'") : ''}', '${docente.usuario ? docente.usuario.replace(/'/g, "\\'") : ''}', ${docente.tiene_password ?? 0}, '${docente.permisos_modulos || ''}')" title="Credenciales de acceso" style="background-color: #0f172a; border-color: #0f172a;">
-                            <i class="fa-solid fa-key"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm btn-action" onclick="eliminarDocente(${docente.idDocente})" title="Eliminar">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                    <td><span class="docente-correo">${docente.correoDocente || '—'}</span></td>
+                    <td><span class="docente-telefono">${docente.telefonoDocente || '—'}</span></td>
+                    <td>${statusBadge}</td>
+                    <td>${nivelTexto}</td>
+                    <td>${formatearFechaDocente(docente.fechaNacimiento)}</td>
+                    <td class="text-end" style="padding-right: 20px;">
+                        <div class="actions-cell" style="justify-content: flex-end;">
+                            <button type="button" class="btn-ghost-icon" onclick="verDocente(${docente.idDocente})" title="Ver detalles">
+                                <i class="ti ti-eye"></i>
+                            </button>
+                            <button type="button" class="btn-ghost-icon" onclick="editarDocente(${docente.idDocente})" title="Editar docente">
+                                <i class="ti ti-edit"></i>
+                            </button>
+                            <button type="button" class="btn-ghost-icon btn-ghost-key" onclick="abrirModalCredenciales(${docente.idDocente}, '${(docente.nombreDocente || '').replace(/'/g, "\\'")}', '${docente.apPaternoDocente ? docente.apPaternoDocente.replace(/'/g, "\\'") : ''}', '${docente.usuario ? docente.usuario.replace(/'/g, "\\'") : ''}', ${docente.tiene_password ?? 0}, '${docente.permisos_modulos || ''}')" title="Credenciales de acceso">
+                                <i class="ti ti-key"></i>
+                            </button>
+                            <button type="button" class="btn-ghost-icon btn-ghost-danger" onclick="eliminarDocente(${docente.idDocente})" title="Eliminar docente">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
-                `;
+            `;
         });
 
         document.getElementById('tablaDocentes').innerHTML = html;
-        renderPaginacionDocentes(filtradas.length);
+        renderPaginacionDocentes(filtradas.length, inicio, fin);
     }
 
-    function renderPaginacionDocentes(total) {
+    function renderPaginacionDocentes(total, inicio, fin) {
         const totalPaginas = Math.ceil(total / filasDocente);
         let html = '';
 
         for (let i = 1; i <= totalPaginas; i++) {
             html += `
-                <button class="btn btn-sm ${i === paginaDocente ? 'btn-primary' : 'btn-outline-primary'} me-1"
+                <button type="button" class="btn-page ${i === paginaDocente ? 'active' : ''}"
                     onclick="cambiarPaginaDocente(${i})">
                     ${i}
                 </button>`;
         }
 
         document.getElementById('paginacion').innerHTML = html;
-        document.getElementById('infoPaginacion').innerText = `Mostrando ${total} registros`;
+        const textoInfo = total > 0 
+            ? `Mostrando ${inicio + 1} a ${Math.min(fin, total)} de ${total} docentes`
+            : 'Sin registros';
+        document.getElementById('infoPaginacion').innerText = textoInfo;
+
+        const infoBadge = document.getElementById('infoDocentesBadge');
+        if (infoBadge) {
+            infoBadge.innerText = total > 0 ? `${total} docente${total === 1 ? '' : 's'}` : '';
+        }
     }
 
     window.cambiarPaginaDocente = function(p) {
@@ -788,10 +804,10 @@ document.addEventListener("DOMContentLoaded", function() {
         const icon = document.getElementById('toggleIcon_' + id);
         if (inp.type === 'password') {
             inp.type = 'text';
-            icon.className = 'fa-solid fa-eye-slash';
+            icon.className = 'ti ti-eye-off';
         } else {
             inp.type = 'password';
-            icon.className = 'fa-solid fa-eye';
+            icon.className = 'ti ti-eye';
         }
     };
 
@@ -804,7 +820,8 @@ document.addEventListener("DOMContentLoaded", function() {
         const inp = document.getElementById('credPassword');
         inp.value = pass;
         inp.type = 'text';
-        document.getElementById('toggleIcon_credPassword').className = 'fa-solid fa-eye-slash';
+        const toggleIcon = document.getElementById('toggleIcon_credPassword');
+        if (toggleIcon) toggleIcon.className = 'ti ti-eye-off';
     };
 
     document.getElementById('formCredencialesDocente').addEventListener('submit', function(e) {

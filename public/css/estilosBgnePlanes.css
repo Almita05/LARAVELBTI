@@ -1,236 +1,540 @@
+/* ========================================================
+   ESTILOS DE PLANES DE ESTUDIO BGNE
+   Design System: shadcn/ui & Radix UI Tokens
+   Colores: #1E5B66 (Teal institucional), #0F172A (Texto)
+   Tipografía: Inter & JetBrains Mono
+   Iconografía: Tabler Icons (ti ti-*)
+======================================================== */
 
-.page-container {
-    padding: 30px;
-    min-height: 100vh;
+:root {
+    --bg-primary: #1E5B66;
+    --bg-primary-hover: #16464F;
+    --bg-primary-subtle: #F0F7F8;
+    --border-primary-subtle: #CBE4E8;
+    --border-color: #E2E8F0;
+    --card-bg: #FFFFFF;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #64748B;
+    --radius-md: 8px;
+    --radius-lg: 12px;
 }
 
+.planes-bgne-container {
+    padding: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
 
-.page-title {
-    color:rgb(7, 101, 136);
+/* Encabezado Ejecutivo */
+.planes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.planes-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.btn-regresar-custom {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    height: 38px;
+    padding: 0 14px;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.btn-regresar-custom:hover {
+    background: #F1F5F9;
+    color: var(--text-primary);
+    border-color: #CBD5E1;
+}
+
+.planes-title-wrapper h1 {
+    font-size: 1.25rem;
     font-weight: 700;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.planes-title-wrapper p {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    margin: 3px 0 0 0;
+}
+
+.badge-cct-institucional {
+    background: var(--bg-primary-subtle);
+    color: var(--bg-primary);
+    border: 1px solid var(--border-primary-subtle);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Contenedor Principal Unificado */
+.planes-main-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    padding: 24px;
+}
+
+/* Pestañas de Trimestres */
+.custom-tabs-container {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+}
+
+.custom-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.custom-tabs .nav-link {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: #FFFFFF;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 8px 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.custom-tabs .nav-link:hover {
+    background: #F8FAFC;
+    color: var(--text-primary);
+    border-color: #CBD5E1;
+}
+
+.custom-tabs .nav-link.active {
+    background: var(--bg-primary) !important;
+    border-color: var(--bg-primary) !important;
+    color: #FFFFFF !important;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(30, 91, 102, 0.18);
+}
+
+/* Tarjetas de Materia */
+.materia-card {
+    background: #FFFFFF !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+    transition: all 0.2s ease !important;
+    height: 100%;
+}
+
+.materia-card:hover {
+    border-color: #CBD5E1 !important;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06) !important;
+    transform: translateY(-2px);
+}
+
+.materia-card .card-body {
+    padding: 18px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.materia-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.materia-icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    background: var(--bg-primary-subtle);
+    border: 1px solid var(--border-primary-subtle);
+    color: var(--bg-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.materia-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+    line-height: 1.3;
+}
+
+.materia-tag {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.materia-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: auto;
+}
+
+.btn-temario-bgne {
+    background: var(--bg-primary);
+    color: #FFFFFF !important;
+    border: 1px solid var(--bg-primary);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    flex: 1;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.btn-temario-bgne:hover {
+    background: var(--bg-primary-hover);
+    border-color: var(--bg-primary-hover);
+    color: #FFFFFF !important;
+}
+
+.btn-temario-normal {
+    background: #FFFFFF;
+    color: var(--text-secondary) !important;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    flex: 1;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.btn-temario-normal:hover {
+    background: #F1F5F9;
+    border-color: #CBD5E1;
+    color: var(--text-primary) !important;
+}
+
+/* ========================================================
+   MATRIZ CALENDARIO EXCEL (SEXTO TRIMESTRE - MATERIAS CURSADAS)
+======================================================== */
+.matriz-excel-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.matriz-banner-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.matriz-banner-title h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.matriz-info-badge {
+    background: #F0FDF4;
+    color: #166534;
+    border: 1px solid #BBF7D0;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.matriz-excel-wrapper {
+    background: #FFFFFF;
+    border: 1.5px solid #000000;
+    border-radius: 8px;
+    overflow-x: auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+.matriz-excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.8rem;
+    text-align: center;
+    min-width: 760px;
+}
+
+.matriz-excel-table th,
+.matriz-excel-table td {
+    border: 1px solid #000000;
+    padding: 7px 6px;
+    vertical-align: middle;
+}
+
+/* Fila Verde 1: SEXTO TRIMESTRE */
+.tr-header-trimestre {
+    background-color: #558B2F !important;
+    color: #FFFFFF !important;
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 10px !important;
+}
+
+/* Fila Verde 2: MATERIAS CURSADAS */
+.tr-header-materias {
+    background-color: #7CB342 !important;
+    color: #FFFFFF !important;
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 7px !important;
+}
+
+/* Indicadores X en Rosa/Magenta */
+.cell-x-indicator {
+    background-color: #FF00FF !important;
+    color: #000000 !important;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    padding: 3px 6px !important;
     text-align: center;
 }
 
-.glass-card {
-    background: rgba(255, 255, 255, .08);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
-    padding: .5%;
+.cell-x-empty {
+    background-color: #FFFFFF;
+    border-top: none !important;
+    border-bottom: 1px solid #000000 !important;
 }
 
-
-.glass-footer {
-    border-top: 1px solid rgba(255, 255, 255, .15);
+/* Meses Principales */
+.th-mes-1 {
+    background-color: #2563EB !important;
+    color: #FFFFFF !important;
+    font-weight: 800;
+    font-size: 0.875rem;
+    letter-spacing: 0.04em;
 }
 
-.table-head{
-    background: rgb(49, 125, 146) !important;
-    color: rgb(8, 0, 0) !important;
+.th-mes-2 {
+    background-color: #7E22CE !important;
+    color: #FFFFFF !important;
+    font-weight: 800;
+    font-size: 0.875rem;
+    letter-spacing: 0.04em;
 }
 
-
-
-.btn-regresar {
-     background: rgb(49, 125, 146) !important;
-    border: none;
-    font-weight: 600;
-    color: white;
+.th-mes-3 {
+    background-color: #65A30D !important;
+    color: #FFFFFF !important;
+    font-weight: 800;
+    font-size: 0.875rem;
+    letter-spacing: 0.04em;
 }
 
-
-.btn-regresar:hover {
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
+/* Materias Headers */
+.th-mat-informatica {
+    background-color: #FFA0A0 !important;
+    color: #000000 !important;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
 }
 
-.btn-azul {
-     background: rgb(49, 125, 146) !important;
-    border: none;
-    font-weight: 600;
+.th-mat-filosofia {
+    background-color: #FFC000 !important;
+    color: #000000 !important;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
 }
 
-.btn-azul:hover {
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(107, 199, 232, .4);
+.th-mat-calculo {
+    background-color: #6B98D8 !important;
+    color: #000000 !important;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
 }
 
-.textoDocentes{
-    color:white;
+.th-mat-biologia {
+    background-color: #9BC595 !important;
+    color: #000000 !important;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
 }
 
-
-.card {
-    background: transparent !important;
+.th-mat-contabilidad {
+    background-color: #FF0000 !important;
+    color: #000000 !important;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
 }
 
-.btn-ver {
-    background: #00BCD4;
-    color: white;
-    border: none;
+.th-mat-ingles {
+    background-color: #B5739D !important;
+    color: #000000 !important;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
 }
 
-.btn-ver:hover {
-    background: #0097A7;
-    color: white;
+/* Celdas de Semanas (JetBrains Mono) */
+.td-sem-informatica {
+    background-color: #FFA0A0 !important;
+    color: #000000 !important;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.75rem;
 }
 
-.btn-editar {
-    background: #FF9800;
-    color: white;
-    border: none;
+.td-sem-filosofia {
+    background-color: #FFC000 !important;
+    color: #000000 !important;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.75rem;
 }
 
-.btn-editar:hover {
-    background: #F57C00;
-    color: white;
+.td-sem-calculo {
+    background-color: #6B98D8 !important;
+    color: #000000 !important;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.75rem;
 }
 
-.btn-eliminar {
-    background: #E53935;
-    color: white;
-    border: none;
+.td-sem-biologia {
+    background-color: #9BC595 !important;
+    color: #000000 !important;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.75rem;
 }
 
-.btn-eliminar:hover {
-    background: #C62828;
-    color: white;
+.td-sem-contabilidad {
+    background-color: #FF0000 !important;
+    color: #000000 !important;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.75rem;
 }
 
-
-/* Modal */
-.modal-content {
-    border: none;
+.td-sem-ingles {
+    background-color: #B5739D !important;
+    color: #000000 !important;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 0.75rem;
 }
 
-.modal-header {
-     background: rgb(49, 125, 146) !important;
-    color: white;
+/* Separadores de Meses en Tab 6 */
+.mes-section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 0 14px 0;
 }
 
-.glass-modal {
-    border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
-    overflow: hidden;
-    color: white;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, .35);
+.mes-section-badge {
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.glass-modal .modal-header {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8);
-    color: #fff;
+.badge-mes-1 {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border: 1px solid #BFDBFE;
 }
 
-.glass-modal .modal-body {
-    background: white;
+.badge-mes-2 {
+    background: #FAF5FF;
+    color: #6B21A8;
+    border: 1px solid #E9D5FF;
 }
 
-
-.accordion-item {
-    background: rgba(255, 255, 255, .06);
-    border: none;
-    border-radius: 14px;
-    overflow: hidden;
+.badge-mes-3 {
+    background: #F7FEE7;
+    color: #3F6212;
+    border: 1px solid #D9F99D;
 }
 
-.accordion-button,
-.accordion-button.collapsed,
-.accordion-button:not(.collapsed) {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
-    color: #fff !important;
-    font-weight: 600;
-    box-shadow: none !important;
-    border: none;
+.mes-section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
 }
-
-.accordion-button:focus {
-    box-shadow: none !important;
-}
-
-.accordion-button::after {
-    filter: brightness(0) invert(1);
-}
-
-.accordion-body {
-    background: white;
-}
-
-.form-label {
-    font-weight: 500;
-    color: black;
-}
-
-.form-control-premium,
-.form-select-premium {
-    background: #fff;
-    color: #212529;
-    min-height: 48px;
-}
-
-.form-control-premium:hover,
-.form-select-premium:hover {
-    border-color: rgb(49, 125, 146) !important;
-}
-
-.form-control-premium:focus,
-.form-select-premium:focus {
-    border-color: rgb(49, 125, 146) !important;
-    box-shadow:
-        0 0 0 3px rgba(102, 201, 255, .20),
-        inset 0 1px 2px rgba(0, 0, 0, .04);
-}
-
-
-
-    .materia-card {
-        background: rgba(255, 255, 255, 0.10);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        border-radius: 16px;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        color: black;
-        transition: all 0.3s ease;
-        height: 100%;
-    }
-
-    .materia-card:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.16);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.20);
-    }
-
-    .materia-card .card-body {
-        padding: 25px;
-    }
-
-    .materia-card .card-title {
-        color: #ffffff;
-        font-weight: 600;
-        margin-bottom: 12px;
-    }
-
-    .materia-card .card-text {
-        color: rgba(255, 255, 255, 0.80);
-        margin-bottom: 20px;
-    }
-
-   .materia-card .btn-temario {
-        background: rgb(49, 125, 146);
-        border-color: rgb(49, 125, 146);
-        border-radius: 10px;
-        color: white;
-    }
-
-    .materia-card .btn-temario:hover {
-        background: #6BC7E8;
-        border-color: #6BC7E8;
-        color: #0F2E6D;
-    }
-
-

@@ -2,27 +2,369 @@
 
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+/* ==========================================================================
+   SISTEMA DE DISEÑO SAAS - ASISTENCIAS DE ALUMNOS (SHADCN / RADIX STYLE)
+   ========================================================================== */
+.page-container {
+    padding: 24px 32px;
+    min-height: 100vh;
+}
+
+.page-header-standard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 16px;
+}
+
+.page-heading {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary, #0F172A);
+    margin: 0 0 4px 0;
+    letter-spacing: -0.01em;
+}
+
+.page-subheading {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #64748B);
+    margin: 0;
+}
+
+/* KPI Cards */
+.kpi-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.kpi-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle, #E2E8F0);
+    border-radius: 10px;
+    padding: 16px 20px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.kpi-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.kpi-icon-warning {
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    color: #D97706;
+}
+
+.kpi-icon-success {
+    background: #F0FDF4;
+    border: 1px solid #BBF7D0;
+    color: #15803D;
+}
+
+.kpi-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.kpi-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+}
+
+.kpi-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0F172A;
+    line-height: 1.2;
+    margin: 0;
+}
+
+/* Barra de Filtros y Búsqueda */
+.asistencias-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle, #E2E8F0);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+@media (max-width: 768px) {
+    .asistencias-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+.asistencias-segmented-tabs {
+    display: inline-flex;
+    align-items: center;
+    background: #F1F5F9;
+    padding: 4px;
+    border-radius: 8px;
+    gap: 2px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow-x: auto;
+}
+
+.asistencias-tab-btn {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #475569;
+    border: none;
+    background: transparent;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.asistencias-tab-btn:hover:not(.active) {
+    color: #0F172A;
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.asistencias-tab-btn.active {
+    background: var(--brand-primary, #1E5B66);
+    color: #FFFFFF;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1);
+}
+
+.asistencias-search-wrap {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    max-width: 320px;
+}
+
+@media (max-width: 768px) {
+    .asistencias-search-wrap {
+        max-width: 100%;
+    }
+}
+
+.asistencias-search-icon {
+    position: absolute;
+    left: 12px;
+    color: #94A3B8;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.asistencias-search-input {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px 0 36px;
+    border: 1px solid var(--border-subtle, #E2E8F0);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: #0F172A;
+    background: #F8FAFC;
+    transition: all 0.15s ease;
+}
+
+.asistencias-search-input:focus {
+    background: #FFFFFF;
+    border-color: var(--brand-primary, #1E5B66);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.1);
+}
+
+/* Tarjeta de Grupo SaaS */
+.grupo-card-surface {
+    background: #FFFFFF !important;
+    border: 1px solid var(--border-subtle, #E2E8F0) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
+    overflow: hidden;
+}
+
+.grupo-card-surface:hover {
+    border-color: #CBD5E1 !important;
+    box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05) !important;
+    transform: translateY(-2px) !important;
+}
+
+.grupo-clave {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.status-badge-noprog {
+    background: #F1F5F9;
+    color: #64748B;
+    border: 1px solid #E2E8F0;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.status-badge-pend {
+    background: #FFFBEB;
+    color: #D97706;
+    border: 1px solid #FDE68A;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.status-badge-fin {
+    background: #DCFCE7;
+    color: #15803D;
+    border: 1px solid #BBF7D0;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.metadata-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.8125rem;
+    color: #334155;
+    margin-top: 14px;
+}
+
+.metadata-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.4;
+}
+
+.metadata-icon {
+    font-size: 16px;
+    color: #64748B;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-matriz {
+    width: 100%;
+    height: 36px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    color: var(--brand-primary, #1E5B66);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.btn-matriz:hover {
+    background: #F0F7F8;
+    border-color: var(--brand-primary, #1E5B66);
+    color: var(--brand-primary-hover, #16464F);
+}
+
+.btn-pasar-lista {
+    width: 100%;
+    height: 36px;
+    background: var(--brand-primary, #1E5B66);
+    border: 1px solid var(--brand-primary, #1E5B66);
+    border-radius: 6px;
+    color: #FFFFFF;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.btn-pasar-lista:hover {
+    background: var(--brand-primary-hover, #16464F);
+    border-color: var(--brand-primary-hover, #16464F);
+    color: #FFFFFF;
+}
+</style>
+
 <div class="page-container">
     <!-- Encabezado de Página -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="page-header-standard">
         <div>
-            <h3 class="page-title mb-1">
-                <i class="fa-solid fa-clipboard-user me-2"></i>Asistencias de Alumnos
-            </h3>
-            <p class="text-muted mb-0" style="font-size: 0.85rem;">Control y registro de asistencias por grupos y días de clase.</p>
+            <h1 class="page-heading">Asistencias de Alumnos</h1>
+            <p class="page-subheading">Control y registro de asistencias por grupos y días de clase.</p>
         </div>
         @if(session('rol') === 'ADMIN')
-            <button class="btn btn-azul d-flex align-items-center gap-2" onclick="abrirModalJustificacion()" style="border-radius: 12px; font-weight: 500; font-size: 0.82rem; height: 40px; border: none; box-shadow: 0 4px 12px rgba(49, 125, 146, 0.25);">
-                <i class="fa-solid fa-user-shield" style="font-size: 0.95rem;"></i>Justificar Faltas
+            <button type="button" class="btn-primary-saas" onclick="abrirModalJustificacion()">
+                <i class="ti ti-shield-check"></i>
+                <span>Justificar Faltas</span>
             </button>
         @endif
     </div>
 
     <!-- Alertas -->
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px; background-color: rgba(220, 38, 38, 0.2); color: #fecaca;">
-            <i class="fa-solid fa-triangle-exclamation me-2"></i>{{ session('error') }}
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 8px; background-color: #FEF2F2; color: #991B1B; border: 1px solid #FECACA !important;">
+            <i class="ti ti-alert-triangle me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
@@ -53,70 +395,52 @@
         }
     @endphp
 
-    <!-- Estadísticas Rápidas -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-6 col-lg-3">
-            <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(12px); border: 1px solid rgba(49, 125, 146, 0.15) !important;">
-                <div class="card-body p-4 d-flex align-items-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 52px; height: 52px; background: rgba(249, 115, 22, 0.15);">
-                        <i class="fa-solid fa-clock-rotate-left text-warning" style="font-size: 1.3rem;"></i>
-                    </div>
-                    <div>
-                        <span class="text-muted d-block uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 1px;">PENDIENTES HOY</span>
-                        <h3 class="text-dark fw-bold mb-0 mt-1" id="stat-pendientes">{{ $pendientesCount }}</h3>
-                    </div>
-                </div>
+    <!-- Estadísticas Rápidas (KPIs) -->
+    <div class="kpi-grid-container">
+        <!-- Pendientes Hoy -->
+        <div class="kpi-card">
+            <div class="kpi-icon-box kpi-icon-warning">
+                <i class="ti ti-clock-hour-4"></i>
+            </div>
+            <div class="kpi-content">
+                <span class="kpi-label">Pendientes Hoy</span>
+                <h3 class="kpi-value" id="stat-pendientes">{{ $pendientesCount }}</h3>
             </div>
         </div>
-        <div class="col-md-6 col-lg-3">
-            <div class="card border-0 shadow-sm h-100" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(12px); border: 1px solid rgba(49, 125, 146, 0.15) !important;">
-                <div class="card-body p-4 d-flex align-items-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 52px; height: 52px; background: rgba(34, 197, 94, 0.15);">
-                        <i class="fa-solid fa-circle-check text-success" style="font-size: 1.3rem;"></i>
-                    </div>
-                    <div>
-                        <span class="text-muted d-block uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 1px;">FINALIZADOS HOY</span>
-                        <h3 class="text-dark fw-bold mb-0 mt-1" id="stat-finalizados">{{ $finalizadosCount }}</h3>
-                    </div>
-                </div>
+        <!-- Finalizados Hoy -->
+        <div class="kpi-card">
+            <div class="kpi-icon-box kpi-icon-success">
+                <i class="ti ti-circle-check"></i>
+            </div>
+            <div class="kpi-content">
+                <span class="kpi-label">Finalizados Hoy</span>
+                <h3 class="kpi-value" id="stat-finalizados">{{ $finalizadosCount }}</h3>
             </div>
         </div>
     </div>
 
     <!-- Barra de Filtros y Búsqueda -->
-    <div class="card border-0 mb-4 shadow-sm" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important;">
-        <div class="card-body p-3 d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-            <!-- Tabs de Filtro de Días -->
-            <ul class="nav nav-pills border-0 p-1" style="border-radius: 12px; gap: 4px; background: rgba(0, 0, 0, 0.06); border: 1px solid rgba(49, 125, 146, 0.1) !important;">
-                <li class="nav-item">
-                    <button class="nav-link active px-4 py-2 border-0 rounded-3 fw-medium" id="tab-todos" onclick="filtrarDia('TODOS')" style="font-size: 0.8rem; transition: 0.2s;">
-                        Todos
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link px-4 py-2 border-0 rounded-3 fw-medium" id="tab-semana" onclick="filtrarDia('LUNES-VIERNES')" style="font-size: 0.8rem; transition: 0.2s;">
-                        Lunes a Viernes
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link px-4 py-2 border-0 rounded-3 fw-medium" id="tab-sabados" onclick="filtrarDia('SABADO')" style="font-size: 0.8rem; transition: 0.2s;">
-                        Sábados
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link px-4 py-2 border-0 rounded-3 fw-medium" id="tab-domingos" onclick="filtrarDia('DOMINGO')" style="font-size: 0.8rem; transition: 0.2s;">
-                        Domingos
-                    </button>
-                </li>
-            </ul>
+    <div class="asistencias-toolbar">
+        <!-- Tabs de Filtro de Días (Segmented Control) -->
+        <div class="asistencias-segmented-tabs">
+            <button type="button" class="asistencias-tab-btn active" id="tab-todos" onclick="filtrarDia('TODOS')">
+                Todos
+            </button>
+            <button type="button" class="asistencias-tab-btn" id="tab-semana" onclick="filtrarDia('LUNES-VIERNES')">
+                Lunes a Viernes
+            </button>
+            <button type="button" class="asistencias-tab-btn" id="tab-sabados" onclick="filtrarDia('SABADO')">
+                Sábados
+            </button>
+            <button type="button" class="asistencias-tab-btn" id="tab-domingos" onclick="filtrarDia('DOMINGO')">
+                Domingos
+            </button>
+        </div>
 
-            <!-- Buscador por Texto -->
-            <div class="position-relative w-100 w-md-25" style="min-width: 250px;">
-                <span class="position-absolute start-0 top-50 translate-middle-y ms-3 text-muted">
-                    <i class="fa-solid fa-magnifying-glass" style="font-size: 0.85rem;"></i>
-                </span>
-                <input type="text" id="buscadorGrupo" class="form-control ps-5 border-0 text-dark" placeholder="Buscar grupo por clave o modalidad..." style="background: rgba(255, 255, 255, 0.5); border-radius: 12px; height: 42px; font-size: 0.85rem; border: 1px solid rgba(49, 125, 146, 0.2) !important;">
-            </div>
+        <!-- Buscador por Texto -->
+        <div class="asistencias-search-wrap">
+            <i class="ti ti-search asistencias-search-icon"></i>
+            <input type="text" id="buscadorGrupo" class="asistencias-search-input" placeholder="Buscar grupo por clave o modalidad...">
         </div>
     </div>
 
@@ -151,89 +475,83 @@
 
                 if ($esTarde) {
                     $turnoLabel = 'Tarde';
-                    $turnoDetalle = 'Turno Tarde';
-                    $turnoBadgeStyle = 'background-color: rgba(249, 115, 22, 0.16); color: rgb(194, 65, 12); border: 1px solid rgba(249, 115, 22, 0.35); font-weight: 600;';
+                    $turnoBadgeStyle = 'background-color: #FFEDD5; color: #C2410C; border: 1px solid #FED7AA; font-weight: 600;';
                 } elseif ($esManana) {
                     $turnoLabel = 'Mañana';
-                    $turnoDetalle = 'Turno Mañana';
-                    $turnoBadgeStyle = 'background-color: rgba(234, 179, 8, 0.16); color: rgb(161, 98, 7); border: 1px solid rgba(234, 179, 8, 0.35); font-weight: 600;';
+                    $turnoBadgeStyle = 'background-color: #FEF3C7; color: #B45309; border: 1px solid #FDE68A; font-weight: 600;';
                 } else {
                     $turnoLabel = !empty($modRaw) ? ucwords(strtolower($modRaw)) : '';
-                    $turnoDetalle = $turnoLabel;
-                    $turnoBadgeStyle = 'background-color: rgba(100, 116, 139, 0.12); color: rgb(71, 85, 105); border: 1px solid rgba(100, 116, 139, 0.25); font-weight: 600;';
+                    $turnoBadgeStyle = 'background-color: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; font-weight: 600;';
                 }
             @endphp
             <div class="col-md-6 col-lg-4 elemento-grupo" 
                  data-clave="{{ strtolower($grupo['clave']) }}" 
                  data-dias="{{ implode(',', $dias) }}"
-                 data-modalidad="{{ strtolower($turnoLabel . ' ' . $turnoDetalle . ' ' . $modRaw) }}">
-                <div class="card h-100 border-0 shadow-premium card-premium position-relative" style="border-radius: 20px; background: rgba(255, 255, 255, 0.55); border: 1px solid rgba(49, 125, 146, 0.18) !important; backdrop-filter: blur(12px); transition: transform 0.25s, box-shadow 0.25s;">
+                 data-modalidad="{{ strtolower($turnoLabel . ' ' . $modRaw) }}">
+                <div class="card h-100 grupo-card-surface position-relative">
                     <div class="card-body p-4 d-flex flex-column">
                         <!-- Clave del Grupo y Estado -->
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div>
-                                <h4 class="text-dark fw-bold mb-1" style="font-size: 1.25rem; letter-spacing: -0.3px;">{{ $grupo['clave'] }}</h4>
-                                <div class="d-flex align-items-center gap-1.5 flex-wrap">
-                                    <span class="badge" style="font-size: 0.68rem; padding: 4px 8px; border-radius: 6px; background-color: {{ $grupo['id_centroTrabajo'] == 2 ? 'rgba(49, 125, 146, 0.15)' : 'rgba(139, 92, 246, 0.12)' }}; color: {{ $grupo['id_centroTrabajo'] == 2 ? 'rgb(38, 104, 123)' : 'rgb(109, 40, 217)' }};">
+                                <h4 class="grupo-clave mb-1.5">{{ $grupo['clave'] }}</h4>
+                                <div class="d-flex align-items-center gap-1 flex-wrap">
+                                    <span class="badge" style="font-size: 0.6875rem; padding: 2px 7px; border-radius: 4px; {{ $grupo['id_centroTrabajo'] == 2 ? 'background-color: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD;' : 'background-color: #F0F7F8; color: #1E5B66; border: 1px solid #CBE4E8;' }}">
                                         {{ $grupo['nombreCentroTrabajo'] ?? ($grupo['id_centroTrabajo'] == 2 ? 'BTI' : 'BGNE') }}
                                     </span>
                                     @if($turnoLabel)
-                                        <span class="badge" style="font-size: 0.68rem; padding: 4px 8px; border-radius: 6px; {{ $turnoBadgeStyle }}">
+                                        <span class="badge" style="font-size: 0.6875rem; padding: 2px 7px; border-radius: 4px; {{ $turnoBadgeStyle }}">
                                             {{ $turnoLabel }}
                                         </span>
                                     @endif
                                 </div>
                             </div>
                             @if($status == 'FINALIZADO')
-                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1" style="border-radius: 20px; font-size: 0.68rem; font-weight: 600;">
-                                    <i class="fa-solid fa-check-double me-1"></i>FINALIZADO
+                                <span class="status-badge-fin">
+                                    <i class="ti ti-circle-check" style="font-size: 13px;"></i>FINALIZADO
                                 </span>
                             @elseif($status == 'PENDIENTE')
-                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-1" style="border-radius: 20px; font-size: 0.68rem; font-weight: 600; animation: pulse-warning 2s infinite;">
-                                    <i class="fa-solid fa-clock me-1"></i>PENDIENTE HOY
+                                <span class="status-badge-pend">
+                                    <i class="ti ti-clock" style="font-size: 13px;"></i>PENDIENTE HOY
                                 </span>
                             @else
-                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-1" style="border-radius: 20px; font-size: 0.68rem; font-weight: 600;">
+                                <span class="status-badge-noprog">
                                     NO PROGRAMADO HOY
                                 </span>
                             @endif
                         </div>
 
                         <!-- Detalles del Grupo -->
-                        <div class="mt-2 text-dark flex-grow-1" style="font-size: 0.8rem; line-height: 1.8;">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fa-solid fa-calendar-days me-2" style="width: 16px; color: rgb(49, 125, 146);"></i>
-                                <span class="text-dark" style="font-weight: 500;">{{ $diasLabel }}</span>
+                        <div class="metadata-list flex-grow-1">
+                            <div class="metadata-item">
+                                <i class="ti ti-calendar-event metadata-icon"></i>
+                                <span style="font-weight: 500;">{{ $diasLabel }}</span>
                             </div>
-                            @if($turnoDetalle)
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="fa-solid fa-clock me-2" style="width: 16px; color: rgb(49, 125, 146);"></i>
-                                    <span class="text-dark" style="font-weight: 500;">Modalidad: <strong style="color: #0f172a;">{{ $turnoDetalle }}</strong></span>
-                                </div>
-                            @endif
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fa-solid fa-graduation-cap me-2" style="width: 16px; color: rgb(49, 125, 146);"></i>
-                                <span class="text-dark" style="font-weight: 500;">{{ $grupo['nombre_nivel'] ?? 'Sin nivel académico' }}</span>
+                            <div class="metadata-item">
+                                <i class="ti ti-school metadata-icon"></i>
+                                <span style="font-weight: 500;">{{ $grupo['nombre_nivel'] ?? 'Sin nivel académico' }}</span>
                             </div>
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="fa-solid fa-users me-2" style="width: 16px; color: rgb(49, 125, 146);"></i>
-                                <span class="text-dark" style="font-weight: 500;">{{ $grupo['alumnos_count'] ?? 0 }} Alumnos Inscritos</span>
+                            <div class="metadata-item">
+                                <i class="ti ti-users metadata-icon"></i>
+                                <span style="font-weight: 500;">{{ $grupo['alumnos_count'] ?? 0 }} Alumnos Inscritos</span>
                             </div>
-                            <div class="d-flex align-items-center">
-                                <i class="fa-solid fa-door-open me-2" style="width: 16px; color: rgb(49, 125, 146);"></i>
-                                <span class="text-dark" style="font-weight: 500;">Aula: {{ $grupo['aula'] ?? 'Sin asignar' }}</span>
+                            <div class="metadata-item">
+                                <i class="ti ti-door metadata-icon"></i>
+                                <span style="font-weight: 500;">Aula: {{ $grupo['aula'] ?? 'Sin asignar' }}</span>
                             </div>
                         </div>
 
+                        <!-- Divisor Sutil -->
+                        <div style="border-top: 1px solid #F1F5F9; margin: 16px 0 14px 0;"></div>
+
                         <!-- Botón de Acción -->
-                        <div class="mt-4">
+                        <div>
                             @if($status == 'PENDIENTE')
-                                <a href="{{ route('asistencias_alumnos.grupo', $grupo['id']) }}" class="btn btn-azul w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 12px; font-size: 0.82rem; border: none; box-shadow: 0 4px 12px rgba(49, 125, 146, 0.25);">
-                                    <i class="fa-solid fa-signature"></i>Pasar Lista de Hoy
+                                <a href="{{ route('asistencias_alumnos.grupo', $grupo['id']) }}" class="btn-pasar-lista">
+                                    <i class="ti ti-checklist" style="font-size: 16px;"></i>Pasar Lista de Hoy
                                 </a>
                             @else
-                                <a href="{{ route('asistencias_alumnos.grupo', $grupo['id']) }}" class="btn btn-outline-secondary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2" style="border-radius: 12px; font-size: 0.82rem; color: rgb(38, 104, 123); border-color: rgba(49, 125, 146, 0.35); background-color: rgba(255, 255, 255, 0.3);">
-                                    <i class="fa-solid fa-eye"></i>Ver Historial y Matriz
+                                <a href="{{ route('asistencias_alumnos.grupo', $grupo['id']) }}" class="btn-matriz">
+                                    <i class="ti ti-table-options" style="font-size: 16px;"></i>Ver Historial y Matriz
                                 </a>
                             @endif
                         </div>
@@ -245,46 +563,11 @@
 
     <!-- Mensaje No Encontrado -->
     <div class="text-center py-5 d-none" id="mensaje-vacio">
-        <i class="fa-solid fa-inbox text-muted mb-3" style="font-size: 3rem;"></i>
-        <h5 class="text-dark">No se encontraron grupos</h5>
-        <p class="text-muted small">Intenta cambiando el filtro de día o el término de búsqueda.</p>
+        <i class="ti ti-folder-x text-muted mb-2" style="font-size: 2.75rem; display: block; color: #94A3B8;"></i>
+        <h5 style="color: #0F172A; font-weight: 600; font-size: 1rem; margin-bottom: 4px;">No se encontraron grupos</h5>
+        <p class="text-muted small mb-0" style="font-size: 0.8125rem;">Intenta cambiando el filtro de día o el término de búsqueda.</p>
     </div>
 </div>
-
-<style>
-    /* Efecto hover en tarjetas */
-    .card-premium:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 24px -10px rgba(49, 125, 146, 0.2), 0 0 0 1px rgba(49, 125, 146, 0.25) !important;
-        background: rgba(255, 255, 255, 0.75) !important;
-    }
-
-    /* Animación de pulso para pendientes */
-    @keyframes pulse-warning {
-        0% {
-            box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4);
-        }
-        70% {
-            box-shadow: 0 0 0 6px rgba(249, 115, 22, 0);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(249, 115, 22, 0);
-        }
-    }
-
-    .nav-pills .nav-link:not(.active) {
-        color: #475569 !important;
-    }
-    .nav-pills .nav-link:not(.active):hover {
-        background-color: rgba(49, 125, 146, 0.08);
-        color: rgb(38, 104, 123) !important;
-    }
-    .nav-pills .nav-link.active {
-        background-color: rgb(49, 125, 146) !important;
-        color: #fff !important;
-        box-shadow: 0 4px 10px rgba(49, 125, 146, 0.25);
-    }
-</style>
 
 <script>
     let filtroDiaActual = 'TODOS';
@@ -293,7 +576,7 @@
         filtroDiaActual = dia;
         
         // Actualizar pestañas activas
-        document.querySelectorAll('.nav-pills .nav-link').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.asistencias-tab-btn, .nav-pills .nav-link').forEach(el => el.classList.remove('active'));
         if (dia === 'TODOS') document.getElementById('tab-todos')?.classList.add('active');
         if (dia === 'LUNES-VIERNES') document.getElementById('tab-semana')?.classList.add('active');
         if (dia === 'SABADO') document.getElementById('tab-sabados')?.classList.add('active');
@@ -469,32 +752,34 @@
 <!-- Modal de Justificación de Faltas -->
 <div class="modal fade" id="modalJustificacion" tabindex="-1" aria-labelledby="modalJustificacionLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-premium" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px); border: 1px solid rgba(49, 125, 146, 0.15); border-radius: 20px;">
-            <div class="modal-header border-0 pb-0" style="padding: 1.5rem 1.5rem 0.5rem 1.5rem;">
-                <h5 class="modal-title fw-bold text-dark" id="modalJustificacionLabel">
-                    <i class="fa-solid fa-user-shield text-primary me-2"></i>Justificar Faltas de Alumno
+        <div class="modal-content">
+            <div class="modal-header d-flex justify-content-between align-items-center">
+                <h5 class="modal-title fw-bold mb-0" id="modalJustificacionLabel">
+                    <i class="ti ti-shield-check me-2" style="font-size: 1.2rem; vertical-align: -2px; color: #1E5B66;"></i>Justificar Faltas de Alumno
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="formJustificacion" onsubmit="guardarJustificacion(event)">
-                <div class="modal-body" style="padding: 1.5rem;">
+                <div class="modal-body" style="padding: 20px;">
                     <!-- Búsqueda de Alumno -->
                     <div class="mb-3 position-relative">
-                        <label class="form-label fw-bold text-dark small" style="margin-bottom: 6px;">Buscar Alumno</label>
+                        <label class="form-label" style="font-size: 0.75rem; font-weight: 600; color: #475569; margin-bottom: 6px; text-transform: uppercase;">Buscar Alumno</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0" style="border-radius: 10px 0 0 10px; border-color: rgba(49, 125, 146, 0.2);"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                            <input type="text" id="just-buscar-alumno" class="form-control border-start-0 text-dark bg-white" placeholder="Escribe nombre o matrícula..." oninput="buscarAlumnoJustificacion(this.value)" style="border-radius: 0 10px 10px 0; border-color: rgba(49, 125, 146, 0.2); height: 40px; font-size: 0.85rem;">
+                            <span class="input-group-text bg-white border-end-0 text-muted" style="border-radius: 6px 0 0 6px; border-color: #E2E8F0;">
+                                <i class="ti ti-search" style="font-size: 15px; color: #94A3B8;"></i>
+                            </span>
+                            <input type="text" id="just-buscar-alumno" class="form-control border-start-0 text-dark bg-white" placeholder="Escribe nombre o matrícula..." oninput="buscarAlumnoJustificacion(this.value)" style="border-radius: 0 6px 6px 0; border-color: #E2E8F0; height: 38px; font-size: 0.875rem;">
                         </div>
                         <!-- Resultados de búsqueda -->
-                        <div id="just-resultados-busqueda" class="list-group position-absolute w-100 shadow-premium d-none" style="z-index: 1050; max-height: 200px; overflow-y: auto; border-radius: 10px; border: 1px solid rgba(49, 125, 146, 0.15); margin-top: 4px;"></div>
+                        <div id="just-resultados-busqueda" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1050; max-height: 200px; overflow-y: auto; border-radius: 6px; border: 1px solid #E2E8F0; margin-top: 4px;"></div>
                     </div>
 
                     <!-- Alumno Seleccionado -->
                     <div class="mb-3 d-none" id="just-seleccionado-container">
-                        <span class="text-muted small d-block mb-1">Alumno Seleccionado:</span>
-                        <div class="p-3 bg-light border" style="border-radius: 12px; border-color: rgba(49, 125, 146, 0.12) !important;">
-                            <strong class="text-dark d-block" id="just-alumno-nombre" style="font-size: 0.88rem;"></strong>
-                            <small class="text-muted" id="just-alumno-matricula" style="font-size: 0.72rem;"></small>
+                        <span class="text-muted small d-block mb-1" style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Alumno Seleccionado:</span>
+                        <div class="p-3 bg-light border" style="border-radius: 8px; border-color: #E2E8F0 !important;">
+                            <strong class="text-dark d-block" id="just-alumno-nombre" style="font-size: 0.875rem;"></strong>
+                            <small class="text-muted" id="just-alumno-matricula" style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;"></small>
                             <input type="hidden" name="id_alumno" id="just-id-alumno">
                         </div>
                     </div>
@@ -502,24 +787,27 @@
                     <!-- Fechas -->
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark small" style="margin-bottom: 6px;">Fecha Inicio</label>
-                            <input type="date" name="fecha_inicio" id="just-fecha-inicio" class="form-control text-dark bg-white" required style="border-radius: 10px; border-color: rgba(49, 125, 146, 0.2); height: 40px; font-size: 0.85rem;">
+                            <label class="form-label" style="font-size: 0.75rem; font-weight: 600; color: #475569; margin-bottom: 6px; text-transform: uppercase;">Fecha Inicio</label>
+                            <input type="date" name="fecha_inicio" id="just-fecha-inicio" class="form-control text-dark bg-white" required style="border-radius: 6px; border-color: #E2E8F0; height: 38px; font-size: 0.875rem;">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-dark small" style="margin-bottom: 6px;">Fecha Fin</label>
-                            <input type="date" name="fecha_fin" id="just-fecha-fin" class="form-control text-dark bg-white" required style="border-radius: 10px; border-color: rgba(49, 125, 146, 0.2); height: 40px; font-size: 0.85rem;">
+                            <label class="form-label" style="font-size: 0.75rem; font-weight: 600; color: #475569; margin-bottom: 6px; text-transform: uppercase;">Fecha Fin</label>
+                            <input type="date" name="fecha_fin" id="just-fecha-fin" class="form-control text-dark bg-white" required style="border-radius: 6px; border-color: #E2E8F0; height: 38px; font-size: 0.875rem;">
                         </div>
                     </div>
 
                     <!-- Motivo -->
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-dark small" style="margin-bottom: 6px;">Motivo / Justificante</label>
-                        <textarea name="motivo" id="just-motivo" class="form-control text-dark bg-white" rows="3" placeholder="Ej. Presenta justificante médico..." style="border-radius: 10px; border-color: rgba(49, 125, 146, 0.2); font-size: 0.85rem; resize: none;"></textarea>
+                        <label class="form-label" style="font-size: 0.75rem; font-weight: 600; color: #475569; margin-bottom: 6px; text-transform: uppercase;">Motivo / Justificante</label>
+                        <textarea name="motivo" id="just-motivo" class="form-control text-dark bg-white" rows="3" placeholder="Ej. Presenta justificante médico..." style="border-radius: 6px; border-color: #E2E8F0; font-size: 0.875rem; resize: none;"></textarea>
                     </div>
                 </div>
-                <div class="modal-footer border-0 pt-0" style="padding: 1.5rem;">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 10px; font-size: 0.82rem;">Cancelar</button>
-                    <button type="submit" class="btn btn-azul" id="btn-guardar-justificacion" disabled style="border-radius: 10px; font-size: 0.82rem;">Registrar Justificación</button>
+                <div class="modal-footer" style="background: #F8FAFC; border-top: 1px solid #E2E8F0; padding: 12px 20px;">
+                    <button type="button" class="btn-regresar" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn-primary-saas" id="btn-guardar-justificacion" disabled>
+                        <i class="ti ti-check"></i>
+                        <span>Registrar Justificación</span>
+                    </button>
                 </div>
             </form>
         </div>

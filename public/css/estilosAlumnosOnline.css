@@ -1,0 +1,750 @@
+/* ========================================================
+   ESTILOS DEL MÓDULO ALUMNOS ONLINE
+   Design System: shadcn/ui & Radix UI Tokens (Executive Clean)
+   Colores: #1E5B66 (Teal institucional), #0F172A (Texto)
+   Tipografía: Inter & JetBrains Mono
+   Iconografía: Tabler Icons (ti ti-*)
+======================================================== */
+
+:root {
+    --bg-primary: #1E5B66;
+    --bg-primary-hover: #16464F;
+    --bg-primary-subtle: #F0F7F8;
+    --border-primary-subtle: #CBE4E8;
+    --border-color: #E2E8F0;
+    --card-bg: #FFFFFF;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #64748B;
+    --radius-md: 6px;
+    --radius-lg: 12px;
+}
+
+.online-page-container {
+    padding: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* 1. Header Ejecutivo */
+.online-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.online-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.online-header-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: #F8FAFC;
+    color: #475569;
+    border: 1px solid var(--border-color);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.online-header-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.online-header-subtitle {
+    font-size: 0.8125rem;
+    color: #64748B;
+    margin: 4px 0 0 0;
+}
+
+.badge-moodle-header {
+    background: #DCFCE7;
+    color: #15803D;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+    border: 1px solid #BBF7D0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.online-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-header-secondary {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+    text-decoration: none;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.btn-header-secondary:hover {
+    background: #F8FAFC;
+    color: var(--text-primary);
+    border-color: #CBD5E1;
+}
+
+.btn-header-primary {
+    background: var(--bg-primary);
+    border: 1px solid var(--bg-primary);
+    color: #FFFFFF;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    text-decoration: none;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.btn-header-primary:hover {
+    background: var(--bg-primary-hover);
+    border-color: var(--bg-primary-hover);
+    color: #FFFFFF;
+}
+
+/* 2. 5 KPI Cards (Limpieza Ejecutiva sin arcoíris) */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+    .kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.kpi-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kpi-card:hover {
+    border-color: #CBD5E1;
+}
+
+.kpi-card.clickable {
+    cursor: pointer;
+}
+
+.kpi-card.clickable:hover {
+    border-color: #94A3B8;
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
+}
+
+.kpi-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.kpi-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin: 0;
+}
+
+.kpi-icon-neutral {
+    color: #94A3B8;
+    font-size: 1.15rem;
+}
+
+.kpi-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0;
+    line-height: 1;
+}
+
+/* 3. Tarjeta Principal y Filtros (Barra de herramientas) */
+.online-main-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+    overflow: visible !important;
+}
+
+.table-responsive-online,
+.online-main-card .table-responsive {
+    overflow: visible !important;
+    min-height: 280px;
+}
+
+.online-card-header {
+    padding: 16px;
+    border-bottom: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: #FFFFFF;
+    flex-wrap: wrap;
+}
+
+.search-box-wrapper {
+    position: relative;
+    width: 320px;
+    max-width: 100%;
+}
+
+.search-box-wrapper i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    height: 36px;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    padding: 0 12px 0 36px;
+    font-size: 0.8125rem;
+    background: #F8FAFC;
+    color: #0F172A;
+    transition: all 0.15s ease;
+}
+
+.search-input:focus {
+    background: #FFFFFF;
+    border-color: #1E5B66;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(30, 91, 102, 0.12);
+}
+
+.filter-select {
+    height: 36px;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    padding: 0 28px 0 12px;
+    font-size: 0.8125rem;
+    background-color: #FFFFFF;
+    color: #334155;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+}
+
+.filter-select:focus {
+    border-color: #1E5B66;
+}
+
+.btn-filter-refresh {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-filter-refresh:hover {
+    background: #F8FAFC;
+    color: #0F172A;
+    border-color: #CBD5E1;
+}
+
+/* 4. Tabla de Alumnos */
+.table-alumnos-online {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    font-size: 0.8125rem;
+}
+
+.table-alumnos-online thead th {
+    background: #F8FAFC;
+    color: #64748B;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 12px 16px;
+    border-bottom: 1px solid #E2E8F0;
+    white-space: nowrap;
+}
+
+.table-alumnos-online tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #F1F5F9;
+    vertical-align: middle;
+    color: #0F172A;
+}
+
+.table-alumnos-online tbody tr:hover {
+    background-color: #FAFAFA;
+}
+
+/* 5. Badges Estandarizados (Soft Badges shadcn/ui) */
+.badge-soft-neutral {
+    background: #F1F5F9;
+    color: #334155;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+    text-align: center;
+}
+
+.badge-soft-success {
+    background: #DCFCE7;
+    color: #15803D;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    border: none;
+}
+
+.badge-soft-danger {
+    background: #FEE2E2;
+    color: #991B1B;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    border: none;
+}
+
+.badge-soft-warning {
+    background: #FEF3C7;
+    color: #92400E;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    border: none;
+}
+
+.badge-soft-tareas-pendientes {
+    background: #FFFBEB;
+    color: #B45309;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    display: block;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.badge-soft-tareas-aldia {
+    background: #F0FDF4;
+    color: #166534;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    display: block;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.badge-alerta-rezago {
+    background: #FEF2F2;
+    color: #DC2626;
+    border: 1px solid #FECACA;
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+/* 6. Botones de Acción Ghost Cuadrados */
+.action-ghost-group {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.btn-ghost-action {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #64748B;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    text-decoration: none;
+    padding: 0;
+}
+
+.btn-ghost-action i {
+    font-size: 18px;
+}
+
+.btn-ghost-action.btn-ghost-pago:hover {
+    background: #F0FDF4;
+    color: #15803D;
+}
+
+.btn-ghost-action.btn-ghost-avance:hover {
+    background: #F1F5F9;
+    color: #0F172A;
+}
+
+.btn-ghost-action.btn-ghost-whatsapp:hover {
+    background: #DCFCE7;
+    color: #15803D;
+}
+
+.btn-ghost-action.btn-ghost-lock:hover {
+    background: #F0F7F8;
+    color: #1E5B66;
+}
+
+
+.badge-moodle-activo {
+    background: #DCFCE7;
+    color: #15803D;
+    border: 1px solid #BBF7D0;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.badge-moodle-suspendido {
+    background: #FEE2E2;
+    color: #B91C1C;
+    border: 1px solid #FECACA;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.badge-moodle-course-id {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #F1F5F9;
+    color: #1E5B66;
+    border: 1px solid #CBD5E1;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.badge-moodle-course-id:hover {
+    background: #E2E8F0;
+    border-color: #1E5B66;
+    color: #0F172A;
+}
+
+.badge-moodle-course-id.sin-asignar {
+    background: #FFFBEB;
+    color: #B45309;
+    border-color: #FDE68A;
+}
+
+
+/* ========================================================
+   MODALES ESTILO SHADCN/UI
+======================================================== */
+.modal-header-executive {
+    background: #FFFFFF;
+    border-bottom: 1px solid var(--border-color);
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-header-executive-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: var(--bg-primary-subtle);
+    border: 1px solid var(--border-primary-subtle);
+    color: var(--bg-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.modal-title-text {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.modal-subtitle-text {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin: 2px 0 0 0;
+}
+
+.btn-modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-modal-close:hover {
+    background: #F1F5F9;
+    color: var(--text-primary);
+}
+
+.modal-body-executive {
+    background: #F8FAFC;
+    padding: 22px;
+    max-height: calc(85vh - 120px);
+    overflow-y: auto;
+}
+
+.modal-footer-executive {
+    background: #FFFFFF;
+    border-top: 1px solid var(--border-color);
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* ========================================================
+   MATRIZ CALENDARIO EXCEL (6TO TRIMESTRE Y OTROS)
+======================================================== */
+.matriz-excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.8rem;
+    text-align: center;
+    min-width: 760px;
+}
+
+.matriz-excel-table th,
+.matriz-excel-table td {
+    border: 1px solid #000000;
+    padding: 6px 5px;
+    vertical-align: middle;
+}
+
+.tr-header-trimestre-modal {
+    background-color: #558B2F !important;
+    color: #FFFFFF !important;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 9px !important;
+}
+
+.tr-header-materias-modal {
+    background-color: #7CB342 !important;
+    color: #FFFFFF !important;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 6px !important;
+}
+
+.cell-x-indicator-modal {
+    background-color: #FF00FF !important;
+    color: #000000 !important;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    padding: 2px 6px !important;
+    text-align: center;
+}
+
+/* Celdas Semanales de Avance */
+.semana-chip {
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 1px solid transparent;
+}
+
+.semana-bloqueada {
+    background: #F1F5F9;
+    color: #94A3B8;
+    border-color: #E2E8F0;
+    cursor: not-allowed;
+}
+
+.semana-liberada {
+    background: #FEF3C7;
+    color: #B45309;
+    border-color: #FDE68A;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.semana-liberada:hover {
+    background: #FDE68A;
+    color: #78350F;
+}
+
+.semana-entregada {
+    background: #DBEAFE;
+    color: #1D4ED8;
+    border-color: #BFDBFE;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.semana-entregada:hover {
+    background: #BFDBFE;
+    color: #1E40AF;
+}
+
+.semana-calificada {
+    background: #DCFCE7;
+    color: #15803D;
+    border-color: #BBF7D0;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.semana-calificada:hover {
+    background: #BBF7D0;
+    color: #166534;
+}
+
+/* Dropdown de opciones 3 puntitos */
+.dropdown-menu {
+    border-color: #E2E8F0;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+    z-index: 1050;
+}
+
+.dropdown-item {
+    font-size: 0.8125rem;
+    color: #334155;
+    transition: all 0.15s ease;
+}
+
+.dropdown-item:hover, .dropdown-item:focus {
+    background-color: #F8FAFC;
+    color: #0F172A;
+}
+
+/* SweetAlert2 siempre por encima de cualquier modal o backdrop de Bootstrap */
+.swal2-container {
+    z-index: 99999 !important;
+}
+
+

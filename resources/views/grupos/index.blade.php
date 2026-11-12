@@ -7,87 +7,83 @@
 
 <div class="page-container">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <a href="{{ url()->previous() }}" class="btn btn-regresar">
-            <i class="fa-solid fa-arrow-left me-2"></i>
-            Regresar
-        </a>
-
-        <h3 class="page-title mb-0">
-            <i class="fa-solid fa-users me-2"></i>
-            {{ session('rol') === 'DOCENTE' ? 'Mis Grupos' : 'Grupos' }}
-        </h3>
+    <div class="page-header-standard">
+        <div class="page-header-left">
+            <a href="{{ url()->previous() }}" class="btn-regresar">
+                <i class="ti ti-arrow-left"></i>
+                Regresar
+            </a>
+            <h1 class="page-heading">
+                {{ session('rol') === 'DOCENTE' ? 'Mis Grupos' : 'Grupos' }}
+            </h1>
+        </div>
 
         @if(session('rol') !== 'DOCENTE')
-        <button class="btn btn-azul" onclick="abrirModalGrupo()">
-            <i class="fa-solid fa-plus me-2"></i>
+        <button type="button" class="btn-primary-saas" onclick="abrirModalGrupo()">
+            <i class="ti ti-plus"></i>
             Alta grupo
         </button>
         @endif
-
     </div>
 
     <div class="glass-card">
 
-        <div class="glass-header p-3">
-            <div class="row g-3 align-items-end">
-                <!-- Buscador -->
-                <div class="col-md-3">
-                    <label class="form-label mb-1" style="font-size:0.78rem; font-weight:600; color: #334155 !important;">Buscar por Clave</label>
-                    <input type="text" id="buscadorGrupos" class="form-control form-control-premium w-100" placeholder="Ej. 1A-2026..." style="min-height:38px; font-size:0.85rem;">
-                </div>
-                <!-- CCT -->
-                <div class="col-md-2">
-                    <label class="form-label mb-1" style="font-size:0.78rem; font-weight:600; color: #334155 !important;">CCT (Centro de Trabajo)</label>
-                    <select id="filtroCCT" class="form-select form-select-premium w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
-                        <option value="">-- Todos --</option>
-                        <option value="3">BGNE</option>
-                        <option value="2">BTI</option>
-                        <option value="1">INF. Y COMP.</option>
-                    </select>
-                </div>
-                <!-- Día -->
-                <div class="col-md-2">
-                    <label class="form-label mb-1" style="font-size:0.78rem; font-weight:600; color: #334155 !important;">Día de Clase</label>
-                    <select id="filtroDia" class="form-select form-select-premium w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
-                        <option value="">-- Todos --</option>
-                        <option value="SABADO">Sábado</option>
-                        <option value="DOMINGO">Domingo</option>
-                        <option value="LUNES-VIERNES">Lunes-Viernes</option>
-                    </select>
-                </div>
-                <!-- Horario/Modalidad -->
-                <div class="col-md-3">
-                    <label class="form-label mb-1" style="font-size:0.78rem; font-weight:600; color: #334155 !important;">Horario / Modalidad</label>
-                    <select id="filtroHorario" class="form-select form-select-premium w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
-                        <option value="">-- Todos --</option>
-                        <option value="MATUTINO">MATUTINO</option>
-                        <option value="VESPERTINO">VESPERTINO</option>
-                        <option value="SABADO MAÑANA">SÁBADO MAÑANA</option>
-                        <option value="SABADO TARDE">SÁBADO TARDE</option>
-                        <option value="DOMINGO MAÑANA">DOMINGO MAÑANA</option>
-                        <option value="LIBRE">LIBRE</option>
-                    </select>
-                </div>
-                <!-- Estatus -->
-                <div class="col-md-2">
-                    <label class="form-label mb-1" style="font-size:0.78rem; font-weight:600; color: #334155 !important;">Estatus</label>
-                    <select id="filtroStatus" class="form-select form-select-premium w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
-                        <option value="">-- Todos --</option>
-                        <option value="ACTIVO" selected>ACTIVO</option>
-                        <option value="INACTIVO">INACTIVO</option>
-                    </select>
-                </div>
+        <div class="grupos-filter-bar">
+            <!-- Buscador -->
+            <div>
+                <label class="grupos-filter-label" for="buscadorGrupos">Buscar por Clave</label>
+                <input type="text" id="buscadorGrupos" class="form-control-saas" placeholder="Ej. 1A-2026...">
+            </div>
+            <!-- CCT -->
+            <div>
+                <label class="grupos-filter-label" for="filtroCCT">CCT (Centro de Trabajo)</label>
+                <select id="filtroCCT" class="form-select-saas">
+                    <option value="">Todos los CCT</option>
+                    <option value="3">BGNE</option>
+                    <option value="2">BTI</option>
+                    <option value="1">Informática y Computación</option>
+                </select>
+            </div>
+            <!-- Día -->
+            <div>
+                <label class="grupos-filter-label" for="filtroDia">Día de Clase</label>
+                <select id="filtroDia" class="form-select-saas">
+                    <option value="">Cualquier día</option>
+                    <option value="SABADO">Sábado</option>
+                    <option value="DOMINGO">Domingo</option>
+                    <option value="LUNES-VIERNES">Lunes-Viernes</option>
+                </select>
+            </div>
+            <!-- Horario/Modalidad -->
+            <div>
+                <label class="grupos-filter-label" for="filtroHorario">Horario / Modalidad</label>
+                <select id="filtroHorario" class="form-select-saas">
+                    <option value="">Todas las modalidades</option>
+                    <option value="MATUTINO">Matutino</option>
+                    <option value="VESPERTINO">Vespertino</option>
+                    <option value="SABADO MAÑANA">Sábado Mañana</option>
+                    <option value="SABADO TARDE">Sábado Tarde</option>
+                    <option value="DOMINGO MAÑANA">Domingo Mañana</option>
+                    <option value="LIBRE">Libre</option>
+                </select>
+            </div>
+            <!-- Estatus -->
+            <div>
+                <label class="grupos-filter-label" for="filtroStatus">Estatus</label>
+                <select id="filtroStatus" class="form-select-saas">
+                    <option value="">Todos los estatus</option>
+                    <option value="ACTIVO" selected>Activo</option>
+                    <option value="INACTIVO">Inactivo</option>
+                </select>
             </div>
         </div>
 
         <div class="table-responsive">
             <div id="loading" class="text-center py-4" style="display:none;">
-                <div class="spinner-border text-light"></div>
+                <div class="spinner-border text-secondary" role="status"></div>
             </div>
 
-            <table class="table table-borderless glass-table align-middle mb-0">
+            <table class="glass-table">
                 <thead>
                     <tr>
                         <th>Clave</th>
@@ -97,15 +93,15 @@
                         <th>Fecha Inicio</th>
                         <th>Fecha Fin</th>
                         <th>Estatus</th>
-                        <th class="text-center">Acciones</th>
+                        <th style="text-align: right; padding-right: 20px;">Acciones</th>
                     </tr>
                 </thead>
 
                 <tbody id="tablaGrupos"></tbody>
             </table>
         </div>
-        <div class="glass-footer p-3 d-flex justify-content-between align-items-center">
-            <small id="infoGrupos"></small>
+        <div class="glass-footer">
+            <span id="infoGrupos" class="grupos-info-text"></span>
             <div id="paginacionGrupos"></div>
         </div>
 
@@ -644,7 +640,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!grupos.length) {
             document.getElementById('tablaGrupos').innerHTML = `
                 <tr>
-                    <td colspan="8" class="text-center text-muted">
+                    <td colspan="8" class="text-center py-4 text-muted" style="font-size: 0.875rem;">
                         No se encontraron grupos
                     </td>
                 </tr>
@@ -656,84 +652,144 @@ document.addEventListener("DOMContentLoaded", function() {
 
         grupos.forEach(grupo => {
             const status = (grupo.statusGrupo || 'ACTIVO').toUpperCase();
-            const badgeClass = status === 'ACTIVO' ? 'bg-success' : 'bg-danger';
-            const statusBadge = `<span class="badge ${badgeClass}" style="font-size: 0.75rem; padding: 5px 10px; border-radius: 12px;">${status}</span>`;
+            const isActivo = status === 'ACTIVO';
+            const statusBadge = isActivo
+                ? `<span class="badge-soft badge-soft-success"><span class="badge-dot"></span>Activo</span>`
+                : `<span class="badge-soft badge-soft-danger"><span class="badge-dot"></span>Inactivo</span>`;
 
-            const cctNombre = grupo.nombreCentroTrabajo || (grupo.id_centroTrabajo === 3 ? 'BGNE' : (grupo.id_centroTrabajo === 2 ? 'BTI' : (grupo.id_centroTrabajo === 1 ? 'INF. Y COMP.' : '—')));
-            const cctBadgeClass = grupo.id_centroTrabajo === 3 ? 'bg-primary' : (grupo.id_centroTrabajo === 2 ? 'bg-info text-dark' : 'bg-secondary');
+            let cctBadge = '';
+            if (grupo.id_centroTrabajo === 2) {
+                cctBadge = `<span class="badge-soft badge-soft-bti">BTI</span>`;
+            } else if (grupo.id_centroTrabajo === 3) {
+                cctBadge = `<span class="badge-soft badge-soft-bgne">BGNE</span>`;
+            } else if (grupo.id_centroTrabajo === 1) {
+                cctBadge = `<span class="badge-soft badge-soft-inf">Informática y Computación</span>`;
+            } else {
+                cctBadge = `<span class="badge-soft badge-soft-inf">${grupo.nombreCentroTrabajo || '—'}</span>`;
+            }
 
             const progreso = calcularProgresoPeriodo(grupo);
             const nivelNombre = grupo.nombre_nivel || (progreso.currentNivel ? (progreso.currentNivel <= 6 ? `${progreso.currentNivel}° Trimestre` : `${progreso.currentNivel - 6}° Semestre`) : (grupo.id_nivel_academico ? (grupo.id_nivel_academico <= 6 ? `${grupo.id_nivel_academico}° Trimestre` : `${grupo.id_nivel_academico - 6}° Semestre`) : '—'));
 
-            let btnCaptura = '';
-            if (grupo.id_centroTrabajo === 2) {
-                btnCaptura = `<a href="${routeCapturaBGNE}" class="btn btn-sm text-white" style="background: #10b981; border: none; border-radius: 6px; padding: 4px 8px; margin-right: 4px;" title="Captura Calificaciones BTI"><i class="fa-solid fa-pen-to-square"></i></a>`;
-            } else if (grupo.id_centroTrabajo === 3) {
-                btnCaptura = `<a href="${routeCapturaBGNE}" class="btn btn-sm text-white" style="background: #10b981; border: none; border-radius: 6px; padding: 4px 8px; margin-right: 4px;" title="Captura Calificaciones BGNE"><i class="fa-solid fa-pen-to-square"></i></a>`;
-            } else if (grupo.id_centroTrabajo === 1) {
-                btnCaptura = `<a href="${routeCapturaBGNE}" class="btn btn-sm text-white" style="background: #10b981; border: none; border-radius: 6px; padding: 4px 8px; margin-right: 4px;" title="Captura Calificaciones INF"><i class="fa-solid fa-pen-to-square"></i></a>`;
-            }
+            const menuOpcionesDocente = `
+                <div class="dropdown d-inline-block">
+                    <button type="button" class="btn-ghost-icon" data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false" title="Más opciones">
+                        <i class="ti ti-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li>
+                            <a class="dropdown-item" href="/grupos/${grupo.id}/alumnos">
+                                <i class="ti ti-users"></i>
+                                <span>Alumnos del grupo</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="${routeCapturaBGNE}">
+                                <i class="ti ti-notes"></i>
+                                <span>Captura calificaciones</span>
+                            </a>
+                        </li>
+                        <li>
+                            <button type="button" class="dropdown-item" onclick="abrirModalAsistenciasGrupo(${grupo.id}, '${grupo.clave}', ${grupo.id_centroTrabajo}, ${grupo.id_nivel_academico || 7})">
+                                <i class="ti ti-calendar-stats"></i>
+                                <span>Capturar asistencias</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            `;
 
-                        let btnAsistencias = `<button type="button" class="btn btn-sm text-white" style="background: #6366f1; border: none; border-radius: 6px; padding: 4px 8px; margin-right: 4px;" onclick="abrirModalAsistenciasGrupo(${grupo.id}, '${grupo.clave}', ${grupo.id_centroTrabajo}, ${grupo.id_nivel_academico || 7})" title="Capturar Asistencias del Periodo"><i class="fa-solid fa-calendar-check"></i></button>`;
+            const menuOpcionesAdmin = `
+                <div class="dropdown d-inline-block">
+                    <button type="button" class="btn-ghost-icon" data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false" title="Más opciones">
+                        <i class="ti ti-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li>
+                            <a class="dropdown-item" href="/grupos/${grupo.id}/alumnos">
+                                <i class="ti ti-users"></i>
+                                <span>Alumnos del grupo</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="${routeCapturaBGNE}">
+                                <i class="ti ti-notes"></i>
+                                <span>Captura calificaciones</span>
+                            </a>
+                        </li>
+                        <li>
+                            <button type="button" class="dropdown-item" onclick="abrirModalAsistenciasGrupo(${grupo.id}, '${grupo.clave}', ${grupo.id_centroTrabajo}, ${grupo.id_nivel_academico || 7})">
+                                <i class="ti ti-calendar-stats"></i>
+                                <span>Capturar asistencias</span>
+                            </button>
+                        </li>
+                        <li><hr class="dropdown-divider my-1" style="border-color: #F1F5F9;"></li>
+                        <li>
+                            <button type="button" class="dropdown-item" onclick="verGrupo(${grupo.id})">
+                                <i class="ti ti-eye"></i>
+                                <span>Ver detalles</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button type="button" class="dropdown-item" onclick="editarGrupo(${grupo.id})">
+                                <i class="ti ti-edit"></i>
+                                <span>Editar grupo</span>
+                            </button>
+                        </li>
+                        <li><hr class="dropdown-divider my-1" style="border-color: #F1F5F9;"></li>
+                        <li>
+                            <button type="button" class="dropdown-item text-danger" onclick="confirmarEliminarGrupo(${grupo.id})">
+                                <i class="ti ti-trash"></i>
+                                <span>Eliminar grupo</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            `;
 
-let actionButtons = '';
+            let actionButtons = '';
             if (isDocente) {
                 actionButtons = `
-                    <button class="btn btn-ver btn-sm me-1" onclick="verGrupo(${grupo.id})" title="Detalles del grupo">
-                        <i class="fa-solid fa-eye"></i>
+                    <button type="button" class="btn-ghost-icon" onclick="verGrupo(${grupo.id})" title="Detalles del grupo">
+                        <i class="ti ti-eye"></i>
                     </button>
-                    <a href="/grupos/${grupo.id}/alumnos" class="btn btn-sm text-white me-1" style="background: #0ea5e9; border: none; border-radius: 6px; padding: 4px 8px;" title="Ver alumnos del grupo">
-                        <i class="fa-solid fa-users"></i>
-                    </a>
-                    ${btnCaptura}
-                    ${btnAsistencias}
+                    ${menuOpcionesDocente}
                 `;
             } else {
                 actionButtons = `
-                    <button class="btn btn-ver btn-sm me-1" onclick="verGrupo(${grupo.id})" title="Detalles del grupo">
-                        <i class="fa-solid fa-eye"></i>
+                    <button type="button" class="btn-ghost-icon" onclick="verGrupo(${grupo.id})" title="Detalles del grupo">
+                        <i class="ti ti-eye"></i>
                     </button>
-                    <button class="btn btn-editar btn-sm me-1" onclick="editarGrupo(${grupo.id})" title="Editar grupo">
-                        <i class="fa-solid fa-pen"></i>
+                    <button type="button" class="btn-ghost-icon" onclick="editarGrupo(${grupo.id})" title="Editar grupo">
+                        <i class="ti ti-edit"></i>
                     </button>
-                    <a href="/grupos/${grupo.id}/alumnos" class="btn btn-sm text-white me-1" style="background: #0ea5e9; border: none; border-radius: 6px; padding: 4px 8px;" title="Ver alumnos del grupo">
-                        <i class="fa-solid fa-users"></i>
-                    </a>
-                    ${btnCaptura}
-                    ${btnAsistencias}
-                    <button class="btn btn-eliminar btn-sm" onclick="confirmarEliminarGrupo(${grupo.id})" title="Eliminar grupo">
-                        <i class="fa-solid fa-trash"></i>
+                    <button type="button" class="btn-ghost-icon btn-ghost-danger" onclick="confirmarEliminarGrupo(${grupo.id})" title="Eliminar grupo">
+                        <i class="ti ti-trash"></i>
                     </button>
+                    ${menuOpcionesAdmin}
                 `;
             }
 
+            const progresoHtml = `
+                <div class="progress-periodo-container" title="Periodo: ${progreso.inicioPeriodo} - ${progreso.finPeriodo}">
+                    <div class="progress-periodo-track">
+                        <div class="progress-periodo-bar" style="width: ${progreso.percent}%;"></div>
+                    </div>
+                    <span class="progress-periodo-val">${progreso.percent}%</span>
+                </div>
+            `;
+
             html += `
                 <tr>
-                    <td><strong>${grupo.clave}</strong></td>
-                    <td>
-                        <span class="badge ${cctBadgeClass}">${cctNombre}</span>
-                    </td>
-                    <td>
-                        <span class="badge bg-light text-dark border">${nivelNombre}</span>
-                    </td>
-                    <td style="min-width: 170px;">
-                        <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.76rem;">
-                            <span class="fw-bold text-dark">${progreso.nivelText || 'Periodo'}</span>
-                            <span class="fw-bold" style="color: rgb(38, 104, 123);">${progreso.percent}%</span>
-                        </div>
-                        <div class="progress" style="height: 6px; background-color: #e2e8f0; border-radius: 4px; overflow: hidden;" title="Periodo: ${progreso.inicioPeriodo} - ${progreso.finPeriodo}">
-                            <div class="progress-bar" role="progressbar" style="width: ${progreso.percent}%; background-color: rgb(38, 104, 123);" aria-valuenow="${progreso.percent}" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <div class="d-flex justify-content-between text-muted mt-1" style="font-size: 0.68rem;">
-                            <span>${progreso.inicioPeriodo}</span>
-                            <span>${progreso.finPeriodo}</span>
-                        </div>
-                    </td>
-                    <td><span class="fw-semibold text-secondary">${formatearFecha(grupo.fechaInicio)}</span></td>
-                    <td><span class="fw-semibold text-secondary">${formatearFecha(grupo.fechaFin)}</span></td>
+                    <td><span class="clave-mono">${grupo.clave}</span></td>
+                    <td>${cctBadge}</td>
+                    <td><span class="badge-soft badge-soft-inf">${nivelNombre}</span></td>
+                    <td>${progresoHtml}</td>
+                    <td><span style="font-size: 0.8125rem; color: var(--text-secondary);">${formatearFecha(grupo.fechaInicio)}</span></td>
+                    <td><span style="font-size: 0.8125rem; color: var(--text-secondary);">${formatearFecha(grupo.fechaFin)}</span></td>
                     <td>${statusBadge}</td>
-                    <td class="text-center">
-                        ${actionButtons}
+                    <td style="text-align: right; padding-right: 20px;">
+                        <div class="actions-cell" style="justify-content: flex-end;">${actionButtons}</div>
                     </td>
                 </tr>
             `;
@@ -924,29 +980,29 @@ let actionButtons = '';
         let html = '';
 
         html += `
-            <button class="btn btn-sm btn-azul me-2"
+            <button type="button" class="btn-pagination-saas"
                 ${data.page === 1 ? 'disabled' : ''}
                 onclick="cambiarPagina(${data.page - 1})">
-                ⬅ Anterior
+                <i class="ti ti-chevron-left" style="font-size: 16px;"></i> Anterior
             </button>
         `;
 
         html += `
-            <span class="mx-2 text-white">
-                Página ${data.page} de ${data.total_pages}
+            <span class="pagination-page-label">
+                Página <strong>${data.page}</strong> de <strong>${data.total_pages}</strong>
             </span>
         `;
 
         html += `
-            <button class="btn btn-sm btn-azul ms-2"
+            <button type="button" class="btn-pagination-saas"
                 ${data.page === data.total_pages ? 'disabled' : ''}
                 onclick="cambiarPagina(${data.page + 1})">
-                Siguiente ➡
+                Siguiente <i class="ti ti-chevron-right" style="font-size: 16px;"></i>
             </button>
         `;
 
         document.getElementById('paginacionGrupos').innerHTML = html;
-        document.getElementById('infoGrupos').innerText = `Total grupos: ${data.total}`;
+        document.getElementById('infoGrupos').innerText = `Total de grupos: ${data.total}`;
     }
 
     window.cambiarPagina = function(p) {
@@ -1056,15 +1112,15 @@ let actionButtons = '';
 <!-- MODAL: CAPTURA DE ASISTENCIAS POR SEMESTRE / GRUPO -->
 <div class="modal fade" id="modalCapturaAsistenciasGrupo" tabindex="-1" aria-labelledby="modalCapturaAsistenciasLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); padding: 16px 24px;">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 14px; overflow: hidden;">
+            <div class="modal-header" style="padding: 16px 24px;">
                 <div>
                     <h5 class="modal-title fw-bold mb-0" id="modalCapturaAsistenciasLabel">
-                        <i class="fa-solid fa-calendar-check me-2"></i>Captura de Asistencias del Periodo
+                        <i class="ti ti-calendar-check me-2" style="color: #1E5B66;"></i>Captura de Asistencias del Periodo
                     </h5>
-                    <small class="text-white-50">Grupo: <strong id="lblAsistenciasGrupoClave" class="text-white">---</strong></small>
+                    <small class="text-muted">Grupo: <strong id="lblAsistenciasGrupoClave" class="text-dark">---</strong></small>
                 </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <div class="modal-body p-4" style="background: #f8fafc;">
@@ -1073,20 +1129,20 @@ let actionButtons = '';
                     <div class="row g-3 align-items-end">
                         <div class="col-md-5">
                             <label class="form-label fw-bold text-slate-700 fs-7 mb-1">
-                                <i class="fa-solid fa-graduation-cap text-indigo me-1"></i>Periodo / Semestre:
+                                <i class="ti ti-school me-1"></i>Periodo / Semestre:
                             </label>
                             <select id="selSemestreAsistenciasGrupo" class="form-select" onchange="recargarAlumnosAsistenciasModal()">
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold text-slate-700 fs-7 mb-1">
-                                <i class="fa-solid fa-calendar-days text-primary me-1"></i>Clases Impartidas (Hubieron):
+                                <i class="ti ti-calendar-event me-1"></i>Clases Impartidas (Hubieron):
                             </label>
                             <input type="number" id="inpTotalClasesGlobal" class="form-control" placeholder="Ej. 50" min="0">
                         </div>
                         <div class="col-md-3">
                             <button type="button" class="btn btn-outline-primary w-100 fw-bold" onclick="aplicarTotalClasesATodos()">
-                                <i class="fa-solid fa-arrows-rotate me-1"></i> Aplicar a todos
+                                <i class="ti ti-refresh me-1"></i> Aplicar a todos
                             </button>
                         </div>
                     </div>
@@ -1109,7 +1165,7 @@ let actionButtons = '';
                             <tbody id="tbodyAsistenciasGrupoModal">
                                 <tr>
                                     <td colspan="6" class="text-center py-4 text-muted">
-                                        <i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando alumnos...
+                                        <i class="ti ti-loader-2 ti-spin me-2"></i>Cargando alumnos...
                                     </td>
                                 </tr>
                             </tbody>
@@ -1120,8 +1176,8 @@ let actionButtons = '';
 
             <div class="modal-footer bg-white border-top d-flex justify-content-between p-3">
                 <button type="button" class="btn btn-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary px-4 fw-bold" id="btnGuardarAsistenciasModal" onclick="guardarAsistenciasGrupoModal()" style="background: #4f46e5; border-color: #4f46e5;">
-                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Asistencias
+                <button type="button" class="btn btn-primary px-4 fw-bold" id="btnGuardarAsistenciasModal" onclick="guardarAsistenciasGrupoModal()" style="background: #1E5B66; border-color: #1E5B66;">
+                    <i class="ti ti-device-floppy me-1"></i> Guardar Asistencias
                 </button>
             </div>
         </div>
@@ -1196,7 +1252,7 @@ function recargarAlumnosAsistenciasModal() {
     if (!grupoAsistenciasActual) return;
     const tbody = document.getElementById('tbodyAsistenciasGrupoModal');
     if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-2 text-indigo"></i>Cargando lista de alumnos...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="ti ti-loader-2 ti-spin me-2 text-indigo"></i>Cargando lista de alumnos...</td></tr>`;
 
     const idNivel = document.getElementById('selSemestreAsistenciasGrupo') ? document.getElementById('selSemestreAsistenciasGrupo').value : 7;
 
@@ -1242,7 +1298,7 @@ function recargarAlumnosAsistenciasModal() {
         })
         .catch(err => {
             console.error(err);
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i>Error al cargar las asistencias del grupo.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger"><i class="ti ti-alert-triangle me-2"></i>Error al cargar las asistencias del grupo.</td></tr>`;
         });
 }
 
@@ -1314,7 +1370,7 @@ function guardarAsistenciasGrupoModal() {
     const originalText = btn ? btn.innerHTML : 'Guardar Asistencias';
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Guardando...`;
+        btn.innerHTML = `<i class="ti ti-loader-2 ti-spin me-1"></i> Guardando...`;
     }
 
     fetch(`/grupos/${grupoAsistenciasActual.id}/asistencias-semestre`, {

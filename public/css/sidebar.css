@@ -1,516 +1,300 @@
-/* =========================================
-   SIDEBAR
-========================================= */
+/* ==========================================================================
+   SIDEBAR CORPORATIVO - AZUL INSTITUCIONAL BTI (#317D92 / rgb(49, 125, 146))
+   ========================================================================== */
 
 .sidebar {
     background: rgb(49, 125, 146) !important;
+    background-color: #317D92 !important;
     position: fixed;
     left: 0;
-    top: 0;
+    top: 60px;
     width: 270px;
-    height: 100vh;
-    z-index: 1000;
+    height: calc(100vh - 60px);
+    z-index: 1030;
     overflow-y: auto;
+    overflow-x: hidden;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    padding: 25px 0;
-
-    /* Animación */
-    transition: left 0.3s ease;
+    padding: 8px 0 30px 0;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.12);
 }
 
 .sidebar::-webkit-scrollbar {
     display: none;
 }
 
-
-/* =========================================
-   LOGO
-========================================= */
-
-.sidebar .logo {
-    color: white;
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-
-/* =========================================
-   ENLACES
-========================================= */
-
-.sidebar a {
+/* --------------------------------------------------------------------------
+   Sidebar Header (Cabecera limpia con botón colapsador, sin texto)
+   -------------------------------------------------------------------------- */
+.sidebar .sidebar-header {
+    height: 44px;
+    padding: 0 16px;
     display: flex;
     align-items: center;
-    gap: 14px;
-    color: rgb(248, 248, 248);
-    text-decoration: none;
-    padding: 13px 20px;
-    border-radius: 12px;
-    transition: all 0.3s ease;
+    justify-content: flex-end;
+    margin-bottom: 4px;
+    box-sizing: border-box;
 }
 
-.sidebar a:hover {
-    color: #6BC7E8;
-    transform: translateX(8px);
-}
-
-.sidebar i {
-    width: 24px;
-}
-
-
-/* =========================================
-   MENÚ
-========================================= */
-
-.menu-title {
-    margin: 6px 15px;
-    color: rgb(25, 105, 128);
-    font-size: 15px;
-    font-weight: bold;
-}
-
-.sidebar .accordion-item {
+/* Botón Toggle para Colapsar/Expandir */
+.toggle-sidebar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.16);
+    color: #FFFFFF;
     border: none;
-    background: transparent;
-}
-
-
-/* =========================================
-   BOTONES DEL ACCORDION
-========================================= */
-
-.sidebar .accordion-button {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding: 13px 20px;
-
-    background: rgb(49, 125, 146) !important;
-
-    border: none !important;
-    border-radius: 12px;
-    box-shadow: none !important;
-
-    color: white !important;
-
-    font-weight: normal;
-    text-align: left;
-
-    transition: all 0.3s ease;
-}
-
-.sidebar .accordion-button:hover {
-    background: #6BC7E8 !important;
-    transform: translateX(5px);
-}
-
-
-/* Flecha del accordion */
-
-.sidebar .accordion-button::after {
-    content: "›";
-
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-
-    width: 20px;
-    height: 20px;
-
+    cursor: pointer;
     margin-left: auto;
+    padding: 0;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
 
-    background-image: none !important;
+.toggle-sidebar:hover {
+    background: rgba(255, 255, 255, 0.28);
+    color: #FFFFFF;
+    transform: scale(1.05);
+}
 
-    font-size: 26px;
-    font-weight: normal;
+.toggle-sidebar i {
+    font-size: 16px;
+    color: #FFFFFF;
     line-height: 1;
-
-    opacity: 1;
-
-    transform: rotate(0deg);
-    transition: transform 0.25s ease;
 }
 
-.sidebar .accordion-button:not(.collapsed)::after {
-    content: "›";
-    transform: rotate(90deg);
-}
-
-.sidebar .accordion-button:not(.collapsed) {
-    background: rgb(49, 125, 146) !important;
-    box-shadow: none !important;
-}
-
-
-/* =========================================
-   SUBMENÚ
-========================================= */
-
-.sidebar .accordion-body {
-    padding: 5px 0 5px 20px;
-}
-
-.sidebar .accordion-body a {
-    margin: 3px 0;
-    padding: 5px 10px 5px 25px;
-    font-size: 13px;
-}
-
-.sidebar .accordion-body a:hover {
-    color: #6BC7E8;
-    background: rgba(107, 199, 232, 0.10);
-    transform: translateX(5px);
-}
-
-
-/* =========================================
-   ACCORDION
-========================================= */
-
+/* --------------------------------------------------------------------------
+   RESET CRÍTICO DE ACORDEONES DENTRO DEL SIDEBAR (Cero fondos blancos)
+   -------------------------------------------------------------------------- */
+.sidebar .accordion,
+.sidebar .accordion-item,
+.sidebar .accordion-header,
 .sidebar .accordion-collapse,
 .sidebar .accordion-body {
     background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.sidebar .menu-title {
+    margin: 2px 10px;
+}
+
+/* --------------------------------------------------------------------------
+   Botones Principales de Menú (Nivel 1)
+   -------------------------------------------------------------------------- */
+.sidebar .accordion-button,
+.sidebar a.accordion-button {
+    padding: 11px 16px !important;
+    border-radius: 8px !important;
+    color: #FFFFFF !important;
+    font-size: 0.9375rem !important;
+    font-weight: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    text-align: left !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    position: relative;
+    cursor: pointer;
+}
+
+.sidebar .accordion-button.collapsed {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+.sidebar .accordion-button:hover,
+.sidebar a.accordion-button:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #FFFFFF !important;
+    transform: translateX(3px);
+}
+
+.sidebar button.accordion-button:not(.collapsed) {
+    background: rgba(0, 0, 0, 0.12) !important;
+    color: #FFFFFF !important;
+    box-shadow: none !important;
+}
+
+.sidebar a.accordion-button {
+    background: transparent !important;
+}
+
+.sidebar a.accordion-button.active {
+    background: rgba(0, 0, 0, 0.18) !important;
+    color: #FFFFFF !important;
+}
+
+.sidebar .accordion-button i,
+.sidebar a.accordion-button i {
+    width: 22px;
+    font-size: 18px !important;
+    line-height: 1 !important;
+    text-align: center;
+    flex-shrink: 0;
+    color: currentColor !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Chevron animado en el extremo derecho */
+.sidebar .accordion-button::after {
+    content: "" !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+    background-size: 14px 14px !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    width: 18px !important;
+    height: 18px !important;
+    margin-left: auto !important;
+    transition: transform 0.25s ease !important;
+    transform: rotate(0deg) !important;
+    opacity: 0.9 !important;
+}
+
+.sidebar .accordion-button:not(.collapsed)::after {
+    transform: rotate(180deg) !important;
+}
+
+.sidebar .accordion-button.no-chevron::after {
+    display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Submenús (Nivel 2) - Línea Guía Vertical y Enlaces SaaS
+   -------------------------------------------------------------------------- */
+.sidebar .accordion-collapse {
+    background: transparent !important;
+    background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }
 
-
-/* =========================================
-   BOTÓN OCULTAR / MOSTRAR SIDEBAR
-========================================= */
-
-.usuario-sidebar {
-    position: relative;
-}
-
-.usuario-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-    width: 100%;
-}
-
-
-/* Botón */
-
-.toggle-sidebar {
-    margin-left: auto;
-
-    width: 34px;
-    height: 34px;
-
-    flex-shrink: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border: none;
-    border-radius: 50%;
-
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-
-    cursor: pointer;
-
-    transition: all 0.3s ease;
-
-    z-index: 1100;
-}
-
-
-/* Icono */
-
-.toggle-sidebar i {
-    width: auto;
-    font-size: 14px;
-}
-
-
-/* Hover */
-
-.toggle-sidebar:hover {
-    background: #6BC7E8;
-    color: white;
-    transform: scale(1.08);
-}
-
-
-/* =========================================
-   SIDEBAR COLAPSADO
-========================================= */
-
-.sidebar {
-    width: 270px;
-    transition: width 0.3s ease;
-}
-
-
-/* Sidebar reducido */
-
-.sidebar.sidebar-hidden {
-    width: 75px;
-}
-
-
-/* =========================================
-   OCULTAR TEXTOS
-========================================= */
-
-.sidebar.sidebar-hidden .logo span,
-.sidebar.sidebar-hidden .usuario-texto,
-.sidebar.sidebar-hidden .accordion-button {
-    font-size: 0;
-}
-
-
-/* Ocultar texto de los enlaces */
-
-.sidebar.sidebar-hidden .accordion-body a {
-    font-size: 0;
-}
-
-
-/* =========================================
-   CENTRAR ICONOS
-========================================= */
-
-.sidebar.sidebar-hidden .logo {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.sidebar.sidebar-hidden .logo i {
-    font-size: 24px;
-}
-
-
-.sidebar.sidebar-hidden .usuario-info {
-    justify-content: center;
-}
-
-
-.sidebar.sidebar-hidden .usuario-info > i {
-    font-size: 28px;
-}
-
-
-/* =========================================
-   BOTONES DEL MENÚ
-========================================= */
-
-.sidebar.sidebar-hidden .accordion-button {
-    justify-content: center;
-    padding: 13px 0;
-}
-
-
-.sidebar.sidebar-hidden .accordion-button i {
+.sidebar .accordion-body {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 3px 0 5px 0 !important;
     margin: 0 !important;
-    font-size: 18px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
 }
 
-
-/* Ocultar flecha del accordion */
-
-.sidebar.sidebar-hidden .accordion-button::after {
-    display: none;
-}
-
-
-/* =========================================
-   SUBMENÚ
-========================================= */
-
-.sidebar.sidebar-hidden .accordion-body {
-    display: none;
-}
-
-
-/* =========================================
-   BOTÓN TOGGLE
-========================================= */
-
-.toggle-sidebar {
-    margin-left: auto;
-
-    width: 34px;
-    height: 34px;
-
-    flex-shrink: 0;
-
+.sidebar .submenu-list {
+    margin-left: 22px;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
     display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border: none;
-    border-radius: 50%;
-
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-
-    cursor: pointer;
-
-    transition: all 0.3s ease;
-
-    z-index: 1100;
-}
-
-
-.toggle-sidebar:hover {
-    background: #6BC7E8;
-    color: white;
-    transform: scale(1.08);
-}
-
-
-.toggle-sidebar i {
-    width: auto;
-    font-size: 14px;
-}
-
-
-/* Cuando está colapsado */
-
-.sidebar.sidebar-hidden .usuario-info {
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
 }
 
-.sidebar.sidebar-hidden .usuario-nombre {
-    display: none !important;
+.sidebar .submenu-list a,
+.sidebar .accordion-body a {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    text-decoration: none !important;
+    padding: 6px 12px !important;
+    font-size: 0.8125rem !important;
+    font-weight: 500 !important;
+    border-radius: 6px !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease !important;
 }
 
-.sidebar.sidebar-hidden .accordion-button span:not(.badge) {
-    display: none !important;
+.sidebar .submenu-list a:hover,
+.sidebar .submenu-list a.active,
+.sidebar .accordion-body a:hover,
+.sidebar .accordion-body a.active {
+    color: #FFFFFF !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    transform: translateX(3px);
 }
 
+/* --------------------------------------------------------------------------
+   Estado Colapsado (Sidebar Hidden)
+   -------------------------------------------------------------------------- */
+.sidebar.sidebar-hidden {
+    width: 75px !important;
+    overflow-x: hidden !important;
+}
+
+.sidebar.sidebar-hidden .sidebar-header {
+    justify-content: center !important;
+    padding: 0 !important;
+    height: 44px !important;
+}
 
 .sidebar.sidebar-hidden .toggle-sidebar {
-    margin-left: 0;
+    margin: 0 auto !important;
+    transform: none !important;
 }
 
+.sidebar.sidebar-hidden .menu-title {
+    margin: 2px 8px !important;
+}
 
-/* =========================================
-   CONTENIDO PRINCIPAL
-========================================= */
+.sidebar.sidebar-hidden .accordion-button,
+.sidebar.sidebar-hidden a.accordion-button {
+    justify-content: center !important;
+    padding: 10px 0 !important;
+    width: 100% !important;
+    gap: 0 !important;
+}
 
+.sidebar.sidebar-hidden .accordion-button i,
+.sidebar.sidebar-hidden a.accordion-button i {
+    margin: 0 !important;
+    font-size: 19px !important;
+}
+
+.sidebar.sidebar-hidden .menu-text,
+.sidebar.sidebar-hidden .accordion-button > span:not(.badge) {
+    display: none !important;
+}
+
+.sidebar.sidebar-hidden .accordion-button::after {
+    display: none !important;
+}
+
+.sidebar.sidebar-hidden .accordion-collapse,
+.sidebar.sidebar-hidden .accordion-body {
+    display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Desplazamiento del Contenedor Principal
+   -------------------------------------------------------------------------- */
 .main-content {
     margin-left: 270px;
-    transition: margin-left 0.3s ease, width 0.3s ease;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 
 body.sidebar-hidden .main-content {
     margin-left: 75px;
     width: calc(100% - 75px);
-}
-
-/* =========================================
-   USUARIO DEL SIDEBAR
-========================================= */
-
-.usuario-sidebar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    margin: 0 15px 20px 15px;
-    padding: 10px 12px;
-
-
-    color: white;
-}
-
-
-/* Información del usuario */
-
-.usuario-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    min-width: 0;
-}
-
-
-/* Icono del usuario */
-
-.usuario-info > i {
-    width: auto;
-    font-size: 28px;
-    color: white;
-}
-
-
-/* Texto */
-
-.usuario-texto {
-    display: flex;
-    flex-direction: column;
-
-    min-width: 0;
-}
-
-
-.usuario-label {
-    font-size: 11px;
-    opacity: 0.75;
-}
-
-
-.usuario-nombre {
-    font-size: 14px;
-    font-weight: bold;
-
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-    max-width: 150px;
-}
-
-
-/* =========================================
-   BOTÓN CERRAR SESIÓN
-========================================= */
-
-.btn-logout {
-    width: 36px;
-    height: 36px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border: none;
-    border-radius: 10px;
-
-    background: transparent;
-    color: white;
-
-    cursor: pointer;
-
-    transition: all 0.25s ease;
-}
-
-
-.btn-logout i {
-    width: auto;
-    font-size: 17px;
-}
-
-
-.btn-logout:hover {
-    background: rgba(255, 255, 255, 0.18);
-    color: #6BC7E8;
-
-    transform: scale(1.08);
 }

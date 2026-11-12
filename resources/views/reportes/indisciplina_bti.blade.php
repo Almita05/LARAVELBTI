@@ -88,11 +88,11 @@
 <div class="modal fade" id="modalReportesIndisciplina" tabindex="-1" aria-labelledby="modalReportesLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background: #ffffff;">
-            <div class="modal-header py-3 px-4 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important; color: #ffffff !important;">
-                <h5 class="modal-title fw-bold text-white mb-0" id="modalReportesLabel">
-                    <i class="fa-solid fa-triangle-exclamation text-white me-2"></i> Reportes de Indisciplina - Detalle
+            <div class="modal-header py-3 px-4 d-flex justify-content-between align-items-center">
+                <h5 class="modal-title fw-bold mb-0" id="modalReportesLabel">
+                    <i class="ti ti-alert-triangle me-2" style="color: #E11D48;"></i> Reportes de Indisciplina - Detalle
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4 bg-white" style="max-height: calc(85vh - 100px); overflow-y: auto;">
                 <div class="row g-4">

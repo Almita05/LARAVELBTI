@@ -1,29 +1,38 @@
 <style>
 .glass-modal {
     background: #ffffff !important;
-    border: none;
-    border-radius: 20px;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
     overflow: hidden;
-    color: #1e293b;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, .15);
+    color: #0f172a;
+    box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08) !important;
 }
 
 .glass-modal .modal-header {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
-    color: #fff;
-    border-bottom: none;
-    padding: 1.2rem 1.5rem;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 16px 24px !important;
+}
+
+.glass-modal .modal-header .modal-title {
+    font-size: 1.05rem !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .glass-modal .modal-body {
-    background: #f8fafc;
-    padding: 1.5rem;
+    background: #ffffff;
+    padding: 24px;
 }
 
 .form-label {
     font-weight: 600;
     color: #334155;
-    font-size: 0.85rem;
+    font-size: 0.8125rem;
     margin-bottom: 6px;
     display: inline-block;
 }
@@ -32,12 +41,12 @@
 .form-select-premium {
     background: #ffffff;
     border: 1px solid #cbd5e1;
-    border-radius: 12px;
-    color: #1e293b;
-    font-size: 0.9rem;
-    padding: 0.65rem 1rem;
-    min-height: 44px;
-    transition: all 0.2s ease-in-out;
+    border-radius: 6px;
+    color: #0f172a;
+    font-size: 0.875rem;
+    padding: 0.5rem 0.875rem;
+    min-height: 38px;
+    transition: all 0.15s ease-in-out;
 }
 
 .form-control-premium:hover,
@@ -47,51 +56,55 @@
 
 .form-control-premium:focus,
 .form-select-premium:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+    border-color: #1E5B66 !important;
+    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12) !important;
     outline: none;
 }
 
 .glass-modal .modal-footer {
     background: #f8fafc !important;
     border-top: 1px solid #e2e8f0;
-    padding: 1rem 1.5rem;
+    padding: 14px 24px;
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
+    gap: 10px;
 }
 
 .btn-premium-cancel {
-    background: #f1f5f9;
+    background: #ffffff;
     color: #475569 !important;
     border: 1px solid #cbd5e1;
-    border-radius: 12px;
-    padding: 0.6rem 1.5rem;
-    font-weight: 600;
-    transition: all 0.25s ease;
+    border-radius: 6px;
+    padding: 0 16px;
+    height: 38px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
 }
 
 .btn-premium-cancel:hover {
-    background: #e2e8f0;
-    color: #1e293b !important;
-    transform: translateY(-1px);
+    background: #f8fafc;
+    color: #0f172a !important;
 }
 
 .btn-premium-save {
-    background: linear-gradient(135deg, rgb(73, 164, 190) 0%, #1E6FA8 100%);
+    background: #1E5B66 !important;
     color: white !important;
     border: none;
-    border-radius: 12px;
-    padding: 0.6rem 1.5rem;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(30, 111, 168, 0.25);
-    transition: all 0.25s ease;
+    border-radius: 6px;
+    padding: 0 18px;
+    height: 38px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    transition: all 0.15s ease;
 }
 
 .btn-premium-save:hover {
-    background: linear-gradient(135deg, #1E6FA8 0%, #154c75 100%);
-    box-shadow: 0 6px 16px rgba(30, 111, 168, 0.35);
-    transform: translateY(-1px);
+    background: #16464F !important;
 }
 </style>
 <div class="modal fade" id="modalGrupo" tabindex="-1">
@@ -100,10 +113,10 @@
 
             <div class="modal-header glass-header">
                 <h5 class="modal-title">
-                    <i class="fas fa-users me-2"></i>
+                    <i class="ti ti-users" style="color: #1E5B66; font-size: 20px;"></i>
                     Nuevo Grupo
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
             <div class="modal-body">
@@ -208,7 +221,7 @@
                     Cancelar
                 </button>
                 <button class="btn-premium-save" type="submit">
-                    <i class="fas fa-save me-2"></i>
+                    <i class="ti ti-check me-1"></i>
                     Guardar
                 </button>
             </div>

@@ -26,6 +26,7 @@ use App\Http\Controllers\PersonalController;
 use App\Http\Controllers\QrpController;
 use App\Http\Controllers\ReporteIndisciplinaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AlumnoOnlineController;
 
 
 
@@ -174,6 +175,21 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () {
     Route::post('/alumnos/{id}/modalidad-presencial', [AlumnoController::class, 'cambiarModalidadPresencial'])->where('id', '[0-9]+');
     Route::post('/alumnos/{id}/pagos', [AlumnoController::class, 'registrarPago'])->where('id', '[0-9]+');
     Route::get('/alumnos/{id}/pagos', [AlumnoController::class, 'getPagos'])->where('id', '[0-9]+');
+
+    // Módulo Alumnos Modalidad Online
+    Route::get('/alumnos/online', [AlumnoOnlineController::class, 'index'])->name('alumnos.online');
+    Route::get('/alumnos/online/data', [AlumnoOnlineController::class, 'getAlumnos']);
+    Route::post('/alumnos/{id}/trimestre-inicio', [AlumnoOnlineController::class, 'actualizarTrimestreInicio'])->where('id', '[0-9]+');
+    Route::post('/alumnos/{id}/dia-pago', [AlumnoOnlineController::class, 'actualizarDiaPago'])->where('id', '[0-9]+');
+    Route::post('/alumnos/{id}/registrar-pago-online', [AlumnoOnlineController::class, 'registrarPago'])->where('id', '[0-9]+');
+    Route::get('/alumnos/{id}/detalle-online', [AlumnoOnlineController::class, 'getDetalleAlumno'])->where('id', '[0-9]+');
+    Route::get('/online/distribucion-materias', [AlumnoOnlineController::class, 'getDistribucionMaterias']);
+    Route::get('/online/buscar-presenciales', [AlumnoOnlineController::class, 'buscarPresenciales']);
+    Route::post('/alumnos/{id}/activar-online', [AlumnoOnlineController::class, 'activarModalidadOnline'])->where('id', '[0-9]+');
+    Route::post('/alumnos/{id}/sincronizar-moodle', [AlumnoOnlineController::class, 'sincronizarMoodleAlumno'])->where('id', '[0-9]+');
+    Route::post('/alumnos/{id}/toggle-suspension-moodle', [AlumnoOnlineController::class, 'toggleSuspensionMoodle'])->where('id', '[0-9]+');
+    Route::post('/online/materias/{id}/moodle-curso', [AlumnoOnlineController::class, 'guardarMoodleCourseId'])->where('id', '[0-9]+');
+    Route::post('/alumnos/{id}/actividades/actualizar', [AlumnoOnlineController::class, 'actualizarEstatusActividad'])->where('id', '[0-9]+');
 
     Route::get('/grupos/{id_grupo}/alumnos', [AlumnoController::class, 'alumnosGrupo'])->where('id_grupo', '[0-9]+');
     Route::get('/alumnos/grupo/{id_grupo}', [AlumnoController::class, 'alumnosPorGrupo'])->where('id_grupo', '[0-9]+');

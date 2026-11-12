@@ -6,47 +6,444 @@
 <link rel="stylesheet" href="{{ asset('css/estilosGrupos.css') }}">
 
 <style>
-.filter-pill-btn {
-    border: 1.5px solid rgba(49, 125, 146, 0.25);
-    background: #ffffff;
-    color: rgb(49, 125, 146);
-    font-weight: 600;
-    padding: 8px 16px;
-    border-radius: 20px;
-    transition: all 0.25s ease;
-    cursor: pointer;
-    font-size: 0.88rem;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-.filter-pill-btn:hover {
-    background: rgba(49, 125, 146, 0.08);
-    border-color: rgb(49, 125, 146);
-    color: rgb(38, 104, 123);
-    transform: translateY(-1px);
-}
-.filter-pill-btn.active {
-    background: rgb(49, 125, 146) !important;
-    color: #ffffff !important;
-    border-color: rgb(49, 125, 146) !important;
-    box-shadow: 0 4px 12px rgba(49, 125, 146, 0.3);
+/* ==========================================================================
+   CAPTURA DE CALIFICACIONES - DESIGN SYSTEM (Linear / shadcn/ui)
+   ========================================================================== */
+
+:root {
+    --brand-primary: #1E5B66;
+    --brand-primary-hover: #184A54;
+    --brand-primary-subtle: #F0F7F8;
+    --border-subtle: #E2E8F0;
+    --bg-canvas: #F8FAFC;
+    --bg-surface: #FFFFFF;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #64748B;
 }
 
-.grupo-card {
-    background: #ffffff;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
+.page-container {
+    padding: 0;
+    min-height: auto;
 }
-.grupo-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 28px rgba(38, 104, 123, 0.15);
-    border-color: rgba(49, 125, 146, 0.4);
+
+/* Page Header */
+.page-header-standard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 16px;
+}
+
+.page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.page-heading {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #0F172A;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+/* Regresar Button */
+.btn-regresar {
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    color: #475569 !important;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.btn-regresar:hover {
+    background: #F8FAFC !important;
+    color: #0F172A !important;
+    border-color: #CBD5E1 !important;
+}
+
+.btn-regresar i {
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Unified Surface: Filter Bar + Table Container */
+.glass-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+    padding: 0;
+}
+
+/* Filter Bar */
+.filtros-header-bar {
+    display: grid;
+    grid-template-columns: 240px 180px 1fr;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    align-items: flex-end;
+}
+
+@media (max-width: 992px) {
+    .filtros-header-bar {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 576px) {
+    .filtros-header-bar {
+        grid-template-columns: 1fr;
+    }
+}
+
+.filtro-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.filter-search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.filter-search-wrapper .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+    font-size: 16px;
+    pointer-events: none;
+    line-height: 1;
+}
+
+.filter-input-search {
+    height: 38px;
+    padding: 0 12px 0 36px;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    background: #F8FAFC;
+    width: 100%;
+    color: #0F172A;
+    transition: all 0.15s ease;
+}
+
+.filter-input-search:focus {
+    background: #FFFFFF;
+    border-color: #1E5B66;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12);
+}
+
+.filter-select {
+    height: 38px;
+    padding: 0 32px 0 12px;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: #0F172A;
+    background-color: #FFFFFF;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23475569' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.filter-select:focus {
+    border-color: #1E5B66;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12);
+}
+
+/* Standardized SaaS Table */
+.glass-table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.glass-table th {
+    background: #F8FAFC !important;
+    color: #475569 !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    border-top: none !important;
+    white-space: nowrap !important;
+}
+
+.glass-table td {
+    padding: 12px 16px !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    border-top: none !important;
+    vertical-align: middle !important;
+    font-size: 0.8125rem !important;
+    color: #334155;
+    background: #FFFFFF;
+}
+
+.glass-table tr:hover td {
+    background-color: #F8FAFC;
+}
+
+.glass-table tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* Typography Tokens */
+.id-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #64748B;
+    font-weight: 500;
+}
+
+.grupo-clave-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0F172A;
+    letter-spacing: -0.01em;
+}
+
+/* Badges */
+.badge-cct {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.badge-cct-bti {
+    background: #E0F2FE;
+    color: #0369A1;
+    border: 1px solid #BAE6FD;
+}
+
+.badge-cct-bgne {
+    background: #F0F7F8;
+    color: #1E5B66;
+    border: 1px solid #CBE4E8;
+}
+
+.badge-cct-inf {
+    background: #F1F5F9;
+    color: #475569;
+    border: 1px solid #E2E8F0;
+}
+
+.badge-nivel-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #F1F5F9;
+    color: #334155;
+    border: 1px solid #E2E8F0;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 3px 10px;
+    white-space: nowrap;
+}
+
+.fechas-col-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: #334155;
+}
+
+.fechas-col-mono .text-muted {
+    color: #94A3B8 !important;
+    font-size: 0.72rem;
+}
+
+/* Progreso Periodo */
+.progreso-periodo-box {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    min-width: 190px;
+}
+
+.progreso-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.progreso-percent {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1E5B66;
+}
+
+.progress-track-saas {
+    height: 6px;
+    width: 100%;
+    background: #E2E8F0;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progress-fill-saas {
+    height: 100%;
+    background: #1E5B66;
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+.progreso-dates {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6875rem;
+    color: #64748B;
+}
+
+/* Soft Status Badges */
+.badge-soft-success {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #DCFCE7;
+    color: #15803D;
+    border: 1px solid #BBF7D0;
+}
+
+.badge-soft-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #FEE2E2;
+    color: #B91C1C;
+    border: 1px solid #FECACA;
+}
+
+.badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: currentColor;
+    display: inline-block;
+}
+
+/* Action Buttons */
+.actions-cell-grupos {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.btn-action-calif {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    background: #F0F7F8;
+    color: #1E5B66;
+    border: 1px solid #CBE4E8;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.btn-action-calif:hover {
+    background: #1E5B66;
+    color: #FFFFFF;
+    border-color: #1E5B66;
+}
+
+.btn-action-calif i {
+    font-size: 15px;
+    line-height: 1;
+}
+
+.btn-action-asist {
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    background: #EEF2FF;
+    color: #4338CA;
+    border: 1px solid #C7D2FE;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.btn-action-asist:hover {
+    background: #4338CA;
+    color: #FFFFFF;
+    border-color: #4338CA;
+}
+
+.btn-action-asist i {
+    font-size: 15px;
+    line-height: 1;
+}
+
+/* Spin animation for icons */
+.ti-spin {
+    animation: ti-spin-anim 1s linear infinite;
+    display: inline-block;
+}
+@keyframes ti-spin-anim {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .modal {
@@ -55,10 +452,6 @@
 .modal-backdrop {
     z-index: 1150 !important;
 }
-
-.cct-badge-bgne { background-color: #2563eb; color: #fff; }
-.cct-badge-bti { background-color: #0284c7; color: #fff; }
-.cct-badge-ic { background-color: #475569; color: #fff; }
 
 /* Estilos de la tabla tipo Excel Oficial */
 .control-header-box {
@@ -134,31 +527,25 @@
 
 <div class="page-container">
 
-    {{-- Encabezado Principal --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{{ route('grupos') }}" class="btn btn-regresar">
-            <i class="fa-solid fa-arrow-left me-2"></i>
-            Regresar a Grupos
-        </a>
-
-        <h3 class="page-title mb-0">
-            <i class="fa-solid fa-file-pen me-2"></i>
-            Captura de Calificaciones por Grupo
-        </h3>
-
-        <div style="width: 120px;"></div>
+    {{-- Encabezado Principal Estándar --}}
+    <div class="page-header-standard">
+        <div class="page-header-left">
+            <a href="{{ route('grupos') }}" class="btn-regresar">
+                <i class="ti ti-arrow-left"></i>
+                <span>Regresar a Grupos</span>
+            </a>
+            <h1 class="page-heading">Captura de Calificaciones por Grupo</h1>
+        </div>
     </div>
 
-    {{-- Contenedor de Filtros y Búsqueda --}}
-    <div class="glass-card mb-4 p-4">
-        <div class="row g-3 align-items-center">
-
+    {{-- Tarjeta Unificada: Filtros + Tabla --}}
+    <div class="glass-card">
+        {{-- Barra de Filtros y Búsqueda --}}
+        <div class="filtros-header-bar">
             {{-- Filtro CCT --}}
-            <div class="col-12 col-md-4 col-xl-4">
-                <label class="form-label text-dark fw-bold mb-2">
-                    <i class="fa-solid fa-school me-1 text-primary"></i> Centro de Trabajo (CCT):
-                </label>
-                <select id="selectFiltroCct" class="form-select shadow-sm" style="border-radius: 12px; font-weight: 500;" onchange="setFiltroCct(this.value)">
+            <div>
+                <label class="filtro-label" for="selectFiltroCct">Centro de Trabajo (CCT):</label>
+                <select id="selectFiltroCct" class="filter-select" onchange="setFiltroCct(this.value)">
                     <option value="" selected>Todos los CCT</option>
                     <option value="3">BGNE (Bachillerato No Escolarizado)</option>
                     <option value="2">BTI (Bachillerato Tecnológico Interamericano)</option>
@@ -167,11 +554,9 @@
             </div>
 
             {{-- Filtro Estatus --}}
-            <div class="col-12 col-md-3 col-xl-3">
-                <label class="form-label text-dark fw-bold mb-2">
-                    <i class="fa-solid fa-toggle-on me-1 text-primary"></i> Estatus:
-                </label>
-                <select id="selectFiltroEstatus" class="form-select shadow-sm" style="border-radius: 12px; font-weight: 500;" onchange="aplicarFiltros()">
+            <div>
+                <label class="filtro-label" for="selectFiltroEstatus">Estatus:</label>
+                <select id="selectFiltroEstatus" class="filter-select" onchange="aplicarFiltros()">
                     <option value="ACTIVO" selected>Solo Activos</option>
                     <option value="INACTIVO">Solo Inactivos</option>
                     <option value="">Todos los Estatus</option>
@@ -179,52 +564,52 @@
             </div>
 
             {{-- Buscador en tiempo real --}}
-            <div class="col-12 col-md-5 col-xl-5">
-                <label class="form-label text-dark fw-bold mb-2">
-                    <i class="fa-solid fa-magnifying-glass me-1 text-primary"></i> Buscar Grupo:
-                </label>
-                <input type="text" id="buscadorGrupoCaptura" class="form-control shadow-sm" style="border-radius: 12px;" placeholder="Ej. BGNE291125..." oninput="aplicarFiltros()">
+            <div>
+                <label class="filtro-label" for="buscadorGrupoCaptura">Buscar Grupo:</label>
+                <div class="filter-search-wrapper">
+                    <i class="ti ti-search search-icon"></i>
+                    <input type="text" id="buscadorGrupoCaptura" class="filter-input-search" placeholder="Ej. BGNE291125..." oninput="aplicarFiltros()">
+                </div>
             </div>
-
         </div>
-    </div>
 
-    {{-- Spinner de Carga --}}
-    <div id="loadingGrupos" class="text-center py-5" style="display:none;">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-            <span class="visually-hidden">Cargando...</span>
+        {{-- Spinner de Carga --}}
+        <div id="loadingGrupos" class="text-center py-5" style="display:none;">
+            <div class="spinner-border" style="width: 2.5rem; height: 2.5rem; color: #1E5B66;" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <div class="text-muted mt-2 fw-semibold" style="font-size: 0.875rem;">Cargando grupos para captura...</div>
         </div>
-        <div class="text-muted mt-2 fw-semibold">Cargando grupos para captura...</div>
-    </div>
 
-    {{-- Tabla de Grupos para Captura --}}
-    <div id="contenedorTablaGruposWrapper" class="glass-card p-4 mb-4 shadow-sm" style="display:none;">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="tablaGruposCaptura">
-                <thead style="background: rgba(49, 125, 146, 0.12); color: #0f172a; font-weight: 700; border-bottom: 2px solid rgba(49, 125, 146, 0.3);">
-                    <tr>
-                        <th style="width: 45px;">#</th>
-                        <th>Clave del Grupo</th>
-                        <th>CCT</th>
-                        <th>Nivel / Periodo</th>
-                        <th>Fechas</th>
-                        <th style="min-width: 220px;">Progreso Periodo</th>
-                        <th>Estatus</th>
-                        <th class="text-center" style="width: 200px;">Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="tbodyGruposCaptura">
-                    {{-- Poblado por JS --}}
-                </tbody>
-            </table>
+        {{-- Tabla de Grupos para Captura --}}
+        <div id="contenedorTablaGruposWrapper" style="display:none;">
+            <div class="table-responsive">
+                <table class="table glass-table align-middle mb-0" id="tablaGruposCaptura">
+                    <thead>
+                        <tr>
+                            <th style="width: 45px;">#</th>
+                            <th>Clave del Grupo</th>
+                            <th>CCT</th>
+                            <th>Nivel / Periodo</th>
+                            <th>Fechas</th>
+                            <th style="min-width: 200px;">Progreso Periodo</th>
+                            <th>Estatus</th>
+                            <th class="text-end" style="width: 260px; padding-right: 20px;">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyGruposCaptura">
+                        {{-- Poblado por JS --}}
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
 
-    {{-- Estado Vacío --}}
-    <div id="emptyStateGrupos" class="glass-card text-center p-5" style="display:none;">
-        <i class="fa-solid fa-users-slash text-muted" style="font-size: 3.5rem;"></i>
-        <h5 class="text-muted mt-3 mb-1">No se encontraron grupos</h5>
-        <p class="text-muted small">Intenta ajustar los filtros de CCT o el estatus seleccionado.</p>
+        {{-- Estado Vacío --}}
+        <div id="emptyStateGrupos" class="text-center p-5" style="display:none;">
+            <i class="ti ti-users-minus" style="font-size: 3rem; display: inline-block; margin-bottom: 12px; color: #94A3B8;"></i>
+            <h5 class="mt-2 mb-1" style="font-size: 1rem; font-weight: 600; color: #334155;">No se encontraron grupos</h5>
+            <p class="text-muted small mb-0">Intenta ajustar los filtros de CCT o el estatus seleccionado.</p>
+        </div>
     </div>
 
 </div>
@@ -232,34 +617,34 @@
 {{-- MODAL OFICIAL DE CONTROL DE CALIFICACIONES POR MATERIA Y GRUPO --}}
 <div class="modal fade" id="modalCapturaMateriaGrupo" tabindex="-1" aria-hidden="true" style="z-index: 1200;">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="max-width: 95%;">
-        <div class="modal-content glass-modal shadow-lg border-0" style="border-radius: 18px;">
+        <div class="modal-content glass-modal shadow-lg border-0" style="border-radius: 14px;">
             
             {{-- Encabezado Modal --}}
-            <div class="modal-header text-white px-4 py-3" style="background: linear-gradient(135deg, rgb(38, 104, 123), #1e3a8a); border-top-left-radius: 18px; border-top-right-radius: 18px;">
+            <div class="modal-header px-4 py-3" style="border-bottom: 1px solid #E2E8F0;">
                 <div class="d-flex align-items-center">
-                    <i class="fa-solid fa-clipboard-check me-2 fs-4"></i>
+                    <i class="ti ti-clipboard-check me-2" style="font-size: 1.5rem; line-height: 1; color: #1E5B66;"></i>
                     <div>
-                        <h5 class="modal-title fw-bold mb-0" id="modalHeaderTitulo">CONTROL DE CALIFICACIONES FINALES</h5>
-                        <small id="modalHeaderSubtitulo" class="opacity-75">Captura por Asignatura y Docente Asignado</small>
+                        <h5 class="modal-title fw-bold mb-0" id="modalHeaderTitulo" style="font-size: 1.05rem; letter-spacing: -0.01em; color: #0F172A;">CONTROL DE CALIFICACIONES FINALES</h5>
+                        <small id="modalHeaderSubtitulo" class="text-muted" style="font-size: 0.8125rem;">Captura por Asignatura y Docente Asignado</small>
                     </div>
                 </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <div class="modal-body p-4 bg-white text-dark">
                 
                 {{-- Spinner de Carga de Materia --}}
                 <div id="loadingMateriaGrupo" class="text-center py-4" style="display: none;">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <div class="text-muted mt-2">Cargando materias y alumnos del grupo...</div>
+                    <div class="spinner-border" style="width: 2rem; height: 2rem; color: #1E5B66;" role="status"></div>
+                    <div class="text-muted mt-2" style="font-size: 0.875rem;">Cargando materias y alumnos del grupo...</div>
                 </div>
 
                 {{-- Contenido de Captura --}}
                 <div id="contentCapturaMateriaGrupo">
                     
                     {{-- Banner de Restricción de Solo Lectura --}}
-                    <div id="bannerSoloLectura" class="alert alert-warning border-warning shadow-sm align-items-center gap-2 mb-3" style="display: none !important; border-radius: 12px; padding: 12px 16px;">
-                        <i class="fa-solid fa-circle-exclamation fs-5 text-warning"></i>
+                    <div id="bannerSoloLectura" class="alert alert-warning border-warning shadow-sm align-items-center gap-2 mb-3" style="display: none !important; border-radius: 8px; padding: 12px 16px;">
+                        <i class="ti ti-alert-triangle fs-5 text-warning"></i>
                         <div>
                             <strong class="d-block" style="font-size: 0.92rem; color: #856404;">Captura Bloqueada (Solo Lectura)</strong>
                             <span id="mensajeBannerSoloLectura" class="small text-dark">—</span>
@@ -267,9 +652,9 @@
                     </div>
 
                     {{-- Calendario de Captura de Calificaciones --}}
-                    <div id="containerCalendarioPeriodos" class="alert alert-info border-info shadow-sm p-3 mb-3" style="display: none; border-radius: 12px;">
+                    <div id="containerCalendarioPeriodos" class="alert alert-info border-info shadow-sm p-3 mb-3" style="display: none; border-radius: 8px;">
                         <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="fa-solid fa-calendar-days text-primary fs-5"></i>
+                            <i class="ti ti-calendar text-primary fs-5"></i>
                             <strong style="font-size: 0.95rem; color: #0c5460;">Calendario de Captura (Límites de Fecha por Grupo)</strong>
                         </div>
                         <div class="row g-2 text-center" id="gridCalendarioPeriodos" style="font-size: 0.84rem;">
@@ -367,7 +752,7 @@
                         <small class="text-muted">
                             Total Alumnos: <strong id="statTotalAlumnos">0</strong> | 
                             Aprobados: <strong class="text-success" id="statAprobados">0</strong> | 
-                            Reprobados: <strong class="text-danger" id="statReprobados">0</strong> |
+                            Reprobados: <strong class="text-danger" id="statReprobados">0</strong> | 
                             Equivalencias: <strong class="text-warning" id="statEquivalencias">0</strong>
                         </small>
                         <span class="badge bg-primary px-3 py-2" id="statPromedioMateria">Promedio Materia: 0.0</span>
@@ -378,10 +763,10 @@
             </div>
 
             {{-- Footer con Botón Guardar --}}
-            <div class="modal-footer bg-light border-0 px-4 py-3 d-flex justify-content-between" style="border-bottom-left-radius: 18px; border-bottom-right-radius: 18px;">
+            <div class="modal-footer bg-light border-0 px-4 py-3 d-flex justify-content-between" style="border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;">
                 <button type="button" class="btn btn-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-success px-4 py-2 fw-bold shadow-sm" id="btnGuardarCalifsMateria" onclick="guardarCalificacionesMateriaSeleccionada()">
-                    <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Calificaciones de la Asignatura
+                <button type="button" class="btn btn-success px-4 py-2 fw-bold shadow-sm" id="btnGuardarCalifsMateria" onclick="guardarCalificacionesMateriaSeleccionada()" style="background: #1E5B66; border-color: #1E5B66; border-radius: 6px; font-weight: 500; font-size: 0.875rem;">
+                    <i class="ti ti-device-floppy me-1"></i> Guardar Calificaciones de la Asignatura
                 </button>
             </div>
 
@@ -392,44 +777,44 @@
 <!-- MODAL: CAPTURA DE ASISTENCIAS POR SEMESTRE / GRUPO -->
 <div class="modal fade" id="modalCapturaAsistenciasGrupo" tabindex="-1" aria-labelledby="modalCapturaAsistenciasLabel" aria-hidden="true" style="z-index: 1250;">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); padding: 16px 24px;">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 14px; overflow: hidden;">
+            <div class="modal-header" style="padding: 16px 24px; border-bottom: 1px solid #E2E8F0;">
                 <div>
-                    <h5 class="modal-title fw-bold mb-0" id="modalCapturaAsistenciasLabel">
-                        <i class="fa-solid fa-calendar-check me-2"></i>Captura de Asistencias del Periodo
+                    <h5 class="modal-title fw-bold mb-0" id="modalCapturaAsistenciasLabel" style="font-size: 1.05rem; letter-spacing: -0.01em; color: #0F172A;">
+                        <i class="ti ti-calendar-check me-2" style="color: #1E5B66;"></i>Captura de Asistencias del Periodo
                     </h5>
-                    <small class="text-white-50">Grupo: <strong id="lblAsistenciasGrupoClave" class="text-white">---</strong></small>
+                    <small class="text-muted" style="font-size: 0.8125rem;">Grupo: <strong id="lblAsistenciasGrupoClave" class="text-dark">---</strong></small>
                 </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
             <div class="modal-body p-4" style="background: #f8fafc;">
                 <!-- Controles -->
-                <div class="card p-3 border-0 shadow-sm mb-3" style="border-radius: 12px; background: #ffffff;">
+                <div class="card p-3 border-0 shadow-sm mb-3" style="border-radius: 10px; background: #ffffff;">
                     <div class="row g-3 align-items-end">
                         <div class="col-md-5">
                             <label class="form-label fw-bold text-slate-700 fs-7 mb-1">
-                                <i class="fa-solid fa-graduation-cap text-indigo me-1"></i>Periodo / Semestre:
+                                <i class="ti ti-school text-indigo me-1"></i>Periodo / Semestre:
                             </label>
                             <select id="selSemestreAsistenciasGrupo" class="form-select" onchange="recargarAlumnosAsistenciasModal()">
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label fw-bold text-slate-700 fs-7 mb-1">
-                                <i class="fa-solid fa-calendar-days text-primary me-1"></i>Clases Impartidas (Hubieron):
+                                <i class="ti ti-calendar text-primary me-1"></i>Clases Impartidas (Hubieron):
                             </label>
                             <input type="number" id="inpTotalClasesGlobal" class="form-control" placeholder="Ej. 50" min="0">
                         </div>
                         <div class="col-md-3">
-                            <button type="button" class="btn btn-outline-primary w-100 fw-bold" onclick="aplicarTotalClasesATodos()">
-                                <i class="fa-solid fa-arrows-rotate me-1"></i> Aplicar a todos
+                            <button type="button" class="btn btn-outline-primary w-100 fw-bold" onclick="aplicarTotalClasesATodos()" style="height: 38px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                                <i class="ti ti-refresh"></i> <span>Aplicar a todos</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Tabla de alumnos -->
-                <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden; background: #ffffff;">
+                <div class="card border-0 shadow-sm" style="border-radius: 10px; overflow: hidden; background: #ffffff;">
                     <div class="table-responsive" style="max-height: 380px;">
                         <table class="table table-hover align-middle mb-0" id="tablaAsistenciasGrupoModal">
                             <thead style="background: #e2e8f0; font-size: 0.8rem; text-transform: uppercase;" class="sticky-top">
@@ -445,7 +830,7 @@
                             <tbody id="tbodyAsistenciasGrupoModal">
                                 <tr>
                                     <td colspan="6" class="text-center py-4 text-muted">
-                                        <i class="fa-solid fa-spinner fa-spin me-2"></i>Cargando alumnos...
+                                        <i class="ti ti-loader-2 ti-spin me-2"></i>Cargando alumnos...
                                     </td>
                                 </tr>
                             </tbody>
@@ -456,8 +841,8 @@
 
             <div class="modal-footer bg-white border-top d-flex justify-content-between p-3">
                 <button type="button" class="btn btn-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary px-4 fw-bold" id="btnGuardarAsistenciasModal" onclick="guardarAsistenciasGrupoModal()" style="background: #4f46e5; border-color: #4f46e5;">
-                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Asistencias
+                <button type="button" class="btn btn-primary px-4 fw-bold" id="btnGuardarAsistenciasModal" onclick="guardarAsistenciasGrupoModal()" style="background: #1E5B66; border-color: #1E5B66; border-radius: 6px; font-weight: 500; font-size: 0.875rem;">
+                    <i class="ti ti-device-floppy me-1"></i> Guardar Asistencias
                 </button>
             </div>
         </div>
@@ -541,7 +926,7 @@ function recargarAlumnosAsistenciasModal() {
     if (!grupoAsistenciasActual) return;
     const tbody = document.getElementById('tbodyAsistenciasGrupoModal');
     if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-2" style="color: #4f46e5;"></i>Cargando lista de alumnos...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="ti ti-loader-2 ti-spin me-2" style="color: #1E5B66;"></i>Cargando lista de alumnos...</td></tr>`;
 
     const idNivel = document.getElementById('selSemestreAsistenciasGrupo') ? document.getElementById('selSemestreAsistenciasGrupo').value : 7;
 
@@ -587,7 +972,7 @@ function recargarAlumnosAsistenciasModal() {
         })
         .catch(err => {
             console.error(err);
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i>Error al cargar las asistencias del grupo.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger"><i class="ti ti-alert-triangle me-2"></i>Error al cargar las asistencias del grupo.</td></tr>`;
         });
 }
 
@@ -659,7 +1044,7 @@ function guardarAsistenciasGrupoModal() {
     const originalText = btn ? btn.innerHTML : 'Guardar Asistencias';
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Guardando...`;
+        btn.innerHTML = `<i class="ti ti-loader-2 ti-spin me-1"></i> Guardando...`;
     }
 
     fetch(`/grupos/${grupoAsistenciasActual.id}/asistencias-semestre`, {
@@ -1035,11 +1420,19 @@ function renderTablaGrupos(grupos) {
 
     grupos.forEach((g, idx) => {
         const status = String(g.statusGrupo || g.status_grupo || 'ACTIVO').toUpperCase();
-        const statusBadgeClass = status === 'ACTIVO' ? 'bg-success' : 'bg-danger';
+        const statusBadge = status === 'ACTIVO'
+            ? `<span class="badge-soft-success"><span class="badge-dot"></span>Activo</span>`
+            : `<span class="badge-soft-danger"><span class="badge-dot"></span>Inactivo</span>`;
 
         const idCct = parseInt(g.id_centroTrabajo ?? g.id_centro_trabajo, 10);
-        const cctNombre = g.nombreCentroTrabajo || g.nombre_centro_trabajo || (idCct === 3 ? 'BGNE' : (idCct === 2 ? 'BTI' : (idCct === 1 ? 'INF. Y COMP.' : '—')));
-        const cctBadgeClass = idCct === 3 ? 'cct-badge-bgne' : (idCct === 2 ? 'cct-badge-bti' : 'cct-badge-ic');
+        let cctBadge = '';
+        if (idCct === 3) {
+            cctBadge = '<span class="badge-cct badge-cct-bgne">BGNE</span>';
+        } else if (idCct === 2) {
+            cctBadge = '<span class="badge-cct badge-cct-bti">BTI</span>';
+        } else {
+            cctBadge = '<span class="badge-cct badge-cct-inf">INF</span>';
+        }
 
         const nivelNombre = g.nombre_nivel || g.nombreNivel || (g.id_nivel_academico ? (g.id_nivel_academico <= 6 ? `${g.id_nivel_academico}° Trimestre` : `${g.id_nivel_academico - 6}° Semestre`) : '—');
         
@@ -1055,50 +1448,49 @@ function renderTablaGrupos(grupos) {
 
         html += `
         <tr>
-            <td class="text-muted fw-bold">${idx + 1}</td>
+            <td><span class="id-mono">${idx + 1}</span></td>
             <td>
-                <div class="d-flex align-items-center">
-                    <i class="fa-solid fa-users me-2" style="color: rgb(49, 125, 146);"></i>
-                    <strong class="text-dark fs-6">${g.clave || '—'}</strong>
+                <span class="grupo-clave-mono">${g.clave || '—'}</span>
+            </td>
+            <td>
+                ${cctBadge}
+            </td>
+            <td>
+                <span class="badge-nivel-pill">${nivelNombre}</span>
+            </td>
+            <td>
+                <div class="fechas-col-mono">
+                    <div><span class="text-muted">Inicio:</span> <span>${fechaIniStr}</span></div>
+                    <div><span class="text-muted">Fin:</span> <span>${fechaFinStr}</span></div>
                 </div>
             </td>
             <td>
-                <span class="badge ${cctBadgeClass} px-2 py-1">${cctNombre}</span>
-            </td>
-            <td>
-                <span class="badge bg-light text-dark border px-2 py-1">${nivelNombre}</span>
-            </td>
-            <td>
-                <div style="font-size: 0.82rem;">
-                    <div><span class="text-muted">Inicio:</span> <strong>${fechaIniStr}</strong></div>
-                    <div><span class="text-muted">Fin:</span> <strong>${fechaFinStr}</strong></div>
-                </div>
-            </td>
-            <td>
-                <div class="p-2 bg-light rounded-3 border">
-                    <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.75rem;">
-                        <span class="fw-bold text-secondary">${progreso.nivelText || 'Periodo'}</span>
-                        <span class="fw-bold" style="color: rgb(38, 104, 123);">${progreso.percent}%</span>
+                <div class="progreso-periodo-box">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="progreso-label">${progreso.nivelText || 'Periodo'}</span>
+                        <span class="progreso-percent">${progreso.percent}%</span>
                     </div>
-                    <div class="progress" style="height: 6px; background-color: #cbd5e1; border-radius: 4px; overflow: hidden;">
-                        <div class="progress-bar" role="progressbar" style="width: ${progreso.percent}%; background-color: rgb(38, 104, 123);" aria-valuenow="${progreso.percent}" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="progress-track-saas">
+                        <div class="progress-fill-saas" style="width: ${progreso.percent}%;"></div>
                     </div>
-                    <div class="d-flex justify-content-between text-muted mt-1" style="font-size: 0.68rem;">
+                    <div class="d-flex justify-content-between progreso-dates mt-1">
                         <span>${progreso.inicioPeriodo}</span>
                         <span>${progreso.finPeriodo}</span>
                     </div>
                 </div>
             </td>
             <td>
-                <span class="badge ${statusBadgeClass}">${status}</span>
+                ${statusBadge}
             </td>
-            <td class="text-center" style="min-width: 270px;">
-                <div class="d-flex flex-column flex-xl-row gap-1 justify-content-center">
-                    <button type="button" class="btn btn-sm btn-primary fw-bold px-2 py-2 shadow-sm flex-fill" onclick="abrirCapturaGrupoMateria(${g.id})" style="background: rgb(49, 125, 146); border: none; border-radius: 8px;" title="Capturar calificaciones por materia">
-                        <i class="fa-solid fa-pen-to-square me-1"></i> Capturar Calificaciones
+            <td class="text-end" style="padding-right: 20px;">
+                <div class="actions-cell-grupos">
+                    <button type="button" class="btn-action-calif" onclick="abrirCapturaGrupoMateria(${g.id})" title="Capturar calificaciones por materia">
+                        <i class="ti ti-edit"></i>
+                        <span>Calificaciones</span>
                     </button>
-                    <button type="button" class="btn btn-sm text-white fw-bold px-2 py-2 shadow-sm flex-fill" onclick="abrirModalAsistenciasGrupo(${g.id}, '${g.clave}', ${g.id_centroTrabajo}, ${g.id_nivel_academico || 7})" style="background: #4f46e5; border: none; border-radius: 8px;" title="Capturar asistencias del periodo para todo el grupo">
-                        <i class="fa-solid fa-calendar-check me-1"></i> Capturar Asistencias
+                    <button type="button" class="btn-action-asist" onclick="abrirModalAsistenciasGrupo(${g.id}, '${g.clave}', ${g.id_centroTrabajo}, ${g.id_nivel_academico || 7})" title="Capturar asistencias del periodo para todo el grupo">
+                        <i class="ti ti-calendar-check"></i>
+                        <span>Asistencias</span>
                     </button>
                 </div>
             </td>
@@ -1578,7 +1970,7 @@ function renderDatosControlOficial(data) {
                 <div class="d-flex align-items-center justify-content-center gap-1">
                     <span class="badge bg-warning text-dark px-2 py-1 fw-bold d-inline-block shadow-sm" style="font-size: 0.82rem;">EQUIV.</span>
                     <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 border-0" title="Cambiar a calificación numérica" onclick="conmutarEquivalenciaFila(this.closest('tr'), false)" ${disAttr}>
-                        <i class="fa-solid fa-pen-to-square text-muted"></i>
+                        <i class="ti ti-edit text-muted"></i>
                     </button>
                     <input type="hidden" class="inp-calif-final" value="EQUIV">
                 </div>
@@ -1733,7 +2125,7 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
                 <div class="d-flex align-items-center justify-content-center gap-1">
                     <span class="badge bg-warning text-dark px-2 py-1 fw-bold d-inline-block shadow-sm">EQUIV.</span>
                     <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 border-0" title="Cambiar a calificación numérica" onclick="conmutarEquivalenciaFila(this.closest('tr'), false)" ${disAttr}>
-                        <i class="fa-solid fa-pen-to-square text-muted"></i>
+                        <i class="ti ti-edit text-muted"></i>
                     </button>
                     <input type="hidden" class="inp-calif-final" value="EQUIV">
                 </div>
@@ -1747,7 +2139,7 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
                 <div class="d-flex align-items-center justify-content-center gap-1">
                     <span class="badge bg-warning text-dark px-2 py-1 fw-bold d-inline-block shadow-sm" style="font-size: 0.82rem;">EQUIV.</span>
                     <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 border-0" title="Cambiar a calificación numérica" onclick="conmutarEquivalenciaFila(this.closest('tr'), false)" ${disAttr}>
-                        <i class="fa-solid fa-pen-to-square text-muted"></i>
+                        <i class="ti ti-edit text-muted"></i>
                     </button>
                     <input type="hidden" class="inp-calif-final" value="EQUIV">
                 </div>
@@ -2173,7 +2565,7 @@ function guardarCalificacionesMateriaSeleccionada() {
             showCancelButton: true,
             confirmButtonColor: 'rgb(49, 125, 146)',
             cancelButtonColor: '#dc3545',
-            confirmButtonText: '<i class="fa-solid fa-paper-plane me-1"></i> Sí, confirmar y enviar',
+            confirmButtonText: '<i class="ti ti-send me-1"></i> Sí, confirmar y enviar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -2355,15 +2747,15 @@ function enviarPeticionGuardar(finalizar) {
                         <div class="alert alert-danger p-2 mb-2" style="font-size: 0.88rem; word-break: break-word;">
                             ${msg}
                         </div>
-                        <p class="text-muted small mb-0"><i class="fa-solid fa-circle-check text-success me-1"></i>Tus notas ingresadas siguen en pantalla; no se han borrado.</p>
+                        <p class="text-muted small mb-0"><i class="ti ti-circle-check text-success me-1"></i>Tus notas ingresadas siguen en pantalla; no se han borrado.</p>
                        </div>`,
-                confirmButtonColor: 'rgb(49, 125, 146)',
+                confirmButtonColor: '#1E5B66',
                 confirmButtonText: 'Entendido'
             });
         })
         .finally(() => {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Guardar Calificaciones de la Asignatura';
+            btn.innerHTML = '<i class="ti ti-device-floppy me-2"></i> Guardar Calificaciones de la Asignatura';
         });
 }
 

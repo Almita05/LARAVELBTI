@@ -1,193 +1,317 @@
 <style>
+/* ==========================================================================
+   MODAL ALTA / DETALLE / EDICIÓN DE ALUMNO (ESTILO SHADCN/UI & RADIX DIALOG)
+   ========================================================================== */
+#modalAlumno .modal-content,
 #modalAlumno.glass-modal,
 #modalAlumno .glass-modal {
-    background: #ffffff !important;
-    border: none;
-    border-radius: 20px;
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08) !important;
     overflow: hidden;
-    color: #1e293b;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, .15);
 }
 
+/* Modal Header Blanco Ejecutivo */
 #modalAlumno .modal-header {
-    background: linear-gradient(135deg, rgb(73, 164, 190), #1E6FA8) !important;
-    color: #fff;
-    border-bottom: none;
-    padding: 1.2rem 1.5rem;
+    background: #FFFFFF !important;
+    padding: 18px 24px !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
 }
 
+#modalAlumno .modal-header-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #F0F7F8;
+    border: 1px solid #CBE4E8;
+    color: #1E5B66;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+#modalAlumno .modal-title {
+    font-size: 1.05rem !important;
+    font-weight: 600 !important;
+    color: #0F172A !important;
+    margin: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    letter-spacing: -0.01em;
+}
+
+#modalAlumno .btn-close-modal {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    color: #64748B;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+#modalAlumno .btn-close-modal:hover {
+    background: #F1F5F9;
+    color: #0F172A;
+}
+
+/* Modal Body */
 #modalAlumno .modal-body {
-    background: #f8fafc;
-    padding: 1.5rem;
+    background: #F8FAFC !important;
+    padding: 20px 24px !important;
+    max-height: calc(85vh - 130px) !important;
+    overflow-y: auto !important;
+    scrollbar-width: thin;
 }
 
+/* Acordeones / Secciones */
 #modalAlumno .accordion-item {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px !important;
-    margin-bottom: 14px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-    overflow: hidden;
-    transition: all 0.3s ease;
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    margin-bottom: 14px !important;
+    overflow: hidden !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02) !important;
+    transition: all 0.2s ease;
 }
 
-#modalAlumno .accordion-item:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    border-color: #cbd5e1;
+#modalAlumno .accordion-header {
+    background: #FFFFFF !important;
+    margin: 0 !important;
+    border: none !important;
 }
 
 #modalAlumno .accordion-button {
-    background: #f8fafc !important;
-    color: #1e293b !important;
-    font-weight: 600;
-    padding: 1.1rem 1.5rem;
-    border-bottom: 1px solid transparent;
+    padding: 14px 18px !important;
+    background: #FFFFFF !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    border: none !important;
+    border-bottom: 1px solid transparent !important;
+    box-shadow: none !important;
+    transition: background 0.15s ease, border-color 0.15s ease !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    color: #0F172A !important;
 }
 
 #modalAlumno .accordion-button:not(.collapsed) {
-    background: linear-gradient(135deg, rgba(73, 164, 190, 0.08) 0%, rgba(30, 111, 168, 0.08) 100%) !important;
-    color: #1E6FA8 !important;
-    border-bottom: 1px solid #e2e8f0;
+    background: #F8FAFC !important;
+    border-bottom-color: #E2E8F0 !important;
+    color: #0F172A !important;
     box-shadow: none !important;
 }
 
 #modalAlumno .accordion-button:focus {
     box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Chevron indicador derecho */
+#modalAlumno .accordion-button::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23475569'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e") !important;
+    width: 16px !important;
+    height: 16px !important;
+    background-size: 16px !important;
+    transition: transform 0.2s ease-in-out !important;
+}
+
+#modalAlumno .accordion-button:not(.collapsed)::after {
+    transform: rotate(-180deg) !important;
 }
 
 #modalAlumno .accordion-body {
-    background: white;
-    padding: 1.5rem;
+    background: #FFFFFF !important;
+    padding: 18px 20px !important;
 }
 
+/* Form Labels */
 #modalAlumno .form-label {
-    font-weight: 600;
-    color: #334155;
-    font-size: 0.85rem;
-    margin-bottom: 6px;
-    display: inline-block;
+    display: block !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    margin-bottom: 6px !important;
 }
 
+#modalAlumno .form-label .text-danger,
+#modalAlumno .requerido-normal {
+    color: #DC2626 !important;
+    margin-left: 2px !important;
+    font-weight: 700 !important;
+}
+
+/* Inputs, Selects & Textareas */
+#modalAlumno .form-control,
+#modalAlumno .form-select,
 #modalAlumno .form-control-premium,
 #modalAlumno .form-select-premium,
 #modalAlumno textarea.form-control-premium {
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    border-radius: 12px;
-    color: #1e293b;
-    font-size: 0.9rem;
-    padding: 0.65rem 1rem;
-    min-height: 44px;
-    transition: all 0.2s ease-in-out;
+    width: 100% !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 12px !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 6px !important;
+    font-size: 0.875rem !important;
+    color: #0F172A !important;
+    background-color: #FFFFFF !important;
+    transition: all 0.15s ease !important;
 }
 
-#modalAlumno .form-control-premium:hover,
-#modalAlumno .form-select-premium:hover {
-    border-color: #94a3b8;
+#modalAlumno textarea.form-control-premium {
+    height: auto !important;
+    min-height: 64px !important;
+    padding: 8px 12px !important;
 }
 
+#modalAlumno .form-control:focus,
+#modalAlumno .form-select:focus,
 #modalAlumno .form-control-premium:focus,
-#modalAlumno .form-select-premium:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
-    outline: none;
+#modalAlumno .form-select-premium:focus,
+#modalAlumno textarea.form-control-premium:focus {
+    border-color: #1E5B66 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12) !important;
 }
 
+#modalAlumno input[name="curp"] {
+    font-family: 'JetBrains Mono', monospace !important;
+    text-transform: uppercase !important;
+}
+
+/* Custom Select Dropdown Arrow */
+#modalAlumno .form-select,
+#modalAlumno .form-select-premium {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%2364748B'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    background-size: 14px 10px !important;
+    padding-right: 32px !important;
+}
+
+/* Callout Neutro Institucional (Aviso CCT) */
+#modalAlumno #avisoSeleccionarCCT {
+    background: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
+    border-left: 3px solid #1E5B66 !important;
+    border-radius: 6px !important;
+    padding: 10px 14px !important;
+    font-size: 0.8125rem !important;
+    color: #475569 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 14px 0 !important;
+}
+
+/* Sub-contenedor Modalidad Moodle */
+#modalAlumno .moodle-subcontainer {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 12px;
+}
+
+#modalAlumno .badge-moodle-soft {
+    background: #F0F7F8;
+    color: #1E5B66;
+    border: 1px solid #CBE4E8;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+/* Footer & Buttons */
+#modalAlumno .modal-footer {
+    background: #FFFFFF !important;
+    padding: 14px 24px !important;
+    border-top: 1px solid #E2E8F0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+}
+
+#modalAlumno .btn-premium-cancel {
+    height: 38px !important;
+    padding: 0 16px !important;
+    border-radius: 6px !important;
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    color: #475569 !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.15s ease !important;
+}
+
+#modalAlumno .btn-premium-cancel:hover {
+    background: #F8FAFC !important;
+    color: #0F172A !important;
+    border-color: #CBD5E1 !important;
+}
+
+#modalAlumno .btn-premium-save {
+    height: 38px !important;
+    padding: 0 18px !important;
+    border-radius: 6px !important;
+    background: #1E5B66 !important;
+    border: none !important;
+    color: #FFFFFF !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+    transition: all 0.15s ease !important;
+}
+
+#modalAlumno .btn-premium-save:hover {
+    background: #16464F !important;
+    color: #FFFFFF !important;
+}
+
+/* Grupo Recomendado Box */
 #modalAlumno .group-recommended {
-    border: 2px solid #86efac;
-    border-radius: 14px;
-    padding: 18px;
-    background: #f0fdf4;
-    position: relative;
+    border: 1px solid #BBF7D0 !important;
+    border-radius: 8px !important;
+    padding: 14px 16px !important;
+    background: #F0FDF4 !important;
 }
 
 #modalAlumno .group-name {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: #166534;
 }
 
 #modalAlumno .group-meta {
-    font-size: 0.88rem;
+    font-size: 0.8125rem;
     color: #374151;
-    line-height: 1.6;
-}
-
-#modalAlumno .pill {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.78rem;
-    font-weight: 700;
-}
-
-#modalAlumno .pill-green {
-    background: #dcfce7;
-    color: #166534;
-    border: 1px solid #bbf7d0;
-}
-
-#modalAlumno .summary-box {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 16px;
-}
-
-#modalAlumno .summary-item {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px dashed #cbd5e1;
-    padding: 8px 0;
-    font-size: 0.88rem;
-}
-
-#modalAlumno .summary-item span {
-    color: #64748b;
-}
-
-#modalAlumno .summary-item strong {
-    color: #1e293b;
-}
-
-#modalAlumno .modal-footer {
-    background: #f8fafc !important;
-    border-top: 1px solid #e2e8f0;
-    padding: 1rem 1.5rem;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
-#modalAlumno .btn-premium-cancel {
-    background: #f1f5f9;
-    color: #475569 !important;
-    border: 1px solid #cbd5e1;
-    border-radius: 12px;
-    padding: 0.6rem 1.5rem;
-    font-weight: 600;
-    transition: all 0.25s ease;
-}
-
-#modalAlumno .btn-premium-cancel:hover {
-    background: #e2e8f0;
-    color: #1e293b !important;
-}
-
-#modalAlumno .btn-premium-save {
-    background: linear-gradient(135deg, rgb(73, 164, 190) 0%, #1E6FA8 100%);
-    color: white !important;
-    border: none;
-    border-radius: 12px;
-    padding: 0.6rem 1.8rem;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(30, 111, 168, 0.25);
-    transition: all 0.25s ease;
-}
-
-#modalAlumno .btn-premium-save:hover {
-    background: linear-gradient(135deg, #1E6FA8 0%, #154c75 100%);
-    box-shadow: 0 6px 16px rgba(30, 111, 168, 0.35);
+    line-height: 1.5;
 }
 </style>
 
@@ -195,31 +319,39 @@
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <form id="formAlumno" class="modal-content glass-modal" novalidate>
 
-            <div class="modal-header border-0 d-flex align-items-center justify-content-between">
-                <h5 class="modal-title fw-bold mb-0">
-                    <i class="bi bi-person-plus-fill me-2"></i>
-                    Alta de Alumno
-                </h5>
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="modal-header-icon">
+                        <i class="ti ti-user-plus"></i>
+                    </div>
+                    <h5 class="modal-title">
+                        Alta de Alumno
+                    </h5>
+                </div>
                 <div class="d-flex align-items-center gap-2">
-                    <!-- Botón Acceso Rápido Online en Modo Edición -->
-                    <button type="button" class="btn btn-sm text-white shadow-sm" id="btnModalOnlineHeader" style="display: none; background: linear-gradient(135deg, #7b2cbf 0%, #5a189a 100%); border: none; border-radius: 10px; font-weight: 600; padding: 0.38rem 0.9rem;" onclick="abrirModalOnlineDesdeEditar()" title="Configuración de Moodle y Pagos">
-                        <i class="fa-solid fa-laptop me-1"></i> <span id="txtBtnModalOnlineHeader">Modalidad Online</span>
+                    <!-- Botón Acceso Rápido Online en Modo Edición (Desactivado: se gestiona en Control Escolar Online) -->
+                    <button type="button" class="btn btn-sm text-white shadow-sm" id="btnModalOnlineHeader" style="display: none !important; background: #1E5B66; border: none; border-radius: 6px; font-weight: 500; padding: 0.38rem 0.9rem;" onclick="abrirModalOnlineDesdeEditar()" title="Configuración de Moodle y Pagos">
+                        <i class="ti ti-device-laptop me-1"></i> <span id="txtBtnModalOnlineHeader">Modalidad Online</span>
                     </button>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close-modal" data-bs-dismiss="modal" title="Cerrar">
+                        <i class="ti ti-x" style="font-size: 18px;"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="modal-body p-4">
+            <div class="modal-body">
                 <!-- Opción de Registro Histórico -->
-                <div class="card p-3 border rounded-3 mb-3 bg-light" style="border-color: #cbd5e1 !important; border-radius: 16px !important;">
-                    <div class="form-check form-switch mb-0">
-                        <input class="form-check-input" type="checkbox" id="chkRegistroHistorico" name="registro_historico" value="1">
-                        <label class="form-check-label fw-bold text-dark" for="chkRegistroHistorico" style="font-size: 0.95rem; cursor: pointer;">
-                            <i class="bi bi-clock-history me-1 text-warning"></i> Registro de Alumno Histórico
-                        </label>
-                        <small class="text-muted d-block mt-1" style="font-size: 0.82rem;">
-                            Active esta opción si está registrando un alumno de ciclos anteriores con información incompleta. Se relajarán las validaciones y se permitirá seleccionar cualquier grupo (incluso inactivos o terminados).
-                        </small>
+                <div class="card p-3 border mb-3" style="background: #FFFFFF; border-color: #E2E8F0 !important; border-radius: 10px !important;">
+                    <div class="form-check form-switch mb-0 d-flex align-items-start gap-2">
+                        <input class="form-check-input mt-1" type="checkbox" id="chkRegistroHistorico" name="registro_historico" value="1">
+                        <div>
+                            <label class="form-check-label fw-bold text-dark mb-0" for="chkRegistroHistorico" style="font-size: 0.875rem; cursor: pointer;">
+                                <i class="ti ti-history me-1" style="color: #D97706;"></i> Registro de Alumno Histórico
+                            </label>
+                            <small class="text-muted d-block mt-0.5" style="font-size: 0.8125rem;">
+                                Active esta opción si está registrando un alumno de ciclos anteriores con información incompleta. Se relajarán las validaciones y se permitirá seleccionar cualquier grupo (incluso inactivos o terminados).
+                            </small>
+                        </div>
                     </div>
                 </div>
 
@@ -228,8 +360,11 @@
                     <!-- 1. DATOS PERSONALES -->
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button rounded" type="button" data-bs-toggle="collapse" data-bs-target="#datosPersonales">
-                                <i class="bi bi-person-badge-fill me-2 text-info"></i> 1. Datos personales
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#datosPersonales">
+                                <span class="d-inline-flex align-items-center gap-2">
+                                    <i class="ti ti-id" style="color: #1E5B66; font-size: 18px;"></i>
+                                    <span>1. Datos personales</span>
+                                </span>
                             </button>
                         </h2>
                         <div id="datosPersonales" class="accordion-collapse collapse show" data-bs-parent="#accordionAlumno">
@@ -268,8 +403,11 @@
                     <!-- 2. CONTACTO Y TUTOR -->
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse" data-bs-target="#datosContacto">
-                                <i class="bi bi-telephone-fill me-2 text-primary"></i> 2. Contacto, tutor y domicilio
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#datosContacto">
+                                <span class="d-inline-flex align-items-center gap-2">
+                                    <i class="ti ti-address-book" style="color: #1E5B66; font-size: 18px;"></i>
+                                    <span>2. Contacto, tutor y domicilio</span>
+                                </span>
                             </button>
                         </h2>
                         <div id="datosContacto" class="accordion-collapse collapse" data-bs-parent="#accordionAlumno">
@@ -315,8 +453,11 @@
                     <!-- 3. DATOS ACADÉMICOS Y GRUPOS (EL FLUJO DINÁMICO) -->
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button rounded" type="button" data-bs-toggle="collapse" data-bs-target="#academicos">
-                                <i class="bi bi-mortarboard-fill me-2 text-primary"></i> 3. Contexto académico y selección de grupo
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#academicos">
+                                <span class="d-inline-flex align-items-center gap-2">
+                                    <i class="ti ti-school" style="color: #1E5B66; font-size: 18px;"></i>
+                                    <span>3. Contexto académico y selección de grupo</span>
+                                </span>
                             </button>
                         </h2>
                         <div id="academicos" class="accordion-collapse collapse show" data-bs-parent="#accordionAlumno">
@@ -327,7 +468,7 @@
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">CCT (Centro de Trabajo) <span class="text-danger requerido-normal">*</span></label>
                                         <select name="id_centroTrabajo" id="selectCCT" class="form-select form-select-premium" required>
-                                            <option value="">-- Seleccione CCT --</option>
+                                            <option value="">Seleccionar CCT...</option>
                                             @if(isset($centrosTrabajo) && count($centrosTrabajo) > 0)
                                                 @foreach($centrosTrabajo as $cct)
                                                     <option value="{{ $cct['id'] }}" 
@@ -344,7 +485,7 @@
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">Periodo de incorporación <span class="text-danger requerido-normal">*</span></label>
                                         <select name="id_nivel_academico" id="selectNivelAcademico" class="form-select form-select-premium" required>
-                                            <option value="">-- Seleccione Periodo --</option>
+                                            <option value="">Seleccionar periodo...</option>
                                         </select>
                                     </div>
 
@@ -362,9 +503,9 @@
                                     </div>
 
                                     <!-- BLOQUE DINÁMICO DE CERTIFICACIÓN -->
-                                    <div id="boxDatosCertificado" class="col-12 mb-3 p-3 bg-light rounded-3 border" style="display: none; border-color: #cbd5e1 !important;">
-                                        <div class="fw-bold text-dark mb-2" style="font-size: 0.85rem;">
-                                            <i class="bi bi-award-fill me-1 text-secondary"></i> Datos de Certificación y Entrega de Documento
+                                    <div id="boxDatosCertificado" class="col-12 mb-3 p-3 bg-light rounded-3 border" style="display: none; border-color: #E2E8F0 !important;">
+                                        <div class="fw-bold text-dark mb-2 d-flex align-items-center gap-1" style="font-size: 0.85rem;">
+                                            <i class="ti ti-certificate" style="color: #1E5B66;"></i> Datos de Certificación y Entrega de Documento
                                         </div>
                                         <div class="row g-2">
                                             <div class="col-md-4">
@@ -389,16 +530,16 @@
                                 <!-- CONTENEDOR DINÁMICO: FILTROS DE GRUPO Y RECOMENDACIÓN -->
                                 <div id="seccionAcademicaDinamica" style="display: none;">
                                     
-                                    <div class="alert alert-info py-2 px-3 mb-3" style="font-size:0.85rem; border-radius:10px;">
-                                        <i class="bi bi-info-circle-fill me-1"></i>
-                                        Indique el día y jornada de interés para que el sistema proponga el <strong>grupo compatible más próximo a iniciar</strong>.
+                                    <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center gap-2" style="font-size:0.85rem; border-radius:8px; background: #F0F7F8; border-color: #CBE4E8; color: #1E5B66;">
+                                        <i class="ti ti-info-circle"></i>
+                                        <div>Indique el día y jornada de interés para que el sistema proponga el <strong>grupo compatible más próximo a iniciar</strong>.</div>
                                     </div>
 
                                     <div class="row mb-3">
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Día de asistencia <span class="text-danger">*</span></label>
                                             <select name="diaAsistencia" id="selectDiaAsistencia" class="form-select form-select-premium">
-                                                <option value="">-- Todos los días / Seleccione --</option>
+                                                <option value="">Seleccionar día de clase...</option>
                                                 <option value="SABADO">Sábado</option>
                                                 <option value="DOMINGO">Domingo</option>
                                                 <option value="LUNES-VIERNES">Lunes a Viernes (Escolarizado)</option>
@@ -408,7 +549,7 @@
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Jornada <span class="text-danger">*</span></label>
                                             <select name="jornadaHorario" id="selectJornada" class="form-select form-select-premium">
-                                                <option value="">-- Todas las jornadas --</option>
+                                                <option value="">Seleccionar jornada...</option>
                                                 <option value="MATUTINO">Matutino</option>
                                                 <option value="VESPERTINO">Vespertino</option>
                                             </select>
@@ -424,12 +565,12 @@
                                     </div>
 
                                     <!-- TARJETA: GRUPOS COMPATIBLES Y RECOMENDACIÓN -->
-                                    <div class="card p-3 border-0 bg-light rounded-3 mb-3">
+                                    <div class="card p-3 border-0 bg-light rounded-3 mb-3" style="background: #F8FAFC !important; border: 1px solid #E2E8F0 !important;">
                                         <!-- SELECCIÓN DIRECTA DE GRUPO (SÓLO PARA REGISTRO HISTÓRICO) -->
                                         <div id="boxGrupoDirectoHistorico" style="display: none;" class="mb-3">
                                             <label class="form-label fw-bold text-dark">Grupo Histórico / Directo</label>
                                             <select id="selectGrupoHistorico" class="form-select form-select-premium">
-                                                <option value="">-- Seleccione cualquier grupo (activo/inactivo) --</option>
+                                                <option value="">Seleccionar grupo histórico...</option>
                                             </select>
                                             <small class="text-muted d-block mt-1" style="font-size: 0.78rem;">
                                                 Aquí se muestran todos los grupos del CCT seleccionado (incluidos inactivos y terminados).
@@ -437,13 +578,13 @@
                                         </div>
 
                                         <div class="d-flex justify-content-between align-items-center mb-2 box-compatibles-cabecera">
-                                            <h6 class="fw-bold mb-0 text-dark">
-                                                <i class="bi bi-diagram-3-fill me-1 text-primary"></i> Grupos compatibles
+                                            <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-1" style="font-size: 0.875rem;">
+                                                <i class="ti ti-users-group" style="color: #1E5B66;"></i> Grupos compatibles
                                             </h6>
                                             <input type="hidden" name="id_Grupo" id="inputGrupoSeleccionado" value="">
                                         </div>
 
-                                        <div id="alertaBuscandoGrupo" class="alert alert-secondary py-2" style="font-size:0.85rem;">
+                                        <div id="alertaBuscandoGrupo" class="alert alert-secondary py-2" style="font-size:0.85rem; border-radius: 6px;">
                                             Selecciona periodo, día o jornada para consultar los grupos disponibles.
                                         </div>
 
@@ -459,10 +600,10 @@
                                                         <strong>Modalidad:</strong> Matutino | <strong>Inicio:</strong> 22 de agosto
                                                     </div>
                                                 </div>
-                                                <div>
-                                                    <span class="pill pill-green me-1" id="badgeRecomendadoCupo">Cupo disponible</span>
-                                                    <button type="button" class="btn btn-sm btn-success" id="btnElegirRecomendado">
-                                                        <i class="bi bi-check2-circle me-1"></i> Seleccionar este grupo
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="badge" style="background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0; font-size: 0.75rem;" id="badgeRecomendadoCupo">Cupo disponible</span>
+                                                    <button type="button" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1" id="btnElegirRecomendado">
+                                                        <i class="ti ti-check"></i> Seleccionar este grupo
                                                     </button>
                                                 </div>
                                             </div>
@@ -471,7 +612,7 @@
                                         <!-- TABLA DE OTROS GRUPOS COMPATIBLES -->
                                         <div id="boxTablaOtrosGrupos" style="display: none;">
                                             <label class="form-label mb-1">Todos los grupos compatibles:</label>
-                                            <div class="table-responsive bg-white rounded border">
+                                            <div class="table-responsive bg-white rounded border" style="border-color: #E2E8F0 !important;">
                                                 <table class="table table-sm table-hover align-middle mb-0" style="font-size:0.83rem;">
                                                     <thead class="table-light">
                                                         <tr>
@@ -487,11 +628,11 @@
                                             </div>
                                         </div>
 
-                                        <div id="alertaSinGrupo" class="alert alert-warning py-2 mt-2" style="display: none; font-size:0.85rem;">
+                                        <div id="alertaSinGrupo" class="alert alert-warning py-2 mt-2" style="display: none; font-size:0.85rem; border-radius: 6px;">
                                             <strong>Sin grupo compatible asignado.</strong> Se guardará el alumno sin grupo (válido para alumnos en trámite).
                                         </div>
 
-                                        <div id="badgeGrupoElegidoFinal" class="alert alert-primary py-2 mt-2" style="display: none; font-size:0.88rem;">
+                                        <div id="badgeGrupoElegidoFinal" class="alert alert-primary py-2 mt-2" style="display: none; font-size:0.88rem; border-radius: 6px; background: #F0F7F8; border-color: #CBE4E8; color: #1E5B66;">
                                             Grupo seleccionado actualmente: <strong id="txtNombreGrupoElegido">Ninguno</strong>
                                             <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" id="btnQuitarGrupo">(Quitar)</button>
                                         </div>
@@ -499,33 +640,34 @@
 
                                 </div>
 
-                                <div id="avisoSeleccionarCCT" class="alert alert-light border text-muted py-2 px-3 mb-0" style="font-size:0.85rem;">
-                                    <i class="bi bi-arrow-up-circle me-1 text-primary"></i>
-                                    Seleccione primero un <strong>CCT</strong> para cargar los periodos y grupos compatibles.
+                                <div id="avisoSeleccionarCCT">
+                                    <i class="ti ti-info-circle" style="color: #1E5B66; font-size: 16px;"></i>
+                                    <span>Seleccione primero un <strong>CCT</strong> para cargar los periodos y grupos compatibles.</span>
                                 </div>
 
                                 <!-- ======================================================== -->
                                 <!-- BLOQUE MODALIDAD DE ESTUDIO (PRESENCIAL / ONLINE)        -->
                                 <!-- ======================================================== -->
-                                <div class="card p-3 border-0 rounded-3 mt-3 mb-2" style="background: linear-gradient(135deg, #fdfaff 0%, #f5e8ff 100%); border: 1.5px solid #d8b4fe !important; border-radius: 14px !important;">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h6 class="fw-bold mb-0" style="color: #6b21a8; font-size: 0.92rem;">
-                                            <i class="fa-solid fa-laptop-code me-1" style="color: #7b2cbf;"></i> Modalidad de Estudio y Aula Moodle
-                                        </h6>
-                                        <span id="badgeModalidadEstado" class="badge" style="background-color: #6b21a8; font-size: 0.78rem; padding: 5px 10px; border-radius: 8px;">PRESENCIAL</span>
+                                <div class="moodle-subcontainer mb-2">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="ti ti-device-laptop" style="color: #1E5B66; font-size: 17px;"></i>
+                                            <span style="font-size: 0.8125rem; font-weight: 600; color: #0F172A;">Modalidad de Estudio y Aula Moodle</span>
+                                        </div>
+                                        <span id="badgeModalidadEstado" class="badge-moodle-soft">PRESENCIAL</span>
                                     </div>
 
                                     <div class="row g-2 align-items-end">
                                         <div class="col-md-6">
-                                            <label class="form-label small fw-bold text-secondary mb-1">Modalidad del Alumno:</label>
+                                            <label class="form-label">Modalidad del Alumno:</label>
                                             <select name="modalidad_estudio" id="selectModalidadEstudioForm" class="form-select form-select-premium" onchange="toggleModalidadForm(this.value)">
-                                                <option value="PRESENCIAL">🏫 Modalidad Presencial</option>
-                                                <option value="ONLINE">💻 Modalidad En Línea (Moodle)</option>
+                                                <option value="PRESENCIAL">Modalidad Presencial</option>
+                                                <option value="ONLINE">Modalidad En Línea (Moodle)</option>
                                             </select>
                                         </div>
                                         <div class="col-md-6" id="boxDiaPagoForm" style="display: none;">
-                                            <label class="form-label small fw-bold text-secondary mb-1">
-                                                <i class="fa-solid fa-calendar-day text-primary me-1"></i> Día de Cobro Semanal:
+                                            <label class="form-label">
+                                                <i class="ti ti-calendar me-1" style="color: #1E5B66;"></i> Día de Cobro Semanal:
                                             </label>
                                             <select name="dia_pago" id="selectDiaPagoForm" class="form-select form-select-premium">
                                                 <option value="SABADO">Cada Sábado (Fin de semana)</option>
@@ -537,12 +679,12 @@
                                     </div>
 
                                     <!-- DETALLES DE MOODLE Y ACCIONES RÁPIDAS (VISIBLE SI ESTÁ EN LÍNEA) -->
-                                    <div id="panelDetallesOnlineForm" class="mt-3 p-3 bg-white rounded-3 border" style="display: none; border-color: #e9d5ff !important; box-shadow: 0 2px 6px rgba(123,44,191,0.06);">
+                                    <div id="panelDetallesOnlineForm" class="mt-3 p-3 bg-white rounded-3 border" style="display: none; border-color: #E2E8F0 !important; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);">
                                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                                             <div>
-                                                <div class="small fw-bold text-dark mb-1">
-                                                    <i class="fa-solid fa-circle-user text-purple me-1" style="color: #7b2cbf;"></i> Usuario Moodle: 
-                                                    <span class="text-primary font-monospace fw-bold" id="txtMoodleUsernameDisplay">Sin asignar</span>
+                                                <div class="small fw-bold text-dark mb-1 d-flex align-items-center gap-1">
+                                                    <i class="ti ti-user-circle" style="color: #1E5B66; font-size: 16px;"></i> Usuario Moodle: 
+                                                    <span class="font-monospace fw-bold" style="color: #1E5B66;" id="txtMoodleUsernameDisplay">Sin asignar</span>
                                                 </div>
                                                 <div class="text-muted" style="font-size: 0.8rem;">
                                                     Semana actual pagada: <strong class="text-success" id="txtSemanaPagadaDisplay">Semana 0</strong> 
@@ -550,20 +692,20 @@
                                                 </div>
                                             </div>
                                             <div class="d-flex gap-2">
-                                                <button type="button" class="btn btn-sm btn-success text-white shadow-sm" onclick="abrirModalPagoDesdeEditar()" style="border-radius: 8px; font-weight: 600; padding: 0.45rem 0.9rem;" title="Registrar Pago y Folio de Ticket">
-                                                    <i class="fa-solid fa-receipt me-1"></i> Registrar Pago / Tickets
+                                                <button type="button" class="btn btn-sm btn-success text-white shadow-sm d-inline-flex align-items-center gap-1" onclick="abrirModalPagoDesdeEditar()" style="border-radius: 6px; font-weight: 500; padding: 0.45rem 0.9rem;" title="Registrar Pago y Folio de Ticket">
+                                                    <i class="ti ti-receipt"></i> Registrar Pago / Tickets
                                                 </button>
-                                                <button type="button" class="btn btn-sm text-white shadow-sm" onclick="abrirModalOnlineDesdeEditar()" style="background-color: #7b2cbf; border-radius: 8px; font-weight: 600; padding: 0.45rem 0.9rem;" title="Configurar Acceso en Moodle">
-                                                    <i class="fa-solid fa-laptop-code me-1"></i> Configurar Moodle
+                                                <button type="button" class="btn btn-sm text-white shadow-sm d-inline-flex align-items-center gap-1" onclick="abrirModalOnlineDesdeEditar()" style="background-color: #1E5B66; border: none; border-radius: 6px; font-weight: 500; padding: 0.45rem 0.9rem;" title="Configurar Acceso en Moodle">
+                                                    <i class="ti ti-device-laptop"></i> Configurar Moodle
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- ALERTA INFORMATIVA SI NO TIENE GRUPO ASIGNADO -->
-                                    <div id="alertaGrupoOnlineForm" class="alert alert-danger py-2 px-3 mt-2 mb-0" style="display: none; font-size: 0.83rem; border-radius: 8px;">
-                                        <i class="fa-solid fa-triangle-exclamation me-1"></i>
-                                        <strong>Grupo Obligatorio:</strong> Para que el alumno pueda estar en modalidad en línea debe tener un grupo asignado arriba.
+                                    <div id="alertaGrupoOnlineForm" class="alert alert-danger py-2 px-3 mt-2 mb-0 d-flex align-items-center gap-2" style="display: none; font-size: 0.83rem; border-radius: 6px;">
+                                        <i class="ti ti-alert-triangle"></i>
+                                        <div><strong>Grupo Obligatorio:</strong> Para que el alumno pueda estar en modalidad en línea debe tener un grupo asignado arriba.</div>
                                     </div>
                                 </div>
 
@@ -574,8 +716,11 @@
                     <!-- 4. PROCEDENCIA ACADÉMICA -->
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse" data-bs-target="#procedenciaSection">
-                                <i class="bi bi-building me-2 text-primary"></i> 4. Procedencia académica y registro SEP
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#procedenciaSection">
+                                <span class="d-inline-flex align-items-center gap-2">
+                                    <i class="ti ti-building" style="color: #1E5B66; font-size: 18px;"></i>
+                                    <span>4. Procedencia académica y registro SEP</span>
+                                </span>
                             </button>
                         </h2>
                         <div id="procedenciaSection" class="accordion-collapse collapse" data-bs-parent="#accordionAlumno">
@@ -597,11 +742,11 @@
                                     </div>
                                 </div>
 
-                                <div id="boxAlertaSecundaria" class="alert alert-info py-2" style="display: none; font-size:0.85rem;">
+                                <div id="boxAlertaSecundaria" class="alert alert-info py-2" style="display: none; font-size:0.85rem; border-radius: 6px; background: #F0F7F8; border-color: #CBE4E8; color: #1E5B66;">
                                     <strong>Transición Secundaria BTI → Bachillerato:</strong> El sistema dará seguimiento a la continuidad académica del alumno.
                                 </div>
 
-                                <hr class="my-3">
+                                <hr class="my-3" style="border-color: #E2E8F0;">
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
@@ -614,9 +759,11 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div id="alertaEdadBGNE" class="alert alert-warning py-2 mb-0" style="display: none; font-size:0.85rem; border-radius:10px;">
-                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                                    <strong>Aviso de Validación de Edad (BGNE):</strong> El alumno tiene <strong id="txtDetalleEdadBGNE">menos de 16 años y medio</strong>. Puede inscribirse y cursar en BGNE, pero su alta oficial ante SEP permanecerá como <strong>PENDIENTE</strong> hasta cumplir la edad reglamentaria (16 años y 6 meses).
+                                <div id="alertaEdadBGNE" class="alert alert-warning py-2 mb-0 d-flex align-items-center gap-2" style="display: none; font-size:0.85rem; border-radius:8px;">
+                                    <i class="ti ti-alert-triangle"></i>
+                                    <div>
+                                        <strong>Aviso de Validación de Edad (BGNE):</strong> El alumno tiene <strong id="txtDetalleEdadBGNE">menos de 16 años y medio</strong>. Puede inscribirse y cursar en BGNE, pero su alta oficial ante SEP permanecerá como <strong>PENDIENTE</strong> hasta cumplir la edad reglamentaria (16 años y 6 meses).
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -625,8 +772,11 @@
                     <!-- 5. DOCUMENTACIÓN Y EQUIVALENCIA (REACTIVO PARA PERIODOS >= 2) -->
                     <div class="accordion-item" id="accordionItemEquivalencia" style="display: none;">
                         <h2 class="accordion-header">
-                            <button class="accordion-button rounded" type="button" data-bs-toggle="collapse" data-bs-target="#equivalenciaSection">
-                                <i class="bi bi-file-earmark-check-fill me-2 text-warning"></i> 5. Documentación y equivalencia
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#equivalenciaSection">
+                                <span class="d-inline-flex align-items-center gap-2">
+                                    <i class="ti ti-file-check" style="color: #1E5B66; font-size: 18px;"></i>
+                                    <span>5. Documentación y equivalencia</span>
+                                </span>
                             </button>
                         </h2>
                         <div id="equivalenciaSection" class="accordion-collapse collapse show" data-bs-parent="#accordionAlumno">
@@ -669,19 +819,19 @@
                                     </div>
                                 </div>
 
-                                <div id="alertaAccionEquivalencia" class="alert alert-warning py-2" style="display: none; font-size:0.85rem;">
+                                <div id="alertaAccionEquivalencia" class="alert alert-warning py-2" style="display: none; font-size:0.85rem; border-radius: 6px;">
                                     <strong>Acción requerida:</strong> El certificado fue entregado y la equivalencia pagada. Control Escolar debe ingresar el trámite ante la SEP.
                                 </div>
 
                                 <!-- MATERIAS PENDIENTES -->
-                                <div class="card p-3 border bg-light mt-3">
+                                <div class="card p-3 border bg-light mt-3" style="background: #F8FAFC !important; border-color: #E2E8F0 !important; border-radius: 8px !important;">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <label class="form-label fw-bold mb-0">Materias pendientes de acreditar:</label>
-                                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarMateriaPendiente">
-                                            <i class="bi bi-plus-circle me-1"></i> + Agregar materia pendiente
+                                        <button type="button" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1" id="btnAgregarMateriaPendiente" style="border-radius: 6px;">
+                                            <i class="ti ti-plus"></i> Agregar materia pendiente
                                         </button>
                                     </div>
-                                    <div class="table-responsive bg-white rounded border">
+                                    <div class="table-responsive bg-white rounded border" style="border-color: #E2E8F0 !important;">
                                         <table class="table table-sm align-middle mb-0" id="tablaMateriasPendientes" style="font-size:0.82rem;">
                                             <thead class="table-light">
                                                 <tr>
@@ -706,8 +856,11 @@
                     <!-- 6. ATENCIÓN PRESENCIAL / TRAYECTORIAS CRUZADAS -->
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse" data-bs-target="#trayectoriaCruzadaSection">
-                                <i class="bi bi-arrow-left-right me-2 text-primary"></i> 6. Atención presencial y trayectorias cruzadas
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#trayectoriaCruzadaSection">
+                                <span class="d-inline-flex align-items-center gap-2">
+                                    <i class="ti ti-arrows-left-right" style="color: #1E5B66; font-size: 18px;"></i>
+                                    <span>6. Atención presencial y trayectorias cruzadas</span>
+                                </span>
                             </button>
                         </h2>
                         <div id="trayectoriaCruzadaSection" class="accordion-collapse collapse" data-bs-parent="#accordionAlumno">
@@ -723,7 +876,7 @@
                                     <div class="col-md-3 mb-3" id="boxCCTPresencial" style="display: none;">
                                         <label class="form-label">CCT Presencial de Atención <span class="text-danger">*</span></label>
                                         <select name="id_centroTrabajo_presencial" id="selectCCTPresencial" class="form-select form-select-premium">
-                                            <option value="">-- Seleccione CCT Presencial --</option>
+                                            <option value="">Seleccionar CCT presencial...</option>
                                             @if(isset($centrosTrabajo) && count($centrosTrabajo) > 0)
                                                 @foreach($centrosTrabajo as $cct)
                                                     <option value="{{ $cct['id'] }}" data-nombre="{{ $cct['nombre'] }}">
@@ -736,19 +889,19 @@
                                     <div class="col-md-3 mb-3" id="boxGrupoPresencialBTI" style="display: none;">
                                         <label class="form-label">Grupo presencial de atención <span class="text-danger">*</span></label>
                                         <select name="grupoPresencialAtencion" id="inputGrupoPresencial" class="form-select form-select-premium">
-                                            <option value="">-- Seleccione un grupo --</option>
+                                            <option value="">Seleccionar un grupo...</option>
                                         </select>
                                     </div>
                                     <div class="col-md-3 mb-3" id="boxGeneracionPresencial" style="display: none;">
                                         <label class="form-label">Generación CCT Presencial</label>
                                         <select name="id_generacion_presencial" id="selectGeneracionPresencial" class="form-select form-select-premium">
-                                            <option value="">-- Sin asignación específica --</option>
+                                            <option value="">Sin asignación específica</option>
                                         </select>
                                     </div>
                                 </div>
-                                <div id="alertaTrayectoriaEspecial" class="alert alert-info py-2 mb-0" style="display: none; font-size:0.85rem; border-radius:10px;">
-                                    <i class="bi bi-arrow-left-right me-1"></i>
-                                    <strong>Trayectoria especial activa:</strong> CCT Administrativo / SEP: <span id="txtCCTAdmin" class="fw-bold">BTI</span> ➔ Atención presencial: <span id="txtCCTPresencialNombre" class="fw-bold text-primary">BGNE</span>.
+                                <div id="alertaTrayectoriaEspecial" class="alert alert-info py-2 mb-0 d-flex align-items-center gap-2" style="display: none; font-size:0.85rem; border-radius:8px; background: #F0F7F8; border-color: #CBE4E8; color: #1E5B66;">
+                                    <i class="ti ti-arrows-left-right"></i>
+                                    <div><strong>Trayectoria especial activa:</strong> CCT Administrativo / SEP: <span id="txtCCTAdmin" class="fw-bold">BTI</span> ➔ Atención presencial: <span id="txtCCTPresencialNombre" class="fw-bold" style="color: #1E5B66;">BGNE</span>.</div>
                                 </div>
                             </div>
                         </div>
@@ -757,31 +910,34 @@
                     <!-- 7. FICHA RESUMEN DE INSCRIPCIÓN (FORMATO TIPO DOCUMENTO) -->
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button rounded" type="button" data-bs-toggle="collapse" data-bs-target="#resumenSection">
-                                <i class="bi bi-file-earmark-text me-2 text-secondary"></i> 7. Ficha resumen de inscripción y situación escolar
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#resumenSection">
+                                <span class="d-inline-flex align-items-center gap-2">
+                                    <i class="ti ti-file-text" style="color: #1E5B66; font-size: 18px;"></i>
+                                    <span>7. Ficha resumen de inscripción y situación escolar</span>
+                                </span>
                             </button>
                         </h2>
                         <div id="resumenSection" class="accordion-collapse collapse show" data-bs-parent="#accordionAlumno">
                             <div class="accordion-body p-3">
                                 
                                 <!-- FICHA TIPO DOCUMENTO OFICIAL -->
-                                <div class="card border rounded-3 shadow-none bg-white mb-0" style="border-color: #cbd5e1 !important;">
+                                <div class="card border rounded-3 shadow-none bg-white mb-0" style="border-color: #E2E8F0 !important;">
                                     
                                     <!-- Cabecera de Ficha -->
-                                    <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center">
+                                    <div class="p-3 border-bottom d-flex justify-content-between align-items-center" style="background: #F8FAFC; border-color: #E2E8F0 !important;">
                                         <div>
-                                            <div class="fw-bold text-dark text-uppercase" style="font-size: 0.86rem; letter-spacing: 0.5px;">
-                                                <i class="bi bi-file-earmark-spreadsheet me-1 text-secondary"></i> Ficha de Inscripción y Control Escolar
+                                            <div class="fw-bold text-dark text-uppercase d-flex align-items-center gap-1" style="font-size: 0.86rem; letter-spacing: 0.5px;">
+                                                <i class="ti ti-file-spreadsheet" style="color: #1E5B66;"></i> Ficha de Inscripción y Control Escolar
                                             </div>
                                             <div class="text-muted" style="font-size: 0.78rem;">
                                                 Resumen administrativo del expediente
                                             </div>
                                         </div>
                                         <div class="d-flex align-items-center gap-2">
-                                            <button type="button" class="btn btn-sm btn-outline-primary fw-semibold px-3 py-1" onclick="imprimirFichaInscripcion()">
-                                                <i class="fa-solid fa-print me-1"></i> Imprimir Ficha
+                                            <button type="button" class="btn btn-sm btn-outline-primary fw-semibold px-3 py-1 d-inline-flex align-items-center gap-1" onclick="imprimirFichaInscripcion()" style="border-radius: 6px;">
+                                                <i class="ti ti-printer"></i> Imprimir Ficha
                                             </button>
-                                            <span id="badgeEstadoGeneral" class="badge bg-secondary" style="font-size: 0.75rem; font-weight: 600; padding: 5px 10px;">EN REGLA</span>
+                                            <span id="badgeEstadoGeneral" class="badge" style="background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 999px;">EN REGLA</span>
                                         </div>
                                     </div>
 
@@ -883,8 +1039,11 @@
                     <!-- 8. CURSOS EXTRA Y OBSERVACIONES -->
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse" data-bs-target="#cursosExtra">
-                                <i class="bi bi-journal-bookmark me-2 text-primary"></i> 8. Cursos extracurriculares y observaciones
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#cursosExtra">
+                                <span class="d-inline-flex align-items-center gap-2">
+                                    <i class="ti ti-certificate" style="color: #1E5B66; font-size: 18px;"></i>
+                                    <span>8. Cursos extracurriculares y observaciones</span>
+                                </span>
                             </button>
                         </h2>
                         <div id="cursosExtra" class="accordion-collapse collapse" data-bs-parent="#accordionAlumno">
@@ -915,7 +1074,8 @@
             <div class="modal-footer">
                 <button type="button" class="btn-premium-cancel" data-bs-dismiss="modal">Cancelar</button>
                 <button class="btn-premium-save" type="submit" id="btnGuardarAlumno">
-                    <i class="bi bi-floppy-fill me-2"></i> Guardar Alumno
+                    <i class="ti ti-check" style="font-size: 17px;"></i>
+                    <span>Guardar Alumno</span>
                 </button>
             </div>
 

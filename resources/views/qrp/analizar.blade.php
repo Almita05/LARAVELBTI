@@ -676,7 +676,7 @@
 
                     <h5 class="modal-title fw-bold" id="modalDetalleTitulo">
 
-                        <i class="fa-solid fa-list me-2"></i>
+                        <i class="ti ti-list-details me-2" style="color: #1E5B66;"></i>
 
                         Detalle
 

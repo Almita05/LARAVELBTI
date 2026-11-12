@@ -9,65 +9,346 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 </head>
 
+<style>
+/* ==========================================================================
+   SISTEMA DE DISEÑO SAAS - LISTADO DE ALUMNOS (SHADCN / RADIX STYLE)
+   ========================================================================== */
+.page-container {
+    padding: 24px 32px;
+    min-height: 100vh;
+}
+
+.page-header-standard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.page-heading {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary, #0F172A);
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.btn-regresar {
+    background: #FFFFFF !important;
+    border: 1px solid var(--border-subtle, #E2E8F0) !important;
+    color: var(--text-secondary, #475569) !important;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 6px !important;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.btn-regresar:hover {
+    background: #F8FAFC !important;
+    color: var(--text-primary, #0F172A) !important;
+    border-color: #CBD5E1 !important;
+    transform: none !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.btn-primary-saas {
+    background: var(--brand-primary, #1E5B66) !important;
+    border: none !important;
+    color: #FFFFFF !important;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 6px !important;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: background 0.15s ease;
+    cursor: pointer;
+}
+
+.btn-primary-saas:hover {
+    background: var(--brand-primary-hover, #16464F) !important;
+    color: #FFFFFF !important;
+}
+
+/* Contenedor Card SaaS */
+.saas-card-surface {
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle, #E2E8F0);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+/* Grid de Filtros en 1 Sola Línea */
+.alumnos-filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.1fr 1.1fr 1fr 1.1fr 0.9fr;
+    gap: 12px;
+    padding: 16px 20px;
+    background: #FFFFFF;
+    border-bottom: 1px solid var(--border-subtle, #E2E8F0);
+    align-items: end;
+}
+
+@media (max-width: 1200px) {
+    .alumnos-filter-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+}
+
+.alumnos-filter-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    display: block;
+}
+
+.alumnos-search-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.alumnos-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.form-control-saas-input {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px 0 36px;
+    border: 1px solid var(--border-subtle, #E2E8F0);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: var(--text-primary, #0F172A);
+    background-color: #FFFFFF;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-control-saas-input:focus {
+    outline: none;
+    border-color: var(--brand-primary, #1E5B66);
+    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12);
+}
+
+.form-select-saas-select {
+    width: 100%;
+    height: 38px;
+    padding: 0 32px 0 12px;
+    border: 1px solid var(--border-subtle, #E2E8F0);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: var(--text-primary, #0F172A);
+    background-color: #FFFFFF;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px 14px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+}
+
+.form-select-saas-select:focus {
+    outline: none;
+    border-color: var(--brand-primary, #1E5B66);
+    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12);
+}
+
+/* Tabla de Datos Moderna */
+.saas-data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.saas-data-table thead th {
+    background: #F8FAFC !important;
+    color: #64748B !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    border-top: none !important;
+    white-space: nowrap;
+}
+
+.saas-data-table tbody td {
+    padding: 14px 16px !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    border-top: none !important;
+    vertical-align: middle !important;
+    background: #FFFFFF !important;
+    color: #334155;
+    font-size: 0.875rem;
+}
+
+.saas-data-table tbody tr:hover td {
+    background-color: #F8FAFC !important;
+}
+
+.saas-data-table tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* Soft Badges */
+.badge-soft-tipo {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.badge-tipo-activo {
+    background: #DCFCE7 !important;
+    color: #15803D !important;
+    border-color: #BBF7D0 !important;
+}
+
+.badge-tipo-certificado {
+    background: #E0F2FE !important;
+    color: #0369A1 !important;
+    border-color: #BAE6FD !important;
+}
+
+.badge-tipo-inactivo {
+    background: #F1F5F9 !important;
+    color: #475569 !important;
+    border-color: #E2E8F0 !important;
+}
+
+.badge-tipo-baja {
+    background: #FEE2E2 !important;
+    color: #991B1B !important;
+    border-color: #FECACA !important;
+}
+
+.badge-tipo-reinscripcion {
+    background: #F0FDF4 !important;
+    color: #166534 !important;
+    border-color: #BBF7D0 !important;
+}
+
+/* Ghost Action Buttons */
+.btn-ghost-action {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #64748B;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    padding: 0;
+}
+
+.btn-ghost-action:hover {
+    background: #F1F5F9;
+    color: #0F172A;
+}
+
+.btn-ghost-action.btn-ghost-delete:hover {
+    background: #FEE2E2 !important;
+    color: #DC2626 !important;
+}
+
+.saas-table-footer {
+    background: #F8FAFC;
+    border-top: 1px solid var(--border-subtle, #E2E8F0);
+}
+</style>
+
 <div class="page-container">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <a href="{{ url()->previous() }}" class="btn btn-azul">
-                <i class="fa-solid fa-arrow-left me-2"></i>
+    <div class="page-header-standard">
+        <div class="page-header-left">
+            <a href="{{ url()->previous() }}" class="btn-regresar">
+                <i class="ti ti-arrow-left"></i>
                 Regresar
             </a>
-
-
-            
+            <h1 class="page-heading">Listado de Alumnos</h1>
         </div>
-        <h3 class="page-title">
-             <i class="fa-solid fa-chalkboard-user me-2"></i>
-            Listado de alumnos
-        </h3>
 
         @if(has_perm('alumnos_list', 'crear'))
-        <button class="btn btn-azul" onclick="abrirModalAlumno()">
-            <i class="fa-solid fa-plus me-2"></i>
+        <button class="btn-primary-saas" onclick="abrirModalAlumno()">
+            <i class="ti ti-plus"></i>
             Alta alumno
         </button>
         @endif
     </div>
 
-    <div class="glass-card">
+    <div class="saas-card-surface">
 
-        <div class="glass-header p-3">
+        <div class="saas-card-header">
             @if(isset($grupoId))
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0" id="tituloListaAlumnos">
-                        Alumnos del Grupo: <strong>{{ $grupoClave }}</strong>
+                <div class="p-3 px-4 d-flex justify-content-between align-items-center border-bottom">
+                    <h5 class="mb-0" id="tituloListaAlumnos" style="font-size: 1rem; font-weight: 600; color: #0F172A;">
+                        Alumnos del Grupo: <strong style="font-family: 'JetBrains Mono', monospace; color: var(--brand-primary, #1E5B66);">{{ $grupoClave }}</strong>
                     </h5>
                 </div>
             @else
-                <div class="row g-3 align-items-end">
-                    <!-- Título -->
-                    <div class="col-md-2">
-                        <h5 class="mb-0" id="tituloListaAlumnos" style="font-weight:600; color:#334155; font-size: 1.1rem;">Lista de alumnos</h5>
-                    </div>
+                <span id="tituloListaAlumnos" class="d-none"></span>
+                <div class="alumnos-filter-grid">
                     <!-- Buscador -->
-                    <div class="col-md-3">
-                        <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">Buscar Alumno</label>
-                        <input type="text" id="buscadorAlumnos" class="form-control glass-input w-100" placeholder="Buscar alumnos..." style="min-height:38px; font-size:0.85rem;">
+                    <div>
+                        <label class="alumnos-filter-label" for="buscadorAlumnos">Buscar Alumno</label>
+                        <div class="alumnos-search-wrap">
+                            <i class="ti ti-search alumnos-search-icon"></i>
+                            <input type="text" id="buscadorAlumnos" class="form-control-saas-input" placeholder="Buscar alumnos...">
+                        </div>
                     </div>
                     <!-- CCT -->
-                    <div class="col-md-2">
-                        <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">CCT</label>
-                        <select id="filtroCCT" class="form-select glass-input w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
-                            <option value="">-- Todos --</option>
+                    <div>
+                        <label class="alumnos-filter-label" for="filtroCCT">CCT</label>
+                        <select id="filtroCCT" class="form-select-saas-select">
+                            <option value="">Todos los CCT</option>
                             <option value="3">BGNE</option>
                             <option value="2">BTI</option>
-                            <option value="1">INF. Y COMP.</option>
+                            <option value="1">Inf. y Computación</option>
                         </select>
                     </div>
                     <!-- Generación -->
-                    <div class="col-md-2" id="contenedorFiltroGeneracion">
-                        <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">Generación</label>
-                        <select id="filtroBGNE" class="form-select glass-input w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
+                    <div id="contenedorFiltroGeneracion">
+                        <label class="alumnos-filter-label" for="filtroBGNE">Generación</label>
+                        <select id="filtroBGNE" class="form-select-saas-select">
                             <option value="" class="valueGeneraciones">Todas</option>
                             @foreach($generaciones as $generacion)
                             <option value="{{ $generacion['generacion'] }}" class="valueGeneraciones">
@@ -77,10 +358,10 @@
                         </select>
                     </div>
                     <!-- Estado -->
-                    <div class="col-md-2">
-                        <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">Estado</label>
-                        <select id="filtroStatus" class="form-select glass-input w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
-                            <option value="">-- Todos --</option>
+                    <div>
+                        <label class="alumnos-filter-label" for="filtroStatus">Estado</label>
+                        <select id="filtroStatus" class="form-select-saas-select">
+                            <option value="">Todos</option>
                             <option value="ACTIVO">ACTIVO</option>
                             <option value="INACTIVO">INACTIVO</option>
                             <option value="CERTIFICADO">CERTIFICADO</option>
@@ -88,20 +369,20 @@
                         </select>
                     </div>
                     <!-- Modalidad -->
-                    <div class="col-md-2">
-                        <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">Modalidad</label>
-                        <select id="filtroModalidad" class="form-select glass-input w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
-                            <option value="">-- Todas --</option>
-                            <option value="ONLINE">🌐 En Línea (Online)</option>
-                            <option value="PRESENCIAL">🏫 Presencial</option>
+                    <div>
+                        <label class="alumnos-filter-label" for="filtroModalidad">Modalidad</label>
+                        <select id="filtroModalidad" class="form-select-saas-select">
+                            <option value="">Todas</option>
+                            <option value="ONLINE">En Línea (Online)</option>
+                            <option value="PRESENCIAL">Presencial</option>
                         </select>
                     </div>
                     <!-- Ordenación -->
-                    <div class="col-md-1">
-                        <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">Orden ID</label>
-                        <select id="filtroOrden" class="form-select glass-input w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
-                            <option value="ASC">Menor-Mayor</option>
-                            <option value="DESC">Mayor-Menor</option>
+                    <div>
+                        <label class="alumnos-filter-label" for="filtroOrden">Orden ID</label>
+                        <select id="filtroOrden" class="form-select-saas-select">
+                            <option value="ASC">Menor a mayor</option>
+                            <option value="DESC">Mayor a menor</option>
                         </select>
                     </div>
                 </div>
@@ -110,19 +391,20 @@
 
         <div class="table-responsive">
 
-            <div id="loading" class="text-center py-4" style="display:none;">
-                <div class="spinner-border text-light"></div>
+            <div id="loading" class="text-center py-5" style="display:none;">
+                <div class="spinner-border text-primary" style="color: var(--brand-primary, #1E5B66) !important; width: 2.2rem; height: 2.2rem;"></div>
+                <div class="text-muted mt-2" style="font-size: 0.8125rem;">Cargando alumnos...</div>
             </div>
 
-            <table class="table table-borderless glass-table align-middle mb-0">
+            <table class="table align-middle mb-0 saas-data-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th style="width: 85px;">ID</th>
                         <th>Nombre</th>
-                        <th>Grupo</th>
+                        <th>Grupo / Modalidad</th>
                         <th>Generación</th>
-                        <th>Estado</th>
-                        <th class="text-center">Acciones</th>
+                        <th style="width: 140px;">Estado</th>
+                        <th class="text-center" style="width: 160px;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="tablaAlumnos"></tbody>
@@ -130,9 +412,9 @@
 
         </div>
 
-        <div class="glass-footer p-3 d-flex justify-content-between align-items-center">
-            <small id="infoPaginacionMaterias"></small>
-            <div id="paginacionMaterias"></div>
+        <div class="saas-table-footer p-3 px-4 d-flex justify-content-between align-items-center">
+            <span id="infoPaginacionMaterias" style="font-size: 0.8125rem; color: #64748B; font-weight: 500;"></span>
+            <div id="paginacionMaterias" class="d-flex align-items-center"></div>
         </div>
 
     </div>
@@ -155,15 +437,15 @@
     <div class="modal fade" id="modalKardexAlumno" tabindex="-1" aria-labelledby="modalKardexLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background: #ffffff;">
-                <div class="modal-header py-3 px-4 d-flex justify-content-between align-items-center" style="background: #1e6fa8 !important; color: #ffffff !important;">
-                    <h5 class="modal-title fw-bold text-white mb-0" id="modalKardexLabel">
-                        <i class="fa-solid fa-graduation-cap me-2"></i> Kárdex Oficial y Calificaciones
+                <div class="modal-header py-3 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title fw-bold mb-0" id="modalKardexLabel">
+                        <i class="ti ti-certificate me-2" style="color: #1E5B66;"></i> Kárdex Oficial y Calificaciones
                     </h5>
                     <div class="d-flex align-items-center gap-2">
-                        <button type="button" class="btn btn-light btn-sm fw-semibold shadow-sm text-dark px-3" onclick="imprimirKardex()">
-                            <i class="fa-solid fa-print me-1 text-primary"></i> Imprimir Kárdex
+                        <button type="button" class="btn btn-secondary btn-sm fw-semibold shadow-sm px-3" onclick="imprimirKardex()">
+                            <i class="ti ti-printer me-1" style="color: #1E5B66;"></i> Imprimir Kárdex
                         </button>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                 </div>
                 <div class="modal-body p-4 bg-white" id="kardexPrintArea" style="max-height: calc(85vh - 130px); overflow-y: auto;">
@@ -1751,17 +2033,18 @@ function getStatusBadge(status) {
     status = (status || 'ACTIVO').toUpperCase();
     switch (status) {
         case 'ACTIVO':
-            return '<span class="badge bg-success" style="font-size: 0.75rem; padding: 5px 10px; border-radius: 12px;">ACTIVO</span>';
-        case 'INACTIVO':
-            return '<span class="badge bg-secondary" style="font-size: 0.75rem; padding: 5px 10px; border-radius: 12px;">INACTIVO</span>';
-        case 'BAJA_TEMPORAL':
-            return '<span class="badge bg-warning text-dark" style="font-size: 0.75rem; padding: 5px 10px; border-radius: 12px;">BAJA TEMPORAL</span>';
+            return '<span class="badge-soft-tipo badge-tipo-activo">ACTIVO</span>';
         case 'CERTIFICADO':
-            return '<span class="badge bg-info text-dark" style="font-size: 0.75rem; padding: 5px 10px; border-radius: 12px;">CERTIFICADO</span>';
+            return '<span class="badge-soft-tipo badge-tipo-certificado">CERTIFICADO</span>';
+        case 'INACTIVO':
+            return '<span class="badge-soft-tipo badge-tipo-inactivo">INACTIVO</span>';
+        case 'BAJA':
+        case 'BAJA_TEMPORAL':
+            return '<span class="badge-soft-tipo badge-tipo-baja">BAJA</span>';
         case 'REINSCRIPCION':
-            return '<span class="badge bg-primary" style="font-size: 0.75rem; padding: 5px 10px; border-radius: 12px;">REINSCRIPCIÓN</span>';
+            return '<span class="badge-soft-tipo badge-tipo-reinscripcion">REINSCRIPCIÓN</span>';
         default:
-            return `<span class="badge bg-secondary" style="font-size: 0.75rem; padding: 5px 10px; border-radius: 12px;">${status}</span>`;
+            return `<span class="badge-soft-tipo badge-tipo-inactivo">${status}</span>`;
     }
 }
 
@@ -1830,7 +2113,11 @@ window.verAlumno = function(id) {
                         
                         const modalTitle = document.querySelector('#modalAlumno .modal-title');
                         if (modalTitle) {
-                            modalTitle.innerHTML = '<i class="bi bi-person-fill me-2"></i> Detalles del Alumno';
+                            modalTitle.innerHTML = 'Detalles del Alumno';
+                        }
+                        const headerIcon = document.querySelector('#modalAlumno .modal-header-icon');
+                        if (headerIcon) {
+                            headerIcon.innerHTML = '<i class="ti ti-user"></i>';
                         }
                         const submitBtn = document.querySelector('#formAlumno button[type="submit"]');
                         if (submitBtn) {
@@ -1939,29 +2226,30 @@ window.editarAlumno = function(id) {
 
                         if (badgeModalidad) {
                             badgeModalidad.textContent = isOnline ? 'ONLINE (MOODLE)' : 'PRESENCIAL';
-                            badgeModalidad.style.backgroundColor = isOnline ? '#7b2cbf' : '#64748b';
+                            badgeModalidad.style.backgroundColor = isOnline ? '#1E5B66' : '#F0F7F8';
+                            badgeModalidad.style.color = isOnline ? '#FFFFFF' : '#1E5B66';
+                            badgeModalidad.style.border = isOnline ? 'none' : '1px solid #CBE4E8';
                         }
                         if (boxDiaPago) boxDiaPago.style.display = isOnline ? 'block' : 'none';
                         if (boxAccionRapida) boxAccionRapida.style.display = isOnline ? 'block' : 'none';
                         if (panelDetalles) panelDetalles.style.display = (isOnline && al.moodle_username) ? 'block' : 'none';
 
-                        // Botón en Header del Modal Alta/Editar
+                        // Botón en Header del Modal Alta/Editar (Desactivado: se gestiona en Control Escolar Online)
                         if (btnHeaderOnline) {
-                            btnHeaderOnline.style.display = 'inline-flex';
-                            if (txtBtnHeader) {
-                                txtBtnHeader.innerHTML = isOnline
-                                    ? `<i class="fa-solid fa-laptop-code me-1"></i> Online (Sem. ${al.semana_actual_pagada || 0})`
-                                    : `<i class="fa-solid fa-laptop me-1"></i> Pasar a Online`;
-                            }
+                            btnHeaderOnline.style.display = 'none';
                         }
 
                         const modalTitle = document.querySelector('#modalAlumno .modal-title');
                         if (modalTitle) {
-                            modalTitle.innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Alumno';
+                            modalTitle.innerHTML = 'Editar Alumno';
+                        }
+                        const headerIcon = document.querySelector('#modalAlumno .modal-header-icon');
+                        if (headerIcon) {
+                            headerIcon.innerHTML = '<i class="ti ti-edit"></i>';
                         }
                         const submitBtn = document.querySelector('#formAlumno button[type="submit"]');
                         if (submitBtn) {
-                            submitBtn.innerHTML = '<i class="bi bi-floppy-fill"></i> Actualizar Alumno';
+                            submitBtn.innerHTML = '<i class="ti ti-check" style="font-size: 17px;"></i> <span>Actualizar Alumno</span>';
                         }
 
                         let modal = new bootstrap.Modal(document.getElementById('modalAlumno'));
@@ -2237,7 +2525,8 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!alumnos.length) {
             document.getElementById('tablaAlumnos').innerHTML = `
             <tr>
-                <td colspan="6" class="text-center text-muted">
+                <td colspan="6" class="text-center py-5 text-muted" style="font-size: 0.875rem;">
+                    <i class="ti ti-users-minus" style="font-size: 2rem; display: block; margin-bottom: 8px; color: #94A3B8;"></i>
                     No se encontraron alumnos
                 </td>
             </tr>
@@ -2247,46 +2536,66 @@ document.addEventListener("DOMContentLoaded", function() {
 
         let html = '';
         alumnos.forEach(alumno => {
-            const fullName = `${alumno.nombre} ${alumno.apPaterno} ${alumno.apMaterno || ''}`;
+            const fullName = `${alumno.nombre} ${alumno.apPaterno} ${alumno.apMaterno || ''}`.trim();
             
-                        const isOnline = alumno.modalidad_estudio === 'ONLINE';
+            const isOnline = alumno.modalidad_estudio === 'ONLINE';
             const modalidadBadge = isOnline 
-                ? `<div class="mt-1"><span class="badge" style="background: linear-gradient(135deg, #7b2cbf, #5c248f); color: #fff; font-size: 0.68rem; padding: 3px 7px; border-radius: 6px; font-weight: 700;" title="Cobro cada ${alumno.dia_pago || 'SABADO'}"><i class="fa-solid fa-wifi me-1"></i>ONLINE • ${alumno.dia_pago || 'SÁBADO'}</span><br><span style="font-size: 0.72rem; color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle-check me-1"></i>Sem. ${alumno.semana_actual_pagada || 0}/4</span></div>`
-                : `<div class="mt-1"><span class="badge bg-light text-secondary border" style="font-size: 0.68rem; padding: 2px 6px; border-radius: 6px;">Presencial</span></div>`;
+                ? `<div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 0.75rem; color: #64748B;">
+                     <span class="badge" style="background: #F3E8FF; color: #7E22CE; font-weight: 600; font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; border: 1px solid #E9D5FF;" title="Cobro cada ${alumno.dia_pago || 'SÁBADO'}">ONLINE • ${alumno.dia_pago || 'SÁBADO'}</span>
+                     <span>•</span>
+                     <span style="color: #10B981; font-weight: 600;"><i class="ti ti-circle-check" style="font-size: 13px; margin-right: 2px; vertical-align: -1px;"></i>Sem. ${alumno.semana_actual_pagada || 0}/4</span>
+                   </div>`
+                : `<div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 0.75rem; color: #64748B;">
+                     <span class="badge" style="background: #F1F5F9; color: #475569; font-weight: 500; font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; border: 1px solid #E2E8F0;">PRESENCIAL</span>
+                   </div>`;
 
             const groupBadge = alumno.nombreGrupoTexto 
-                ? `<span class="badge" style="font-size: 0.75rem; padding: 5px 10px; border-radius: 12px; background-color: #0ea5e9; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.15); font-weight: 700; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">${alumno.nombreGrupoTexto}</span>` 
-                : '<span class="text-muted" style="font-size: 0.85rem;">—</span>';
+                ? `<span style="font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.8125rem; color: #0F172A;">${alumno.nombreGrupoTexto}</span>` 
+                : '<span style="color: #94A3B8; font-size: 0.8125rem;">Sin grupo</span>';
+
+            const genText = (alumno.nombreGeneracionTexto && alumno.nombreGeneracionTexto !== 'N/A')
+                ? `<span style="color: #334155; font-size: 0.8125rem;">Generación ${alumno.nombreGeneracionTexto}</span>`
+                : `<span style="color: #94A3B8; font-size: 0.8125rem;">Generación N/A</span>`;
 
             html += `
         <tr>
-            <td>${alumno.idAlumno}</td>
-            <td>${fullName}</td>
-            <td>${groupBadge}${modalidadBadge}</td>
-            <td>Generación ${alumno.nombreGeneracionTexto || 'N/A'}</td>
+            <td>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; color: #64748B; font-weight: 500;">
+                    ${alumno.idAlumno}
+                </span>
+            </td>
+            <td>
+                <span style="font-weight: 500; color: #0F172A; font-size: 0.84rem; text-transform: uppercase; letter-spacing: 0.01em;">
+                    ${fullName}
+                </span>
+            </td>
+            <td>
+                <div>${groupBadge}</div>
+                ${modalidadBadge}
+            </td>
+            <td>${genText}</td>
             <td>${getStatusBadge(alumno.statusAlumno)}</td>
             <td class="text-center">
-                ${canConsultAlumno ? `
-                <button class="btn btn-info text-white btn-sm btn-action" onclick="abrirKardexAlumno(${alumno.idAlumno})" title="Ver Kárdex / Calificaciones">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                </button>
-                <button class="btn btn-secondary btn-sm btn-action" onclick="verAlumno(${alumno.idAlumno})" title="Ver detalles">
-                    <i class="fa-solid fa-eye"></i>
-                </button>
-                ` : ''}
-                ${canEditAlumno ? `
-                <button class="btn btn-warning btn-sm btn-action" onclick="editarAlumno(${alumno.idAlumno})" title="Editar">
-                    <i class="fa-solid fa-pen"></i>
-                </button>
-                ` : ''}
-                
-
-
-                ${canDeleteAlumno ? `
-                <button class="btn btn-danger btn-sm btn-action btnEliminar" data-id="${alumno.idAlumno}" title="Eliminar">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-                ` : ''}
+                <div style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                    ${canConsultAlumno ? `
+                    <button type="button" class="btn-ghost-action" onclick="abrirKardexAlumno(${alumno.idAlumno})" title="Ver Kárdex / Calificaciones">
+                        <i class="ti ti-school" style="font-size: 16px;"></i>
+                    </button>
+                    <button type="button" class="btn-ghost-action" onclick="verAlumno(${alumno.idAlumno})" title="Ver detalles">
+                        <i class="ti ti-eye" style="font-size: 16px;"></i>
+                    </button>
+                    ` : ''}
+                    ${canEditAlumno ? `
+                    <button type="button" class="btn-ghost-action" onclick="editarAlumno(${alumno.idAlumno})" title="Editar">
+                        <i class="ti ti-edit" style="font-size: 16px;"></i>
+                    </button>
+                    ` : ''}
+                    ${canDeleteAlumno ? `
+                    <button type="button" class="btn-ghost-action btn-ghost-delete btnEliminar" data-id="${alumno.idAlumno}" title="Eliminar">
+                        <i class="ti ti-trash" style="font-size: 16px;"></i>
+                    </button>
+                    ` : ''}
+                </div>
             </td>
         </tr>
         `;
@@ -2352,30 +2661,30 @@ document.addEventListener("DOMContentLoaded", function() {
     function renderPaginacion(data) {
         let html = '';
         html += `
-        <button class="btn btn-sm btn-azul me-2"
+        <button type="button" class="btn btn-sm btn-regresar me-2" style="height: 32px; padding: 0 10px; font-size: 0.8125rem;"
             ${data.page === 1 ? 'disabled' : ''}
             onclick="cambiarPagina(${data.page - 1})">
-            ⬅ Anterior
+            <i class="ti ti-chevron-left" style="font-size: 15px;"></i> Anterior
         </button>
     `;
 
         html += `
-        <span class="mx-2">
-            Página ${data.page} de ${data.total_pages}
+        <span class="mx-2 text-secondary" style="font-size: 0.8125rem; font-weight: 500;">
+            Página <strong style="color: #0F172A;">${data.page}</strong> de <strong style="color: #0F172A;">${data.total_pages}</strong>
         </span>
     `;
 
         html += `
-        <button class="btn btn-sm btn-azul ms-2"
+        <button type="button" class="btn btn-sm btn-regresar ms-2" style="height: 32px; padding: 0 10px; font-size: 0.8125rem;"
             ${data.page === data.total_pages ? 'disabled' : ''}
             onclick="cambiarPagina(${data.page + 1})">
-            Siguiente ➡
+            Siguiente <i class="ti ti-chevron-right" style="font-size: 15px;"></i>
         </button>
     `;
 
         document.getElementById('paginacionMaterias').innerHTML = html;
         document.getElementById('infoPaginacionMaterias').innerText =
-            `Total alumnos: ${data.total}`;
+            `Total de alumnos: ${data.total}`;
     }
 
     window.cambiarPagina = function(p) {
@@ -3623,11 +3932,11 @@ window.imprimirFichaInscripcion = function() {
 <div class="modal fade" id="modalConfigurarOnline" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, #7b2cbf 0%, #4c1d95 100%); padding: 18px 24px;">
+            <div class="modal-header">
                 <h5 class="modal-title fw-bold fs-6">
-                    <i class="fa-solid fa-laptop-code me-2"></i> Configurar Modalidad de Estudio
+                    <i class="ti ti-device-laptop me-2" style="color: #1E5B66;"></i> Configurar Modalidad de Estudio
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <div class="mb-3 p-3 rounded" style="background: #f8fafc; border: 1px solid #e2e8f0;">
@@ -3693,8 +4002,8 @@ window.imprimirFichaInscripcion = function() {
             </div>
             <div class="modal-footer bg-light p-3">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn text-white btn-sm px-3" id="btnGuardarModalidadOnline" style="background-color: #7b2cbf; border-color: #6a24a6;" onclick="guardarModalidadOnline()">
-                    <i class="fa-solid fa-save me-1"></i> Guardar Cambios
+                <button type="button" class="btn btn-azul btn-sm px-3" id="btnGuardarModalidadOnline" onclick="guardarModalidadOnline()">
+                    <i class="ti ti-check me-1"></i> Guardar Cambios
                 </button>
             </div>
         </div>
@@ -3707,11 +4016,11 @@ window.imprimirFichaInscripcion = function() {
 <div class="modal fade" id="modalRegistrarPagoOnline" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); padding: 18px 24px;">
+            <div class="modal-header">
                 <h5 class="modal-title fw-bold fs-6">
-                    <i class="fa-solid fa-receipt me-2"></i> Registrar Pago de Colegiatura Online
+                    <i class="ti ti-receipt me-2" style="color: #1E5B66;"></i> Registrar Pago de Colegiatura Online
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
                 <!-- Resumen alumno -->
@@ -3806,8 +4115,8 @@ window.imprimirFichaInscripcion = function() {
             </div>
             <div class="modal-footer bg-light p-3">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-success btn-sm px-3" id="btnGuardarPagoOnline" onclick="guardarPagoOnline()">
-                    <i class="fa-solid fa-check-circle me-1"></i> Registrar Pago y Desbloquear Semana en Moodle
+                <button type="button" class="btn btn-azul btn-sm px-3" id="btnGuardarPagoOnline" onclick="guardarPagoOnline()">
+                    <i class="ti ti-check me-1"></i> Registrar Pago y Desbloquear Semana
                 </button>
             </div>
         </div>
@@ -4176,7 +4485,9 @@ window.toggleModalidadForm = function(val) {
         if (boxAccionRapida) boxAccionRapida.style.display = 'block';
         if (badgeModalidad) {
             badgeModalidad.textContent = 'ONLINE (MOODLE)';
-            badgeModalidad.style.backgroundColor = '#7b2cbf';
+            badgeModalidad.style.backgroundColor = '#1E5B66';
+            badgeModalidad.style.color = '#FFFFFF';
+            badgeModalidad.style.border = 'none';
         }
         if (!grupoId || grupoId <= 0) {
             if (alertaGrupo) alertaGrupo.style.display = 'block';
@@ -4193,7 +4504,9 @@ window.toggleModalidadForm = function(val) {
         if (alertaGrupo) alertaGrupo.style.display = 'none';
         if (badgeModalidad) {
             badgeModalidad.textContent = 'PRESENCIAL';
-            badgeModalidad.style.backgroundColor = '#64748b';
+            badgeModalidad.style.backgroundColor = '#F0F7F8';
+            badgeModalidad.style.color = '#1E5B66';
+            badgeModalidad.style.border = '1px solid #CBE4E8';
         }
     }
 };

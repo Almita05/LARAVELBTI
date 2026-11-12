@@ -7,369 +7,484 @@
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
 <style>
+:root {
+    --brand-primary: #1E5B66;
+    --brand-dark: #184A54;
+    --brand-light: #F0F7F8;
+    --brand-border: #CBE4E8;
+    --bg-page: #F8FAFC;
+    --bg-surface: #FFFFFF;
+    --border-subtle: #E2E8F0;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #64748B;
+    --success-bg: #DCFCE7;
+    --success-text: #15803D;
+    --success-border: #BBF7D0;
+    --danger-bg: #FEE2E2;
+    --danger-text: #B91C1C;
+    --danger-border: #FECACA;
+}
+
 /* Wrapper to overlay the layout's teal background and make it clean light-gray */
 .horarios-page-wrapper {
-    background: #f4f6f9;
+    background: var(--bg-page);
     margin: -25px;
-    padding: 30px;
+    padding: 24px 32px;
     min-height: calc(100vh - 85px);
-    color: #1e293b;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Dashboard Cards (White theme with subtle shadow) */
-.glass-card {
-    background: #ffffff !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 12px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
-    color: #1e293b !important;
+/* Page Header (Unified horizontal row) */
+.horarios-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
-.dashboard-header {
-    border-bottom: 1px solid #e2e8f0;
-    padding-bottom: 15px;
-    margin-bottom: 25px;
-}
-
-.dashboard-title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: rgb(38, 104, 123); /* Color del sistema */
-}
-
-.dashboard-subtitle {
-    font-size: 0.9rem;
-    color: #64748b;
-}
-
-.badge-nivel {
-    background-color: rgba(38, 104, 123, 0.1);
-    color: rgb(38, 104, 123);
-    border: 1px solid rgba(38, 104, 123, 0.2);
-    font-size: 0.85rem;
-    font-weight: 600;
-    padding: 4px 10.5px;
-    border-radius: 20px;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-/* User Badge */
-.user-badge {
+.horarios-header-left {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(38, 104, 123, 0.1);
-    color: rgb(38, 104, 123);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    border: 1px solid rgba(38, 104, 123, 0.2);
-}
-
-.user-info-text {
-    line-height: 1.2;
-}
-
-.user-name {
-    font-size: 0.9rem;
+.page-heading {
+    font-size: 1.25rem;
     font-weight: 600;
-    color: #1e293b;
-}
-
-.user-role {
-    font-size: 0.75rem;
-    color: #64748b;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
 }
 
 /* Return Button */
-.btn-regresar-light {
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: rgb(38, 104, 123);
-    font-weight: 600;
-    padding: .375rem .75rem;
-    border-radius: .375rem;
-    transition: all 0.2s ease;
-    text-decoration: none;
+.btn-regresar {
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
     display: inline-flex;
     align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    transition: all 0.15s ease;
 }
 
-.btn-regresar-light:hover {
-    background: #f8fafc;
-    color: rgb(38, 104, 123);
-    border-color: #94a3b8;
+.btn-regresar:hover {
+    background: #F1F5F9;
+    color: var(--text-primary);
+    border-color: #CBD5E1;
 }
 
-/* Sidebar - Seleccionar Grupo */
+/* Institutional Soft Badge for role */
+.badge-rol-coordinacion {
+    background: var(--brand-light);
+    color: var(--brand-primary);
+    border: 1px solid var(--brand-border);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* 3-Panel Proportional Grid Layout */
+.horarios-grid-layout {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr) 300px;
+    gap: 20px;
+    align-items: start;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+    .horarios-grid-layout {
+        grid-template-columns: 250px minmax(0, 1fr);
+    }
+    .edit-panel-wrapper {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 820px) {
+    .horarios-grid-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Uniform Panel Surfaces */
 .sidebar-panel,
 .calendar-panel,
 .edit-panel {
-    height: 68vh;
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     display: flex;
     flex-direction: column;
 }
 
+.sidebar-panel {
+    padding: 16px;
+}
+
+.calendar-panel {
+    padding: 16px;
+}
+
+.edit-panel {
+    padding: 16px;
+    overflow-y: auto;
+    max-height: calc(100vh - 140px);
+    scrollbar-width: thin;
+}
+
 .sidebar-title,
 .edit-panel-title {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 600;
-    color: #1e293b;
-    margin-bottom: 15px;
+    color: var(--text-primary);
+    margin: 0 0 12px 0;
 }
 
 /* Search Box */
 .search-container {
     position: relative;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
 .search-icon {
     position: absolute;
-    left: 12px;
+    left: 10px;
     top: 50%;
     transform: translateY(-50%);
-    color: #94a3b8;
-    font-size: 0.85rem;
+    color: #94A3B8;
+    font-size: 1rem;
+    pointer-events: none;
 }
 
 .search-input-custom {
-    background: #f1f5f9 !important;
-    border: 1px solid #cbd5e1 !important;
-    color: #1e293b !important;
-    border-radius: 8px;
-    padding-left: 35px !important;
+    background: #FFFFFF !important;
+    border: 1px solid var(--border-subtle) !important;
+    color: var(--text-primary) !important;
+    border-radius: 6px !important;
+    padding-left: 34px !important;
+    height: 36px !important;
+    font-size: 0.8125rem !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .search-input-custom:focus {
-    background: #ffffff !important;
-    border-color: rgb(38, 104, 123) !important;
-    box-shadow: 0 0 0 2px rgba(38, 104, 123, 0.15) !important;
+    border-color: var(--brand-primary) !important;
+    box-shadow: 0 0 0 2px rgba(30, 91, 102, 0.12) !important;
+    outline: none !important;
 }
 
 .filter-select-custom {
-    background: #f1f5f9 !important;
-    border: 1px solid #cbd5e1 !important;
-    color: #334155 !important;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    padding: 0.4rem 0.5rem !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--border-subtle) !important;
+    color: var(--text-secondary) !important;
+    border-radius: 6px !important;
+    font-size: 0.8125rem !important;
+    height: 34px !important;
+    padding: 0 24px 0 8px !important;
     cursor: pointer;
     font-weight: 500;
 }
 
 .filter-select-custom:focus {
-    background: #ffffff !important;
-    border-color: rgb(38, 104, 123) !important;
-    box-shadow: 0 0 0 2px rgba(38, 104, 123, 0.15) !important;
+    border-color: var(--brand-primary) !important;
+    box-shadow: 0 0 0 2px rgba(30, 91, 102, 0.12) !important;
+    outline: none !important;
 }
 
 /* Groups List */
 .group-list {
     overflow-y: auto;
-    flex-grow: 1;
+    max-height: calc(100vh - 280px);
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding-right: 5px;
+    padding-right: 4px;
+    scrollbar-width: thin;
 }
 
-/* Scrollbar styling */
 .group-list::-webkit-scrollbar,
-.calendar-container::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+.calendar-container::-webkit-scrollbar,
+.edit-panel::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
 }
 .group-list::-webkit-scrollbar-thumb,
-.calendar-container::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.1);
+.calendar-container::-webkit-scrollbar-thumb,
+.edit-panel::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
     border-radius: 3px;
 }
 
 .group-item {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    color: #334155;
-    padding: 10px 14px;
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
     border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    text-align: left;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
+    margin-bottom: 0;
+    width: 100%;
+    text-align: left;
+}
+
+.group-item span.group-clave-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.group-period-badge {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    background: #F1F5F9;
+    color: #475569;
+    padding: 2px 7px;
+    border-radius: 6px;
+    border: 1px solid var(--border-subtle);
+    font-family: 'Inter', sans-serif;
 }
 
 .group-item:hover {
-    background: #f8fafc;
-    color: #1e293b;
-    border-color: #cbd5e1;
+    background: #F8FAFC;
+    border-color: #CBD5E1;
 }
 
+/* Active Selected Group Item */
 .group-item.active {
-    background: #f1f5f9 !important;
-    border: 1px solid #e2e8f0 !important;
-    border-left: 4px solid rgb(38, 104, 123) !important;
-    color: rgb(38, 104, 123) !important;
+    background: var(--brand-light) !important;
+    border-color: var(--brand-primary) !important;
+    box-shadow: inset 3px 0 0 0 var(--brand-primary) !important;
+}
+
+.group-item.active span.group-clave-text {
+    color: var(--brand-primary) !important;
     font-weight: 700;
 }
 
-/* Calendar Header */
+.group-item.active .group-period-badge {
+    background: #E0EFF2 !important;
+    color: var(--brand-primary) !important;
+    border-color: var(--brand-border) !important;
+}
+
+/* Calendar Header & Actions */
 .calendar-header-actions {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 14px;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .calendar-group-title {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0;
-}
-
-.calendar-group-title span {
-    color: rgb(38, 104, 123);
-}
-
-.btn-action-system {
-    background: rgb(38, 104, 123) !important;
-    border: none;
-    color: white !important;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     font-weight: 600;
-    padding: 6px 14px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
 }
 
-.btn-action-system:hover {
-    background: rgb(28, 79, 94) !important;
-    transform: translateY(-1px);
+.calendar-group-title span.group-clave-highlight {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--brand-primary);
+    font-weight: 700;
 }
 
-/* Calendar Table */
+.badge-nivel {
+    background-color: var(--brand-light);
+    color: var(--brand-primary);
+    border: 1px solid var(--brand-border);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    display: inline-block;
+}
+
+.btn-header-secondary {
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.btn-header-secondary:hover {
+    background: #F1F5F9;
+    color: var(--text-primary);
+    border-color: #CBD5E1;
+}
+
+.btn-header-primary {
+    background: var(--brand-primary);
+    border: none;
+    color: #FFFFFF;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.btn-header-primary:hover {
+    background: var(--brand-dark);
+}
+
+/* Calendar Container & Table */
 .calendar-container {
     overflow-x: auto;
     overflow-y: auto;
-    flex-grow: 1;
-    border: 1px solid #e2e8f0;
+    max-height: calc(100vh - 250px);
+    border: 1px solid var(--border-subtle);
     border-radius: 8px;
+    scrollbar-width: thin;
 }
 
 .calendar-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 750px;
-    background: #ffffff;
+    min-width: 680px;
+    background: #FFFFFF;
 }
 
 .calendar-table th {
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0;
-    color: #475569 !important;
-    font-size: 0.8rem;
-    font-weight: 700;
+    background: #F8FAFC !important;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary) !important;
+    font-size: 0.75rem;
+    font-weight: 600;
     text-transform: uppercase;
     text-align: center;
-    padding: 12px 10px;
+    padding: 10px 8px;
+    letter-spacing: 0.02em;
 }
 
 .calendar-table td {
-    border: 1px solid #e2e8f0 !important;
-    padding: 4px !important;
+    border: 1px solid var(--border-subtle) !important;
+    padding: 3px !important;
     vertical-align: middle;
     position: relative;
-    background: #ffffff !important;
+    background: #FFFFFF !important;
 }
 
 .time-col {
-    background: #f8fafc !important;
-    color: #475569 !important;
+    background: #F8FAFC !important;
+    color: var(--text-muted) !important;
+    font-family: 'JetBrains Mono', monospace;
     font-size: 0.75rem;
-    font-weight: 700;
+    font-weight: 600;
     text-align: center;
     width: 105px;
-    padding: 10px !important;
-    border-right: 1px solid #e2e8f0 !important;
+    padding: 8px !important;
+    border-right: 1px solid var(--border-subtle) !important;
+    white-space: nowrap;
 }
 
-/* Receso Row Styling */
+/* Receso Row */
 .receso-row {
-    background: #f8fafc !important;
+    background: #F8FAFC !important;
 }
 
 .receso-time-col {
-    background: #e2e8f0 !important;
-    color: #475569 !important;
-    font-weight: 800 !important;
+    background: #F1F5F9 !important;
+    color: var(--text-secondary) !important;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700 !important;
     font-size: 0.75rem !important;
 }
 
 .receso-cell {
-    background: #f8fafc !important;
-    padding: 6px 12px !important;
+    background: #F8FAFC !important;
+    padding: 4px 8px !important;
     text-align: center;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid var(--border-subtle) !important;
 }
 
 .receso-banner {
-    background: linear-gradient(135deg, rgba(38, 104, 123, 0.08), rgba(107, 199, 232, 0.15));
-    border: 1px dashed rgba(38, 104, 123, 0.35);
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: rgb(38, 104, 123);
-    letter-spacing: 2px;
+    background: #F8FAFC;
+    border: 1px dashed #CBD5E1;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    border-radius: 6px;
+    padding: 6px 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     user-select: none;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
 }
 
 /* Calendar Cell Slots */
 .cell-slot {
     width: 100%;
-    min-height: 80px;
+    min-height: 72px;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #cbd5e1;
-    font-size: 1.1rem;
+    color: #CBD5E1;
+    font-size: 1rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     position: relative;
+    border-radius: 4px;
 }
 
 .cell-slot:hover {
-    background: #f8fafc;
+    background: #F8FAFC;
 }
 
 .cell-slot.selected {
-    background: rgba(38, 104, 123, 0.05) !important;
-    border: 2px dashed rgb(38, 104, 123);
+    background: rgba(30, 91, 102, 0.06) !important;
+    border: 2px dashed var(--brand-primary);
     border-radius: 6px;
 }
 
 .cell-slot .add-btn-icon {
     display: none;
-    color: rgb(38, 104, 123);
-    font-size: 1.1rem;
+    color: #94A3B8;
+    font-size: 1rem;
 }
 
 .cell-slot:hover .add-btn-icon {
@@ -380,201 +495,318 @@
     display: none;
 }
 
-/* Assigned Class Cards (Light theme style matching the mock colors) */
+/* Assigned Class Card */
 .class-card {
     position: relative;
-    width: calc(100% - 8px);
-    min-height: 72px;
+    width: calc(100% - 6px);
+    min-height: 64px;
     height: auto;
-    margin: 4px;
+    margin: 3px;
     border-radius: 6px;
-    padding: 8px 12px;
+    padding: 8px 10px;
     text-align: left;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-    background: #f1f5f9; /* Light gray-blue */
-    border: 1px solid #cbd5e1;
-    border-left: 4px solid rgb(38, 104, 123); /* System Color indicator */
+    gap: 3px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    background: var(--brand-light);
+    border: 1px solid var(--brand-border);
+    border-left: 3px solid var(--brand-primary);
     box-sizing: border-box;
     align-self: center;
-}
-
-.class-subject, .class-detail, .class-card hr {
-    flex-shrink: 0;
-}
-
-.class-subject {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: rgb(38, 104, 123); /* System color text */
-    white-space: normal;
-    word-break: break-word;
-    line-height: 1.25;
-}
-
-.class-detail {
-    font-size: 0.68rem;
-    color: #475569;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 2px;
-    white-space: normal;
-    word-break: break-word;
-    line-height: 1.2;
-}
-
-.class-detail i {
-    color: #64748b;
-    font-size: 0.65rem;
-}
-
-/* Drag and Drop visual feedback */
-.class-card {
     cursor: grab;
     user-select: none;
+    transition: all 0.15s ease;
 }
+
 .class-card:active {
     cursor: grabbing;
 }
+
 .class-card.dragging {
     opacity: 0.45;
     transform: scale(0.96);
-    border: 2px dashed rgb(38, 104, 123) !important;
+    border: 2px dashed var(--brand-primary) !important;
 }
 
 .cell-slot.drag-over {
-    background: rgba(38, 104, 123, 0.12) !important;
-    border: 2px dashed rgb(38, 104, 123) !important;
-    box-shadow: inset 0 0 8px rgba(38, 104, 123, 0.15);
+    background: rgba(30, 91, 102, 0.12) !important;
+    border: 2px dashed var(--brand-primary) !important;
 }
 
-/* Form Fields */
+.class-subject {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.25;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.aula-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6875rem;
+    background: #FFFFFF;
+    color: var(--brand-primary);
+    border: 1px solid var(--brand-border);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.class-detail {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 3px;
+    line-height: 1.2;
+}
+
+/* Right Panel: Edit Form & Evaluation Periods */
 .edit-panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border-subtle);
     padding-bottom: 10px;
 }
 
 .btn-close-panel {
     background: transparent;
     border: none;
-    color: #64748b;
-    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-size: 1.1rem;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: color 0.15s ease;
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
 .btn-close-panel:hover {
-    color: #1e293b;
+    color: var(--text-primary);
+    background: #F1F5F9;
 }
 
 .edit-form {
-    flex-grow: 1;
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding-right: 5px;
 }
 
 .form-group-custom {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
 }
 
 .form-group-custom label {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #475569;
+    color: var(--text-secondary);
 }
 
 .form-input-custom {
-    background: #ffffff !important;
-    border: 1px solid #cbd5e1 !important;
-    color: #1e293b !important;
-    border-radius: 8px;
-    padding: 8px 12px !important;
-    font-size: 0.85rem !important;
+    background: #FFFFFF !important;
+    border: 1px solid var(--border-subtle) !important;
+    color: var(--text-primary) !important;
+    border-radius: 6px !important;
+    padding: 6px 10px !important;
+    font-size: 0.8125rem !important;
+    height: 36px !important;
     width: 100%;
 }
 
 .form-input-custom:focus {
-    border-color: rgb(38, 104, 123) !important;
-    box-shadow: 0 0 0 2px rgba(38, 104, 123, 0.15) !important;
-    outline: none;
+    border-color: var(--brand-primary) !important;
+    box-shadow: 0 0 0 2px rgba(30, 91, 102, 0.12) !important;
+    outline: none !important;
 }
 
 .form-input-custom[readonly] {
-    background: #f1f5f9 !important;
-    color: #64748b !important;
-    border-color: #e2e8f0 !important;
+    background: #F8FAFC !important;
+    color: var(--text-muted) !important;
+    border-color: var(--border-subtle) !important;
     cursor: not-allowed;
 }
 
-
-
 .form-actions-custom {
     display: flex;
-    gap: 10px;
-    margin-top: 15px;
+    gap: 8px;
+    margin-top: 10px;
 }
 
 .btn-form-cancel {
     flex: 1;
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: #475569;
-    font-size: 0.8rem;
-    font-weight: 600;
-    padding: 8px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    height: 36px;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+    cursor: pointer;
 }
 
 .btn-form-cancel:hover {
-    background: #f8fafc;
-    border-color: #94a3b8;
+    background: #F8FAFC;
+    color: var(--text-primary);
+    border-color: #CBD5E1;
+}
+
+.btn-form-save {
+    flex: 1;
+    background: var(--brand-primary) !important;
+    border: none !important;
+    color: #FFFFFF !important;
+    font-size: 0.8125rem !important;
+    font-weight: 500 !important;
+    height: 36px !important;
+    border-radius: 6px !important;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.btn-form-save:hover {
+    background: var(--brand-dark) !important;
 }
 
 .btn-form-delete {
-    background: #ef4444;
+    background: #EF4444;
     border: none;
-    color: #ffffff;
-    font-size: 0.8rem;
-    font-weight: 600;
-    padding: 8px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    margin-top: 5px;
+    color: #FFFFFF;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    height: 36px;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+    margin-top: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
 }
 
 .btn-form-delete:hover {
-    background: #dc2626;
+    background: #DC2626;
 }
 
-/* Empty States */
+/* Evaluation Period Cards & Notice */
+.eval-card {
+    padding: 10px 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    background: #FFFFFF;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+}
+
+.eval-card-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.eval-dates-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: #334155;
+    margin-top: 3px;
+}
+
+.badge-soft-success {
+    background: var(--success-bg);
+    color: var(--success-text);
+    border: 1px solid var(--success-border);
+    font-size: 0.6875rem;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+.badge-soft-muted {
+    background: #F1F5F9;
+    color: var(--text-muted);
+    border: 1px solid var(--border-subtle);
+    font-size: 0.6875rem;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-weight: 500;
+}
+
+.btn-eval-periodos {
+    height: 36px;
+    width: 100%;
+    background: var(--brand-primary);
+    color: #FFFFFF;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    margin-top: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-eval-periodos:hover {
+    background: var(--brand-dark);
+}
+
+.eval-info-notice {
+    margin-top: 12px;
+    padding: 12px;
+    background: #F8FAFC;
+    border: 1px dashed #CBD5E1;
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/* Empty State Message */
 .empty-state-message {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%;
-    color: #94a3b8;
+    color: var(--text-muted);
     text-align: center;
-    gap: 15px;
+    gap: 12px;
+    padding: 24px 12px;
 }
 
 .empty-state-message i {
-    font-size: 3rem;
-    color: #cbd5e1;
+    font-size: 2rem;
+    color: #CBD5E1;
+}
+
+/* Spin animation for Tabler icons */
+.ti-spin {
+    animation: ti-spin 1s infinite linear;
+    display: inline-block;
+}
+@keyframes ti-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(359deg); }
 }
 
 /* Fix TomSelect width inside initially hidden containers */
@@ -585,250 +817,229 @@
 
 <div class="horarios-page-wrapper">
 
-    <!-- Back Button -->
-    <div class="mb-4">
-        <a href="{{ route('home') }}" class="btn-regresar-light">
-            <i class="fa-solid fa-arrow-left me-2"></i>
-            Regresar
-        </a>
+    <!-- Page Header (Unified horizontal row, role badge, avatar removed) -->
+    <div class="horarios-page-header">
+        <div class="horarios-header-left">
+            <a href="{{ route('home') }}" class="btn-regresar">
+                <i class="ti ti-arrow-left"></i>
+                Regresar
+            </a>
+            <h1 class="page-heading">Horarios del Grupo</h1>
+        </div>
+        
+        <!-- Institutional Soft Badge Role (Avatar removed) -->
+        <span class="badge-rol-coordinacion">
+            <i class="ti ti-shield-check"></i>
+            Coordinación Académica
+        </span>
     </div>
 
-    <!-- Main Dashboard Container -->
-    <div class="horarios-dashboard">
-
-        <!-- Header -->
-        <div class="dashboard-header d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="dashboard-title">Horarios del Grupo</h1>
-                <p class="dashboard-subtitle mb-0">Administra el horario de clases del grupo seleccionado.</p>
-            </div>
+    <!-- Main 3-Panel Proportional Grid Layout -->
+    <div class="horarios-grid-layout">
+        
+        <!-- Left Panel: Select Group Sidebar -->
+        <div class="sidebar-panel">
+            <h4 class="sidebar-title">Seleccionar Grupo</h4>
             
-            <!-- User Profile Badge -->
-            <div class="user-badge">
-                <div class="user-info-text text-end d-none d-sm-block">
-                    <div class="user-name">Coordinador Académico</div>
-                    <div class="user-role">Coordinación</div>
-                </div>
-                <div class="user-avatar">
-                    <i class="fa-solid fa-user"></i>
+            <!-- Search Input -->
+            <div class="search-container">
+                <i class="ti ti-search search-icon"></i>
+                <input type="text" id="groupSearchInput" class="form-control search-input-custom" placeholder="Buscar grupo o alumno...">
+            </div>
+
+            <!-- Filters Row -->
+            <div class="d-flex gap-2 mb-3">
+                <select id="filterStatus" class="form-select form-select-sm filter-select-custom w-50">
+                    <option value="ACTIVO" selected>Activos</option>
+                    <option value="INACTIVO">Inactivos</option>
+                    <option value="ALL">Todos</option>
+                </select>
+                <select id="filterCct" class="form-select form-select-sm filter-select-custom w-50">
+                    <option value="ALL" selected>Todos CCT</option>
+                </select>
+            </div>
+
+            <!-- Groups List -->
+            <div id="groupListContainer" class="group-list">
+                <div class="text-center py-4" id="groupListSpinner">
+                    <div class="spinner-border text-secondary spinner-border-sm"></div>
                 </div>
             </div>
         </div>
 
-        <!-- Dashboard Panels Grid -->
-        <div class="row g-3">
-            
-            <!-- Left Panel: Select Group Sidebar -->
-            <div class="col-lg-3 col-md-4">
-                <div class="glass-card sidebar-panel p-3">
-                    <h4 class="sidebar-title">Seleccionar Grupo</h4>
-                    
-                    <!-- Search Input -->
-                    <div class="search-container mb-2">
-                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        <input type="text" id="groupSearchInput" class="form-control search-input-custom" placeholder="Buscar grupo o alumno...">
-                    </div>
-
-                    <!-- Filters Row -->
-                    <div class="d-flex gap-2 mb-3">
-                        <select id="filterStatus" class="form-select form-select-sm filter-select-custom w-50">
-                            <option value="ACTIVO" selected>Activos</option>
-                            <option value="INACTIVO">Inactivos</option>
-                            <option value="ALL">Todos</option>
-                        </select>
-                        <select id="filterCct" class="form-select form-select-sm filter-select-custom w-50">
-                            <option value="ALL" selected>Todos CCT</option>
-                        </select>
-                    </div>
-
-
-
-                    <!-- Groups List -->
-                    <div id="groupListContainer" class="group-list">
-                        <div class="text-center py-4" id="groupListSpinner">
-                            <div class="spinner-border text-secondary spinner-border-sm"></div>
-                        </div>
-                    </div>
+        <!-- Center Panel: Calendar Grid -->
+        <div class="calendar-panel">
+            <div class="calendar-header-actions">
+                <h3 class="calendar-group-title" id="calendarGroupTitle">
+                    Horario del Grupo: <span id="selectedGroupName" class="group-clave-highlight">Ninguno</span>
+                    <span id="selectedGroupNivel" class="badge-nivel ms-2" style="display:none;"></span>
+                </h3>
+                <div class="d-flex gap-2">
+                    <button class="btn-header-secondary" type="button">
+                        <i class="ti ti-user-check"></i>Vista del Docente
+                    </button>
+                    <button class="btn-header-primary" id="btnSaveChanges" type="button">
+                        <i class="ti ti-refresh"></i>Refrescar
+                    </button>
                 </div>
             </div>
 
-            <!-- Center Panel: Calendar Grid -->
-            <div class="col-lg-6 col-md-8">
-                <div class="glass-card calendar-panel p-3">
-                    <div class="calendar-header-actions">
-                        <h3 class="calendar-group-title" id="calendarGroupTitle">
-                            Horario del Grupo: <span id="selectedGroupName">Ninguno</span>
-                            <span id="selectedGroupNivel" class="badge-nivel ms-2" style="display:none;"></span>
-                        </h3>
-                        <div class="d-flex gap-2">
-                            <button class="btn-regresar-light py-1" style="font-size: 0.85rem;">
-                                <i class="fa-solid fa-user-tie me-2"></i>Vista del Docente
-                            </button>
-                            <button class="btn btn-action-system py-1" id="btnSaveChanges">
-                                <i class="fa-solid fa-arrows-rotate me-2"></i>Refrescar
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Progress Bar for Academic Level -->
-                    <div id="progressContainer" style="display:none; margin-top: 5px; margin-bottom: 20px; padding: 0 10px;">
-                        <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.75rem; color: #64748b;">
-                            <span>Inicio Periodo: <strong id="progressStartDate">—</strong></span>
-                            <span id="progressPercent" style="font-weight: 600; color: rgb(38, 104, 123);">0%</span>
-                            <span>Fin Periodo: <strong id="progressEndDate">—</strong></span>
-                        </div>
-                        <div class="progress" style="height: 6px; background-color: #e2e8f0; border-radius: 3px; overflow: hidden;">
-                            <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%; background-color: rgb(38, 104, 123); transition: width 0.4s ease;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div>
-
-                    <!-- Calendar Table wrapper -->
-                    <div class="calendar-container">
-                        <div id="calendarEmptyState" class="empty-state-message">
-                            <i class="fa-solid fa-calendar-days"></i>
-                            <div>Selecciona un grupo del panel izquierdo para ver y gestionar su horario.</div>
-                        </div>
-
-                        <table class="calendar-table" id="calendarTable" style="display: none;">
-                            <thead id="calendarHeader">
-                                <!-- Generado dinámicamente -->
-                            </thead>
-                            <tbody id="calendarBody">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
+            <!-- Progress Bar for Academic Level -->
+            <div id="progressContainer" style="display:none; margin-top: 5px; margin-bottom: 16px; padding: 0 4px;">
+                <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.75rem; color: #64748B;">
+                    <span>Inicio Periodo: <strong id="progressStartDate" style="font-family: 'JetBrains Mono', monospace;">—</strong></span>
+                    <span id="progressPercent" style="font-weight: 600; color: #1E5B66; font-family: 'JetBrains Mono', monospace;">0%</span>
+                    <span>Fin Periodo: <strong id="progressEndDate" style="font-family: 'JetBrains Mono', monospace;">—</strong></span>
+                </div>
+                <div class="progress" style="height: 6px; background-color: #E2E8F0; border-radius: 3px; overflow: hidden;">
+                    <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%; background-color: #1E5B66; transition: width 0.4s ease;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
 
-            <!-- Right Panel: Edit Class Form -->
-            <div class="col-lg-3 col-md-12 mt-md-3 mt-lg-0">
-                <div class="glass-card edit-panel p-3">
-                    <div class="edit-panel-header">
-                        <h4 class="edit-panel-title">Editar Clase</h4>
-                        <button class="btn-close-panel" id="btnCloseEditPanel" title="Cerrar panel">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
+            <!-- Calendar Table wrapper -->
+            <div class="calendar-container">
+                <div id="calendarEmptyState" class="empty-state-message">
+                    <i class="ti ti-calendar" style="font-size: 36px; color: #CBD5E1;"></i>
+                    <div style="font-size: 0.875rem; color: #64748B;">Selecciona un grupo del panel izquierdo para ver y gestionar su horario.</div>
+                </div>
+
+                <table class="calendar-table" id="calendarTable" style="display: none;">
+                    <thead id="calendarHeader">
+                        <!-- Generado dinámicamente -->
+                    </thead>
+                    <tbody id="calendarBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Panel: Edit Class Form / Evaluation Dates -->
+        <div class="edit-panel-wrapper">
+            <div class="edit-panel">
+                <div class="edit-panel-header">
+                    <h4 class="edit-panel-title">Editar Clase</h4>
+                    <button class="btn-close-panel" id="btnCloseEditPanel" title="Cerrar panel">
+                        <i class="ti ti-x"></i>
+                    </button>
+                </div>
+
+                <div id="editEmptyState" class="w-100" style="display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; text-align: left; padding: 0;">
+                    <!-- Default placeholder, shown when no group is selected -->
+                    <div id="noGroupSelectedMessage" class="text-center py-5">
+                        <i class="ti ti-calendar" style="font-size: 32px; color: #CBD5E1; margin-bottom: 12px; display: inline-block;"></i>
+                        <div style="font-size: 0.8125rem; color: #64748B;">Selecciona un grupo para ver el calendario de periodos.</div>
                     </div>
 
-                    <div id="editEmptyState" class="empty-state-message w-100" style="display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; text-align: left; height: 100%; overflow-y: auto; padding: 10px 0;">
-                        <!-- Default placeholder, shown when no group is selected -->
-                        <div id="noGroupSelectedMessage" class="text-center py-5">
-                            <i class="fa-solid fa-calendar-days" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 15px;"></i>
-                            <div class="text-secondary" style="font-size: 0.9rem;">Selecciona un grupo para ver el calendario de periodos.</div>
-                        </div>
-
-                        <!-- Group Calendar periods list, shown when a group is active -->
-                        <div id="groupCalendarInfo" style="display: none; width: 100%;">
-                            <h5 style="font-size: 0.95rem; font-weight: 700; color: rgb(38, 104, 123); margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; display: flex; align-items: center; gap: 8px;">
-                                <i class="fa-solid fa-calendar-days"></i> Calendario de Periodos
-                            </h5>
-                            <div id="groupPeriodsList" style="display: flex; flex-direction: column; gap: 10px; width: 100%;"></div>
-                            
-                            <!-- Fechas de Periodos de Evaluación (Solo grupos BTI) -->
-                            <div class="mt-3 pt-3" id="seccionFechasEvaluacion" style="border-top: 1px dashed #cbd5e1; display: none;">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <h6 style="font-size: 0.88rem; font-weight: 700; color: #2e596b; margin: 0; display: flex; align-items: center; gap: 6px;">
-                                        <i class="fa-solid fa-calendar-check"></i> Fechas Evaluaciones
-                                    </h6>
-                                    <span id="badgeFechasEvaluacionStatus" class="badge bg-secondary" style="font-size: 0.65rem; border-radius: 6px;">Cargando...</span>
-                                </div>
-                                
-                                <div id="resumenFechasEvaluacionList" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; font-size: 0.75rem;">
-                                    <div class="text-secondary text-center py-2" style="font-size: 0.75rem;">
-                                        <i class="fa-solid fa-spinner fa-spin me-1"></i> Consultando fechas...
-                                    </div>
-                                </div>
-
-                                <button type="button" class="btn btn-sm w-100" id="btnConfigurarFechasEvaluacion" onclick="abrirModalFechasEvaluacion()" style="background-color: #2e596b; color: #ffffff; font-weight: 600; font-size: 0.8rem; border-radius: 8px; padding: 7px 12px; box-shadow: 0 2px 4px rgba(46,89,107,0.2); border: none; transition: all 0.2s ease;">
-                                    <i class="fa-solid fa-calendar-plus me-1"></i> Fechas Periodos Evaluaciones
-                                </button>
-                            </div>
-                            
-                            <hr style="margin: 15px 0; opacity: 0.15;">
-                            <div class="text-center text-secondary" style="font-size: 0.8rem; padding: 10px 15px; background: rgba(38,104,123,0.03); border-radius: 8px; border: 1px dashed rgba(38,104,123,0.2);">
-                                <i class="fa-solid fa-circle-info me-1"></i> Selecciona una celda de horario para agregar o editar una clase.
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Edit Form -->
-                    <form id="editClassForm" class="edit-form" style="display: none;" onsubmit="return false;">
+                    <!-- Group Calendar periods list, shown when a group is active -->
+                    <div id="groupCalendarInfo" style="display: none; width: 100%;">
+                        <h5 style="font-size: 0.875rem; font-weight: 600; color: #1E5B66; margin-bottom: 12px; border-bottom: 1px solid #E2E8F0; padding-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                            <i class="ti ti-calendar" style="font-size: 16px;"></i> Calendario de Periodos
+                        </h5>
+                        <div id="groupPeriodsList" style="display: flex; flex-direction: column; gap: 8px; width: 100%;"></div>
                         
-                        <div class="form-group-custom">
-                            <label>Grupo</label>
-                            <input type="text" id="formGroupClave" class="form-control form-input-custom" readonly>
+                        <!-- Fechas de Periodos de Evaluación (Solo grupos BTI) -->
+                        <div class="mt-3 pt-3" id="seccionFechasEvaluacion" style="border-top: 1px dashed #CBD5E1; display: none;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 style="font-size: 0.8125rem; font-weight: 600; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 6px;">
+                                    <i class="ti ti-calendar-check" style="font-size: 18px; color: #1E5B66;"></i> Fechas Evaluaciones
+                                </h6>
+                                <span id="badgeFechasEvaluacionStatus" class="badge-soft-muted">Cargando...</span>
+                            </div>
+                            
+                            <div id="resumenFechasEvaluacionList" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px;">
+                                <div class="text-center py-2" style="font-size: 0.75rem; color: #64748B;">
+                                    <i class="ti ti-loader-2 ti-spin me-1"></i> Consultando fechas...
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn-eval-periodos" id="btnConfigurarFechasEvaluacion" onclick="abrirModalFechasEvaluacion()">
+                                <i class="ti ti-calendar-plus" style="font-size: 16px;"></i> Fechas Periodos Evaluaciones
+                            </button>
                         </div>
-
-                        <div class="form-group-custom">
-                            <label>Día</label>
-                            <input type="text" id="formDayName" class="form-control form-input-custom" readonly>
+                        
+                        <div class="eval-info-notice">
+                            <i class="ti ti-info-circle" style="font-size: 16px; color: #64748B; flex-shrink: 0; margin-top: 1px;"></i>
+                            <span>Selecciona una celda de horario para agregar o editar una clase.</span>
                         </div>
-
-                        <div class="form-group-custom">
-                            <label>Horario</label>
-                            <input type="text" id="formTimeSlot" class="form-control form-input-custom" readonly>
-                        </div>
-
-                        <!-- Materia Single Selection Container -->
-                        <div id="singleMateriaContainer" class="form-group-custom">
-                            <label>Materia *</label>
-                            <select id="formMateriaSelect" class="form-select form-input-custom form-select-custom-style" required>
-                                <option value="">Seleccione Materia</option>
-                            </select>
-                        </div>
-
-                        <!-- Materia Multiple Selection Container -->
-                        <div id="multipleMateriaContainer" class="form-group-custom" style="display: none;">
-                            <label>Materias *</label>
-                            <select id="formMateriaSelectMultiple" class="form-select form-input-custom form-select-custom-style" multiple>
-                                <!-- options populated dynamically -->
-                            </select>
-                        </div>
-
-                        <!-- Checkbox for multiple classes -->
-                        <div class="form-check mb-3 mt-3">
-                            <input class="form-check-input" type="checkbox" id="chkMultipleClasses">
-                            <label class="form-check-label" for="chkMultipleClasses" style="font-size: 0.85rem; font-weight: 600; color: rgb(38, 104, 123);">
-                                Impartir más de una materia en esta hora
-                            </label>
-                        </div>
-
-                        <!-- Docente Selection (Always Single) -->
-                        <div class="form-group-custom">
-                            <label>Docente *</label>
-                            <select id="formDocenteSelect" class="form-select form-input-custom form-select-custom-style" required>
-                                <option value="">Seleccione Docente</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group-custom">
-                            <label>Aula</label>
-                            <select id="formAulaSelect" class="form-select form-input-custom form-select-custom-style">
-                                <option value="">Seleccione Aula</option>
-                                <option value="A-2">Aula A-2</option>
-                                <option value="A-3">Aula A-3</option>
-                                <option value="A-4">Aula A-4</option>
-                                <option value="A-5">Aula A-5</option>
-                                <option value="Lab. 1">Laboratorio Quimica</option>
-                                <option value="Lab. 2">Audiovisual</option>
-                                <option value="CentroComputo">Centro de Computo</option>
-                            </select>
-                        </div>
-
-                        <div class="form-actions-custom">
-                            <button type="button" class="btn-form-cancel" id="btnCancelEdit">Cancelar</button>
-                            <button type="button" class="btn-action-system btn-form-save" id="btnSaveClass">Guardar</button>
-                        </div>
-
-                        <button type="button" class="btn-form-delete" id="btnDeleteClass" style="display: none;">
-                            <i class="fa-solid fa-trash me-2"></i>Eliminar Clase
-                        </button>
-
-                    </form>
+                    </div>
                 </div>
-            </div>
 
+                <!-- Edit Form -->
+                <form id="editClassForm" class="edit-form" style="display: none;" onsubmit="return false;">
+                    
+                    <div class="form-group-custom">
+                        <label>Grupo</label>
+                        <input type="text" id="formGroupClave" class="form-control form-input-custom" readonly>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label>Día</label>
+                        <input type="text" id="formDayName" class="form-control form-input-custom" readonly>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label>Horario</label>
+                        <input type="text" id="formTimeSlot" class="form-control form-input-custom" readonly>
+                    </div>
+
+                    <!-- Materia Single Selection Container -->
+                    <div id="singleMateriaContainer" class="form-group-custom">
+                        <label>Materia *</label>
+                        <select id="formMateriaSelect" class="form-select form-input-custom" required>
+                            <option value="">Seleccione Materia</option>
+                        </select>
+                    </div>
+
+                    <!-- Materia Multiple Selection Container -->
+                    <div id="multipleMateriaContainer" class="form-group-custom" style="display: none;">
+                        <label>Materias *</label>
+                        <select id="formMateriaSelectMultiple" class="form-select form-input-custom" multiple>
+                            <!-- options populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Checkbox for multiple classes -->
+                    <div class="form-check mb-2 mt-2">
+                        <input class="form-check-input" type="checkbox" id="chkMultipleClasses">
+                        <label class="form-check-label" for="chkMultipleClasses" style="font-size: 0.8125rem; font-weight: 500; color: #1E5B66;">
+                            Impartir más de una materia en esta hora
+                        </label>
+                    </div>
+
+                    <!-- Docente Selection (Always Single) -->
+                    <div class="form-group-custom">
+                        <label>Docente *</label>
+                        <select id="formDocenteSelect" class="form-select form-input-custom" required>
+                            <option value="">Seleccione Docente</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group-custom">
+                        <label>Aula</label>
+                        <select id="formAulaSelect" class="form-select form-input-custom">
+                            <option value="">Seleccione Aula</option>
+                            <option value="A-2">Aula A-2</option>
+                            <option value="A-3">Aula A-3</option>
+                            <option value="A-4">Aula A-4</option>
+                            <option value="A-5">Aula A-5</option>
+                            <option value="Lab. 1">Laboratorio Quimica</option>
+                            <option value="Lab. 2">Audiovisual</option>
+                            <option value="CentroComputo">Centro de Computo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-actions-custom">
+                        <button type="button" class="btn-form-cancel" id="btnCancelEdit">Cancelar</button>
+                        <button type="button" class="btn-form-save" id="btnSaveClass">Guardar</button>
+                    </div>
+
+                    <button type="button" class="btn-form-delete" id="btnDeleteClass" style="display: none;">
+                        <i class="ti ti-trash"></i> Eliminar Clase
+                    </button>
+
+                </form>
+            </div>
         </div>
 
     </div>
@@ -838,29 +1049,29 @@
 <!-- Modal Configuración Fechas Periodos Evaluaciones -->
 <div class="modal fade" id="modalFechasPeriodosEvaluacion" tabindex="-1" aria-labelledby="modalFechasPeriodosEvaluacionLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content" style="border-radius: 14px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden;">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, #2e596b 0%, #1e3d4a 100%); padding: 14px 20px;">
-                <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="modalFechasPeriodosEvaluacionLabel" style="font-size: 1.05rem;">
-                    <i class="fa-solid fa-calendar-days"></i>
-                    <span>Fechas de Periodos de Evaluación — Grupo: <span id="modalEvalGrupoClave" class="badge bg-light text-dark px-2 py-1 ms-1"></span></span>
+        <div class="modal-content" style="border-radius: 12px; border: 1px solid var(--border-subtle); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); overflow: hidden;">
+            <div class="modal-header px-4 py-3" style="border-bottom: 1px solid #E2E8F0;">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="modalFechasPeriodosEvaluacionLabel" style="font-size: 1rem; color: #0F172A;">
+                    <i class="ti ti-calendar" style="font-size: 18px; color: #1E5B66;"></i>
+                    <span>Fechas de Periodos de Evaluación — Grupo: <span id="modalEvalGrupoClave" class="badge px-2 py-1 ms-1" style="background: #F0F7F8; color: #1E5B66; border: 1px solid #CBE4E8; font-family: 'JetBrains Mono', monospace;"></span></span>
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             
             <form id="formFechasPeriodosEvaluacion" onsubmit="guardarFechasPeriodosEvaluacion(event)">
-                <div class="modal-body p-4" style="background-color: #f8fafc; max-height: 75vh; overflow-y: auto;">
-                    <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center gap-2" style="font-size: 0.8rem; border-radius: 8px; border-left: 4px solid #2e596b; background: rgba(46, 89, 107, 0.08); color: #1e3d4a; border-color: #2e596b;">
-                        <i class="fa-solid fa-circle-info" style="font-size: 1.2rem; color: #2e596b;"></i>
+                <div class="modal-body p-4" style="background-color: #F8FAFC; max-height: 75vh; overflow-y: auto;">
+                    <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center gap-2" style="font-size: 0.8rem; border-radius: 8px; border-left: 4px solid #1E5B66; background: #F0F7F8; color: #184A54; border-color: #CBE4E8;">
+                        <i class="ti ti-info-circle" style="font-size: 1.1rem; color: #1E5B66; flex-shrink: 0;"></i>
                         <div>
                             Define los periodos de evaluación para este grupo. Las fechas se sincronizan con las ventanas de captura y se reflejarán automáticamente en las <strong>Boletas Oficiales de Calificaciones</strong>.
                         </div>
                     </div>
 
                     <!-- Fila 1er Parcial -->
-                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 10px; overflow: hidden;">
-                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #2e596b;">
-                            <span class="fw-bold text-dark" style="font-size: 0.88rem;">
-                                <i class="fa-solid fa-1 me-1" style="color: #2e596b;"></i> Primer Parcial (1ER. PARCIAL)
+                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 8px; overflow: hidden; border: 1px solid #E2E8F0 !important;">
+                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #1E5B66;">
+                            <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
+                                <i class="ti ti-number-1 me-1" style="color: #1E5B66;"></i> Primer Parcial (1ER. PARCIAL)
                             </span>
                             <div class="form-check form-switch mb-0">
                                 <input class="form-check-input" type="checkbox" id="evalP1Habilitado" checked>
@@ -871,21 +1082,21 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Inicio:</label>
-                                    <input type="date" class="form-control form-control-sm" id="evalP1FechaInicio" style="border-radius: 6px;">
+                                    <input type="date" class="form-control form-control-sm" id="evalP1FechaInicio" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Fin / Límite:</label>
-                                    <input type="date" class="form-control form-control-sm" id="evalP1FechaFin" style="border-radius: 6px;">
+                                    <input type="date" class="form-control form-control-sm" id="evalP1FechaFin" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Fila 2do Parcial -->
-                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 10px; overflow: hidden;">
-                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #2e596b;">
-                            <span class="fw-bold text-dark" style="font-size: 0.88rem;">
-                                <i class="fa-solid fa-2 me-1" style="color: #2e596b;"></i> Segundo Parcial (2DO. PARCIAL)
+                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 8px; overflow: hidden; border: 1px solid #E2E8F0 !important;">
+                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #1E5B66;">
+                            <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
+                                <i class="ti ti-number-2 me-1" style="color: #1E5B66;"></i> Segundo Parcial (2DO. PARCIAL)
                             </span>
                             <div class="form-check form-switch mb-0">
                                 <input class="form-check-input" type="checkbox" id="evalP2Habilitado" checked>
@@ -896,21 +1107,21 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Inicio:</label>
-                                    <input type="date" class="form-control form-control-sm" id="evalP2FechaInicio" style="border-radius: 6px;">
+                                    <input type="date" class="form-control form-control-sm" id="evalP2FechaInicio" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Fin / Límite:</label>
-                                    <input type="date" class="form-control form-control-sm" id="evalP2FechaFin" style="border-radius: 6px;">
+                                    <input type="date" class="form-control form-control-sm" id="evalP2FechaFin" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Fila 3er Parcial -->
-                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 10px; overflow: hidden;">
-                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #2e596b;">
-                            <span class="fw-bold text-dark" style="font-size: 0.88rem;">
-                                <i class="fa-solid fa-3 me-1" style="color: #2e596b;"></i> Tercer Parcial (3ER. PARCIAL)
+                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 8px; overflow: hidden; border: 1px solid #E2E8F0 !important;">
+                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #1E5B66;">
+                            <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
+                                <i class="ti ti-number-3 me-1" style="color: #1E5B66;"></i> Tercer Parcial (3ER. PARCIAL)
                             </span>
                             <div class="form-check form-switch mb-0">
                                 <input class="form-check-input" type="checkbox" id="evalP3Habilitado" checked>
@@ -921,11 +1132,11 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Inicio:</label>
-                                    <input type="date" class="form-control form-control-sm" id="evalP3FechaInicio" style="border-radius: 6px;">
+                                    <input type="date" class="form-control form-control-sm" id="evalP3FechaInicio" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Fin / Límite:</label>
-                                    <input type="date" class="form-control form-control-sm" id="evalP3FechaFin" style="border-radius: 6px;">
+                                    <input type="date" class="form-control form-control-sm" id="evalP3FechaFin" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
                                 </div>
                             </div>
                         </div>
@@ -934,10 +1145,10 @@
                     <!-- Fila Semestral y Extraordinario (Grid de 2 columnas) -->
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 8px; overflow: hidden; border: 1px solid #E2E8F0 !important;">
                                 <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #0284c7;">
-                                    <span class="fw-bold text-dark" style="font-size: 0.85rem;">
-                                        <i class="fa-solid fa-graduation-cap text-info me-1"></i> Examen Semestral
+                                    <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
+                                        <i class="ti ti-school me-1" style="color: #0284c7;"></i> Examen Semestral
                                     </span>
                                     <div class="form-check form-switch mb-0">
                                         <input class="form-check-input" type="checkbox" id="evalSemestralHabilitado" checked>
@@ -946,21 +1157,21 @@
                                 <div class="card-body p-3">
                                     <div class="mb-2">
                                         <label class="form-label small fw-semibold text-secondary mb-1">Fecha Inicio:</label>
-                                        <input type="date" class="form-control form-control-sm" id="evalSemestralFechaInicio" style="border-radius: 6px;">
+                                        <input type="date" class="form-control form-control-sm" id="evalSemestralFechaInicio" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
                                     </div>
                                     <div>
                                         <label class="form-label small fw-semibold text-secondary mb-1">Fecha Fin:</label>
-                                        <input type="date" class="form-control form-control-sm" id="evalSemestralFechaFin" style="border-radius: 6px;">
+                                        <input type="date" class="form-control form-control-sm" id="evalSemestralFechaFin" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 10px; overflow: hidden;">
-                                <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #f59e0b;">
-                                    <span class="fw-bold text-dark" style="font-size: 0.85rem;">
-                                        <i class="fa-solid fa-file-signature text-warning me-1"></i> Extraordinario
+                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 8px; overflow: hidden; border: 1px solid #E2E8F0 !important;">
+                                <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #d97706;">
+                                    <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
+                                        <i class="ti ti-file-text me-1" style="color: #d97706;"></i> Extraordinario
                                     </span>
                                     <div class="form-check form-switch mb-0">
                                         <input class="form-check-input" type="checkbox" id="evalExtraordinarioHabilitado" checked>
@@ -969,11 +1180,11 @@
                                 <div class="card-body p-3">
                                     <div class="mb-2">
                                         <label class="form-label small fw-semibold text-secondary mb-1">Fecha Inicio:</label>
-                                        <input type="date" class="form-control form-control-sm" id="evalExtraordinarioFechaInicio" style="border-radius: 6px;">
+                                        <input type="date" class="form-control form-control-sm" id="evalExtraordinarioFechaInicio" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
                                     </div>
                                     <div>
                                         <label class="form-label small fw-semibold text-secondary mb-1">Fecha Fin:</label>
-                                        <input type="date" class="form-control form-control-sm" id="evalExtraordinarioFechaFin" style="border-radius: 6px;">
+                                        <input type="date" class="form-control form-control-sm" id="evalExtraordinarioFechaFin" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
                                     </div>
                                 </div>
                             </div>
@@ -981,11 +1192,11 @@
                     </div>
 
                     <!-- Opción de Replicación a otros grupos del mismo semestre -->
-                    <div class="p-3 bg-white rounded-3 border d-flex align-items-start gap-2 shadow-sm" style="border-color: #cbd5e1 !important;">
+                    <div class="p-3 bg-white rounded-3 border d-flex align-items-start gap-2 shadow-sm" style="border-color: #CBD5E1 !important;">
                         <input class="form-check-input mt-1" type="checkbox" id="evalReplicarMismoSemestre" checked style="cursor: pointer;">
                         <div>
-                            <label class="form-check-label fw-bold text-dark mb-0" for="evalReplicarMismoSemestre" style="cursor: pointer; font-size: 0.85rem;">
-                                <i class="fa-solid fa-copy text-primary me-1"></i> Replicar estas fechas a todos los grupos de este mismo semestre / CCT
+                            <label class="form-check-label fw-bold mb-0" for="evalReplicarMismoSemestre" style="cursor: pointer; font-size: 0.85rem; color: #0F172A;">
+                                <i class="ti ti-copy me-1" style="color: #1E5B66;"></i> Replicar estas fechas a todos los grupos de este mismo semestre / CCT
                             </label>
                             <div class="text-secondary small mt-1" style="font-size: 0.75rem;">
                                 Si está marcado, se aplicará automáticamente este mismo calendario de evaluaciones a los grupos paralelos activos del mismo nivel académico.
@@ -995,12 +1206,12 @@
 
                 </div>
 
-                <div class="modal-footer bg-light px-4 py-2 border-top d-flex justify-content-between">
-                    <button type="button" class="btn btn-sm btn-outline-secondary px-3" data-bs-dismiss="modal" style="border-radius: 6px;">
+                <div class="modal-footer bg-white px-4 py-3 border-top d-flex justify-content-between">
+                    <button type="button" class="btn btn-sm btn-outline-secondary px-3" data-bs-dismiss="modal" style="border-radius: 6px; height: 36px;">
                         Cancelar
                     </button>
-                    <button type="submit" class="btn btn-sm px-4 fw-bold text-white" id="btnGuardarFechasEvaluacionModal" style="background-color: #2e596b; border-radius: 6px; box-shadow: 0 2px 6px rgba(46,89,107,0.25);">
-                        <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Fechas
+                    <button type="submit" class="btn btn-sm px-4 fw-medium text-white" id="btnGuardarFechasEvaluacionModal" style="background-color: #1E5B66; border-radius: 6px; height: 36px; border: none;">
+                        <i class="ti ti-device-floppy me-1"></i> Guardar Fechas
                     </button>
                 </div>
             </form>
@@ -1356,7 +1567,7 @@ document.addEventListener("DOMContentLoaded", function() {
         groupListSpinner.style.display = 'none';
         
         if (list.length === 0) {
-            groupListContainer.innerHTML = '<div class="text-secondary text-center">No hay grupos.</div>';
+            groupListContainer.innerHTML = '<div class="text-secondary text-center py-3" style="font-size: 0.8125rem;">No hay grupos.</div>';
             return;
         }
 
@@ -1364,18 +1575,20 @@ document.addEventListener("DOMContentLoaded", function() {
         list.forEach(group => {
             const btn = document.createElement("button");
             btn.className = "group-item";
-            btn.style.display = "flex";
-            btn.style.justifyContent = "space-between";
-            btn.style.alignItems = "center";
+            btn.setAttribute("data-group-id", group.id);
+            btn.setAttribute("data-group-clave", group.clave);
+            if (activeGroup && activeGroup.id === group.id) {
+                btn.classList.add("active");
+            }
             
             let periodText = getCurrentPeriodText(group)
                 .replace("Trimestre", "Trim.")
                 .replace("Semestre", "Sem.");
             const badgeHtml = periodText 
-                ? `<span class="group-period-badge" style="font-size: 0.68rem; font-weight: 700; background: rgba(38, 104, 123, 0.08); color: rgb(38, 104, 123); padding: 2px 7px; border-radius: 8px; border: 1.2px solid rgba(38, 104, 123, 0.15);">${periodText}</span>` 
+                ? `<span class="group-period-badge">${periodText}</span>` 
                 : '';
                 
-            btn.innerHTML = `<span>${group.clave}</span>${badgeHtml}`;
+            btn.innerHTML = `<span class="group-clave-text">${group.clave}</span>${badgeHtml}`;
             btn.addEventListener("click", () => selectGroup(group));
             groupListContainer.appendChild(btn);
         });
@@ -1391,13 +1604,13 @@ document.addEventListener("DOMContentLoaded", function() {
         const divider = document.createElement("div");
         divider.style.padding = "8px 12px 4px 12px";
         divider.style.fontSize = "0.7rem";
-        divider.style.fontWeight = "800";
-        divider.style.color = "#64748b";
+        divider.style.fontWeight = "700";
+        divider.style.color = "#64748B";
         divider.style.textTransform = "uppercase";
-        divider.style.borderTop = "1px dashed rgba(0,0,0,0.08)";
+        divider.style.borderTop = "1px dashed #CBD5E1";
         divider.style.marginTop = "10px";
         divider.style.letterSpacing = "0.5px";
-        divider.innerHTML = `<i class="fa-solid fa-graduation-cap me-1" style="color: #10b981;"></i> Alumnos Encontrados`;
+        divider.innerHTML = `<i class="ti ti-school me-1" style="color: #10B981;"></i> Alumnos Encontrados`;
         groupListContainer.appendChild(divider);
 
         students.forEach(student => {
@@ -1407,23 +1620,25 @@ document.addEventListener("DOMContentLoaded", function() {
 
             const btn = document.createElement("button");
             btn.className = "group-item";
-            btn.style.display = "flex";
-            btn.style.justifyContent = "space-between";
-            btn.style.alignItems = "center";
-            btn.style.borderLeft = "3.5px solid #10b981";
+            btn.setAttribute("data-group-id", matchedGroup.id);
+            btn.setAttribute("data-group-clave", matchedGroup.clave);
+            if (activeGroup && activeGroup.id === matchedGroup.id) {
+                btn.classList.add("active");
+            }
+            btn.style.borderLeft = "3.5px solid #10B981";
             btn.style.padding = "8px 12px";
             btn.style.marginTop = "5px";
-            btn.style.background = "rgba(16, 185, 129, 0.02)";
+            btn.style.background = "rgba(16, 185, 129, 0.04)";
 
             btn.innerHTML = `
                 <div style="text-align: left;">
-                    <div style="font-weight: 700; font-size: 0.8rem; color: #334155; display: flex; align-items: center; gap: 4px;">
-                        <i class="fa-solid fa-user" style="color: #10b981; font-size: 0.72rem;"></i>
+                    <div style="font-weight: 600; font-size: 0.8rem; color: #0F172A; display: flex; align-items: center; gap: 4px;">
+                        <i class="ti ti-user" style="color: #10B981; font-size: 0.85rem;"></i>
                         ${student.nombre} ${student.apPaterno}
                     </div>
-                    <div style="font-size: 0.65rem; color: #64748b; margin-top: 2px;">Grupo: <strong>${matchedGroup.clave}</strong></div>
+                    <div style="font-size: 0.6875rem; color: #64748B; margin-top: 2px;">Grupo: <strong style="font-family: 'JetBrains Mono', monospace;">${matchedGroup.clave}</strong></div>
                 </div>
-                <span class="badge" style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.1); color: #0f766e; padding: 2px 6px; border-radius: 8px; font-weight: 600;">Ir al grupo</span>
+                <span style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.12); color: #047857; padding: 2px 7px; border-radius: 999px; font-weight: 600;">Ir al grupo</span>
             `;
 
             btn.addEventListener("click", () => {
@@ -1553,7 +1768,7 @@ document.addEventListener("DOMContentLoaded", function() {
         
         const items = groupListContainer.getElementsByClassName("group-item");
         Array.from(items).forEach(item => {
-            if (item.textContent === group.clave) {
+            if (item.getAttribute("data-group-id") == group.id) {
                 item.classList.add("active");
             } else {
                 item.classList.remove("active");
@@ -1724,11 +1939,11 @@ document.addEventListener("DOMContentLoaded", function() {
         const container = document.getElementById("resumenFechasEvaluacionList");
         if (!container || !badge) return;
 
-        badge.className = "badge bg-secondary";
+        badge.className = "badge-soft-muted";
         badge.textContent = "Cargando...";
         container.innerHTML = `
             <div class="text-secondary text-center py-2" style="font-size: 0.75rem;">
-                <i class="fa-solid fa-spinner fa-spin me-1"></i> Consultando fechas...
+                <i class="ti ti-loader-2 ti-spin me-1"></i> Consultando fechas...
             </div>
         `;
 
@@ -1740,7 +1955,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     renderResumenFechasEvaluacion(resp.config);
                 } else {
                     window.currentGrupoConfig = null;
-                    badge.className = "badge bg-secondary";
+                    badge.className = "badge-soft-muted";
                     badge.textContent = "Sin fechas";
                     container.innerHTML = `
                         <div class="text-muted text-center py-2" style="font-size: 0.75rem;">
@@ -1751,7 +1966,7 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .catch(err => {
                 console.error("Error al cargar configuración de captura:", err);
-                badge.className = "badge bg-warning text-dark";
+                badge.className = "badge-soft-muted";
                 badge.textContent = "Error";
                 container.innerHTML = `
                     <div class="text-danger text-center py-2" style="font-size: 0.75rem;">
@@ -1782,51 +1997,51 @@ document.addEventListener("DOMContentLoaded", function() {
             if (dIni && dFin) return `${dIni} al ${dFin}`;
             if (dIni) return `Desde ${dIni}`;
             if (dFin) return `Hasta ${dFin}`;
-            return `<span class="text-muted fst-italic">Sin definir</span>`;
+            return `<span style="color: #94A3B8; font-style: italic;">Sin definir</span>`;
         };
 
         const hasAnyDate = cfg.p1_fecha_inicio || cfg.p2_fecha_inicio || cfg.p3_fecha_inicio || cfg.semestral_fecha_inicio || cfg.extraordinario_fecha_inicio;
         if (hasAnyDate) {
-            badge.className = "badge bg-success";
+            badge.className = "badge-soft-success";
             badge.textContent = "Configurado";
         } else {
-            badge.className = "badge bg-secondary";
+            badge.className = "badge-soft-muted";
             badge.textContent = "Sin fechas";
         }
 
         container.innerHTML = `
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 8px;">
+            <div class="eval-card">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <strong style="color: #2e596b; font-size: 0.72rem;">1ER. PARCIAL</strong>
-                    <span class="badge ${cfg.p1_habilitado ? 'bg-primary' : 'bg-light text-secondary'}" style="font-size: 0.6rem;">${cfg.p1_habilitado ? 'Activo' : 'Cerrado'}</span>
+                    <strong class="eval-card-title">1ER. PARCIAL</strong>
+                    <span class="${cfg.p1_habilitado ? 'badge-soft-success' : 'badge-soft-muted'}">${cfg.p1_habilitado ? 'Activo' : 'Cerrado'}</span>
                 </div>
-                <div style="font-size: 0.72rem; color: #1e293b;">${fmtRango(cfg.p1_fecha_inicio, cfg.p1_fecha_fin)}</div>
+                <div class="eval-dates-mono">${fmtRango(cfg.p1_fecha_inicio, cfg.p1_fecha_fin)}</div>
             </div>
 
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 8px;">
+            <div class="eval-card">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <strong style="color: #2e596b; font-size: 0.72rem;">2DO. PARCIAL</strong>
-                    <span class="badge ${cfg.p2_habilitado ? 'bg-primary' : 'bg-light text-secondary'}" style="font-size: 0.6rem;">${cfg.p2_habilitado ? 'Activo' : 'Cerrado'}</span>
+                    <strong class="eval-card-title">2DO. PARCIAL</strong>
+                    <span class="${cfg.p2_habilitado ? 'badge-soft-success' : 'badge-soft-muted'}">${cfg.p2_habilitado ? 'Activo' : 'Cerrado'}</span>
                 </div>
-                <div style="font-size: 0.72rem; color: #1e293b;">${fmtRango(cfg.p2_fecha_inicio, cfg.p2_fecha_fin)}</div>
+                <div class="eval-dates-mono">${fmtRango(cfg.p2_fecha_inicio, cfg.p2_fecha_fin)}</div>
             </div>
 
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 8px;">
+            <div class="eval-card">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <strong style="color: #2e596b; font-size: 0.72rem;">3ER. PARCIAL</strong>
-                    <span class="badge ${cfg.p3_habilitado ? 'bg-primary' : 'bg-light text-secondary'}" style="font-size: 0.6rem;">${cfg.p3_habilitado ? 'Activo' : 'Cerrado'}</span>
+                    <strong class="eval-card-title">3ER. PARCIAL</strong>
+                    <span class="${cfg.p3_habilitado ? 'badge-soft-success' : 'badge-soft-muted'}">${cfg.p3_habilitado ? 'Activo' : 'Cerrado'}</span>
                 </div>
-                <div style="font-size: 0.72rem; color: #1e293b;">${fmtRango(cfg.p3_fecha_inicio, cfg.p3_fecha_fin)}</div>
+                <div class="eval-dates-mono">${fmtRango(cfg.p3_fecha_inicio, cfg.p3_fecha_fin)}</div>
             </div>
 
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 8px;">
+            <div class="eval-card">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <strong style="color: #0284c7; font-size: 0.72rem;">SEMESTRAL / EXTRA</strong>
+                    <strong class="eval-card-title">SEMESTRAL / EXTRA</strong>
                 </div>
-                <div style="font-size: 0.7rem; color: #475569;">
+                <div class="eval-dates-mono">
                     Sem: ${fmtRango(cfg.semestral_fecha_inicio, cfg.semestral_fecha_fin)}
                 </div>
-                <div style="font-size: 0.7rem; color: #475569;">
+                <div class="eval-dates-mono">
                     Ext: ${fmtRango(cfg.extraordinario_fecha_inicio, cfg.extraordinario_fecha_fin)}
                 </div>
             </div>
@@ -1892,7 +2107,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const btn = document.getElementById("btnGuardarFechasEvaluacionModal");
         const originalBtnHtml = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Guardando...`;
+        btn.innerHTML = `<i class="ti ti-loader-2 ti-spin me-1"></i> Guardando...`;
 
         const payload = {
             id_nivel_academico: selectedPeriodNivel || activeGroup.id_nivel_academico,
@@ -2168,13 +2383,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     <span style="font-weight: 700; font-size: 0.85rem; color: ${titleColor};">
                         ${semNum}° Semestre (Nivel ${idNivelActualDb || 7})
                     </span>
-                    <span class="badge bg-success py-1 px-2 fw-bold" style="font-size: 0.65rem; border-radius: 6px; text-transform: uppercase;">ACTIVO</span>
+                    <span class="badge-soft-success">Activo</span>
                 </div>
                 <div style="font-size: 0.75rem; color: ${dateColor}; display: flex; align-items: center; gap: 6px;">
-                    <i class="fa-regular fa-calendar-check" style="color: ${iconColor};"></i>
-                    <span>${formatDateDMY(currentDate)}</span>
+                    <i class="ti ti-calendar-event" style="color: ${iconColor}; font-size: 14px;"></i>
+                    <span style="font-family: 'JetBrains Mono', monospace;">${formatDateDMY(currentDate)}</span>
                     <span style="color: #cbd5e1;">&rarr;</span>
-                    <span>${formatDateDMY(groupEndDate || currentDate)}</span>
+                    <span style="font-family: 'JetBrains Mono', monospace;">${formatDateDMY(groupEndDate || currentDate)}</span>
                 </div>
             `;
 
@@ -2288,9 +2503,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
             let badgeHtml = "";
             if (isCurrent) {
-                badgeHtml = '<span style="font-size: 0.65rem; font-weight: 700; color: white; background: rgb(38, 104, 123); padding: 2px 6px; border-radius: 8px; text-transform: uppercase;">Activo</span>';
+                badgeHtml = '<span class="badge-soft-success">Activo</span>';
             } else if (isPast) {
-                badgeHtml = '<span style="font-size: 0.65rem; font-weight: 600; color: #475569; background: #e2e8f0; padding: 2px 6px; border-radius: 8px;">Finalizado</span>';
+                badgeHtml = '<span class="badge-soft-muted">Finalizado</span>';
             } else {
                 // Periodo futuro: colocar botón "Anticipar Horario" si es BGNE
                 if (isBgne) {
@@ -2298,9 +2513,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
 
-            const titleColor = isSelected ? "rgb(38, 104, 123)" : (isCurrent ? "rgb(38, 104, 123)" : (isPast ? "#64748b" : "#1e293b"));
+            const titleColor = isSelected ? "var(--brand-primary)" : (isCurrent ? "var(--brand-primary)" : (isPast ? "#64748b" : "#1e293b"));
             const dateColor = isSelected ? "#1e293b" : (isCurrent ? "#334155" : (isPast ? "#8c9ba5" : "#475569"));
-            const iconColor = isSelected ? "rgb(38, 104, 123)" : (isCurrent ? "rgb(38, 104, 123)" : (isPast ? "#94a3b8" : "rgb(56, 189, 248)"));
+            const iconColor = isSelected ? "var(--brand-primary)" : (isCurrent ? "var(--brand-primary)" : (isPast ? "#94a3b8" : "rgb(56, 189, 248)"));
 
             periodItem.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
@@ -2310,10 +2525,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     ${badgeHtml}
                 </div>
                 <div style="font-size: 0.75rem; color: ${dateColor}; display: flex; align-items: center; gap: 6px;">
-                    <i class="fa-regular fa-calendar-check" style="color: ${iconColor};"></i>
-                    <span>${formatDateDMY(currentDate)}</span>
+                    <i class="ti ti-calendar-event" style="color: ${iconColor}; font-size: 14px;"></i>
+                    <span style="font-family: 'JetBrains Mono', monospace;">${formatDateDMY(currentDate)}</span>
                     <span style="color: #cbd5e1;">&rarr;</span>
-                    <span>${formatDateDMY(periodEndDate)}</span>
+                    <span style="font-family: 'JetBrains Mono', monospace;">${formatDateDMY(periodEndDate)}</span>
                 </div>
             `;
 
@@ -2348,7 +2563,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 tdReceso.className = "receso-cell";
                 tdReceso.innerHTML = `
                     <div class="receso-banner">
-                        <i class="fa-solid fa-mug-hot me-2"></i>
+                        <i class="ti ti-coffee me-1"></i>
                         <span>RECESO</span>
                     </div>
                 `;
@@ -2370,7 +2585,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     
                     slotDiv.innerHTML = `
                         <span class="placeholder-dash">—</span>
-                        <i class="fa-solid fa-plus add-btn-icon"></i>
+                        <i class="ti ti-plus add-btn-icon"></i>
                     `;
 
                     slotDiv.addEventListener("click", () => handleCellClick(day, index, slotDiv));
@@ -2776,7 +2991,7 @@ document.addEventListener("DOMContentLoaded", function() {
             // Just added locally, not persisted
             selectedCell.element.innerHTML = `
                 <span class="placeholder-dash">—</span>
-                <i class="fa-solid fa-plus add-btn-icon"></i>
+                <i class="ti ti-plus add-btn-icon"></i>
             `;
             clearForm();
         }
@@ -2796,7 +3011,7 @@ document.addEventListener("DOMContentLoaded", function() {
         Array.from(cells).forEach(cell => {
             cell.innerHTML = `
                 <span class="placeholder-dash">—</span>
-                <i class="fa-solid fa-plus add-btn-icon"></i>
+                <i class="ti ti-plus add-btn-icon"></i>
             `;
             cell.classList.remove("selected");
         });
@@ -2842,7 +3057,7 @@ document.addEventListener("DOMContentLoaded", function() {
             Array.from(cells).forEach(cell => {
                 cell.innerHTML = `
                     <span class="placeholder-dash">—</span>
-                    <i class="fa-solid fa-plus add-btn-icon"></i>
+                    <i class="ti ti-plus add-btn-icon"></i>
                 `;
                 cell.classList.remove("selected");
             });
@@ -2904,7 +3119,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 icon: 'error',
                 title: 'Error',
                 text: 'Error al cargar los horarios desde el servidor.',
-                confirmButtonColor: 'rgb(38, 104, 123)'
+                confirmButtonColor: '#1E5B66'
             });
         }
     }
@@ -2942,14 +3157,14 @@ document.addEventListener("DOMContentLoaded", function() {
         let html = `<div class="class-card" draggable="true" ${cardStyle}>`;
         data.clases.forEach((clase, idx) => {
             if (idx > 0) {
-                html += '<hr style="margin: 4px 0; opacity: 0.15; border-color: rgb(38, 104, 123);">';
+                html += '<hr style="margin: 4px 0; opacity: 0.15; border-color: var(--brand-primary);">';
             }
             const teacherName = clase.docente_nombre || data.docente_nombre || '';
             const aula = clase.aula || data.aula || '';
-            const aulaBadge = aula ? ` <span style="font-size: 0.65rem; background-color: #f1f5f9; color: #475569; padding: 2px 4px; border-radius: 4px; border: 1px solid #e2e8f0; font-weight: 600; margin-left: 4px; display: inline-flex; align-items: center; gap: 2px;"><i class="fa-solid fa-door-open" style="font-size: 0.58rem;"></i> ${aula}</span>` : '';
+            const aulaBadge = aula ? ` <span class="aula-badge">${aula}</span>` : '';
             
             // If the card has a custom color, force readable dark colors for text
-            const subjectStyle = firstClaseColor && firstClaseColor !== '#FFFFFF' ? 'style="font-size: 0.85rem; font-weight: 700; line-height: 1.2; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px; color: #0f172a !important;"' : 'style="font-size: 0.85rem; font-weight: 700; line-height: 1.2; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;"';
+            const subjectStyle = firstClaseColor && firstClaseColor !== '#FFFFFF' ? 'style="font-size: 0.8125rem; font-weight: 700; line-height: 1.25; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px; color: #0F172A !important;"' : 'style="font-size: 0.8125rem; font-weight: 700; line-height: 1.25; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;"';
             const detailStyle = firstClaseColor && firstClaseColor !== '#FFFFFF' ? 'style="font-size: 0.72rem; color: #334155 !important; line-height: 1.2; margin-top: 2px;"' : 'style="font-size: 0.72rem; color: #475569; line-height: 1.2; margin-top: 2px;"';
             const iconStyle = firstClaseColor && firstClaseColor !== '#FFFFFF' ? 'style="color: #475569 !important;"' : '';
             
@@ -2958,7 +3173,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     <span>${clase.materia_nombre}</span>
                     ${aulaBadge}
                 </div>
-                <div class="class-detail" ${detailStyle}><i class="fa-solid fa-user-tie" ${iconStyle}></i> ${teacherName}</div>
+                <div class="class-detail" ${detailStyle}><i class="ti ti-user" ${iconStyle}></i> ${teacherName}</div>
             `;
         });
         html += '</div>';

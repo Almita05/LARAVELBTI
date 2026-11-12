@@ -4,78 +4,81 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="page-container">
-    <!-- Encabezado del Sistema -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <a href="{{ url()->previous() }}" class="btn btn-regresar">
-                <i class="fa-solid fa-arrow-left me-2"></i>
+    <!-- Encabezado Estandarizado de Página -->
+    <div class="page-header-standard">
+        <div class="page-header-left">
+            <a href="{{ url()->previous() }}" class="btn-regresar">
+                <i class="ti ti-arrow-left"></i>
                 Regresar
             </a>
-        </div>
-        <h3 class="page-title mb-0">
-            <i class="fa-solid fa-bell me-2"></i>Centro de Avisos y Pendientes
-        </h3>
-        <div>
-            <span class="badge bg-danger rounded-pill px-3 py-2 fs-6 fw-bold" id="badge-header-total">
+            <h1 class="page-heading">Avisos y Pendientes</h1>
+            <span class="badge-soft badge-soft-danger font-monospace fw-bold" id="badge-header-total" style="font-size: 0.78rem;">
                 {{ $notificaciones['totales']['total'] ?? 0 }} alertas
             </span>
         </div>
     </div>
 
     @if(isset($notificaciones['error']))
-        <div class="alert alert-danger border-0 rounded-4 shadow-lg p-4 d-flex align-items-center" role="alert">
-            <i class="bi bi-exclamation-triangle-fill fs-2 me-3"></i>
+        <div class="alert alert-danger border-0 rounded-3 shadow-xs p-3 d-flex align-items-center mb-4" role="alert">
+            <i class="ti ti-alert-triangle fs-3 me-3 text-danger"></i>
             <div>
-                <h5 class="alert-heading fw-bold mb-1">Error de Comunicación</h5>
-                <p class="mb-0">{{ $notificaciones['error'] }}</p>
+                <h6 class="alert-heading fw-bold mb-0.5">Error de Comunicación</h6>
+                <p class="mb-0 fs-8">{{ $notificaciones['error'] }}</p>
             </div>
         </div>
     @else
-        <!-- Filtros Rápidos (Pills usando el color del tema) -->
+        <!-- Barra de Filtros (Tabs con Contadores) -->
         <div class="d-flex flex-wrap gap-2 mb-4 justify-content-between align-items-center">
             <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-premium-pill active" onclick="filtrarAlertas('todos', this)">
-                    <i class="bi bi-grid-fill me-1"></i> Todos
-                    <span class="badge bg-light text-dark ms-2" id="badge-pill-todos">{{ $notificaciones['totales']['total'] ?? 0 }}</span>
+                <button type="button" class="btn-tab-filter btn-premium-pill active" onclick="filtrarAlertas('todos', this)">
+                    <i class="ti ti-layout-grid"></i>
+                    <span>Todos</span>
+                    <span class="tab-counter" id="badge-pill-todos">{{ $notificaciones['totales']['total'] ?? 0 }}</span>
                 </button>
-                <button class="btn btn-premium-pill" onclick="filtrarAlertas('documentos', this)">
-                    <i class="bi bi-file-earmark-text-fill me-1"></i> Documentación
-                    <span class="badge bg-light text-dark ms-2" id="badge-pill-documentos">{{ $notificaciones['totales']['documentos'] ?? 0 }}</span>
+                <button type="button" class="btn-tab-filter btn-premium-pill" onclick="filtrarAlertas('documentos', this)">
+                    <i class="ti ti-file-text"></i>
+                    <span>Documentación</span>
+                    <span class="tab-counter" id="badge-pill-documentos">{{ $notificaciones['totales']['documentos'] ?? 0 }}</span>
                 </button>
-                <button class="btn btn-premium-pill" onclick="filtrarAlertas('equivalencias', this)">
-                    <i class="bi bi-folder-symlink-fill me-1"></i> Equivalencias
-                    <span class="badge bg-light text-dark ms-2" id="badge-pill-equivalencias">{{ $notificaciones['totales']['equivalencias'] ?? 0 }}</span>
+                <button type="button" class="btn-tab-filter btn-premium-pill" onclick="filtrarAlertas('equivalencias', this)">
+                    <i class="ti ti-arrows-exchange"></i>
+                    <span>Equivalencias</span>
+                    <span class="tab-counter" id="badge-pill-equivalencias">{{ $notificaciones['totales']['equivalencias'] ?? 0 }}</span>
                 </button>
-                <button class="btn btn-premium-pill" onclick="filtrarAlertas('grupos', this)">
-                    <i class="bi bi-calendar-event-fill me-1"></i> Grupos y Horarios
-                    <span class="badge bg-light text-dark ms-2" id="badge-pill-grupos">{{ $notificaciones['totales']['grupos'] ?? 0 }}</span>
+                <button type="button" class="btn-tab-filter btn-premium-pill" onclick="filtrarAlertas('grupos', this)">
+                    <i class="ti ti-calendar-time"></i>
+                    <span>Grupos y Horarios</span>
+                    <span class="tab-counter" id="badge-pill-grupos">{{ $notificaciones['totales']['grupos'] ?? 0 }}</span>
                 </button>
-                <button class="btn btn-premium-pill" onclick="filtrarAlertas('nuevos_alumnos', this)">
-                    <i class="bi bi-person-plus-fill me-1"></i> Nuevos Alumnos
-                    <span class="badge bg-light text-dark ms-2" id="badge-pill-nuevos_alumnos">{{ $notificaciones['totales']['nuevos_alumnos'] ?? 0 }}</span>
+                <button type="button" class="btn-tab-filter btn-premium-pill" onclick="filtrarAlertas('nuevos_alumnos', this)">
+                    <i class="ti ti-user-plus"></i>
+                    <span>Nuevos Alumnos</span>
+                    <span class="tab-counter" id="badge-pill-nuevos_alumnos">{{ $notificaciones['totales']['nuevos_alumnos'] ?? 0 }}</span>
                 </button>
-                <button class="btn btn-premium-pill" onclick="filtrarAlertas('resueltas', this)" id="btn-pill-resueltas">
-                    <i class="bi bi-check2-all me-1"></i> Resueltas / Omitidas
-                    <span class="badge bg-light text-dark ms-2" id="badge-pill-resueltas">{{ $notificaciones['totales']['resueltas'] ?? count($notificaciones['resueltas'] ?? []) }}</span>
+                <button type="button" class="btn-tab-filter btn-premium-pill" onclick="filtrarAlertas('resueltas', this)" id="btn-pill-resueltas">
+                    <i class="ti ti-checks"></i>
+                    <span>Resueltas / Omitidas</span>
+                    <span class="tab-counter" id="badge-pill-resueltas">{{ $notificaciones['totales']['resueltas'] ?? count($notificaciones['resueltas'] ?? []) }}</span>
                 </button>
             </div>
             <div id="contenedor-btn-limpiar" style="display: none;">
-                <button type="button" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1.5 px-3 py-2 shadow-sm rounded-pill fw-bold" onclick="limpiarResueltasOmitidas()" id="btn-limpiar-resueltas" title="Limpiar y dejar en cero la sección de resueltas y omitidas">
-                    <i class="bi bi-trash3-fill"></i> Limpiar Resueltas / Omitidas
+                <button type="button" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1.5 px-3 py-1.5 rounded-2 fw-semibold shadow-xs" onclick="limpiarResueltasOmitidas()" id="btn-limpiar-resueltas" title="Limpiar y dejar en cero la sección de resueltas y omitidas">
+                    <i class="ti ti-trash"></i> Limpiar Resueltas / Omitidas
                 </button>
             </div>
         </div>
 
-        <div class="glass-card shadow-lg bg-white rounded-4 p-3 border">
+        <!-- Contenedor de Tabla Unificado SaaS -->
+        <div class="saas-surface shadow-card border-0 bg-white" style="border: 1px solid var(--border-subtle) !important; border-radius: var(--radius-lg); overflow: hidden;">
             <div class="table-responsive">
-                <table class="table glass-table align-middle mb-0">
-                    <thead class="table-head">
+                <table class="table align-middle mb-0" style="width: 100%; border-collapse: separate; border-spacing: 0;">
+                    <thead style="background: var(--bg-canvas); border-bottom: 1px solid var(--border-subtle);">
                         <tr>
-                            <th style="font-weight:700;">TIPO</th>
-                            <th style="font-weight:700;">ALUMNO / GRUPO</th>
-                            <th style="font-weight:700;">DETALLE DEL PENDIENTE</th>
-                            <th style="font-weight:700;">CCT / GRUPO</th>
-                            <th class="text-center" style="font-weight:700; width: 220px;">ACCIONES</th>
+                            <th style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; padding: 12px 16px; border: none; width: 150px;">TIPO</th>
+                            <th style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; padding: 12px 16px; border: none; width: 230px;">ALUMNO / GRUPO</th>
+                            <th style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; padding: 12px 16px; border: none;">DETALLE DEL PENDIENTE</th>
+                            <th style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; padding: 12px 16px; border: none; width: 140px;">CCT / GRUPO</th>
+                            <th class="text-end" style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; padding: 12px 16px; border: none; width: 220px;">ACCIONES</th>
                         </tr>
                     </thead>
                     <tbody id="tablaNotificaciones">
@@ -83,24 +86,32 @@
                         <!-- SECCIÓN: DOCUMENTACIÓN PENDIENTE -->
                         @foreach($notificaciones['documentos'] as $doc)
                             <tr class="fila-alerta" data-categoria="documentos">
-                                <td>
-                                    <span class="badge bg-danger px-2 py-1 fw-bold text-uppercase" style="font-size: 0.73rem;">Falta Doc.</span>
+                                <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <span class="badge-soft-tipo badge-tipo-falta">Falta Doc.</span>
                                 </td>
-                                <td class="fw-bold text-dark">{{ $doc['nombre'] }}</td>
-                                <td class="text-secondary">
-                                    <i class="bi bi-exclamation-circle-fill text-danger me-1"></i>{{ $doc['detalle'] }}
+                                <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <span class="fw-semibold text-slate-800" style="font-size: 0.875rem;">{{ $doc['nombre'] }}</span>
                                 </td>
-                                <td class="text-secondary">
-                                    <strong>CCT:</strong> {{ $doc['cct'] }} <br>
-                                    <strong>Grupo:</strong> {{ $doc['grupo'] }}
+                                <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <div class="d-flex align-items-start gap-2" style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">
+                                        <i class="ti ti-alert-circle text-danger mt-0.5" style="font-size: 16px; flex-shrink: 0;"></i>
+                                        <span>{{ $doc['detalle'] }}</span>
+                                    </div>
                                 </td>
-                                <td class="text-center">
-                                    <button type="button" class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1 px-3 py-1.5 shadow-sm btn-resolver-alerta" 
-                                            onclick="abrirModalResolver('documentos', {{ $doc['idAlumno'] }}, '{{ addslashes($doc['nombre']) }}', '{{ addslashes($doc['detalle']) }}', '{{ $doc['subtipo'] ?? 'general' }}', this)"
-                                            title="Marcar como resuelta o descartar advertencia"
-                                            style="border-radius: 10px; font-size: 0.8rem; font-weight: 600; transition: all 0.2s;">
-                                        <i class="bi bi-check-circle-fill"></i> Quitar Alerta
-                                    </button>
+                                <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <div class="d-flex flex-column gap-1">
+                                        <span class="badge-cct-pill">{{ $doc['cct'] }}</span>
+                                        <span class="font-monospace text-slate-500" style="font-size: 0.75rem;">{{ $doc['grupo'] }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-end" style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <div class="d-flex align-items-center gap-1.5 justify-content-end">
+                                        <button type="button" class="btn-alerta-success btn-resolver-alerta" 
+                                                onclick="abrirModalResolver('documentos', {{ $doc['idAlumno'] }}, '{{ addslashes($doc['nombre']) }}', '{{ addslashes($doc['detalle']) }}', '{{ $doc['subtipo'] ?? 'general' }}', this)"
+                                                title="Marcar como resuelta o descartar advertencia">
+                                            <i class="ti ti-check"></i> Quitar Alerta
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -108,83 +119,112 @@
                         <!-- SECCIÓN: EQUIVALENCIAS PENDIENTES -->
                         @foreach($notificaciones['equivalencias'] as $eq)
                             <tr class="fila-alerta" data-categoria="equivalencias">
-                                <td>
-                                    <span class="badge bg-warning text-dark px-2 py-1 fw-bold text-uppercase" style="font-size: 0.73rem;">Equivalencia</span>
+                                <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <span class="badge-soft-tipo badge-tipo-equivalencia">Equivalencia</span>
                                 </td>
-                                <td class="fw-bold text-dark">{{ $eq['nombre'] }}</td>
-                                <td class="text-secondary">
-                                    @if($eq['tipo'] == 'pago_pendiente')
-                                        <i class="bi bi-cash-stack text-warning me-1"></i>
-                                    @else
-                                        <i class="bi bi-send-check-fill text-success me-1"></i>
-                                    @endif
-                                    {{ $eq['detalle'] }}
+                                <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <span class="fw-semibold text-slate-800" style="font-size: 0.875rem;">{{ $eq['nombre'] }}</span>
                                 </td>
-                                <td class="text-secondary">
-                                    <strong>CCT:</strong> {{ $eq['cct'] }} <br>
-                                    <strong>Grupo:</strong> {{ $eq['grupo'] }}
+                                <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <div class="d-flex align-items-start gap-2" style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">
+                                        @if($eq['tipo'] == 'pago_pendiente')
+                                            <i class="ti ti-coin text-warning mt-0.5" style="font-size: 16px; flex-shrink: 0;"></i>
+                                        @else
+                                            <i class="ti ti-file-certificate text-success mt-0.5" style="font-size: 16px; flex-shrink: 0;"></i>
+                                        @endif
+                                        <span>{{ $eq['detalle'] }}</span>
+                                    </div>
                                 </td>
-                                <td class="text-center">
-                                    <button type="button" class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1 px-3 py-1.5 shadow-sm btn-resolver-alerta" 
-                                            onclick="abrirModalResolver('equivalencias', {{ $eq['idAlumno'] }}, '{{ addslashes($eq['nombre']) }}', '{{ addslashes($eq['detalle']) }}', '{{ $eq['subtipo'] ?? 'equivalencia' }}', this)"
-                                            title="Marcar como resuelta o descartar advertencia"
-                                            style="border-radius: 10px; font-size: 0.8rem; font-weight: 600; transition: all 0.2s;">
-                                        <i class="bi bi-check-circle-fill"></i> Quitar Alerta
-                                    </button>
+                                <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <div class="d-flex flex-column gap-1">
+                                        <span class="badge-cct-pill">{{ $eq['cct'] }}</span>
+                                        <span class="font-monospace text-slate-500" style="font-size: 0.75rem;">{{ $eq['grupo'] }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-end" style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <div class="d-flex align-items-center gap-1.5 justify-content-end">
+                                        <button type="button" class="btn-alerta-success btn-resolver-alerta" 
+                                                onclick="abrirModalResolver('equivalencias', {{ $eq['idAlumno'] }}, '{{ addslashes($eq['nombre']) }}', '{{ addslashes($eq['detalle']) }}', '{{ $eq['subtipo'] ?? 'equivalencia' }}', this)"
+                                                title="Marcar como resuelta o descartar advertencia">
+                                            <i class="ti ti-check"></i> Quitar Alerta
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
 
                         <!-- SECCIÓN: GRUPOS Y HORARIOS -->
                         @foreach($notificaciones['grupos'] as $gp)
+                            @php
+                                $badgeTipo = $gp['badge_tipo'] ?? 'Término Ciclo';
+                                $badgeClass = 'badge-tipo-termino';
+                                if (stripos($badgeTipo, 'horario') !== false || stripos($badgeTipo, 'incompleto') !== false) {
+                                    $badgeClass = 'badge-tipo-horario';
+                                } elseif (stripos($badgeTipo, 'equivalencia') !== false) {
+                                    $badgeClass = 'badge-tipo-equivalencia';
+                                }
+
+                                $detalleTexto = $gp['detalle'] ?? '';
+                                $esAtencion = str_contains($detalleTexto, '[ATENCIÓN:') || str_contains($detalleTexto, 'ATENCIÓN:');
+                                $detalleLimpio = preg_replace('/\[?ATENCIÓN:\s*(.*?)\]?/i', '$1', $detalleTexto);
+                            @endphp
                             <tr class="fila-alerta" data-categoria="grupos">
-                                <td>
-                                    <span class="badge {{ $gp['badge_color'] ?? 'bg-info text-dark' }} px-2 py-1 fw-bold text-uppercase" style="font-size: 0.73rem;">
-                                        {{ $gp['badge_tipo'] ?? 'Término Ciclo' }}
+                                <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <span class="badge-soft-tipo {{ $badgeClass }}">
+                                        {{ $badgeTipo }}
                                     </span>
                                 </td>
-                                <td class="fw-bold text-dark">
-                                    Grupo: {{ $gp['clave'] }}
+                                <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <span class="font-monospace fw-semibold text-slate-800" style="font-size: 0.85rem;">{{ $gp['clave'] }}</span>
                                     @if(isset($gp['esCritico']) && $gp['esCritico'])
-                                        <span class="badge bg-danger rounded-pill ms-1" style="font-size: 0.65rem;">Urgente</span>
+                                        <span class="badge-urgente ms-1">
+                                            <i class="ti ti-alert-circle me-0.5"></i>Urgente
+                                        </span>
                                     @endif
                                 </td>
-                                <td class="text-secondary">
-                                    {{-- Se comenta el ícono (rombo/reloj) para mostrar únicamente el texto descriptivo --}}
-                                    {{-- <i class="bi {{ $gp['icono'] ?? 'bi-clock-history text-info' }} me-1"></i> --}}
-                                    {{ $gp['detalle'] }}
+                                <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <div class="d-flex align-items-start gap-2" style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">
+                                        @if($esAtencion)
+                                            <i class="ti ti-info-circle mt-0.5" style="color: #B45309; font-size: 16px; flex-shrink: 0;"></i>
+                                        @else
+                                            <i class="ti ti-clock mt-0.5" style="color: var(--text-muted); font-size: 16px; flex-shrink: 0;"></i>
+                                        @endif
+                                        <span>{{ $detalleLimpio }}</span>
+                                    </div>
                                 </td>
-                                <td class="text-secondary">
-                                    <strong>CCT:</strong> {{ $gp['cct'] }}
+                                <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <div class="d-flex flex-column gap-1">
+                                        <span class="badge-cct-pill">{{ $gp['cct'] }}</span>
+                                    </div>
                                 </td>
-                                <td class="text-center">
-                                    <div class="d-flex flex-column gap-1 align-items-center">
+                                <td class="text-end" style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <div class="d-flex align-items-center gap-1.5 justify-content-end flex-wrap">
                                         @if(isset($gp['accion_tipo']) && $gp['accion_tipo'] == 'armar_prehorario')
-                                            <a href="/horarios?grupo_id={{ $gp['idGrupo'] }}&es_prehorario=1" class="btn btn-warning btn-sm text-dark w-100 fw-bold">
-                                                <i class="bi bi-calendar-plus me-1"></i> Armar Pre-Horario
+                                            <a href="/horarios?grupo_id={{ $gp['idGrupo'] }}&es_prehorario=1" class="btn-alerta-cta">
+                                                <i class="ti ti-calendar-plus"></i> Armar Pre-Horario
                                             </a>
                                         @elseif(isset($gp['accion_tipo']) && in_array($gp['accion_tipo'], ['armar_horario', 'completar_horario']))
-                                            <a href="/horarios?grupo_id={{ $gp['idGrupo'] }}" class="btn btn-primary btn-sm text-white w-100 fw-bold">
-                                                <i class="bi bi-calendar-check me-1"></i> {{ $gp['accion_tipo'] == 'completar_horario' ? 'Completar Horario' : 'Armar Horario' }}
+                                            <a href="/horarios?grupo_id={{ $gp['idGrupo'] }}" class="btn-alerta-cta">
+                                                <i class="ti ti-calendar-check"></i> {{ $gp['accion_tipo'] == 'completar_horario' ? 'Completar Horario' : 'Armar Horario' }}
                                             </a>
                                         @else
-                                            <a href="/grupos/captura_calificaciones" class="btn btn-ver btn-sm text-white w-100">
-                                                <i class="bi bi-journal-check me-1"></i> Capturar Notas
+                                            <a href="/grupos/captura_calificaciones" class="btn-alerta-cta">
+                                                <i class="ti ti-edit"></i> Capturar Notas
                                             </a>
                                             @if(isset($gp['id_centroTrabajo']) && $gp['id_centroTrabajo'] == 3)
-                                                <a href="/horarios?grupo_id={{ $gp['idGrupo'] }}&es_prehorario=1" class="btn btn-warning btn-sm text-dark w-100">
-                                                    <i class="bi bi-calendar-plus me-1"></i> Armar Pre-Horario
+                                                <a href="/horarios?grupo_id={{ $gp['idGrupo'] }}&es_prehorario=1" class="btn-alerta-cta">
+                                                    <i class="ti ti-calendar-plus"></i> Armar Pre-Horario
                                                 </a>
                                             @else
-                                                <a href="/horarios?grupo_id={{ $gp['idGrupo'] }}" class="btn btn-primary btn-sm text-white w-100">
-                                                    <i class="bi bi-calendar-check me-1"></i> Ver Horario
+                                                <a href="/horarios?grupo_id={{ $gp['idGrupo'] }}" class="btn-alerta-secondary">
+                                                    <i class="ti ti-calendar"></i> Ver Horario
                                                 </a>
                                             @endif
                                         @endif
-                                        <button type="button" class="btn btn-outline-secondary btn-sm w-100 mt-1 d-inline-flex align-items-center justify-content-center gap-1"
+                                        <button type="button" class="btn-ghost-omitir"
                                                 onclick="abrirModalResolver('grupos', {{ $gp['idGrupo'] }}, 'Grupo: {{ addslashes($gp['clave']) }}', '{{ addslashes($gp['detalle']) }}', '{{ $gp['subtipo'] ?? 'general' }}', this)"
-                                                style="border-radius: 8px; font-size: 0.75rem;">
-                                            <i class="bi bi-eye-slash"></i> Omitir Aviso
+                                                title="Omitir Aviso">
+                                            <i class="ti ti-eye-off"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -195,40 +235,43 @@
                         @if(!empty($notificaciones['nuevos_alumnos']))
                             @foreach($notificaciones['nuevos_alumnos'] as $na)
                                 <tr class="fila-alerta" data-categoria="nuevos_alumnos">
-                                    <td>
-                                        <span class="badge bg-primary px-2 py-1 fw-bold text-uppercase" style="font-size: 0.73rem;">
-                                            <i class="bi bi-person-plus me-1"></i>Nuevo Alumno
+                                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                        <span class="badge-soft-tipo badge-tipo-nuevo">
+                                            <i class="ti ti-user-plus me-1"></i>Nuevo Alumno
                                         </span>
                                     </td>
-                                    <td class="fw-bold text-dark">
-                                        {{ $na['nombre'] }}
+                                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                        <span class="fw-semibold text-slate-800 d-block" style="font-size: 0.875rem;">{{ $na['nombre'] }}</span>
                                         @if(!empty($na['matricula']) && $na['matricula'] !== 'Sin Matrícula')
-                                            <br><small class="text-muted fw-normal"><i class="bi bi-card-heading me-1"></i>Mat: {{ $na['matricula'] }}</small>
+                                            <small class="text-muted font-monospace"><i class="ti ti-id-badge-2 me-0.5"></i>{{ $na['matricula'] }}</small>
                                         @endif
                                     </td>
-                                    <td class="text-secondary">
-                                        <div>
-                                            <i class="bi bi-person-badge-fill text-primary me-1"></i>
-                                            Registrado por: <strong class="text-dark">{{ $na['creador'] ?? 'Docente/Admin' }}</strong>
-                                        </div>
-                                        <div class="small text-muted mt-0.5">
-                                            <i class="bi bi-clock-history me-1"></i>Fecha y hora: <strong>{{ $na['fecha_creacion'] }} @if(!empty($na['hora_creacion'])) a las {{ $na['hora_creacion'] }} @endif</strong>
+                                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                        <div style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">
+                                            <div>
+                                                <i class="ti ti-user-check me-1 text-primary"></i>
+                                                Registrado por: <strong class="text-slate-800">{{ $na['creador'] ?? 'Docente/Admin' }}</strong>
+                                            </div>
+                                            <div class="text-muted fs-8 mt-0.5">
+                                                <i class="ti ti-clock me-1"></i>{{ $na['fecha_creacion'] }} @if(!empty($na['hora_creacion'])) a las {{ $na['hora_creacion'] }} @endif
+                                            </div>
                                         </div>
                                     </td>
-                                    <td class="text-secondary">
-                                        <strong>CCT:</strong> {{ $na['cct'] }} <br>
-                                        <strong>Grupo:</strong> <span class="badge bg-info text-dark">{{ $na['grupo'] }}</span>
+                                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                        <div class="d-flex flex-column gap-1">
+                                            <span class="badge-cct-pill">{{ $na['cct'] }}</span>
+                                            <span class="font-monospace text-slate-500" style="font-size: 0.75rem;">{{ $na['grupo'] }}</span>
+                                        </div>
                                     </td>
-                                    <td class="text-center">
-                                        <div class="d-flex flex-column gap-1 align-items-center">
-                                            <a href="/alumnos/{{ $na['idAlumno'] }}/kardex" class="btn btn-sm btn-outline-primary w-100 d-inline-flex align-items-center justify-content-center gap-1" style="border-radius: 8px; font-size: 0.78rem;">
-                                                <i class="bi bi-person-lines-fill"></i> Ver Kardex
+                                    <td class="text-end" style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                        <div class="d-flex align-items-center gap-1.5 justify-content-end flex-wrap">
+                                            <a href="/alumnos/{{ $na['idAlumno'] }}/kardex" class="btn-alerta-cta" title="Ver Kárdex">
+                                                <i class="ti ti-file-text"></i> Ver Kárdex
                                             </a>
-                                            <button type="button" class="btn btn-sm btn-outline-success w-100 d-inline-flex align-items-center justify-content-center gap-1 btn-resolver-alerta"
+                                            <button type="button" class="btn-alerta-success btn-resolver-alerta"
                                                     onclick="abrirModalResolver('nuevos_alumnos', {{ $na['idAlumno'] }}, '{{ addslashes($na['nombre']) }}', 'Nuevo alumno en grupo {{ addslashes($na['grupo']) }}', 'nuevo_registro', this)"
-                                                    title="Marcar como enterado / visto"
-                                                    style="border-radius: 8px; font-size: 0.78rem; font-weight: 600;">
-                                                <i class="bi bi-check-circle-fill"></i> Enterado
+                                                    title="Marcar como enterado / visto">
+                                                <i class="ti ti-check"></i> Enterado
                                             </button>
                                         </div>
                                     </td>
@@ -240,31 +283,36 @@
                         @if(!empty($notificaciones['resueltas']))
                             @foreach($notificaciones['resueltas'] as $res)
                                 <tr class="fila-alerta" data-categoria="resueltas" style="display: none;">
-                                    <td>
+                                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
                                         @if($res['accion'] == 'resuelto')
-                                            <span class="badge bg-success px-2 py-1 fw-bold text-uppercase" style="font-size: 0.73rem;">
-                                                <i class="bi bi-check2 me-1"></i>Resuelto
+                                            <span class="badge-soft-tipo badge-tipo-resuelto">
+                                                <i class="ti ti-check me-1"></i>Resuelto
                                             </span>
                                         @else
-                                            <span class="badge bg-secondary px-2 py-1 fw-bold text-uppercase" style="font-size: 0.73rem;">
-                                                <i class="bi bi-eye-slash me-1"></i>No es Alerta
+                                            <span class="badge-soft-tipo badge-tipo-ignorado">
+                                                <i class="ti ti-eye-off me-1"></i>No es Alerta
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="fw-bold text-dark">{{ $res['nombre'] }}</td>
-                                    <td class="text-secondary">
-                                        <span class="text-dark fw-medium">{{ $res['motivo'] }}</span><br>
-                                        <small class="text-muted"><i class="bi bi-person me-1"></i>{{ $res['usuario'] }} • {{ $res['fecha'] }}</small>
+                                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                        <span class="fw-semibold text-slate-800" style="font-size: 0.875rem;">{{ $res['nombre'] }}</span>
                                     </td>
-                                    <td class="text-secondary">
-                                        <strong>CCT:</strong> {{ $res['cct'] }} <br>
-                                        <strong>Grupo:</strong> {{ $res['grupo'] }}
+                                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                        <div style="font-size: 0.8125rem; color: var(--text-secondary); line-height: 1.5;">
+                                            <span class="text-slate-800 fw-medium">{{ $res['motivo'] }}</span>
+                                            <div class="text-muted fs-8 mt-0.5"><i class="ti ti-user me-1"></i>{{ $res['usuario'] }} • {{ $res['fecha'] }}</div>
+                                        </div>
                                     </td>
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 px-2.5 py-1"
-                                                onclick="reactivarAlerta('{{ $res['tipo'] }}', {{ $res['id_referencia'] }}, '{{ $res['subtipo'] }}', '{{ addslashes($res['nombre']) }}', this)"
-                                                style="border-radius: 8px; font-size: 0.78rem; font-weight: 500;">
-                                            <i class="bi bi-arrow-counterclockwise"></i> Reactivar
+                                    <td style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                        <div class="d-flex flex-column gap-1">
+                                            <span class="badge-cct-pill">{{ $res['cct'] }}</span>
+                                            <span class="font-monospace text-slate-500" style="font-size: 0.75rem;">{{ $res['grupo'] }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-end" style="padding: 12px 16px; border-bottom: 1px solid var(--border-subtle);">
+                                        <button type="button" class="btn-alerta-secondary"
+                                                onclick="reactivarAlerta('{{ $res['tipo'] }}', {{ $res['id_referencia'] }}, '{{ $res['subtipo'] }}', '{{ addslashes($res['nombre']) }}', this)">
+                                            <i class="ti ti-rotate-clockwise me-1"></i> Reactivar
                                         </button>
                                     </td>
                                 </tr>
@@ -274,10 +322,10 @@
                         <tr id="fila-vacia" style="{{ ($notificaciones['totales']['total'] ?? 0) == 0 ? '' : 'display: none !important;' }}">
                             <td colspan="5" class="text-center py-5 text-secondary">
                                 <div class="mb-2">
-                                    <i class="bi bi-shield-check text-success" style="font-size: 3rem;"></i>
+                                    <i class="ti ti-circle-check text-success" style="font-size: 3rem;"></i>
                                 </div>
-                                <h5 class="fw-bold text-dark" id="texto-vacio-titulo">Todo al corriente</h5>
-                                <p class="mb-0 text-muted" id="texto-vacio-desc">No se encontraron avisos ni pendientes en esta sección.</p>
+                                <h5 class="fw-bold text-slate-800" id="texto-vacio-titulo">Todo al corriente</h5>
+                                <p class="mb-0 text-muted fs-8" id="texto-vacio-desc">No se encontraron avisos ni pendientes en esta sección.</p>
                             </td>
                         </tr>
 
@@ -288,51 +336,208 @@
     @endif
 </div>
 
-<!-- Estilos CSS Personalizados Integrados con el Tema -->
+<!-- Estilos CSS SaaS Integrados con Design Tokens -->
 <style>
-    .btn-premium-pill {
-        background: rgba(49, 125, 146, 0.08);
-        color: rgb(49, 125, 146);
-        border: 1px solid rgba(49, 125, 146, 0.25);
-        padding: 0.55rem 1.1rem;
-        border-radius: 12px;
-        font-size: 0.88rem;
+    /* Tabs Horizontales de Filtros */
+    .btn-tab-filter {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-secondary);
+        height: 36px;
+        padding: 0 12px;
+        border-radius: var(--radius-md);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: var(--shadow-xs);
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .btn-tab-filter:hover {
+        background: var(--bg-muted);
+        color: var(--text-primary);
+    }
+    .btn-tab-filter.active {
+        background: var(--brand-primary) !important;
+        color: #FFFFFF !important;
+        border-color: var(--brand-primary) !important;
+    }
+    .btn-tab-filter .tab-counter {
+        padding: 1px 6px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-family: 'JetBrains Mono', monospace;
         font-weight: 600;
-        transition: all 0.3s ease;
+        background: var(--bg-muted);
+        color: var(--text-secondary);
+        line-height: 1.2;
     }
-    .btn-premium-pill:hover {
-        background: rgba(49, 125, 146, 0.15);
-        color: rgb(38, 104, 123);
-        transform: translateY(-1px);
-    }
-    .btn-premium-pill.active {
-        background: rgb(49, 125, 146) !important;
-        border-color: rgb(49, 125, 146) !important;
-        color: white !important;
-        box-shadow: 0 4px 12px rgba(49, 125, 146, 0.3);
-    }
-    
-    .glass-table {
-        background: transparent !important;
-    }
-    
-    .glass-table tr {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
-    }
-    
-    .glass-table td {
-        padding: 1rem 0.75rem !important;
-        color: #212529 !important;
-    }
-    
-    .glass-table td strong {
-        color: #334155 !important;
+    .btn-tab-filter.active .tab-counter {
+        background: rgba(255, 255, 255, 0.2);
+        color: #FFFFFF;
     }
 
-    .btn-resolver-alerta:hover {
-        background-color: #198754 !important;
-        color: white !important;
-        transform: scale(1.03);
+    /* Soft Badges Semánticos */
+    .badge-soft-tipo {
+        height: 24px;
+        padding: 0 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .badge-tipo-falta {
+        background: #FEF2F2;
+        color: #DC2626;
+        border: 1px solid #FECACA;
+    }
+    .badge-tipo-equivalencia {
+        background: #FEF3C7;
+        color: #B45309;
+        border: 1px solid #FDE68A;
+    }
+    .badge-tipo-horario {
+        background: #FFEDD5;
+        color: #C2410C;
+        border: 1px solid #FED7AA;
+    }
+    .badge-tipo-termino {
+        background: #E0F2FE;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+    }
+    .badge-tipo-nuevo {
+        background: #F0F7F8;
+        color: #1E5B66;
+        border: 1px solid #CBE4E8;
+    }
+    .badge-tipo-resuelto {
+        background: #DCFCE7;
+        color: #15803D;
+        border: 1px solid #BBF7D0;
+    }
+    .badge-tipo-ignorado {
+        background: #F1F5F9;
+        color: #475569;
+        border: 1px solid #E2E8F0;
+    }
+
+    .badge-urgente {
+        background: #FEF2F2;
+        color: #DC2626;
+        border: 1px solid #FECACA;
+        font-size: 0.7rem;
+        padding: 1px 7px;
+        border-radius: 999px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        vertical-align: middle;
+    }
+
+    .badge-cct-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: fit-content;
+        padding: 1px 7px;
+        border-radius: 4px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        background: #EBF5F8;
+        color: #1E5B66;
+        border: 1px solid #CBE4E8;
+    }
+
+    /* Botones de Acción en Tabla */
+    .btn-alerta-cta {
+        background: var(--brand-primary) !important;
+        color: #FFFFFF !important;
+        height: 32px;
+        padding: 0 12px;
+        border-radius: var(--radius-sm);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        white-space: nowrap;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        box-shadow: var(--shadow-xs);
+        transition: background 0.15s ease;
+    }
+    .btn-alerta-cta:hover {
+        background: var(--brand-primary-hover) !important;
+        color: #FFFFFF !important;
+    }
+
+    .btn-alerta-success {
+        background: #F0FDF4 !important;
+        color: #15803D !important;
+        border: 1px solid #BBF7D0 !important;
+        height: 32px;
+        padding: 0 12px;
+        border-radius: var(--radius-sm);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.15s ease;
+    }
+    .btn-alerta-success:hover {
+        background: #DCFCE7 !important;
+        border-color: #86EFAC !important;
+        color: #15803D !important;
+    }
+
+    .btn-ghost-omitir {
+        width: 32px;
+        height: 32px;
+        color: var(--text-muted);
+        border: 1px solid var(--border-subtle);
+        background: transparent;
+        border-radius: var(--radius-sm);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .btn-ghost-omitir:hover {
+        background: var(--bg-muted);
+        color: var(--text-primary);
+        border-color: #CBD5E1;
+    }
+
+    .btn-alerta-secondary {
+        background: var(--bg-surface);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-subtle);
+        height: 32px;
+        padding: 0 10px;
+        border-radius: var(--radius-sm);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .btn-alerta-secondary:hover {
+        background: var(--bg-muted);
+        color: var(--text-primary);
     }
 </style>
 
@@ -341,7 +546,7 @@ let categoriaActual = 'todos';
 
 function filtrarAlertas(categoria, botonElement) {
     categoriaActual = categoria;
-    const botones = document.querySelectorAll('.btn-premium-pill');
+    const botones = document.querySelectorAll('.btn-premium-pill, .btn-tab-filter');
     botones.forEach(btn => btn.classList.remove('active'));
     botonElement.classList.add('active');
 
@@ -399,35 +604,35 @@ function filtrarAlertas(categoria, botonElement) {
 
 function abrirModalResolver(tipo, idReferencia, nombre, detalle, subtipo, btnElement) {
     Swal.fire({
-        title: '<span style="font-size: 1.25rem; font-weight: 700; color: #1e293b;">Gestionar Advertencia</span>',
+        title: '<span style="font-size: 1.25rem; font-weight: 700; color: #0f172a;">Gestionar Advertencia</span>',
         html: `
             <div class="text-start p-2" style="font-size: 0.9rem;">
                 <div class="mb-2"><strong>Alumno / Grupo:</strong> <span class="text-primary fw-bold">${nombre}</span></div>
                 <div class="mb-3 text-muted"><strong>Pendiente:</strong> ${detalle}</div>
-                <hr class="my-2">
+                <hr class="my-2" style="border-color: #e2e8f0;">
                 <p class="mb-2 fw-semibold text-dark">¿Cómo deseas clasificar esta advertencia?</p>
                 <div class="form-check mb-2 p-2 rounded" style="background: rgba(25, 135, 84, 0.08); border: 1px solid rgba(25, 135, 84, 0.2);">
                     <input class="form-check-input ms-1" type="radio" name="swal_accion" id="opt_resuelto" value="resuelto" checked>
                     <label class="form-check-label fw-bold text-success ms-2" for="opt_resuelto" style="cursor: pointer;">
-                        <i class="bi bi-check-circle-fill me-1"></i> Ya se resolvió / Entregado
+                        <i class="ti ti-circle-check me-1"></i> Ya se resolvió / Entregado
                         <div class="text-muted small fw-normal mt-0.5">El alumno ya entregó el documento o se completó el trámite pendiente.</div>
                     </label>
                 </div>
                 <div class="form-check mb-3 p-2 rounded" style="background: rgba(108, 117, 125, 0.08); border: 1px solid rgba(108, 117, 125, 0.2);">
                     <input class="form-check-input ms-1" type="radio" name="swal_accion" id="opt_ignorar" value="ignorar">
                     <label class="form-check-label fw-bold text-secondary ms-2" for="opt_ignorar" style="cursor: pointer;">
-                        <i class="bi bi-eye-slash-fill me-1"></i> No es alerta / Omitir
+                        <i class="ti ti-eye-off me-1"></i> No es alerta / Omitir
                         <div class="text-muted small fw-normal mt-0.5">No aplica para este caso o se autoriza como excepción permanente.</div>
                     </label>
                 </div>
                 <div class="mb-1">
                     <label class="form-label small text-muted mb-1">Nota o motivo (opcional):</label>
-                    <input type="text" id="swal_motivo" class="form-control form-control-sm" placeholder="Ej. Entregó constancia física / Validado por control escolar" style="border-radius: 8px;">
+                    <input type="text" id="swal_motivo" class="form-control form-control-sm" placeholder="Ej. Entregó constancia física / Validado por control escolar" style="border-radius: 6px;">
                 </div>
             </div>
         `,
         showCancelButton: true,
-        confirmButtonText: '<i class="bi bi-check-lg me-1"></i> Aplicar y Quitar Alerta',
+        confirmButtonText: '<i class="ti ti-check me-1"></i> Aplicar y Quitar Alerta',
         cancelButtonText: 'Cancelar',
         confirmButtonColor: '#317d92',
         cancelButtonColor: '#64748b',
@@ -509,7 +714,7 @@ function reactivarAlerta(tipo, idReferencia, subtipo, nombre, btnElement) {
         text: `¿Deseas volver a mostrar la advertencia para "${nombre}" en el panel de pendientes activos?`,
         icon: 'question',
         showCancelButton: true,
-        confirmButtonText: '<i class="bi bi-arrow-counterclockwise me-1"></i> Sí, reactivar',
+        confirmButtonText: '<i class="ti ti-rotate-clockwise me-1"></i> Sí, reactivar',
         cancelButtonText: 'Cancelar',
         confirmButtonColor: '#317d92',
         cancelButtonColor: '#64748b'
@@ -574,7 +779,7 @@ function limpiarResueltasOmitidas() {
         text: `¿Deseas dejar en cero la sección de resueltas y omitidas (${count} registros)? Esta acción vacía el historial de resueltas sin reactivar las advertencias.`,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: '<i class="bi bi-trash3-fill me-1"></i> Sí, limpiar todo',
+        confirmButtonText: '<i class="ti ti-trash me-1"></i> Sí, limpiar todo',
         cancelButtonText: 'Cancelar',
         confirmButtonColor: '#dc2626',
         cancelButtonColor: '#64748b'

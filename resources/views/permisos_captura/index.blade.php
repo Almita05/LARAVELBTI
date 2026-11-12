@@ -5,142 +5,464 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-/* Estilos premium para el Portal de Permisos y la Matriz */
-.tab-premium .nav-link {
-    border: none;
-    color: #64748b;
-    font-weight: 600;
-    padding: 12px 24px;
-    border-radius: 10px;
-    transition: all 0.2s ease;
-    font-size: 0.94rem;
-}
-.tab-premium .nav-link.active {
-    background-color: rgb(49, 125, 146) !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(49, 125, 146, 0.25);
-}
-.tab-premium .nav-link:hover:not(.active) {
-    background-color: rgba(49, 125, 146, 0.06);
-    color: rgb(49, 125, 146);
+/* ==========================================================================
+   PORTAL DE PERMISOS DE CAPTURA - DESIGN SYSTEM (Linear / shadcn/ui)
+   ========================================================================== */
+
+:root {
+    --brand-primary: #1E5B66;
+    --brand-primary-hover: #184A54;
+    --brand-primary-subtle: #F0F7F8;
+    --border-subtle: #E2E8F0;
+    --bg-canvas: #F8FAFC;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #64748B;
 }
 
-.badge-estado-matriz {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: 700;
-    font-size: 0.74rem;
-    text-transform: uppercase;
+/* Page Header */
+.permisos-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.permisos-page-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #0F172A;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.01em;
+}
+.permisos-page-subtitle {
+    font-size: 0.875rem;
+    color: #64748B;
+    margin: 0;
+}
+
+/* Primary Button SaaS */
+.btn-primary-saas {
+    background: #1E5B66 !important;
+    color: #FFFFFF !important;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    border: 1.2px solid transparent;
+    gap: 6px;
+    border: none !important;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
 }
-.badge-matriz-completo {
-    background-color: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-    border-color: rgba(16, 185, 129, 0.25);
+.btn-primary-saas:hover {
+    background: #184A54 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 6px rgba(30, 91, 102, 0.25);
 }
-.badge-matriz-pendiente {
-    background-color: rgba(245, 158, 11, 0.1);
-    color: #d97706;
-    border-color: rgba(245, 158, 11, 0.25);
-}
-.badge-matriz-prorroga {
-    background-color: rgba(59, 130, 246, 0.1);
-    color: #2563eb;
-    border-color: rgba(59, 130, 246, 0.25);
-}
-.badge-matriz-expirado {
-    background-color: rgba(239, 68, 68, 0.1);
-    color: #dc2626;
-    border-color: rgba(239, 68, 68, 0.25);
-}
-.badge-matriz-bloqueado {
-    background-color: rgba(100, 116, 139, 0.1);
-    color: #475569;
-    border-color: rgba(100, 116, 139, 0.25);
+.btn-primary-saas i {
+    font-size: 16px;
+    line-height: 1;
 }
 
-.progress-bar-premium {
-    height: 8px;
-    background-color: #e2e8f0;
-    border-radius: 5px;
-    overflow: hidden;
-    margin-top: 4px;
-}
-.progress-fill-premium {
-    height: 100%;
-    border-radius: 5px;
-    transition: width 0.4s ease;
-}
-
-.btn-tabla-premium {
-    font-weight: 600;
-    font-size: 0.76rem;
-    padding: 6px 12px;
+/* Segmented Tabs Control */
+.segmented-tabs-wrapper {
+    display: inline-flex;
+    background: #F1F5F9;
+    padding: 4px;
     border-radius: 8px;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
+    border: 1px solid #E2E8F0;
+    margin-bottom: 20px;
     gap: 4px;
+    max-width: 100%;
+    overflow-x: auto;
 }
-.btn-tabla-premium:hover {
-    transform: translateY(-1px);
-}
-
-.permiso-status-badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 0.8rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-.badge-active {
-    background-color: rgba(16, 185, 129, 0.12);
-    color: rgb(16, 185, 129);
-    border: 1.5px solid rgba(16, 185, 129, 0.3);
-}
-.badge-inactive {
-    background-color: rgba(239, 68, 68, 0.12);
-    color: rgb(239, 68, 68);
-    border: 1.5px solid rgba(239, 68, 68, 0.3);
-}
-
-.btn-premium {
-    font-weight: 600;
-    border-radius: 12px;
-    padding: 10px 20px;
-    transition: all 0.2s ease;
+.segmented-tab {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #475569;
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
 }
-.btn-premium:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(49, 125, 146, 0.25);
+.segmented-tab:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.6);
+    color: #0F172A;
+}
+.segmented-tab.active {
+    background: #FFFFFF !important;
+    color: #1E5B66 !important;
+    font-weight: 600 !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
+}
+.segmented-tab i {
+    font-size: 16px;
+    line-height: 1;
 }
 
+/* Unified Card Container */
+.card-unified {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+
+/* Filters Header Bar */
+.filters-header-bar {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    align-items: center;
+}
+@media (max-width: 768px) {
+    .filters-header-bar {
+        grid-template-columns: 1fr;
+    }
+}
+.filter-search-wrapper {
+    position: relative;
+    width: 100%;
+}
+.filter-search-wrapper .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+    font-size: 16px;
+    pointer-events: none;
+    line-height: 1;
+}
+.filter-input-search {
+    height: 38px;
+    padding: 0 12px 0 36px;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    background: #F8FAFC;
+    width: 100%;
+    color: #0F172A;
+    transition: all 0.15s ease;
+}
+.filter-input-search:focus {
+    background: #FFFFFF;
+    border-color: #1E5B66;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12);
+}
+.filter-select {
+    height: 38px;
+    padding: 0 32px 0 12px;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: #0F172A;
+    background-color: #FFFFFF;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23475569' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.filter-select:focus {
+    border-color: #1E5B66;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12);
+}
+
+/* Glass Table Base */
+.glass-table {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+.glass-table th {
+    background: #F8FAFC !important;
+    color: #475569 !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid #E2E8F0 !important;
+    border-top: none !important;
+    white-space: nowrap !important;
+}
+.glass-table td {
+    padding: 12px 16px !important;
+    border-bottom: 1px solid #F1F5F9 !important;
+    border-top: none !important;
+    vertical-align: middle !important;
+    font-size: 0.8125rem !important;
+    color: #334155;
+    background: #FFFFFF;
+}
+.glass-table tr:hover td {
+    background-color: #F8FAFC;
+}
+.glass-table tr:last-child td {
+    border-bottom: none !important;
+}
+.table-danger-light td {
+    background-color: #FEF2F2 !important;
+}
+.table-danger-light:hover td {
+    background-color: #FEE2E2 !important;
+}
+
+/* Column Typography Tokens */
+.id-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #64748B;
+    font-weight: 500;
+}
+.docente-nombre-matriz {
+    font-weight: 600;
+    color: #0F172A;
+    text-transform: uppercase;
+    font-size: 0.8125rem;
+    letter-spacing: 0.01em;
+    display: block;
+}
+.badge-grupo-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #F1F5F9;
+    color: #334155;
+    border: 1px solid #E2E8F0;
+    padding: 2px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    display: inline-block;
+}
+.materia-nombre-matriz {
+    font-weight: 600;
+    color: #0F172A;
+    font-size: 0.8125rem;
+    line-height: 1.3;
+}
+.materia-clave-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #64748B;
+    margin-top: 2px;
+}
+.progress-text-row {
+    font-size: 0.75rem;
+    color: #475569;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+}
+.progress-track-saas {
+    height: 6px;
+    width: 100%;
+    background: #F1F5F9;
+    border-radius: 999px;
+    overflow: hidden;
+}
+.progress-fill-saas {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
+.fecha-limite-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+    color: #334155;
+    font-weight: 500;
+}
+.fecha-limite-cell i {
+    color: #64748B;
+    font-size: 15px;
+    line-height: 1;
+}
+
+/* Soft Badges */
+.badge-matriz-soft {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 1px solid transparent;
+    line-height: 1;
+}
+.badge-matriz-soft i {
+    font-size: 13px;
+    line-height: 1;
+}
+.badge-soft-warning {
+    background: #FFFBEB !important;
+    color: #B45309 !important;
+    border-color: #FDE68A !important;
+}
+.badge-soft-success {
+    background: #DCFCE7 !important;
+    color: #15803D !important;
+    border-color: #BBF7D0 !important;
+}
+.badge-soft-info {
+    background: #E0F2FE !important;
+    color: #0369A1 !important;
+    border-color: #BAE6FD !important;
+}
+.badge-soft-danger {
+    background: #FEE2E2 !important;
+    color: #B91C1C !important;
+    border-color: #FECACA !important;
+}
+.badge-soft-neutral {
+    background: #F1F5F9 !important;
+    color: #475569 !important;
+    border-color: #E2E8F0 !important;
+}
+
+/* Direct Action Buttons */
+.actions-cell-matriz {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    white-space: nowrap;
+}
+.btn-action-prorroga {
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 6px;
+    background: #F0F7F8;
+    border: 1px solid #CBE4E8;
+    color: #1E5B66;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+.btn-action-prorroga i {
+    font-size: 15px;
+    line-height: 1;
+}
+.btn-action-prorroga:hover {
+    background: #1E5B66;
+    border-color: #1E5B66;
+    color: #FFFFFF;
+}
+.btn-action-notas {
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 6px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    color: #334155;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    transition: all 0.15s ease;
+}
+.btn-action-notas i {
+    font-size: 15px;
+    line-height: 1;
+    color: #64748B;
+}
+.btn-action-notas:hover {
+    background: #F8FAFC;
+    border-color: #CBD5E1;
+    color: #0F172A;
+}
+
+/* Ghost Buttons (Historial de Prórrogas) */
+.btn-ghost-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: transparent !important;
+    border: none !important;
+    color: #64748B !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
+    text-decoration: none;
+}
+.btn-ghost-icon:hover {
+    background: #F1F5F9 !important;
+    color: #0F172A !important;
+}
+.btn-ghost-danger:hover {
+    background: #FEF2F2 !important;
+    color: #DC2626 !important;
+}
+.btn-ghost-icon i {
+    font-size: 16px !important;
+    line-height: 1 !important;
+    color: currentColor !important;
+}
+
+/* Modals & Switch Forms */
 .form-select-premium, .form-control-premium {
-    border-radius: 10px;
-    border: 1.5px solid #cbd5e1;
-    padding: 10px 12px;
-    font-size: 0.92rem;
-    transition: all 0.2s ease;
+    border-radius: 6px;
+    border: 1px solid #E2E8F0;
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
 }
 .form-select-premium:focus, .form-control-premium:focus {
-    border-color: rgb(49, 125, 146);
-    box-shadow: 0 0 0 3px rgba(49, 125, 146, 0.15);
+    border-color: #1E5B66;
+    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12);
     outline: none;
 }
-
 .switch-premium {
     position: relative;
     display: inline-block;
-    width: 48px;
-    height: 24px;
+    width: 44px;
+    height: 22px;
 }
 .switch-premium input {
     opacity: 0;
@@ -154,64 +476,59 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #cbd5e1;
-    transition: .3s;
-    border-radius: 24px;
+    background-color: #CBD5E1;
+    transition: .25s ease;
+    border-radius: 22px;
 }
 .slider-premium:before {
     position: absolute;
     content: "";
-    height: 18px;
-    width: 18px;
+    height: 16px;
+    width: 16px;
     left: 3px;
     bottom: 3px;
     background-color: white;
-    transition: .3s;
+    transition: .25s ease;
     border-radius: 50%;
 }
 input:checked + .slider-premium {
-    background-color: rgb(49, 125, 146);
+    background-color: #1E5B66;
 }
 input:checked + .slider-premium:before {
-    transform: translateX(24px);
+    transform: translateX(22px);
 }
 </style>
 
 <div class="page-container">
 
     {{-- Encabezado Principal --}}
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="permisos-page-header">
         <div>
-            <h3 class="page-title mb-1">
-                <i class="fa-solid fa-user-shield me-2"></i>
-                Portal de Permisos de Captura
-            </h3>
-            <p class="text-muted mb-0 small">Administra los tiempos de captura, monitorea el avance de calificaciones y asigna prórrogas especiales.</p>
+            <h1 class="permisos-page-title">Portal de Permisos de Captura</h1>
+            <p class="permisos-page-subtitle">Administra los tiempos de captura, monitorea el avance de calificaciones y asigna prórrogas especiales.</p>
         </div>
 
-        <button class="btn btn-azul btn-premium shadow-sm" onclick="abrirModalAlta()">
-            <i class="fa-solid fa-plus"></i> Asignar Prórroga Especial
+        <button type="button" class="btn btn-primary-saas" onclick="abrirModalAlta()">
+            <i class="ti ti-plus"></i>
+            <span>Asignar Prórroga Especial</span>
         </button>
     </div>
 
-    {{-- Sistema de Pestañas (Tabs) --}}
-    <ul class="nav nav-pills tab-premium mb-4 gap-2 bg-light p-1.5 rounded-3 border" id="pills-tab" role="tablist" style="width: fit-content;">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="tab-matriz-btn" data-bs-toggle="pill" data-bs-target="#tab-matriz" type="button" role="tab" aria-controls="tab-matriz" aria-selected="true" onclick="cargarMatriz()">
-                <i class="fa-solid fa-chart-line me-1.5"></i> Matriz de Avance (Monitoreo)
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-prorrogas-btn" data-bs-toggle="pill" data-bs-target="#tab-prorrogas" type="button" role="tab" aria-controls="tab-prorrogas" aria-selected="false" onclick="cargarPermisos()">
-                <i class="fa-solid fa-clock-rotate-left me-1.5"></i> Historial de Prórrogas
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab-cct-btn" data-bs-toggle="pill" data-bs-target="#tab-cct" type="button" role="tab" aria-controls="tab-cct" aria-selected="false" onclick="cargarCctConfigList()">
-                <i class="fa-solid fa-school me-1.5"></i> Ajustes de Cierre por Plantel (CCT)
-            </button>
-        </li>
-    </ul>
+    {{-- Sistema de Pestañas (Segmented Tabs) --}}
+    <div class="segmented-tabs-wrapper" id="pills-tab" role="tablist">
+        <button class="segmented-tab active" id="tab-matriz-btn" data-bs-toggle="pill" data-bs-target="#tab-matriz" type="button" role="tab" aria-controls="tab-matriz" aria-selected="true" onclick="cargarMatriz()">
+            <i class="ti ti-chart-bar"></i>
+            <span>Matriz de Avance (Monitoreo)</span>
+        </button>
+        <button class="segmented-tab" id="tab-prorrogas-btn" data-bs-toggle="pill" data-bs-target="#tab-prorrogas" type="button" role="tab" aria-controls="tab-prorrogas" aria-selected="false" onclick="cargarPermisos()">
+            <i class="ti ti-history"></i>
+            <span>Historial de Prórrogas</span>
+        </button>
+        <button class="segmented-tab" id="tab-cct-btn" data-bs-toggle="pill" data-bs-target="#tab-cct" type="button" role="tab" aria-controls="tab-cct" aria-selected="false" onclick="cargarCctConfigList()">
+            <i class="ti ti-building-community"></i>
+            <span>Ajustes de Cierre por Plantel (CCT)</span>
+        </button>
+    </div>
 
     {{-- Contenido de las Pestañas --}}
     <div class="tab-content" id="pills-tabContent">
@@ -219,19 +536,15 @@ input:checked + .slider-premium:before {
         {{-- PESTAÑA 1: MATRIZ DE AVANCE --}}
         <div class="tab-pane fade show active" id="tab-matriz" role="tabpanel" aria-labelledby="tab-matriz-btn">
             
-            {{-- Filtros Matriz --}}
-            <div class="glass-card mb-4 p-4">
-                <div class="row g-3 align-items-center">
-                    <div class="col-12 col-md-8">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 text-muted" style="border-radius: 12px 0 0 12px; border-color: #e2e8f0;">
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                            </span>
-                            <input type="text" id="buscadorMatriz" class="form-control border-start-0" style="border-radius: 0 12px 12px 0; border-color: #e2e8f0; padding: 10px 12px;" placeholder="Buscar en la matriz por docente, materia o grupo..." oninput="filtrarTablaMatriz()">
-                        </div>
+            <div class="card-unified">
+                {{-- Header de Filtros (Buscador + Select de Estado) --}}
+                <div class="filters-header-bar">
+                    <div class="filter-search-wrapper">
+                        <i class="ti ti-search search-icon"></i>
+                        <input type="text" id="buscadorMatriz" class="filter-input-search" placeholder="Buscar en la matriz por docente, materia o grupo..." oninput="filtrarTablaMatriz()">
                     </div>
-                    <div class="col-12 col-md-4">
-                        <select id="filtroEstadoMatriz" class="form-select shadow-sm" style="border-radius: 12px; height: 46px; border-color: #e2e8f0;" onchange="filtrarTablaMatriz()">
+                    <div class="filter-select-wrapper">
+                        <select id="filtroEstadoMatriz" class="filter-select" onchange="filtrarTablaMatriz()">
                             <option value="">Todos los Estados</option>
                             <option value="completo">Completo</option>
                             <option value="pendiente">Pendiente (En fecha)</option>
@@ -241,42 +554,42 @@ input:checked + .slider-premium:before {
                         </select>
                     </div>
                 </div>
-            </div>
 
-            {{-- Spinner de carga matriz --}}
-            <div id="spinnerMatriz" class="text-center py-5">
-                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
-                <p class="text-muted mt-2 fw-semibold">Calculando matriz de avance de calificaciones...</p>
-            </div>
-
-            {{-- Tabla Matriz --}}
-            <div id="wrapperMatriz" class="glass-card p-4 shadow-sm" style="display: none;">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" id="tablaMatriz">
-                        <thead style="background: rgba(49, 125, 146, 0.12); color: #0f172a; font-weight: 700; border-bottom: 2px solid rgba(49, 125, 146, 0.3);">
-                            <tr>
-                                <th style="width: 50px;">#</th>
-                                <th>Docente</th>
-                                <th>Grupo</th>
-                                <th>Materia Impartida</th>
-                                <th style="min-width: 180px;">Avance de Captura</th>
-                                <th>Fecha Límite</th>
-                                <th class="text-center">Estado</th>
-                                <th class="text-center" style="width: 250px;">Acción Directa</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbodyMatriz">
-                            {{-- Llenado por JS --}}
-                        </tbody>
-                    </table>
+                {{-- Spinner de carga matriz --}}
+                <div id="spinnerMatriz" class="text-center py-5">
+                    <div class="spinner-border" style="width: 2.5rem; height: 2.5rem; color: #1E5B66;" role="status"></div>
+                    <p class="text-muted mt-2 fw-semibold mb-0" style="font-size: 0.875rem;">Calculando matriz de avance de calificaciones...</p>
                 </div>
-            </div>
 
-            {{-- Vacío Matriz --}}
-            <div id="emptyMatriz" class="glass-card text-center p-5" style="display: none;">
-                <i class="fa-solid fa-users-slash text-muted" style="font-size: 3.5rem;"></i>
-                <h5 class="text-muted mt-3 mb-1">No se encontraron registros en la carga académica</h5>
-                <p class="text-muted small">Verifica que existan horarios asignados en el sistema.</p>
+                {{-- Tabla Matriz --}}
+                <div id="wrapperMatriz" style="display: none;">
+                    <div class="table-responsive">
+                        <table class="table glass-table align-middle mb-0" id="tablaMatriz">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45px;">#</th>
+                                    <th>Docente</th>
+                                    <th>Grupo</th>
+                                    <th>Materia Impartida</th>
+                                    <th style="min-width: 150px;">Avance de Captura</th>
+                                    <th>Fecha Límite</th>
+                                    <th class="text-center">Estado</th>
+                                    <th class="text-end" style="width: 260px; padding-right: 20px;">Acción Directa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyMatriz">
+                                {{-- Llenado por JS --}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {{-- Vacío Matriz --}}
+                <div id="emptyMatriz" class="text-center p-5" style="display: none;">
+                    <i class="ti ti-users-minus text-muted" style="font-size: 3rem; display: inline-block; margin-bottom: 12px; color: #94A3B8;"></i>
+                    <h5 class="mt-2 mb-1" style="font-size: 1rem; font-weight: 600; color: #334155;">No se encontraron registros en la carga académica</h5>
+                    <p class="text-muted small mb-0">Verifica que existan horarios asignados en el sistema.</p>
+                </div>
             </div>
 
         </div>
@@ -284,61 +597,57 @@ input:checked + .slider-premium:before {
         {{-- PESTAÑA 2: HISTORIAL DE PRÓRROGAS --}}
         <div class="tab-pane fade" id="tab-prorrogas" role="tabpanel" aria-labelledby="tab-prorrogas-btn">
             
-            {{-- Filtros Prórrogas --}}
-            <div class="glass-card mb-4 p-4">
-                <div class="row g-3 align-items-center">
-                    <div class="col-12 col-md-8">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 text-muted" style="border-radius: 12px 0 0 12px; border-color: #e2e8f0;">
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                            </span>
-                            <input type="text" id="buscadorPermisos" class="form-control border-start-0" style="border-radius: 0 12px 12px 0; border-color: #e2e8f0; padding: 10px 12px;" placeholder="Buscar prórrogas por docente, materia o grupo..." oninput="filtrarTablaPermisos()">
-                        </div>
+            <div class="card-unified">
+                {{-- Header de Filtros (Buscador + Select de Estado) --}}
+                <div class="filters-header-bar">
+                    <div class="filter-search-wrapper">
+                        <i class="ti ti-search search-icon"></i>
+                        <input type="text" id="buscadorPermisos" class="filter-input-search" placeholder="Buscar prórrogas por docente, materia o grupo..." oninput="filtrarTablaPermisos()">
                     </div>
-                    <div class="col-12 col-md-4">
-                        <select id="filtroEstado" class="form-select shadow-sm" style="border-radius: 12px; height: 46px; border-color: #e2e8f0;" onchange="filtrarTablaPermisos()">
+                    <div class="filter-select-wrapper">
+                        <select id="filtroEstado" class="filter-select" onchange="filtrarTablaPermisos()">
                             <option value="">Todos los Estados</option>
                             <option value="activo">Solo Activos</option>
                             <option value="inactivo">Solo Inactivos</option>
                         </select>
                     </div>
                 </div>
-            </div>
 
-            {{-- Spinner de carga permisos --}}
-            <div id="spinnerCarga" class="text-center py-5" style="display: none;">
-                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
-                <p class="text-muted mt-2 fw-semibold">Cargando listado de prórrogas...</p>
-            </div>
-
-            {{-- Tabla Prórrogas --}}
-            <div id="tablaWrapper" class="glass-card p-4 shadow-sm" style="display: none;">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" id="tablaPermisos">
-                        <thead style="background: rgba(49, 125, 146, 0.12); color: #0f172a; font-weight: 700; border-bottom: 2px solid rgba(49, 125, 146, 0.3);">
-                            <tr>
-                                <th style="width: 50px;">#</th>
-                                <th>Docente</th>
-                                <th>Grupo</th>
-                                <th>Asignatura</th>
-                                <th>Fecha Límite</th>
-                                <th class="text-center">Modificar Historial</th>
-                                <th class="text-center">Estado</th>
-                                <th class="text-center" style="width: 140px;">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbodyPermisos">
-                            {{-- Llenado por JS --}}
-                        </tbody>
-                    </table>
+                {{-- Spinner de carga permisos --}}
+                <div id="spinnerCarga" class="text-center py-5" style="display: none;">
+                    <div class="spinner-border" style="width: 2.5rem; height: 2.5rem; color: #1E5B66;" role="status"></div>
+                    <p class="text-muted mt-2 fw-semibold mb-0" style="font-size: 0.875rem;">Cargando listado de prórrogas...</p>
                 </div>
-            </div>
 
-            {{-- Vacío Prórrogas --}}
-            <div id="emptyState" class="glass-card text-center p-5" style="display: none;">
-                <i class="fa-solid fa-lock-open text-muted" style="font-size: 3.5rem;"></i>
-                <h5 class="text-muted mt-3 mb-1">No se encontraron prórrogas especiales</h5>
-                <p class="text-muted small">Todos los docentes operan bajo los tiempos ordinarios de captura.</p>
+                {{-- Tabla Prórrogas --}}
+                <div id="tablaWrapper" style="display: none;">
+                    <div class="table-responsive">
+                        <table class="table glass-table align-middle mb-0" id="tablaPermisos">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45px;">#</th>
+                                    <th>Docente</th>
+                                    <th>Grupo</th>
+                                    <th>Asignatura</th>
+                                    <th>Fecha Límite</th>
+                                    <th class="text-center">Modificar Historial</th>
+                                    <th class="text-center">Estado</th>
+                                    <th class="text-end" style="width: 140px; padding-right: 20px;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyPermisos">
+                                {{-- Llenado por JS --}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {{-- Vacío Prórrogas --}}
+                <div id="emptyState" class="text-center p-5" style="display: none;">
+                    <i class="ti ti-lock-open text-muted" style="font-size: 3rem; display: inline-block; margin-bottom: 12px; color: #94A3B8;"></i>
+                    <h5 class="mt-2 mb-1" style="font-size: 1rem; font-weight: 600; color: #334155;">No se encontraron prórrogas especiales</h5>
+                    <p class="text-muted small mb-0">Todos los docentes operan bajo los tiempos ordinarios de captura.</p>
+                </div>
             </div>
 
         </div>
@@ -346,7 +655,7 @@ input:checked + .slider-premium:before {
         {{-- PESTAÑA 3: CONFIGURACIÓN POR GRUPO --}}
         <div class="tab-pane fade" id="tab-cct" role="tabpanel" aria-labelledby="tab-cct-btn">
             <div class="glass-card p-4 mb-4 shadow-sm bg-white border">
-                <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-school text-primary me-2"></i> Seleccionar Plantel y Grupo</h5>
+                <h5 class="fw-bold text-dark mb-3"><i class="ti ti-building-community me-2" style="color: #1E5B66;"></i> Seleccionar Plantel y Grupo</h5>
                 <div class="row g-3">
                     <div class="col-12 col-md-6 col-lg-4">
                         <label class="form-label small fw-bold text-muted">1. Plantel (CCT):</label>
@@ -376,7 +685,7 @@ input:checked + .slider-premium:before {
                     {{-- HABILITAR GENERAL --}}
                     <div class="mb-4 p-3 rounded border bg-light d-flex align-items-center justify-content-between" style="max-width: 700px;">
                         <div>
-                            <label class="fw-bold text-dark mb-0 d-block" style="font-size: 1.02rem;"><i class="fa-solid fa-power-off me-2 text-primary"></i> Habilitar Captura de Calificaciones en este Grupo</label>
+                            <label class="fw-bold text-dark mb-0 d-block" style="font-size: 1.02rem;"><i class="ti ti-power me-2" style="color: #1E5B66;"></i> Habilitar Captura de Calificaciones en este Grupo</label>
                             <small class="text-muted">Si se desactiva, los docentes no podrán capturar calificaciones en ninguna asignatura de este grupo.</small>
                         </div>
                         <label class="switch-premium mb-0">
@@ -387,20 +696,20 @@ input:checked + .slider-premium:before {
 
                     {{-- DROPDOWN SEMESTRE HABILITADO --}}
                     <div class="mb-4 p-3 rounded border bg-light" style="max-width: 700px;" id="divGrupoSemestreHabilitado">
-                        <label class="form-label small fw-bold text-muted d-block"><i class="fa-solid fa-graduation-cap text-primary me-2"></i> Semestre Habilitado para Captura:</label>
+                        <label class="form-label small fw-bold text-muted d-block"><i class="ti ti-school me-2" style="color: #1E5B66;"></i> Semestre Habilitado para Captura:</label>
                         <select id="selectGrupoNivelCaptura" class="form-select form-select-premium" required>
                             <option value="">Seleccione un semestre...</option>
                         </select>
                         <small class="text-muted d-block mt-1">Los docentes solo podrán capturar calificaciones para asignaturas correspondientes a este semestre/nivel académico.</small>
                     </div>
 
-                    <h5 class="fw-bold text-dark mt-4 mb-3" id="lblPeriodosEvaluacionHeader"><i class="fa-solid fa-circle-nodes text-secondary me-2"></i> Rango de Fechas por Periodo de Evaluación</h5>
+                    <h5 class="fw-bold text-dark mt-4 mb-3" id="lblPeriodosEvaluacionHeader"><i class="ti ti-calendar-event me-2" style="color: #475569;"></i> Rango de Fechas por Periodo de Evaluación</h5>
                     <div class="row g-4" style="max-width: 700px;">
                         
                         {{-- Parcial 1 --}}
                         <div class="col-12 p-3 rounded border bg-light card-periodo-ajuste" id="cardAjusteP1">
                             <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                <span class="fw-bold text-dark fs-6" id="lblGrupoP1Title"><i class="fa-solid fa-square-check text-muted me-2"></i> 1er. Parcial</span>
+                                <span class="fw-bold text-dark fs-6" id="lblGrupoP1Title"><i class="ti ti-checkbox text-muted me-2"></i> 1er. Parcial</span>
                                 <label class="switch-premium mb-0">
                                     <input type="checkbox" id="checkGrupoP1" class="switch-grupo-sub" onchange="toggleFilaFecha('p1', this.checked)">
                                     <span class="slider-premium"></span>
@@ -421,7 +730,7 @@ input:checked + .slider-premium:before {
                         {{-- Parcial 2 --}}
                         <div class="col-12 p-3 rounded border bg-light card-periodo-ajuste" id="cardAjusteP2">
                             <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                <span class="fw-bold text-dark fs-6"><i class="fa-solid fa-square-check text-muted me-2"></i> 2do. Parcial</span>
+                                <span class="fw-bold text-dark fs-6"><i class="ti ti-checkbox text-muted me-2"></i> 2do. Parcial</span>
                                 <label class="switch-premium mb-0">
                                     <input type="checkbox" id="checkGrupoP2" class="switch-grupo-sub" onchange="toggleFilaFecha('p2', this.checked)">
                                     <span class="slider-premium"></span>
@@ -442,7 +751,7 @@ input:checked + .slider-premium:before {
                         {{-- Parcial 3 --}}
                         <div class="col-12 p-3 rounded border bg-light card-periodo-ajuste" id="cardAjusteP3">
                             <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                <span class="fw-bold text-dark fs-6"><i class="fa-solid fa-square-check text-muted me-2"></i> 3er. Parcial</span>
+                                <span class="fw-bold text-dark fs-6"><i class="ti ti-checkbox text-muted me-2"></i> 3er. Parcial</span>
                                 <label class="switch-premium mb-0">
                                     <input type="checkbox" id="checkGrupoP3" class="switch-grupo-sub" onchange="toggleFilaFecha('p3', this.checked)">
                                     <span class="slider-premium"></span>
@@ -463,7 +772,7 @@ input:checked + .slider-premium:before {
                         {{-- Semestral --}}
                         <div class="col-12 p-3 rounded border bg-light card-periodo-ajuste" id="cardAjusteSemestral">
                             <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                <span class="fw-bold text-dark fs-6"><i class="fa-solid fa-certificate text-muted me-2"></i> Examen Semestral / Final</span>
+                                <span class="fw-bold text-dark fs-6"><i class="ti ti-file-certificate text-muted me-2"></i> Examen Semestral / Final</span>
                                 <label class="switch-premium mb-0">
                                     <input type="checkbox" id="checkGrupoSemestral" class="switch-grupo-sub" onchange="toggleFilaFecha('semestral', this.checked)">
                                     <span class="slider-premium"></span>
@@ -484,7 +793,7 @@ input:checked + .slider-premium:before {
                         {{-- Extraordinario --}}
                         <div class="col-12 p-3 rounded border bg-light card-periodo-ajuste">
                             <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                <span class="fw-bold text-dark fs-6"><i class="fa-solid fa-bolt text-muted me-2"></i> Examen Extraordinario</span>
+                                <span class="fw-bold text-dark fs-6"><i class="ti ti-bolt text-muted me-2"></i> Examen Extraordinario</span>
                                 <label class="switch-premium mb-0">
                                     <input type="checkbox" id="checkGrupoExtraordinario" class="switch-grupo-sub" onchange="toggleFilaFecha('extraordinario', this.checked)">
                                     <span class="slider-premium"></span>
@@ -505,8 +814,8 @@ input:checked + .slider-premium:before {
                     </div>
 
                     <div class="mt-4 pt-3 border-top" style="max-width: 700px;">
-                        <button type="button" class="btn btn-azul btn-premium px-5" onclick="guardarConfiguracionGrupo()">
-                            <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Ajustes de Captura del Grupo
+                        <button type="button" class="btn btn-primary-saas px-4" onclick="guardarConfiguracionGrupo()">
+                            <i class="ti ti-device-floppy me-1"></i> Guardar Ajustes de Captura del Grupo
                         </button>
                     </div>
                 </form>
@@ -520,20 +829,20 @@ input:checked + .slider-premium:before {
 {{-- MODAL PARA ASIGNAR NUEVO PERMISO / PRÓRROGA --}}
 <div class="modal fade" id="modalAltaPermiso" tabindex="-1" aria-hidden="true" style="z-index: 1200;">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content glass-modal border-0 shadow-lg" style="border-radius: 18px;">
-            <div class="modal-header text-white px-4 py-3" style="background: linear-gradient(135deg, rgb(38, 104, 123), #1e3a8a); border-radius: 18px 18px 0 0;">
+        <div class="modal-content glass-modal border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header px-4 py-3" style="border-bottom: 1px solid #E2E8F0;">
                 <div class="d-flex align-items-center">
-                    <i class="fa-solid fa-key me-2 fs-5"></i>
+                    <i class="ti ti-key me-2 fs-5" style="color: #1E5B66;"></i>
                     <h5 class="modal-title fw-bold mb-0">Asignar Prórroga / Permiso Especial</h5>
                 </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4 bg-white text-dark">
                 <form id="formAltaPermiso">
                     
                     {{-- DOCENTE --}}
                     <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark"><i class="fa-solid fa-chalkboard-user me-1 text-primary"></i> Docente:</label>
+                        <label class="form-label fw-semibold text-dark"><i class="ti ti-chalkboard me-1" style="color: var(--brand-primary);"></i> Docente:</label>
                         <select id="selectAltaDocente" class="form-select form-select-premium w-100" onchange="filtrarMaterias()" required>
                             <option value="">Selecciona un docente...</option>
                         </select>
@@ -541,7 +850,7 @@ input:checked + .slider-premium:before {
 
                     {{-- GRUPO --}}
                     <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark"><i class="fa-solid fa-users me-1 text-primary"></i> Grupo:</label>
+                        <label class="form-label fw-semibold text-dark"><i class="ti ti-users me-1" style="color: var(--brand-primary);"></i> Grupo:</label>
                         <select id="selectAltaGrupo" class="form-select form-select-premium w-100" onchange="cargarMateriasPorGrupo(this.value)" required>
                             <option value="">Selecciona un grupo...</option>
                         </select>
@@ -549,7 +858,7 @@ input:checked + .slider-premium:before {
 
                     {{-- MATERIA --}}
                     <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark"><i class="fa-solid fa-book me-1 text-primary"></i> Asignatura:</label>
+                        <label class="form-label fw-semibold text-dark"><i class="ti ti-books me-1" style="color: var(--brand-primary);"></i> Asignatura:</label>
                         <select id="selectAltaMateria" class="form-select form-select-premium w-100" required disabled>
                             <option value="">(Primero selecciona un grupo)</option>
                         </select>
@@ -559,14 +868,14 @@ input:checked + .slider-premium:before {
                         <div class="form-check mt-2" id="divCheckMateriaPasada" style="display: none;">
                             <input class="form-check-input" type="checkbox" id="checkMateriaPasada" onchange="filtrarMaterias()" style="cursor: pointer;">
                             <label class="form-check-label text-dark fw-semibold" for="checkMateriaPasada" style="font-size: 0.85rem; cursor: pointer;">
-                                <i class="fa-solid fa-clock-rotate-left text-warning me-1"></i> Mostrar materias pasadas o de otros niveles
+                                <i class="ti ti-history text-warning me-1"></i> Mostrar materias pasadas o de otros niveles
                             </label>
                         </div>
                     </div>
 
                     {{-- FECHA LÍMITE (EXTENSION) --}}
                     <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark"><i class="fa-solid fa-calendar-days me-1 text-primary"></i> Prórroga / Fecha Límite de Captura:</label>
+                        <label class="form-label fw-semibold text-dark"><i class="ti ti-calendar-event me-1" style="color: var(--brand-primary);"></i> Prórroga / Fecha Límite de Captura:</label>
                         <input type="date" id="inputAltaFechaLimite" class="form-control form-control-premium" required>
                         <small class="text-muted d-block mt-1">El docente podrá capturar calificaciones en esta materia hasta las 23:59 hrs de la fecha indicada.</small>
                     </div>
@@ -587,8 +896,8 @@ input:checked + .slider-premium:before {
             </div>
             <div class="modal-footer bg-light border-0 px-4 py-3 d-flex justify-content-between">
                 <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success px-4" onclick="guardarNuevoPermiso()">
-                    <i class="fa-solid fa-circle-check me-1"></i> Asignar Prórroga
+                <button type="button" class="btn btn-primary-saas px-4" onclick="guardarNuevoPermiso()">
+                    <i class="ti ti-circle-check me-1"></i> Asignar Prórroga
                 </button>
             </div>
         </div>
@@ -598,13 +907,13 @@ input:checked + .slider-premium:before {
 {{-- MODAL PARA EDITAR PERMISO EXISTENTE --}}
 <div class="modal fade" id="modalEditarPermiso" tabindex="-1" aria-hidden="true" style="z-index: 1200;">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content glass-modal border-0 shadow-lg" style="border-radius: 18px;">
-            <div class="modal-header text-white px-4 py-3" style="background: linear-gradient(135deg, rgb(38, 104, 123), #1e3a8a); border-radius: 18px 18px 0 0;">
+        <div class="modal-content glass-modal border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header px-4 py-3" style="border-bottom: 1px solid #E2E8F0;">
                 <div class="d-flex align-items-center">
-                    <i class="fa-solid fa-pen-to-square me-2 fs-5"></i>
+                    <i class="ti ti-edit me-2 fs-5" style="color: #1E5B66;"></i>
                     <h5 class="modal-title fw-bold mb-0">Modificar Permiso Especial</h5>
                 </div>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4 bg-white text-dark">
                 <form id="formEditarPermiso">
@@ -628,7 +937,7 @@ input:checked + .slider-premium:before {
 
                     {{-- FECHA LÍMITE (EXTENSION) --}}
                     <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark"><i class="fa-solid fa-calendar-days me-1 text-primary"></i> Prórroga / Fecha Límite de Captura:</label>
+                        <label class="form-label fw-semibold text-dark"><i class="ti ti-calendar-event me-1" style="color: var(--brand-primary);"></i> Prórroga / Fecha Límite de Captura:</label>
                         <input type="date" id="inputEditFechaLimite" class="form-control form-control-premium" required>
                     </div>
 
@@ -660,8 +969,8 @@ input:checked + .slider-premium:before {
             </div>
             <div class="modal-footer bg-light border-0 px-4 py-3 d-flex justify-content-between">
                 <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success px-4" onclick="guardarEdicionPermiso()">
-                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Cambios
+                <button type="button" class="btn btn-primary-saas px-4" onclick="guardarEdicionPermiso()">
+                    <i class="ti ti-device-floppy me-1"></i> Guardar Cambios
                 </button>
             </div>
         </div>
@@ -750,40 +1059,43 @@ function filtrarTablaMatriz() {
         let rowColorClass = '';
         switch (h.estado) {
             case 'completo':
-                statusBadge = '<span class="badge-estado-matriz badge-matriz-completo"><i class="fa-solid fa-circle-check"></i> Completo</span>';
+                statusBadge = '<span class="badge-matriz-soft badge-soft-success"><i class="ti ti-circle-check"></i> Completo</span>';
                 break;
             case 'pendiente':
-                statusBadge = '<span class="badge-estado-matriz badge-matriz-pendiente"><i class="fa-solid fa-clock"></i> Ordinario</span>';
+                statusBadge = '<span class="badge-matriz-soft badge-soft-warning"><i class="ti ti-clock"></i> Ordinario</span>';
                 break;
             case 'prorroga':
-                statusBadge = '<span class="badge-estado-matriz badge-matriz-prorroga"><i class="fa-solid fa-calendar-check"></i> Prórroga</span>';
+                statusBadge = '<span class="badge-matriz-soft badge-soft-info"><i class="ti ti-calendar-check"></i> Prórroga</span>';
                 break;
             case 'expirado':
-                statusBadge = '<span class="badge-estado-matriz badge-matriz-expirado"><i class="fa-solid fa-triangle-exclamation"></i> Expirado</span>';
+                statusBadge = '<span class="badge-matriz-soft badge-soft-danger"><i class="ti ti-alert-triangle"></i> Expirado</span>';
                 rowColorClass = 'table-danger-light';
                 break;
             case 'bloqueado_pasado':
-                statusBadge = '<span class="badge-estado-matriz badge-matriz-bloqueado"><i class="fa-solid fa-lock"></i> Periodo Pasado</span>';
+                statusBadge = '<span class="badge-matriz-soft badge-soft-neutral"><i class="ti ti-lock"></i> Periodo Pasado</span>';
                 break;
             case 'deshabilitado':
-                statusBadge = '<span class="badge-estado-matriz badge-matriz-bloqueado"><i class="fa-solid fa-ban"></i> Desactivado</span>';
+                statusBadge = '<span class="badge-matriz-soft badge-soft-neutral"><i class="ti ti-ban"></i> Desactivado</span>';
                 break;
             case 'sin_alumnos':
-                statusBadge = '<span class="badge-estado-matriz badge-matriz-bloqueado"><i class="fa-solid fa-users-slash"></i> Sin Alumnos</span>';
+                statusBadge = '<span class="badge-matriz-soft badge-soft-neutral"><i class="ti ti-users-minus"></i> Sin Alumnos</span>';
                 break;
         }
 
         // Avance de Captura
         const pct = h.alumnos_totales > 0 ? Math.round((h.alumnos_calificados / h.alumnos_totales) * 100) : 0;
-        let progressColor = 'rgb(49, 125, 146)';
-        if (h.estado === 'completo') progressColor = '#10b981';
-        else if (h.estado === 'expirado') progressColor = '#ef4444';
+        let progressBg = '#1E5B66';
+        if (h.estado === 'completo') progressBg = '#10B981';
+        else if (h.estado === 'expirado') progressBg = '#EF4444';
 
         const progressHtml = `
-            <div style="font-size: 0.84rem;">
-                <strong>${h.alumnos_calificados}</strong> / ${h.alumnos_totales} alumnos (${pct}%)
-                <div class="progress-bar-premium">
-                    <div class="progress-fill-premium" style="width: ${pct}%; background-color: ${progressColor};"></div>
+            <div style="min-width: 150px;">
+                <div class="progress-text-row">
+                    <span>${h.alumnos_calificados} / ${h.alumnos_totales} alumnos</span>
+                    <span>${pct}%</span>
+                </div>
+                <div class="progress-track-saas">
+                    <div class="progress-fill-saas" style="width: ${pct}%; background-color: ${progressBg};"></div>
                 </div>
             </div>
         `;
@@ -792,48 +1104,46 @@ function filtrarTablaMatriz() {
         let actionBtn = '';
         if (h.estado !== 'completo' && h.estado !== 'sin_alumnos') {
             actionBtn += `
-                <button class="btn btn-sm btn-outline-primary btn-tabla-premium shadow-sm" onclick="otorgarProrrogaRapida(${h.id_docente}, ${h.id_grupo}, ${h.id_materia})">
-                    <i class="fa-solid fa-calendar-plus"></i> + Prórroga
+                <button type="button" class="btn-action-prorroga" onclick="otorgarProrrogaRapida(${h.id_docente}, ${h.id_grupo}, ${h.id_materia})" title="Asignar prórroga especial">
+                    <i class="ti ti-calendar-plus"></i> <span>Prórroga</span>
                 </button>
             `;
         }
         
         // Botón Administrador de capturar/cambiar notas
         actionBtn += `
-            <a href="/grupos/captura_calificaciones?id_grupo=${h.id_grupo}&id_materia=${h.id_materia}" class="btn btn-sm btn-outline-secondary btn-tabla-premium shadow-sm" title="Capturar o modificar notas directamente como administrador">
-                <i class="fa-solid fa-file-signature"></i> Ver/Cambiar Notas
+            <a href="/grupos/captura_calificaciones?id_grupo=${h.id_grupo}&id_materia=${h.id_materia}" class="btn-action-notas" title="Capturar o modificar notas directamente como administrador">
+                <i class="ti ti-edit"></i> <span>Calificaciones</span>
             </a>
         `;
 
         html += `
         <tr class="${rowColorClass}">
-            <td class="text-muted fw-bold">${index + 1}</td>
+            <td><span class="id-mono">${index + 1}</span></td>
             <td>
-                <div class="d-flex align-items-center">
-                    <i class="fa-solid fa-chalkboard-user text-muted me-2 fs-5"></i>
-                    <strong class="text-dark">${h.nombre_docente}</strong>
-                </div>
+                <span class="docente-nombre-matriz">${h.nombre_docente}</span>
             </td>
             <td>
-                <span class="badge bg-light text-dark border px-2 py-1 fw-bold">${h.clave_grupo}</span>
+                <span class="badge-grupo-mono">${h.clave_grupo}</span>
             </td>
             <td>
-                <div style="font-size: 0.88rem;">
-                    <strong>${h.nombre_materia}</strong>
-                    <div class="text-muted" style="font-size: 0.72rem;">Clave: ${h.clave_materia}</div>
-                </div>
+                <div class="materia-nombre-matriz">${h.nombre_materia}</div>
+                <div class="materia-clave-mono">Clave: ${h.clave_materia}</div>
             </td>
             <td>
                 ${progressHtml}
             </td>
             <td>
-                <strong class="text-dark" style="font-size: 0.86rem;"><i class="fa-regular fa-clock me-1 text-muted"></i> ${formatearFechaEspanol(h.fecha_limite)}</strong>
+                <div class="fecha-limite-cell">
+                    <i class="ti ti-calendar-due"></i>
+                    <span>${formatearFechaEspanol(h.fecha_limite)}</span>
+                </div>
             </td>
             <td class="text-center">
                 ${statusBadge}
             </td>
-            <td class="text-center">
-                <div class="d-flex gap-1 justify-content-center">
+            <td class="text-end" style="padding-right: 20px;">
+                <div class="actions-cell-matriz">
                     ${actionBtn}
                 </div>
             </td>
@@ -983,37 +1293,35 @@ function filtrarTablaPermisos() {
     filtrados.forEach((p, index) => {
         let estadoBadge = '';
         if (p.finalizado == 1 || p.finalizado === true) {
-            estadoBadge = '<span class="permiso-status-badge badge-inactive" style="background-color: rgba(100, 116, 139, 0.12); color: #475569; border: 1.5px solid rgba(100, 116, 139, 0.3);"><i class="fa-solid fa-lock"></i> Entregado</span>';
+            estadoBadge = '<span class="badge-matriz-soft badge-soft-neutral"><i class="ti ti-lock"></i> Entregado</span>';
         } else if (p.habilitado == 1) {
-            estadoBadge = '<span class="permiso-status-badge badge-active"><i class="fa-solid fa-circle-check"></i> Activo</span>';
+            estadoBadge = '<span class="badge-matriz-soft badge-soft-success"><i class="ti ti-circle-check"></i> Activo</span>';
         } else {
-            estadoBadge = '<span class="permiso-status-badge badge-inactive"><i class="fa-solid fa-circle-xmark"></i> Inactivo</span>';
+            estadoBadge = '<span class="badge-matriz-soft badge-soft-danger"><i class="ti ti-circle-x"></i> Inactivo</span>';
         }
 
         const pasadosBadge = p.permitir_modificar_pasados == 1
-            ? '<span class="badge bg-warning text-dark"><i class="fa-solid fa-clock-rotate-left me-1"></i> Autorizado</span>'
-            : '<span class="badge bg-light text-muted">No</span>';
+            ? '<span class="badge-matriz-soft badge-soft-warning"><i class="ti ti-history"></i> Autorizado</span>'
+            : '<span class="badge-matriz-soft badge-soft-neutral">No</span>';
 
         html += `
         <tr>
-            <td class="text-muted fw-bold">${index + 1}</td>
+            <td><span class="id-mono">${index + 1}</span></td>
             <td>
-                <div class="d-flex align-items-center">
-                    <i class="fa-solid fa-chalkboard-user text-primary me-2 fs-5"></i>
-                    <strong class="text-dark">${p.nombre_docente}</strong>
+                <span class="docente-nombre-matriz">${p.nombre_docente}</span>
+            </td>
+            <td>
+                <span class="badge-grupo-mono">${p.clave_grupo}</span>
+            </td>
+            <td>
+                <div class="materia-nombre-matriz">${p.nombre_materia}</div>
+                <div class="materia-clave-mono">Clave: ${p.clave_materia}</div>
+            </td>
+            <td>
+                <div class="fecha-limite-cell">
+                    <i class="ti ti-calendar-due"></i>
+                    <span>${formatearFechaEspanol(p.fecha_limite)}</span>
                 </div>
-            </td>
-            <td>
-                <span class="badge bg-light text-dark border px-2.5 py-1.5 fw-bold" style="font-size: 0.84rem;">${p.clave_grupo}</span>
-            </td>
-            <td>
-                <div style="font-size: 0.88rem;">
-                    <strong>${p.nombre_materia}</strong>
-                    <div class="text-muted" style="font-size: 0.72rem;">Clave: ${p.clave_materia}</div>
-                </div>
-            </td>
-            <td>
-                <strong class="text-dark"><i class="fa-regular fa-calendar-times me-1 text-danger"></i> ${formatearFechaEspanol(p.fecha_limite)}</strong>
             </td>
             <td class="text-center">
                 ${pasadosBadge}
@@ -1021,13 +1329,13 @@ function filtrarTablaPermisos() {
             <td class="text-center">
                 ${estadoBadge}
             </td>
-            <td class="text-center">
-                <div class="d-flex gap-1 justify-content-center">
-                    <button class="btn btn-sm btn-editar" title="Editar Permiso" onclick="abrirModalEdicion(${p.id})">
-                        <i class="fa-solid fa-pen-to-square"></i>
+            <td class="text-end" style="padding-right: 20px;">
+                <div class="actions-cell-matriz">
+                    <button type="button" class="btn-ghost-icon" title="Editar Permiso" onclick="abrirModalEdicion(${p.id})">
+                        <i class="ti ti-edit"></i>
                     </button>
-                    <button class="btn btn-sm btn-eliminar" title="Eliminar Permiso" onclick="eliminarPermiso(${p.id})">
-                        <i class="fa-solid fa-trash-can"></i>
+                    <button type="button" class="btn-ghost-icon btn-ghost-danger" title="Eliminar Permiso" onclick="eliminarPermiso(${p.id})">
+                        <i class="ti ti-trash"></i>
                     </button>
                 </div>
             </td>
@@ -1528,14 +1836,14 @@ function cargarConfiguracionGrupo(idGrupo) {
                     if (cardP3) cardP3.style.display = 'none';
                     if (cardSem) cardSem.style.display = 'none';
                     if (lblP1Title) {
-                        lblP1Title.innerHTML = '<i class="fa-solid fa-square-check text-muted me-2"></i> Calificación Final de la Asignatura';
+                        lblP1Title.innerHTML = '<i class="ti ti-checkbox text-muted me-2"></i> Calificación Final de la Asignatura';
                     }
                 } else {
                     if (cardP2) cardP2.style.display = 'block';
                     if (cardP3) cardP3.style.display = 'block';
                     if (cardSem) cardSem.style.display = 'block';
                     if (lblP1Title) {
-                        lblP1Title.innerHTML = '<i class="fa-solid fa-square-check text-muted me-2"></i> 1er. Parcial';
+                        lblP1Title.innerHTML = '<i class="ti ti-checkbox text-muted me-2"></i> 1er. Parcial';
                     }
                 }
 

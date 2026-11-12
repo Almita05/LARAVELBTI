@@ -3,366 +3,332 @@
 @section('content')
 <div class="dashboard-wrapper">
 
-    {{-- HERO / HEADER DE BIENVENIDA --}}
-    <div class="welcome-hero mb-4">
-        <div class="row align-items-center g-3">
-            <div class="col-lg-8">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="avatar-welcome-badge">
-                        <i class="bi bi-mortarboard-fill"></i>
-                    </div>
-                    <div>
-                        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                            <span class="badge-role">
-                                <i class="bi bi-shield-check me-1"></i>{{ session('rol') ?? 'ADMINISTRADOR' }}
-                            </span>
-                            <span class="system-status-pill">
-                                <span class="status-dot"></span> Sistema en línea
-                            </span>
-                        </div>
-                        <h2 class="welcome-title mb-1" id="greeting-title">
-                            ¡Bienvenido, {{ session('nombre') }}!
-                        </h2>
-                        <p class="welcome-subtitle mb-0">
-                            Panel de Control Escolar BTI &bull; Monitoreo en tiempo real de indicadores académicos y matrícula
-                        </p>
-                    </div>
-                </div>
+    {{-- 1. REEMPLAZAR EL BANNER GIGANTE POR UN "EXECUTIVE HEADER" COMPACTO --}}
+    <div class="executive-header">
+        <div class="header-left">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <h1 class="page-title">Panel de Control Escolar</h1>
+                <span class="system-status-pill">
+                    <span class="status-dot"></span>
+                    Sistema en línea
+                </span>
             </div>
-            <div class="col-lg-4 text-lg-end">
-                <div class="d-inline-flex flex-column align-items-lg-end gap-2">
-                    <div class="date-chip">
-                        <i class="bi bi-calendar3 me-2 text-info"></i>
-                        <span id="current-date-text">Cargando fecha...</span>
-                    </div>
-                    <button type="button" class="btn-refresh-stats" id="btnRefreshStats" onclick="cargarMetricasDashboard()">
-                        <i class="bi bi-arrow-clockwise me-1" id="refreshIcon"></i> Actualizar indicadores
-                    </button>
-                </div>
+            <p class="page-subtitle">
+                <span id="greeting-title" class="greeting-highlight">¡Bienvenido, {{ session('nombre') }}!</span> &bull; Monitoreo en tiempo real de indicadores académicos y matrícula
+            </p>
+        </div>
+        
+        <div class="header-right">
+            <div class="date-chip">
+                <i class="ti ti-calendar"></i>
+                <span id="current-date-text">Cargando fecha...</span>
             </div>
+            <button type="button" class="btn-refresh-stats" id="btnRefreshStats" onclick="cargarMetricasDashboard()">
+                <i class="ti ti-refresh" id="refreshIcon"></i>
+                <span>Actualizar Indicadores</span>
+            </button>
         </div>
     </div>
 
-    {{-- TARJETAS KPI (INDICADORES CLAVE) --}}
-    <div class="row g-3 mb-4">
-        {{-- KPI 1: Alumnos Activos --}}
-        <div class="col-xl-3 col-md-6">
-            <div class="kpi-card kpi-card-cyan">
+    {{-- 2. REFACTORIZACIÓN DE LAS 4 TARJETAS DE KPIS (ESTILO SHADCN/UI) --}}
+    <div class="kpis-grid">
+        {{-- KPI 1: Matrícula Activa --}}
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-label">Matrícula Activa</span>
                 <div class="kpi-icon-box">
-                    <i class="bi bi-people-fill"></i>
+                    <i class="ti ti-users"></i>
                 </div>
-                <div class="kpi-content">
-                    <span class="kpi-label">Matrícula Activa</span>
-                    <h3 class="kpi-value" id="kpi-activos"><span class="kpi-skeleton"></span></h3>
-                    <div class="kpi-footer">
-                        <span class="badge-kpi-sub bg-cyan-sub">
-                            <i class="bi bi-mortarboard me-1"></i><span id="kpi-certificados">0</span> Certificados
-                        </span>
-                        <span class="kpi-secondary-text" title="Total histórico registrado">
-                            Total: <strong id="kpi-total-alumnos">--</strong>
-                        </span>
-                    </div>
-                </div>
+            </div>
+            <h3 class="kpi-value" id="kpi-activos"><span class="kpi-skeleton"></span></h3>
+            <div class="kpi-footer">
+                <span class="badge-kpi-sub">
+                    <span id="kpi-certificados">0</span> Certificados
+                </span>
+                <span class="kpi-secondary-text" title="Total histórico registrado">
+                    Total: <strong id="kpi-total-alumnos">--</strong>
+                </span>
             </div>
         </div>
 
         {{-- KPI 2: Plantilla Docente --}}
-        <div class="col-xl-3 col-md-6">
-            <div class="kpi-card kpi-card-indigo">
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-label">Plantilla Docente</span>
                 <div class="kpi-icon-box">
-                    <i class="bi bi-person-video3"></i>
+                    <i class="ti ti-chalkboard"></i>
                 </div>
-                <div class="kpi-content">
-                    <span class="kpi-label">Plantilla Docente</span>
-                    <h3 class="kpi-value" id="kpi-docentes"><span class="kpi-skeleton"></span></h3>
-                    <div class="kpi-footer">
-                        <span class="badge-kpi-sub bg-indigo-sub">
-                            <i class="bi bi-check-circle me-1"></i>Docentes Activos
-                        </span>
-                        <span class="kpi-secondary-text">
-                            <strong id="kpi-materias">--</strong> materias
-                        </span>
-                    </div>
-                </div>
+            </div>
+            <h3 class="kpi-value" id="kpi-docentes"><span class="kpi-skeleton"></span></h3>
+            <div class="kpi-footer">
+                <span class="badge-kpi-sub">
+                    Docentes Activos
+                </span>
+                <span class="kpi-secondary-text">
+                    <strong id="kpi-materias">--</strong> materias
+                </span>
             </div>
         </div>
 
-        {{-- KPI 3: Grupos en Operación --}}
-        <div class="col-xl-3 col-md-6">
-            <div class="kpi-card kpi-card-teal">
+        {{-- KPI 3: Grupos Escolares --}}
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-label">Grupos Escolares</span>
                 <div class="kpi-icon-box">
-                    <i class="bi bi-building-check"></i>
+                    <i class="ti ti-users-group"></i>
                 </div>
-                <div class="kpi-content">
-                    <span class="kpi-label">Grupos Escolares</span>
-                    <h3 class="kpi-value" id="kpi-grupos"><span class="kpi-skeleton"></span></h3>
-                    <div class="kpi-footer">
-                        <span class="badge-kpi-sub bg-teal-sub">
-                            <i class="bi bi-calendar-week me-1"></i>BTI & BGNE
-                        </span>
-                        <span class="kpi-secondary-text">
-                            Semana / Sáb / Dom
-                        </span>
-                    </div>
-                </div>
+            </div>
+            <h3 class="kpi-value" id="kpi-grupos"><span class="kpi-skeleton"></span></h3>
+            <div class="kpi-footer">
+                <span class="badge-kpi-sub">
+                    BTI & BGNE
+                </span>
+                <span class="kpi-secondary-text">
+                    Semana / Sáb / Dom
+                </span>
             </div>
         </div>
 
-        {{-- KPI 4: Asistencia Global --}}
-        <div class="col-xl-3 col-md-6">
-            <div class="kpi-card kpi-card-emerald">
+        {{-- KPI 4: Tasa de Asistencia --}}
+        <div class="kpi-card">
+            <div class="kpi-header">
+                <span class="kpi-label">Tasa de Asistencia</span>
                 <div class="kpi-icon-box">
-                    <i class="bi bi-calendar-check-fill"></i>
+                    <i class="ti ti-user-check"></i>
                 </div>
-                <div class="kpi-content">
-                    <span class="kpi-label">Tasa de Asistencia</span>
-                    <h3 class="kpi-value" id="kpi-asistencia"><span class="kpi-skeleton"></span></h3>
-                    <div class="kpi-footer">
-                        <span class="badge-kpi-sub bg-emerald-sub" id="badge-asistencia-status">
-                            <i class="bi bi-arrow-up-right me-1"></i>Alta presencia
-                        </span>
-                        <span class="kpi-secondary-text">
-                            <strong id="kpi-presentes">0</strong> ptes / <strong id="kpi-faltas">0</strong> fts
-                        </span>
-                    </div>
-                </div>
+            </div>
+            <h3 class="kpi-value" id="kpi-asistencia"><span class="kpi-skeleton"></span></h3>
+            <div class="kpi-footer">
+                <span class="badge-kpi-sub" id="badge-asistencia-status">
+                    Alta presencia
+                </span>
+                <span class="kpi-secondary-text">
+                    <strong id="kpi-presentes">0</strong> ptes / <strong id="kpi-faltas">0</strong> fts
+                </span>
             </div>
         </div>
     </div>
 
-    {{-- SECCIÓN DE GRÁFICOS INTERACTIVOS --}}
-    <div class="row g-4 mb-4">
+    {{-- 3. SECCIÓN DE GRÁFICAS ("ALUMNOS POR GRUPO" Y "ESTATUS") --}}
+    <div class="charts-grid">
         {{-- Gráfico 1: Alumnos por Grupo Activo --}}
-        <div class="col-lg-8">
-            <div class="chart-glass-panel">
-                <div class="panel-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="panel-title mb-1">
-                            <i class="bi bi-bar-chart-fill me-2 text-info"></i>Alumnos por Grupo
-                        </h5>
-                        <p class="panel-subtitle mb-0">Distribución de estudiantes inscritos en los grupos activos</p>
-                    </div>
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">
-                        <i class="bi bi-layers me-1"></i>Ciclo Actual
-                    </span>
+        <div class="chart-glass-panel">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="panel-title mb-1">Alumnos por Grupo</h5>
+                    <p class="panel-subtitle mb-0">Distribución de estudiantes inscritos en los grupos activos</p>
                 </div>
-                <div class="panel-body">
-                    <div class="chart-container position-relative" style="height: 310px;">
-                        <canvas id="chartGrupos"></canvas>
-                        <div id="chartGruposEmpty" class="chart-empty-state d-none">
-                            <i class="bi bi-inbox fs-1 text-muted"></i>
-                            <p class="mt-2 text-muted">No hay datos de grupos disponibles</p>
-                        </div>
+                <span class="badge-ciclo-actual">
+                    Ciclo Actual
+                </span>
+            </div>
+            <div class="panel-body mt-3">
+                <div class="chart-container position-relative" style="height: 300px;">
+                    <canvas id="chartGrupos"></canvas>
+                    <div id="chartGruposEmpty" class="chart-empty-state d-none">
+                        <i class="ti ti-inbox" style="font-size: 32px; color: #94A3B8;"></i>
+                        <p class="mt-2 text-muted" style="font-size: 0.8125rem;">No hay datos de grupos disponibles</p>
                     </div>
                 </div>
             </div>
         </div>
 
         {{-- Gráfico 2: Estatus del Alumnado --}}
-        <div class="col-lg-4">
-            <div class="chart-glass-panel">
-                <div class="panel-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="panel-title mb-1">
-                            <i class="bi bi-pie-chart-fill me-2 text-info"></i>Estatus del Alumnado
-                        </h5>
-                        <p class="panel-subtitle mb-0">Composición histórica y activa</p>
+        <div class="chart-glass-panel">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="panel-title mb-1">Estatus del Alumnado</h5>
+                    <p class="panel-subtitle mb-0">Composición histórica y activa</p>
+                </div>
+            </div>
+            <div class="panel-body mt-3">
+                <div class="chart-container position-relative" style="height: 220px;">
+                    <canvas id="chartEstatus"></canvas>
+                    {{-- Centro absoluto del anillo con métrica activa --}}
+                    <div class="donut-center-metric">
+                        <span class="donut-center-value" id="donut-center-total">--</span>
+                        <span class="donut-center-label">Activos</span>
                     </div>
                 </div>
-                <div class="panel-body">
-                    <div class="chart-container position-relative" style="height: 230px;">
-                        <canvas id="chartEstatus"></canvas>
+                {{-- Resumen leyenda debajo de la dona --}}
+                <div class="donut-legend-grid mt-3 pt-3 border-top">
+                    <div class="donut-stat-item">
+                        <span class="donut-dot dot-active"></span>
+                        <span class="donut-label">Activos</span>
+                        <strong class="donut-val" id="legend-activos">0</strong>
                     </div>
-                    {{-- Mini resumen debajo de la dona --}}
-                    <div class="donut-legend-grid mt-3 pt-2 border-top border-secondary-subtle">
-                        <div class="donut-stat-item">
-                            <span class="donut-dot dot-active"></span>
-                            <span class="donut-label">Activos</span>
-                            <strong class="donut-val text-info" id="legend-activos">0</strong>
-                        </div>
-                        <div class="donut-stat-item">
-                            <span class="donut-dot dot-certified"></span>
-                            <span class="donut-label">Certificados</span>
-                            <strong class="donut-val text-success" id="legend-certificados">0</strong>
-                        </div>
-                        <div class="donut-stat-item">
-                            <span class="donut-dot dot-inactive"></span>
-                            <span class="donut-label">Histórico</span>
-                            <strong class="donut-val text-muted" id="legend-inactivos">0</strong>
-                        </div>
+                    <div class="donut-stat-item">
+                        <span class="donut-dot dot-certified"></span>
+                        <span class="donut-label">Certificados</span>
+                        <strong class="donut-val" id="legend-certificados">0</strong>
+                    </div>
+                    <div class="donut-stat-item">
+                        <span class="donut-dot dot-inactive"></span>
+                        <span class="donut-label">Histórico</span>
+                        <strong class="donut-val" id="legend-inactivos">0</strong>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- ACCESOS RÁPIDOS (QUICK ACTIONS) --}}
+    {{-- 4. ACCESOS RÁPIDOS DEL SISTEMA (ACTION TILES EJECUTIVOS) --}}
     <div class="quick-launchpad mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="section-heading mb-0">
-                <i class="bi bi-lightning-charge-fill me-2 text-warning"></i>Accesos Rápidos del Sistema
-            </h5>
-            <small class="text-muted">Módulos más utilizados</small>
+            <h5 class="section-heading mb-0">Accesos Rápidos del Sistema</h5>
+            <span class="section-subtitle">Módulos más utilizados</span>
         </div>
-        <div class="row g-3">
-            <div class="col-xl-2 col-md-4 col-6">
-                <a href="{{ route('alumnos') }}" class="quick-action-card">
-                    <div class="quick-icon-wrapper icon-bg-blue">
-                        <i class="bi bi-search"></i>
-                    </div>
+        <div class="quick-actions-grid">
+            <a href="{{ route('alumnos') }}" class="quick-action-card">
+                <div class="quick-icon-box">
+                    <i class="ti ti-user-search"></i>
+                </div>
+                <div class="quick-action-info">
                     <span class="quick-action-title">Buscador Alumnos</span>
                     <span class="quick-action-hint">Expedientes & CURP</span>
-                </a>
-            </div>
+                </div>
+            </a>
 
-            <div class="col-xl-2 col-md-4 col-6">
-                <a href="{{ route('grupos.captura_calificaciones') }}" class="quick-action-card">
-                    <div class="quick-icon-wrapper icon-bg-green">
-                        <i class="bi bi-card-checklist"></i>
-                    </div>
+            <a href="{{ route('grupos.captura_calificaciones') }}" class="quick-action-card">
+                <div class="quick-icon-box">
+                    <i class="ti ti-notes"></i>
+                </div>
+                <div class="quick-action-info">
                     <span class="quick-action-title">Capturar Notas</span>
                     <span class="quick-action-hint">Parciales & Semestral</span>
-                </a>
-            </div>
+                </div>
+            </a>
 
-            <div class="col-xl-2 col-md-4 col-6">
-                <a href="{{ route('asistencias_alumnos') }}" class="quick-action-card">
-                    <div class="quick-icon-wrapper icon-bg-teal">
-                        <i class="bi bi-calendar2-check"></i>
-                    </div>
+            <a href="{{ route('asistencias_alumnos') }}" class="quick-action-card">
+                <div class="quick-icon-box">
+                    <i class="ti ti-checkbox"></i>
+                </div>
+                <div class="quick-action-info">
                     <span class="quick-action-title">Pase de Lista</span>
                     <span class="quick-action-hint">Control de Asistencias</span>
-                </a>
-            </div>
+                </div>
+            </a>
 
-            <div class="col-xl-2 col-md-4 col-6">
-                <a href="{{ route('reportes.imprimir') }}" class="quick-action-card">
-                    <div class="quick-icon-wrapper icon-bg-purple">
-                        <i class="bi bi-printer-fill"></i>
-                    </div>
+            <a href="{{ route('reportes.imprimir') }}" class="quick-action-card">
+                <div class="quick-icon-box">
+                    <i class="ti ti-printer"></i>
+                </div>
+                <div class="quick-action-info">
                     <span class="quick-action-title">Módulo Impresión</span>
                     <span class="quick-action-hint">Kardex, Boletas, Cred.</span>
-                </a>
-            </div>
+                </div>
+            </a>
 
-            <div class="col-xl-2 col-md-4 col-6">
-                <a href="{{ route('horarios') }}" class="quick-action-card">
-                    <div class="quick-icon-wrapper icon-bg-amber">
-                        <i class="bi bi-clock-history"></i>
-                    </div>
+            <a href="{{ route('horarios') }}" class="quick-action-card">
+                <div class="quick-icon-box">
+                    <i class="ti ti-calendar-time"></i>
+                </div>
+                <div class="quick-action-info">
                     <span class="quick-action-title">Horarios</span>
                     <span class="quick-action-hint">Aulas & Profesores</span>
-                </a>
-            </div>
+                </div>
+            </a>
 
-            <div class="col-xl-2 col-md-4 col-6">
-                <a href="{{ route('reportes_indisciplina.index_view') }}" class="quick-action-card">
-                    <div class="quick-icon-wrapper icon-bg-rose">
-                        <i class="bi bi-exclamation-octagon-fill"></i>
-                    </div>
+            <a href="{{ route('reportes_indisciplina.index_view') }}" class="quick-action-card quick-action-danger">
+                <div class="quick-icon-box icon-box-danger">
+                    <i class="ti ti-alert-octagon"></i>
+                </div>
+                <div class="quick-action-info">
                     <span class="quick-action-title">Indisciplina</span>
                     <span class="quick-action-hint">Reportes & Citatorios</span>
-                </a>
-            </div>
+                </div>
+            </a>
         </div>
     </div>
 
-    {{-- SECCIÓN INFERIOR: REPORTES RECIENTES & OFERTA EDUCATIVA --}}
-    <div class="row g-4 mb-4">
+    {{-- 5. SECCIÓN INFERIOR: "ÚLTIMAS INCIDENCIAS" Y "OFERTA EDUCATIVA" --}}
+    <div class="bottom-grid">
         {{-- Columna 1: Reportes Recientes de Indisciplina --}}
-        <div class="col-lg-7">
-            <div class="chart-glass-panel h-100">
-                <div class="panel-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="panel-title mb-1">
-                            <i class="bi bi-shield-exclamation me-2 text-warning"></i>Últimas Incidencias de Indisciplina
-                        </h5>
-                        <p class="panel-subtitle mb-0">Seguimiento de conducta de los alumnos</p>
-                    </div>
-                    <a href="{{ route('reportes_indisciplina.index_view') }}" class="btn btn-sm btn-outline-info rounded-pill px-3">
-                        Ver todos <i class="bi bi-chevron-right ms-1"></i>
-                    </a>
+        <div class="chart-glass-panel">
+            <div class="panel-header d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="panel-title mb-1">Últimas Incidencias de Indisciplina</h5>
+                    <p class="panel-subtitle mb-0">Seguimiento de conducta de los alumnos</p>
                 </div>
-                <div class="panel-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover table-incidencias mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Folio</th>
-                                    <th>Alumno</th>
-                                    <th>Incidente</th>
-                                    <th>Fecha</th>
-                                    <th class="text-center">Parcial</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-reportes-body">
-                                <tr>
-                                    <td colspan="5" class="text-center py-4 text-muted">
-                                        <div class="spinner-border spinner-border-sm text-info me-2" role="status"></div>
-                                        Cargando incidentes...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <a href="{{ route('reportes_indisciplina.index_view') }}" class="btn-ver-todas">
+                    Ver todas <i class="ti ti-chevron-right ms-1"></i>
+                </a>
+            </div>
+            <div class="panel-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-incidencias mb-0">
+                        <thead>
+                            <tr>
+                                <th>Folio</th>
+                                <th>Alumno</th>
+                                <th>Incidente</th>
+                                <th>Fecha</th>
+                                <th class="text-center">Parcial</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-reportes-body">
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    <div class="spinner-border spinner-border-sm text-secondary me-2" role="status"></div>
+                                    <span style="font-size: 0.8125rem;">Cargando incidentes...</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
         {{-- Columna 2: Centros de Trabajo / Planteles Oficiales --}}
-        <div class="col-lg-5">
-            <div class="chart-glass-panel h-100">
-                <div class="panel-header d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="panel-title mb-1">
-                            <i class="bi bi-buildings-fill me-2 text-info"></i>Oferta Educativa y CCTs
-                        </h5>
-                        <p class="panel-subtitle mb-0">Centros de Trabajo incorporados</p>
-                    </div>
+        <div class="chart-glass-panel">
+            <div class="panel-header d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="panel-title mb-1">Oferta Educativa y CCTs</h5>
+                    <p class="panel-subtitle mb-0">Centros de Trabajo incorporados</p>
                 </div>
-                <div class="panel-body">
-                    <div class="cct-cards-list">
-                        {{-- CCT 1: BTI --}}
-                        <div class="cct-item-card">
-                            <div class="cct-icon-chip bg-primary-subtle text-primary">
-                                <i class="bi bi-award"></i>
-                            </div>
-                            <div class="cct-info flex-grow-1">
-                                <h6 class="cct-name mb-0">Bachillerato Tecnológico Interamericano</h6>
-                                <span class="cct-clave"><i class="bi bi-fingerprint me-1"></i>CCT: <strong>21PCT0073R</strong></span>
-                            </div>
-                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1">
-                                Escolarizado
-                            </span>
+            </div>
+            <div class="panel-body p-0">
+                <div class="cct-cards-list">
+                    {{-- CCT 1: BTI --}}
+                    <div class="cct-item-card">
+                        <div class="cct-icon-box">
+                            <i class="ti ti-school"></i>
                         </div>
+                        <div class="cct-info flex-grow-1">
+                            <h6 class="cct-name mb-0">Bachillerato Tecnológico Interamericano</h6>
+                            <span class="cct-clave"><i class="ti ti-fingerprint me-1"></i>CCT: <strong>21PCT0073R</strong></span>
+                        </div>
+                        <span class="badge-modalidad badge-modalidad-green">
+                            Escolarizado
+                        </span>
+                    </div>
 
-                        {{-- CCT 2: BGNE --}}
-                        <div class="cct-item-card">
-                            <div class="cct-icon-chip bg-info-subtle text-info">
-                                <i class="bi bi-journal-bookmark"></i>
-                            </div>
-                            <div class="cct-info flex-grow-1">
-                                <h6 class="cct-name mb-0">Bachillerato General No Escolarizado</h6>
-                                <span class="cct-clave"><i class="bi bi-fingerprint me-1"></i>CCT: <strong>21PBH0353G</strong></span>
-                            </div>
-                            <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-1">
-                                Fines de Semana
-                            </span>
+                    {{-- CCT 2: BGNE --}}
+                    <div class="cct-item-card">
+                        <div class="cct-icon-box">
+                            <i class="ti ti-book"></i>
                         </div>
+                        <div class="cct-info flex-grow-1">
+                            <h6 class="cct-name mb-0">Bachillerato General No Escolarizado</h6>
+                            <span class="cct-clave"><i class="ti ti-fingerprint me-1"></i>CCT: <strong>21PBH0353G</strong></span>
+                        </div>
+                        <span class="badge-modalidad badge-modalidad-teal">
+                            Fines de Semana
+                        </span>
+                    </div>
 
-                        {{-- CCT 3: Computación --}}
-                        <div class="cct-item-card">
-                            <div class="cct-icon-chip bg-warning-subtle text-warning">
-                                <i class="bi bi-cpu"></i>
-                            </div>
-                            <div class="cct-info flex-grow-1">
-                                <h6 class="cct-name mb-0">Informática y Computación</h6>
-                                <span class="cct-clave"><i class="bi bi-fingerprint me-1"></i>CCT: <strong>21PBT0322I</strong></span>
-                            </div>
-                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2 py-1">
-                                Técnico
-                            </span>
+                    {{-- CCT 3: Computación --}}
+                    <div class="cct-item-card">
+                        <div class="cct-icon-box">
+                            <i class="ti ti-cpu"></i>
                         </div>
+                        <div class="cct-info flex-grow-1">
+                            <h6 class="cct-name mb-0">Informática y Computación</h6>
+                            <span class="cct-clave"><i class="ti ti-fingerprint me-1"></i>CCT: <strong>21PBT0322I</strong></span>
+                        </div>
+                        <span class="badge-modalidad badge-modalidad-slate">
+                            Técnico
+                        </span>
                     </div>
                 </div>
             </div>
@@ -376,137 +342,146 @@
 
 <style>
 /* =========================================================
-   DASHBOARD ESTILOS PREMIUM BTI
+   DASHBOARD ESTILOS PROFESIONALES BTI (SHADCN/UI & LINEAR STYLE)
    ========================================================= */
+:root {
+    --brand-primary: #1E5B66;
+    --brand-dark: #16464F;
+    --brand-light: #F0F7F8;
+    --brand-border: #CBE4E8;
+    --bg-page: #F8FAFC;
+    --bg-surface: #FFFFFF;
+    --border-subtle: #E2E8F0;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #64748B;
+    --success-bg: #DCFCE7;
+    --success-text: #15803D;
+    --success-border: #BBF7D0;
+    --danger-bg: #FEF2F2;
+    --danger-text: #DC2626;
+    --danger-border: #FECACA;
+}
+
 .dashboard-wrapper {
     width: 100%;
-    color: #1e293b;
+    color: var(--text-primary);
     padding-bottom: 30px;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* HERO BIENVENIDA */
-.welcome-hero {
-    background: linear-gradient(135deg, rgba(38, 104, 123, 0.95), rgba(20, 58, 69, 0.95));
-    border-radius: 20px;
-    padding: 24px 28px;
-    color: #ffffff;
-    box-shadow: 0 10px 30px rgba(18, 54, 65, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    position: relative;
-    overflow: hidden;
-}
-
-.welcome-hero::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    right: -10%;
-    width: 320px;
-    height: 320px;
-    background: radial-gradient(circle, rgba(107, 199, 232, 0.25) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.avatar-welcome-badge {
-    width: 60px;
-    height: 60px;
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(8px);
+/* 1. EXECUTIVE HEADER */
+.executive-header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 30px;
-    color: #6bc7e8;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    flex-shrink: 0;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
-.badge-role {
-    display: inline-block;
-    padding: 4px 10px;
-    background: rgba(107, 199, 232, 0.2);
-    color: #6bc7e8;
-    font-size: 0.75rem;
+.header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.page-title {
+    font-size: 1.35rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    border-radius: 20px;
-    border: 1px solid rgba(107, 199, 232, 0.4);
-    text-transform: uppercase;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    margin: 0;
+    line-height: 1.2;
 }
 
 .system-status-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 10px;
-    background: rgba(16, 185, 129, 0.15);
-    color: #6ee7b7;
-    font-size: 0.75rem;
+    padding: 2px 8px;
+    background: var(--success-bg);
+    color: var(--success-text);
+    font-size: 0.7rem;
     font-weight: 600;
-    border-radius: 20px;
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 999px;
+    border: 1px solid var(--success-border);
 }
 
 .status-dot {
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    background-color: #10b981;
+    background-color: var(--success-text);
     display: inline-block;
-    box-shadow: 0 0 8px #10b981;
     animation: pulseDot 2s infinite ease-in-out;
 }
 
 @keyframes pulseDot {
     0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.3); opacity: 0.6; }
+    50% { transform: scale(1.3); opacity: 0.5; }
 }
 
-.welcome-title {
-    font-size: 1.65rem;
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: -0.3px;
+.page-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
 }
 
-.welcome-subtitle {
-    font-size: 0.92rem;
-    color: #d2ecf5;
-    opacity: 0.95;
+.greeting-highlight {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .date-chip {
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
     display: inline-flex;
     align-items: center;
-    padding: 7px 14px;
-    background: rgba(0, 0, 0, 0.25);
-    border-radius: 12px;
-    font-size: 0.85rem;
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    gap: 6px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+.date-chip i {
+    color: var(--brand-primary);
+    font-size: 1rem;
 }
 
 .btn-refresh-stats {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: #ffffff;
-    font-size: 0.82rem;
-    font-weight: 600;
-    padding: 7px 14px;
-    border-radius: 12px;
-    transition: all 0.25s ease;
+    background: var(--brand-primary);
+    color: #FFFFFF;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     cursor: pointer;
+    transition: background 0.15s ease;
 }
 
 .btn-refresh-stats:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
-    color: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background: var(--brand-dark);
 }
 
-/* ROTATE ANIMATION FOR REFRESH */
 .rotating-icon {
     animation: spin 0.8s linear infinite;
     display: inline-block;
@@ -516,110 +491,112 @@
     100% { transform: rotate(360deg); }
 }
 
-/* KPI CARDS */
-.kpi-card {
-    background: #ffffff;
-    border-radius: 18px;
-    padding: 20px 22px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
-    display: flex;
-    align-items: flex-start;
+/* 2. KPIS GRID */
+.kpis-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.25s ease;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1100px) {
+    .kpis-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .kpis-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.kpi-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.15s ease;
 }
 
 .kpi-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 25px rgba(38, 104, 123, 0.12);
+    transform: translateY(-2px);
+    border-color: #CBD5E1;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
 }
 
-.kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 5px;
-    height: 100%;
-}
-
-.kpi-card-cyan::before { background: linear-gradient(180deg, #00BCD4, #0288D1); }
-.kpi-card-indigo::before { background: linear-gradient(180deg, #6366F1, #4338CA); }
-.kpi-card-teal::before { background: linear-gradient(180deg, #14B8A6, #0D9488); }
-.kpi-card-emerald::before { background: linear-gradient(180deg, #10B981, #059669); }
-
-.kpi-icon-box {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    flex-shrink: 0;
-}
-
-.kpi-card-cyan .kpi-icon-box { background: rgba(0, 188, 212, 0.12); color: #0097A7; }
-.kpi-card-indigo .kpi-icon-box { background: rgba(99, 102, 241, 0.12); color: #4F46E5; }
-.kpi-card-teal .kpi-icon-box { background: rgba(20, 184, 166, 0.12); color: #0D9488; }
-.kpi-card-emerald .kpi-icon-box { background: rgba(16, 185, 129, 0.12); color: #059669; }
-
-.kpi-content {
-    flex-grow: 1;
-}
-
-.kpi-label {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-}
-
-.kpi-value {
-    font-size: 1.85rem;
-    font-weight: 800;
-    color: #0f172a;
-    line-height: 1.1;
-    margin-bottom: 8px;
-    letter-spacing: -0.5px;
-}
-
-.kpi-footer {
+.kpi-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 0.78rem;
+}
+
+.kpi-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.kpi-icon-box {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #F8FAFC;
+    border: 1px solid var(--border-subtle);
+    color: var(--brand-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.kpi-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 8px 0 12px 0;
+    line-height: 1;
+}
+
+.kpi-footer {
+    border-top: 1px solid #F1F5F9;
+    padding-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-muted);
     gap: 6px;
     flex-wrap: wrap;
 }
 
 .badge-kpi-sub {
-    padding: 3px 8px;
-    border-radius: 8px;
+    background: var(--brand-light);
+    color: var(--brand-primary);
     font-weight: 600;
-    font-size: 0.74rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.72rem;
 }
 
-.bg-cyan-sub { background: #e0f7fa; color: #006064; }
-.bg-indigo-sub { background: #eef2ff; color: #3730a3; }
-.bg-teal-sub { background: #ccfbf1; color: #115e59; }
-.bg-emerald-sub { background: #d1fae5; color: #065f46; }
-
 .kpi-secondary-text {
-    color: #64748b;
-    font-size: 0.76rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
 }
 
 .kpi-skeleton {
     display: inline-block;
     width: 60px;
     height: 28px;
-    background: #e2e8f0;
+    background: #E2E8F0;
     border-radius: 6px;
     animation: skeletonPulse 1.5s infinite ease-in-out;
 }
@@ -629,30 +606,48 @@
     50% { opacity: 1; }
 }
 
-/* PANELES DE GRÁFICOS Y CONTENIDO */
-.chart-glass-panel {
-    background: #ffffff;
-    border-radius: 18px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
-    padding: 22px 24px;
-    transition: all 0.25s ease;
+/* 3. CHARTS GRID */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
 }
 
-.chart-glass-panel:hover {
-    box-shadow: 0 8px 25px rgba(38, 104, 123, 0.08);
+@media (max-width: 992px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chart-glass-panel {
+    background: #FFFFFF;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    padding: 20px;
 }
 
 .panel-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #1e293b;
-    letter-spacing: -0.2px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
 }
 
 .panel-subtitle {
-    font-size: 0.82rem;
-    color: #64748b;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.badge-ciclo-actual {
+    background: var(--brand-light);
+    color: var(--brand-primary);
+    border: 1px solid var(--brand-border);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 10px;
 }
 
 .chart-empty-state {
@@ -663,7 +658,38 @@
     text-align: center;
 }
 
-/* LEYENDA DEL DONUT */
+/* Donut Center Metric */
+.donut-center-metric {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.donut-center-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.donut-center-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+}
+
+/* Donut Legend */
 .donut-legend-grid {
     display: flex;
     justify-content: space-around;
@@ -679,168 +705,283 @@
 }
 
 .donut-dot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     display: inline-block;
+    margin-bottom: 2px;
 }
 
-.dot-active { background-color: #00BCD4; box-shadow: 0 0 6px rgba(0, 188, 212, 0.5); }
-.dot-certified { background-color: #10B981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.5); }
-.dot-inactive { background-color: #94A3B8; }
+.dot-active { background-color: var(--brand-primary); }
+.dot-certified { background-color: #10B981; }
+.dot-inactive { background-color: #CBD5E1; }
 
 .donut-label {
-    font-size: 0.73rem;
-    color: #64748b;
-    font-weight: 600;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 500;
 }
 
 .donut-val {
+    font-family: 'JetBrains Mono', monospace;
     font-size: 1rem;
     font-weight: 700;
+    color: var(--text-primary);
 }
 
-/* QUICK LAUNCHPAD */
+/* 4. ACTION TILES (ACCESOS RÁPIDOS) */
 .section-heading {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #1e293b;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.section-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+    .quick-actions-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .quick-action-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 14px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    text-align: center;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 18px 12px;
+    gap: 12px;
+    text-align: left;
+    transition: all 0.15s ease;
     text-decoration: none;
-    color: #1e293b;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-    transition: all 0.25s ease;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
 }
 
 .quick-action-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 22px rgba(38, 104, 123, 0.12);
-    border-color: #317d92;
-    color: #317d92;
+    border-color: var(--brand-primary);
+    background: #F8FAFC;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05);
 }
 
-.quick-icon-wrapper {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
+.quick-icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: var(--brand-light);
+    color: var(--brand-primary);
+    border: 1px solid var(--brand-border);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
-    margin-bottom: 10px;
-    transition: all 0.25s ease;
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
 }
 
-.quick-action-card:hover .quick-icon-wrapper {
-    transform: scale(1.08);
+.icon-box-danger {
+    background: var(--danger-bg);
+    color: var(--danger-text);
+    border-color: var(--danger-border);
 }
 
-.icon-bg-blue { background: #e0f2fe; color: #0284c7; }
-.icon-bg-green { background: #dcfce7; color: #16a34a; }
-.icon-bg-teal { background: #ccfbf1; color: #0d9488; }
-.icon-bg-purple { background: #f3e8ff; color: #9333ea; }
-.icon-bg-amber { background: #fef3c7; color: #d97706; }
-.icon-bg-rose { background: #ffe4e6; color: #e11d48; }
+.quick-action-card:hover .quick-icon-box {
+    transform: scale(1.05);
+}
+
+.quick-action-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
 
 .quick-action-title {
-    font-size: 0.84rem;
-    font-weight: 700;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
     line-height: 1.2;
-    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .quick-action-hint {
-    font-size: 0.72rem;
-    color: #94a3b8;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* TABLA INCIDENCIAS */
+/* 5. BOTTOM GRID: INCIDENCIAS & CCTs */
+.bottom-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 992px) {
+    .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.btn-ver-todas {
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    height: 30px;
+    padding: 0 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.btn-ver-todas:hover {
+    background: #F1F5F9;
+    color: var(--text-primary);
+    border-color: #CBD5E1;
+}
+
 .table-incidencias {
-    font-size: 0.86rem;
+    font-size: 0.8125rem;
 }
 
 .table-incidencias thead th {
-    background: #f8fafc;
-    color: #475569;
+    background: #F8FAFC;
+    color: var(--text-secondary);
     font-weight: 600;
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid #e2e8f0;
-    padding: 12px 16px;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 10px 14px;
 }
 
 .table-incidencias tbody td {
-    padding: 12px 16px;
+    padding: 10px 14px;
     vertical-align: middle;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid #F1F5F9;
 }
 
 .badge-folio {
-    font-family: monospace;
-    font-size: 0.76rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
     font-weight: 600;
-    padding: 4px 8px;
-    border-radius: 6px;
-    background: #f1f5f9;
+    background: #F1F5F9;
     color: #334155;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--border-subtle);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.badge-parcial {
+    background: #FFFBEB;
+    color: #B45309;
+    border: 1px solid #FDE68A;
+    font-weight: 600;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 999px;
 }
 
 /* CCT ITEMS */
 .cct-cards-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .cct-item-card {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 14px 16px;
-    border-radius: 14px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    transition: all 0.2s ease;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #FFFFFF;
+    border: 1px solid var(--border-subtle);
+    transition: all 0.15s ease;
 }
 
 .cct-item-card:hover {
-    background: #ffffff;
-    border-color: #cbd5e1;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-color: #CBD5E1;
+    background: #F8FAFC;
 }
 
-.cct-icon-chip {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
+.cct-icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: #F8FAFC;
+    border: 1px solid var(--border-subtle);
+    color: var(--brand-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 18px;
     flex-shrink: 0;
 }
 
 .cct-name {
-    font-size: 0.88rem;
-    font-weight: 700;
-    color: #1e293b;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .cct-clave {
-    font-size: 0.78rem;
-    color: #64748b;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.badge-modalidad {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.badge-modalidad-green {
+    background: var(--success-bg);
+    color: var(--success-text);
+    border: 1px solid var(--success-border);
+}
+
+.badge-modalidad-teal {
+    background: var(--brand-light);
+    color: var(--brand-primary);
+    border: 1px solid var(--brand-border);
+}
+
+.badge-modalidad-slate {
+    background: #F1F5F9;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
 }
 </style>
 
@@ -879,7 +1020,6 @@ function actualizarSaludoYFecha() {
     const fechaFormateada = ahora.toLocaleDateString('es-MX', opciones);
     const dateTextEl = document.getElementById('current-date-text');
     if (dateTextEl) {
-        // Capitalizar primera letra
         dateTextEl.textContent = fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
     }
 }
@@ -934,7 +1074,6 @@ function animarNumero(idElemento, valorFinal, esPorcentaje = false) {
     if (!el) return;
 
     const duracion = 800;
-    const inicio = 0;
     const pasos = 25;
     const incremento = valorFinal / pasos;
     let actual = 0;
@@ -998,11 +1137,6 @@ function renderizarGraficoGrupos(grupos) {
 
     const ctx = canvas.getContext('2d');
 
-    // Gradiente sutil
-    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, 'rgba(49, 125, 146, 0.95)');
-    gradient.addColorStop(1, 'rgba(107, 199, 232, 0.55)');
-
     chartGruposInstance = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -1010,12 +1144,12 @@ function renderizarGraficoGrupos(grupos) {
             datasets: [{
                 label: 'Alumnos Asignados',
                 data: dataVals,
-                backgroundColor: gradient,
-                borderColor: '#26687b',
-                borderWidth: 1.5,
-                borderRadius: 8,
+                backgroundColor: '#1E5B66',
+                hoverBackgroundColor: '#16464F',
+                borderWidth: 0,
+                borderRadius: 6,
                 borderSkipped: false,
-                barPercentage: 0.6,
+                barPercentage: 0.55,
                 categoryPercentage: 0.7
             }]
         },
@@ -1027,11 +1161,11 @@ function renderizarGraficoGrupos(grupos) {
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    titleFont: { size: 13, weight: 'bold' },
-                    bodyFont: { size: 12 },
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                    titleFont: { family: "'JetBrains Mono', monospace", size: 12, weight: 'bold' },
+                    bodyFont: { family: "'Inter', sans-serif", size: 12 },
                     padding: 10,
-                    cornerRadius: 8,
+                    cornerRadius: 6,
                     callbacks: {
                         label: function (context) {
                             return ` ${context.parsed.y} alumno(s) inscritos`;
@@ -1044,17 +1178,20 @@ function renderizarGraficoGrupos(grupos) {
                     beginAtZero: true,
                     ticks: {
                         precision: 0,
-                        color: '#64748b',
-                        font: { size: 11 }
+                        color: '#64748B',
+                        font: { family: "'JetBrains Mono', monospace", size: 11 }
                     },
                     grid: {
-                        color: '#f1f5f9'
+                        color: '#F1F5F9'
+                    },
+                    border: {
+                        dash: [3, 3]
                     }
                 },
                 x: {
                     ticks: {
                         color: '#475569',
-                        font: { size: 11, weight: '600' }
+                        font: { family: "'JetBrains Mono', monospace", size: 11, weight: '600' }
                     },
                     grid: {
                         display: false
@@ -1074,8 +1211,13 @@ function renderizarGraficoEstatus(estatus) {
     }
 
     const ctx = canvas.getContext('2d');
-
     const total = (estatus.activos || 0) + (estatus.certificados || 0) + (estatus.inactivos || 0);
+
+    // Actualizar métrica central de la dona
+    const centerTotalEl = document.getElementById('donut-center-total');
+    if (centerTotalEl) {
+        centerTotalEl.textContent = (estatus.activos || 0).toLocaleString('es-MX');
+    }
 
     chartEstatusInstance = new Chart(ctx, {
         type: 'doughnut',
@@ -1088,17 +1230,17 @@ function renderizarGraficoEstatus(estatus) {
                     estatus.inactivos || 0
                 ],
                 backgroundColor: [
-                    '#00BCD4', // Cyan
-                    '#10B981', // Emerald
-                    '#94A3B8'  // Slate
+                    '#1E5B66', // Brand Primary
+                    '#10B981', // Emerald Success
+                    '#CBD5E1'  // Slate Muted
                 ],
                 hoverBackgroundColor: [
-                    '#0097A7',
+                    '#16464F',
                     '#059669',
-                    '#64748B'
+                    '#94A3B8'
                 ],
                 borderWidth: 2,
-                borderColor: '#ffffff',
+                borderColor: '#FFFFFF',
                 hoverOffset: 4
             }]
         },
@@ -1111,11 +1253,11 @@ function renderizarGraficoEstatus(estatus) {
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    titleFont: { size: 12, weight: 'bold' },
-                    bodyFont: { size: 12 },
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                    titleFont: { family: "'Inter', sans-serif", size: 12, weight: 'bold' },
+                    bodyFont: { family: "'JetBrains Mono', monospace", size: 12 },
                     padding: 10,
-                    cornerRadius: 8,
+                    cornerRadius: 6,
                     callbacks: {
                         label: function (context) {
                             const val = context.parsed;
@@ -1137,8 +1279,8 @@ function renderizarReportesRecientes(reportes) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="5" class="text-center py-4 text-muted">
-                    <i class="bi bi-check-circle-fill text-success fs-4 d-block mb-1"></i>
-                    No se registran incidencias recientes de indisciplina.
+                    <i class="ti ti-circle-check text-success" style="font-size: 24px; display: block; margin-bottom: 4px;"></i>
+                    <span style="font-size: 0.8125rem;">No se registran incidencias recientes de indisciplina.</span>
                 </td>
             </tr>
         `;
@@ -1151,15 +1293,15 @@ function renderizarReportesRecientes(reportes) {
             <tr>
                 <td><span class="badge-folio">${r.folio}</span></td>
                 <td>
-                    <div class="fw-semibold text-dark">${r.alumno_nombre || 'Alumno'}</div>
-                    <small class="text-muted">${r.tutor_nombre ? 'Tutor: ' + r.tutor_nombre : 'Sin tutor reg.'}</small>
+                    <div style="text-transform: uppercase; font-weight: 600; font-size: 0.75rem; color: #0F172A;">${r.alumno_nombre || 'Alumno'}</div>
+                    <small style="font-size: 0.7rem; color: #64748B;">${r.tutor_nombre ? 'Tutor: ' + r.tutor_nombre : 'Sin tutor reg.'}</small>
                 </td>
-                <td class="text-truncate" style="max-width: 220px;" title="${r.incidente}">
+                <td style="max-width: 200px; font-size: 0.75rem; color: #334155; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${r.incidente}">
                     ${r.incidente}
                 </td>
-                <td class="text-nowrap text-secondary">${r.fecha || '--'}</td>
+                <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #475569; white-space: nowrap;">${r.fecha || '--'}</td>
                 <td class="text-center">
-                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill">
+                    <span class="badge-parcial">
                         P${r.parcial || 1}
                     </span>
                 </td>
