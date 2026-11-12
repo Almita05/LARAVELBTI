@@ -1775,12 +1775,12 @@
                 Swal.fire({
                     icon: 'success',
                     title: '¡Estudiante Integrado a Online!',
-                    text: data.message,
+                    text: data.mensaje || data.message || 'El alumno ha sido cambiado a modalidad en línea.',
                     confirmButtonColor: '#1E5B66'
                 });
                 cargarAlumnosOnline();
             } else {
-                Swal.fire('Error', data.message || 'No se pudo integrar.', 'error');
+                Swal.fire('Error', data.error || data.message || 'No se pudo integrar.', 'error');
             }
         } catch (e) {
             Swal.fire('Error', 'Fallo de conexión.', 'error');
