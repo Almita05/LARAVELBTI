@@ -62,7 +62,7 @@
 
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="ti ti-chalkboard me-2" style="color: #1E5B66;"></i>Alta Docente
+                        <i class="ti ti-chalkboard me-2" style="color: #26687B;"></i>Alta Docente
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -140,7 +140,7 @@
                             <div class="d-flex align-items-center gap-2">
                                 <div id="pastelColorPalette" class="d-flex flex-wrap gap-1 align-items-center" style="max-width: 280px;"></div>
                                 <div class="position-relative" style="width: 38px; height: 38px;">
-                                    <input type="color" class="form-control form-control-color" name="colorDocente" id="formDocenteColor" value="#FFFFFF" style="width: 100%; height: 100%; padding: 0; border-radius: 50%; cursor: pointer; border: 2px solid #cbd5e1; background: none;" title="Color personalizado">
+                                    <input type="color" class="form-control form-control-color" name="colorDocente" id="formDocenteColor" value="#FFFFFF" style="width: 100%; height: 100%; padding: 0; border-radius:0; cursor: pointer; border: 2px solid #cbd5e1; background: none;" title="Color personalizado">
                                 </div>
                             </div>
                         </div>
@@ -180,11 +180,11 @@
         <form id="formCredencialesDocente" class="modal-content glass-modal">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="ti ti-key me-2" style="color: #1E5B66;"></i>Credenciales de Acceso
+                    <i class="ti ti-key me-2" style="color: #26687B;"></i>Credenciales de Acceso
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body text-dark bg-white" style="border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+            <div class="modal-body text-dark bg-white" style="border-bottom-left-radius:0; border-bottom-right-radius:0;">
                 <input type="hidden" id="credDocenteId" name="idDocente">
                 
                 <div class="mb-3">
@@ -338,7 +338,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 userBadge = `<div class="docente-no-user"><i class="ti ti-user-off"></i><span>Sin usuario</span></div>`;
             }
 
-            const colorCircle = `<span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: ${docente.colorDocente || '#94A3B8'}; border: 1px solid rgba(0,0,0,0.12); margin-right: 6px; vertical-align: middle;" title="Color del Docente"></span>`;
+            const colorCircle = `<span style="display: inline-block; width: 8px; height: 8px; border-radius:0; background-color: ${docente.colorDocente || '#94A3B8'}; border: 1px solid rgba(0,0,0,0.12); margin-right: 6px; vertical-align: middle;" title="Color del Docente"></span>`;
 
             const isActivo = (docente.statusDocente || 'ACTIVO').toUpperCase() === 'ACTIVO';
             const statusBadge = isActivo
@@ -747,7 +747,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const bubbles = document.querySelectorAll('#pastelColorPalette .color-bubble');
         bubbles.forEach(b => {
             if (b.title.toUpperCase() === color.toUpperCase()) {
-                b.style.border = '2.5px solid #26687b';
+                b.style.border = '2.5px solid #307587';
                 b.style.transform = 'scale(1.15)';
             } else {
                 b.style.border = '1px solid #cbd5e1';
@@ -761,7 +761,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const bubbles = document.querySelectorAll('#pastelColorPalette .color-bubble');
         bubbles.forEach(b => {
             if (b.title.toUpperCase() === color.toUpperCase()) {
-                b.style.border = '2.5px solid #26687b';
+                b.style.border = '2.5px solid #307587';
                 b.style.transform = 'scale(1.15)';
             } else {
                 b.style.border = '1px solid #cbd5e1';

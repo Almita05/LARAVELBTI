@@ -19,7 +19,7 @@
     background: rgba(255, 255, 255, .08);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
+    border-radius: 0;
     color: #fff;
     transition: all 0.3s ease;
     min-height: 220px;
@@ -71,7 +71,7 @@ a {
     color: #fff;
     font-weight: 600;
     padding: .375rem .75rem;
-    border-radius: .375rem;
+    border-radius: 0;
     transition: .2s;
 }
 

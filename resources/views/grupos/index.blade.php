@@ -903,7 +903,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 icon: 'error',
                                 title: 'Error',
                                 text: 'Error al cargar los detalles del grupo.',
-                                confirmButtonColor: '#317D92'
+                                confirmButtonColor: '#3D8494'
                             });
 
                         }
@@ -917,7 +917,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             icon: 'error',
                             title: 'Error',
                             text: 'Error al cargar los detalles del grupo.',
-                            confirmButtonColor: '#317D92'
+                            confirmButtonColor: '#3D8494'
                         });
 
                     });
@@ -951,7 +951,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             icon: 'success',
                             title: 'Eliminado',
                             text: data.message,
-                            confirmButtonColor: '#317D92'
+                            confirmButtonColor: '#3D8494'
                         });
                         cargarGrupos();
                     } else {
@@ -959,7 +959,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             icon: 'error',
                             title: 'Error',
                             text: data.message || 'Error al eliminar el grupo.',
-                            confirmButtonColor: '#317D92'
+                            confirmButtonColor: '#3D8494'
                         });
                     }
                 })
@@ -969,7 +969,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         icon: 'error',
                         title: 'Error',
                         text: 'Error de red al intentar eliminar el grupo.',
-                        confirmButtonColor: '#317D92'
+                        confirmButtonColor: '#3D8494'
                     });
                 });
             }
@@ -1065,7 +1065,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         text: modoGrupo === 'editar' ?
                             'El grupo se actualizó correctamente.' :
                             'El grupo se guardó correctamente.',
-                        confirmButtonColor: '#317D92',
+                        confirmButtonColor: '#3D8494',
                         confirmButtonText: 'Aceptar'
                     });
 
@@ -1092,7 +1092,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         icon: 'error',
                         title: 'Error al guardar',
                         text: err.message,
-                        confirmButtonColor: '#317D92',
+                        confirmButtonColor: '#3D8494',
                         confirmButtonText: 'Aceptar'
                     });
 
@@ -1112,11 +1112,11 @@ document.addEventListener("DOMContentLoaded", function() {
 <!-- MODAL: CAPTURA DE ASISTENCIAS POR SEMESTRE / GRUPO -->
 <div class="modal fade" id="modalCapturaAsistenciasGrupo" tabindex="-1" aria-labelledby="modalCapturaAsistenciasLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content shadow-lg border-0" style="border-radius: 14px; overflow: hidden;">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 0; overflow: hidden;">
             <div class="modal-header" style="padding: 16px 24px;">
                 <div>
                     <h5 class="modal-title fw-bold mb-0" id="modalCapturaAsistenciasLabel">
-                        <i class="ti ti-calendar-check me-2" style="color: #1E5B66;"></i>Captura de Asistencias del Periodo
+                        <i class="ti ti-calendar-check me-2" style="color: #26687B;"></i>Captura de Asistencias del Periodo
                     </h5>
                     <small class="text-muted">Grupo: <strong id="lblAsistenciasGrupoClave" class="text-dark">---</strong></small>
                 </div>
@@ -1125,7 +1125,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             <div class="modal-body p-4" style="background: #f8fafc;">
                 <!-- Controles -->
-                <div class="card p-3 border-0 shadow-sm mb-3" style="border-radius: 12px; background: #ffffff;">
+                <div class="card p-3 border-0 shadow-sm mb-3" style="border-radius: 0; background: #ffffff;">
                     <div class="row g-3 align-items-end">
                         <div class="col-md-5">
                             <label class="form-label fw-bold text-slate-700 fs-7 mb-1">
@@ -1149,7 +1149,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 </div>
 
                 <!-- Tabla de alumnos -->
-                <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden; background: #ffffff;">
+                <div class="card border-0 shadow-sm" style="border-radius: 0; overflow: hidden; background: #ffffff;">
                     <div class="table-responsive" style="max-height: 380px;">
                         <table class="table table-hover align-middle mb-0" id="tablaAsistenciasGrupoModal">
                             <thead style="background: #e2e8f0; font-size: 0.8rem; text-transform: uppercase;" class="sticky-top">
@@ -1176,7 +1176,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             <div class="modal-footer bg-white border-top d-flex justify-content-between p-3">
                 <button type="button" class="btn btn-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary px-4 fw-bold" id="btnGuardarAsistenciasModal" onclick="guardarAsistenciasGrupoModal()" style="background: #1E5B66; border-color: #1E5B66;">
+                <button type="button" class="btn btn-primary px-4 fw-bold" id="btnGuardarAsistenciasModal" onclick="guardarAsistenciasGrupoModal()" style="background: #26687B; border-color: #26687B;">
                     <i class="ti ti-device-floppy me-1"></i> Guardar Asistencias
                 </button>
             </div>

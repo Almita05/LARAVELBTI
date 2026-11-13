@@ -40,7 +40,7 @@
         min-height: 650px;
         display: flex;
         background: #fff;
-        border-radius: 22px;
+        border-radius: 0;
         overflow: hidden;
         box-shadow:
             0 25px 60px rgba(15, 46, 109, .20);
@@ -78,7 +78,7 @@
         width: 280px;
         height: 280px;
 
-        border-radius: 50%;
+        border-radius:0;
 
         background: rgba(107, 199, 232, .12);
 
@@ -94,7 +94,7 @@
         width: 250px;
         height: 250px;
 
-        border-radius: 50%;
+        border-radius:0;
 
         background: rgba(49, 125, 146, .08);
 
@@ -192,7 +192,7 @@
 
     .alert {
         border: none;
-        border-radius: 12px;
+        border-radius: 0;
         font-size: 14px;
         margin-bottom: 25px;
     }
@@ -213,7 +213,7 @@
         background: rgba(255, 255, 255, .95);
         border: none;
         color: rgb(49, 125, 146);
-        border-radius: 14px 0 0 14px;
+        border-radius: 0;
         padding-left: 17px;
         padding-right: 10px;
     }
@@ -223,7 +223,7 @@
         background: rgba(255, 255, 255, .95);
         border: none;
         color: #333;
-        border-radius: 0 14px 14px 0;
+        border-radius: 0;
         padding: 14px 15px;
         height: 52px;
         transition: .25s;
@@ -256,7 +256,7 @@
 
         color: #ffffff;
 
-        border-radius: 0 14px 14px 0;
+        border-radius: 0;
 
         display: flex;
         align-items: center;
@@ -288,7 +288,7 @@
         width: 100%;
         background: white;
         border: none;
-        border-radius: 14px;
+        border-radius: 0;
         height: 52px;
         font-size: 16px;
         font-weight: 700;

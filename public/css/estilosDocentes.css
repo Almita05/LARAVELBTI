@@ -37,7 +37,7 @@
     color: #475569 !important;
     height: 36px;
     padding: 0 12px;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 500;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
@@ -57,11 +57,11 @@
 /* Primary CTA Button */
 .btn-primary-saas,
 .btn-azul {
-    background: #1E5B66 !important;
+    background: #26687B !important;
     color: #FFFFFF !important;
     height: 36px;
     padding: 0 16px;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 500;
     border: none !important;
@@ -78,14 +78,14 @@
 .btn-azul:hover {
     background: #184A54 !important;
     color: #FFFFFF !important;
-    box-shadow: 0 2px 4px rgba(30, 91, 102, 0.2);
+    box-shadow: 0 2px 4px rgba(38, 104, 123, 0.2);
 }
 
 /* Unified Surface: Header Bar + Table Container */
 .glass-card {
     background: #FFFFFF;
     border: 1px solid #E2E8F0;
-    border-radius: 12px;
+    border-radius: 0;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     overflow: hidden;
     padding: 0;
@@ -125,7 +125,7 @@
     height: 38px;
     padding: 0 12px 0 36px;
     border: 1px solid #E2E8F0;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     background: #F8FAFC;
     color: #0F172A;
@@ -135,9 +135,9 @@
 .form-control-search:focus,
 #buscador.form-control:focus {
     background: #FFFFFF;
-    border-color: #1E5B66;
+    border-color: #26687B;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.1);
+    box-shadow: 0 0 0 3px rgba(38, 104, 123, 0.1);
 }
 
 /* Table */
@@ -195,7 +195,7 @@
     color: #0369A1;
     background: #E0F2FE;
     padding: 1px 6px;
-    border-radius: 4px;
+    border-radius: 0;
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -253,7 +253,7 @@
     border: 1px solid #BBF7D0 !important;
     height: 22px;
     padding: 0 8px;
-    border-radius: 9999px;
+    border-radius: 0;
     font-size: 0.75rem;
     font-weight: 600;
     display: inline-flex;
@@ -267,7 +267,7 @@
     border: 1px solid #FECACA !important;
     height: 22px;
     padding: 0 8px;
-    border-radius: 9999px;
+    border-radius: 0;
     font-size: 0.75rem;
     font-weight: 600;
     display: inline-flex;
@@ -278,7 +278,7 @@
 .badge-dot {
     width: 6px;
     height: 6px;
-    border-radius: 50%;
+    border-radius:0;
     background-color: currentColor;
 }
 
@@ -293,7 +293,7 @@
 .btn-action {
     width: 32px;
     height: 32px;
-    border-radius: 6px;
+    border-radius: 0;
     background: transparent !important;
     border: none !important;
     color: #64748B !important;
@@ -313,8 +313,8 @@
 }
 
 .btn-ghost-key:hover {
-    background: #F0F7F8 !important;
-    color: #1E5B66 !important;
+    background: #EFF6F7 !important;
+    color: #26687B !important;
 }
 
 .btn-ghost-danger:hover {
@@ -350,13 +350,13 @@
     padding: 0 10px;
     font-size: 0.8125rem;
     font-weight: 500;
-    border-radius: 6px;
+    border-radius: 0;
 }
 
 /* Modal Styling */
 .modal-content.glass-modal {
     border: 1px solid #E2E8F0;
-    border-radius: 12px;
+    border-radius: 0;
     overflow: hidden;
     box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
 }
@@ -397,7 +397,7 @@
     height: 38px !important;
     min-height: 38px !important;
     border: 1px solid #CBD5E1 !important;
-    border-radius: 6px !important;
+    border-radius: 0!important;
     padding: 0 12px !important;
     font-size: 0.875rem !important;
     color: #0F172A !important;
@@ -408,6 +408,6 @@
 .form-control-premium:focus,
 .form-select-premium:focus {
     outline: none !important;
-    border-color: #1E5B66 !important;
-    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12) !important;
+    border-color: #26687B !important;
+    box-shadow: 0 0 0 3px rgba(38, 104, 123, 0.12) !important;
 }

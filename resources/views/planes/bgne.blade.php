@@ -14,17 +14,17 @@
             </a>
             <div class="planes-title-wrapper">
                 <h1>
-                    <i class="ti ti-notebook" style="color: #1E5B66;"></i>
+                    <i class="ti ti-notebook" style="color: #26687B;"></i>
                     Planes de Estudio BGNE
                 </h1>
-                <p>Bachillerato General No Escolarizado • Plan Modular por Trimestres</p>
+                <p>Bachillerato General No Escolarizado, Plan Modular por Trimestres</p>
             </div>
         </div>
 
         <div>
             <span class="badge-cct-institucional">
                 <i class="ti ti-school"></i>
-                <span>Bachillerato Interamericano • CCT: 21PBH0353G</span>
+                <span>Bachillerato Interamericano, CCT: 21PBH0353G</span>
             </span>
         </div>
     </div>
@@ -1032,7 +1032,7 @@
                 <div class="matriz-excel-card">
                     <div class="matriz-banner-title">
                         <h3>
-                            <i class="ti ti-table" style="color: #1E5B66;"></i>
+                            <i class="ti ti-table" style="color: #26687B;"></i>
                             Esquema Oficial de Materias Cursadas (Calendario Trimestral)
                         </h3>
                         <span class="matriz-info-badge">
@@ -1124,7 +1124,7 @@
                 {{-- BLOQUE 1: MES I --}}
                 <div class="mes-section-divider">
                     <span class="mes-section-badge badge-mes-1">
-                        <i class="ti ti-calendar"></i> MES I • Semanas 1 a 4
+                        <i class="ti ti-calendar"></i> Mes I: semanas 1 a 4
                     </span>
                     <div class="mes-section-line"></div>
                 </div>
@@ -1188,7 +1188,7 @@
                 {{-- BLOQUE 2: MES II --}}
                 <div class="mes-section-divider">
                     <span class="mes-section-badge badge-mes-2">
-                        <i class="ti ti-calendar"></i> MES II • Semanas 5 a 8
+                        <i class="ti ti-calendar"></i> Mes II: semanas 5 a 8
                     </span>
                     <div class="mes-section-line"></div>
                 </div>
@@ -1252,7 +1252,7 @@
                 {{-- BLOQUE 3: MES III --}}
                 <div class="mes-section-divider">
                     <span class="mes-section-badge badge-mes-3">
-                        <i class="ti ti-calendar"></i> MES III • Semanas 9 a 12
+                        <i class="ti ti-calendar"></i> Mes III: semanas 9 a 12
                     </span>
                     <div class="mes-section-line"></div>
                 </div>

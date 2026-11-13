@@ -22,7 +22,7 @@
     background:rgba(255,255,255,.08);
     backdrop-filter:blur(15px);
     border:1px solid rgba(255,255,255,.15);
-    border-radius:20px;
+    border-radius:0;
     color:#fff;
     transition:.3s;
     min-height:220px;
@@ -69,7 +69,7 @@ a{
 .portal-card {
     background: transparent;
     border: 2px solid #ffffff;
-    border-radius: 15px;
+    border-radius: 0;
     padding: 30px 20px;
     text-align: center;
     color: white;
@@ -112,7 +112,7 @@ a {
     color: #fff;
     font-weight: 600;
     padding: .375rem .75rem;
-    border-radius: .375rem;
+    border-radius: 0;
 }
 
 .btn-regresar:hover {

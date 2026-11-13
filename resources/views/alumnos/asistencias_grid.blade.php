@@ -50,18 +50,18 @@
                     </span>
                 @endif
                 @if($turnoLabelGrid)
-                    <span class="badge" style="font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; {{ $esTardeGrid ? 'background-color: rgba(249, 115, 22, 0.16); color: rgb(194, 65, 12); border: 1px solid rgba(249, 115, 22, 0.35); font-weight: 600;' : 'background-color: rgba(234, 179, 8, 0.16); color: rgb(161, 98, 7); border: 1px solid rgba(234, 179, 8, 0.35); font-weight: 600;' }}">
+                    <span class="badge" style="font-size: 0.72rem; padding: 4px 8px; border-radius: 0; {{ $esTardeGrid ? 'background-color: rgba(249, 115, 22, 0.16); color: rgb(194, 65, 12); border: 1px solid rgba(249, 115, 22, 0.35); font-weight: 600;' : 'background-color: rgba(234, 179, 8, 0.16); color: rgb(161, 98, 7); border: 1px solid rgba(234, 179, 8, 0.35); font-weight: 600;' }}">
                         {{ $turnoLabelGrid }}
                     </span>
                 @endif
             </div>
             <p class="text-muted mb-0" style="font-size: 0.8rem;">
-                {{ $nombreDiaHoy }} • Semana {{ $semanaAnio }} • {{ $diasLabel }} {{ $grupo['horario'] ?? '' }}
+                {{ $nombreDiaHoy }}, Semana {{ $semanaAnio }}, {{ $diasLabel }} {{ $grupo['horario'] ?? '' }}
             </p>
         </div>
         <div class="ms-auto d-flex gap-2">
             <!-- Selector de Vista: Listado o Matriz -->
-            <div class="btn-group bg-light p-1" style="border-radius: 12px; border: 1px solid rgba(49, 125, 146, 0.15);">
+            <div class="btn-group bg-light p-1" style="border-radius: 0; border: 1px solid rgba(49, 125, 146, 0.15);">
                 <button type="button" class="btn btn-sm btn-premium-view active rounded-3 px-3 py-1.5" id="btn-vista-listado" onclick="cambiarVista('LISTADO')" style="font-size: 0.78rem; font-weight: 500;">
                     <i class="fa-solid fa-list me-1"></i>Listado
                 </button>
@@ -73,7 +73,7 @@
     </div>
 
     <!-- Barra de Selector de Fechas y Materia -->
-    <div class="card border-0 mb-4 shadow-sm" id="selector-fechas-card" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important;">
+    <div class="card border-0 mb-4 shadow-sm" id="selector-fechas-card" style="border-radius: 0; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important;">
         <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
             <div class="d-flex flex-wrap align-items-center gap-3">
                 <!-- Selector de Materia o Pase General -->
@@ -81,7 +81,7 @@
                     <label class="text-muted fw-semibold mb-0" style="font-size: 0.82rem; min-width: 85px;">
                         @if(session('rol') !== 'DOCENTE') Modalidad: @else Asignatura: @endif
                     </label>
-                    <select id="select-materia" class="form-select border-0 text-dark" onchange="seleccionarMateria(this.value)" style="background: rgba(255, 255, 255, 0.65); border-radius: 10px; min-width: 270px; font-size: 0.85rem; height: 38px; border: 1px solid rgba(49, 125, 146, 0.2) !important; font-weight: 600;">
+                    <select id="select-materia" class="form-select border-0 text-dark" onchange="seleccionarMateria(this.value)" style="background: rgba(255, 255, 255, 0.65); border-radius: 0; min-width: 270px; font-size: 0.85rem; height: 38px; border: 1px solid rgba(49, 125, 146, 0.2) !important; font-weight: 600;">
                         @if(session('rol') !== 'DOCENTE')
                             <option value="general" {{ $selected_materia_id === 'general' ? 'selected' : '' }} style="font-weight: 700; color: #0284c7;">
                                 Pase de Lista General (Todo el grupo)
@@ -108,7 +108,7 @@
                 <!-- Selector de Fecha (sólo visible para vista Listado) -->
                 <div class="d-flex align-items-center gap-2" id="div-select-fecha">
                     <label class="text-muted fw-semibold mb-0" style="font-size: 0.82rem; min-width: 110px;">Fecha de clase:</label>
-                    <select id="select-fecha" class="form-select border-0 text-dark" onchange="seleccionarFecha(this.value)" style="background: rgba(255, 255, 255, 0.5); border-radius: 10px; min-width: 250px; font-size: 0.85rem; height: 38px; border: 1px solid rgba(49, 125, 146, 0.2) !important;">
+                    <select id="select-fecha" class="form-select border-0 text-dark" onchange="seleccionarFecha(this.value)" style="background: rgba(255, 255, 255, 0.5); border-radius: 0; min-width: 250px; font-size: 0.85rem; height: 38px; border: 1px solid rgba(49, 125, 146, 0.2) !important;">
                         @foreach($fechas as $fIdx => $f)
                             @php
                                 $isBgne = ($grupo['id_centroTrabajo'] == 3);
@@ -134,10 +134,10 @@
             </div>
             
             <div class="d-flex gap-2" id="div-nav-fecha">
-                <button class="btn btn-sm btn-secondary d-flex align-items-center justify-content-center" onclick="navegarFecha(-1)" style="border-radius: 8px; width: 36px; height: 36px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                <button class="btn btn-sm btn-secondary d-flex align-items-center justify-content-center" onclick="navegarFecha(-1)" style="border-radius: 0; width: 36px; height: 36px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
-                <button class="btn btn-sm btn-secondary d-flex align-items-center justify-content-center" onclick="navegarFecha(1)" style="border-radius: 8px; width: 36px; height: 36px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                <button class="btn btn-sm btn-secondary d-flex align-items-center justify-content-center" onclick="navegarFecha(1)" style="border-radius: 0; width: 36px; height: 36px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
             </div>
@@ -145,15 +145,15 @@
     </div>
 
     <!-- Progreso de Registro (Para vista Listado) -->
-    <div class="card border-0 mb-4 shadow-sm" id="progreso-registro-card" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important;">
+    <div class="card border-0 mb-4 shadow-sm" id="progreso-registro-card" style="border-radius: 0; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important;">
         <div class="card-body p-4">
             <span class="text-muted d-block uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 1px;">PROGRESO DE REGISTRO</span>
             <div class="d-flex justify-content-between align-items-baseline mt-1 mb-2">
                 <h2 class="fw-bold mb-0" id="progreso-texto" style="font-size: 1.5rem; color: rgb(49, 125, 146) !important;">0 / 0 Alumnos</h2>
                 <span class="fw-semibold text-dark" id="progreso-status-label" style="font-size: 0.78rem;"></span>
             </div>
-            <div class="progress bg-dark" style="height: 8px; border-radius: 10px;">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" id="progreso-bar" role="progressbar" style="width: 0%; border-radius: 10px; background-color: rgb(49, 125, 146) !important;"></div>
+            <div class="progress bg-dark" style="height: 8px; border-radius: 0;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" id="progreso-bar" role="progressbar" style="width: 0%; border-radius: 0; background-color: rgb(49, 125, 146) !important;"></div>
             </div>
         </div>
     </div>
@@ -165,17 +165,17 @@
             <span class="position-absolute start-0 top-50 translate-middle-y ms-3 text-muted">
                 <i class="fa-solid fa-magnifying-glass" style="font-size: 0.85rem;"></i>
             </span>
-            <input type="text" id="buscadorAlumno" class="form-control ps-5 border-0 text-dark" oninput="filtrarAlumnos()" placeholder="Buscar alumno..." style="background: rgba(255, 255, 255, 0.5); border-radius: 12px; height: 42px; font-size: 0.85rem; border: 1px solid rgba(49, 125, 146, 0.2) !important;">
+            <input type="text" id="buscadorAlumno" class="form-control ps-5 border-0 text-dark" oninput="filtrarAlumnos()" placeholder="Buscar alumno..." style="background: rgba(255, 255, 255, 0.5); border-radius: 0; height: 42px; font-size: 0.85rem; border: 1px solid rgba(49, 125, 146, 0.2) !important;">
         </div>
 
         <div class="d-flex gap-2 w-100 w-md-auto justify-content-end align-items-center">
             <!-- Botón Agregar Alumno -->
-            <button id="btn-abrir-modal-alumno" type="button" class="btn btn-premium-secondary py-2 px-4 fw-semibold d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalAgregarAlumno" style="border-radius: 12px; font-size: 0.82rem;">
+            <button id="btn-abrir-modal-alumno" type="button" class="btn btn-premium-secondary py-2 px-4 fw-semibold d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalAgregarAlumno" style="border-radius: 0; font-size: 0.82rem;">
                 <i class="fa-solid fa-user-plus"></i>Agregar Alumno
             </button>
 
             <!-- Botón Descargar Excel -->
-            <button id="btn-excel-asistencias" type="button" class="btn btn-outline-success py-2 px-4 fw-semibold d-flex align-items-center gap-2 d-none" onclick="descargarExcelAsistencias()" style="border-radius: 12px; font-size: 0.82rem; border-color: rgba(34, 197, 94, 0.35); color: rgb(21, 128, 61); background-color: rgba(255,255,255,0.3);">
+            <button id="btn-excel-asistencias" type="button" class="btn btn-outline-success py-2 px-4 fw-semibold d-flex align-items-center gap-2 d-none" onclick="descargarExcelAsistencias()" style="border-radius: 0; font-size: 0.82rem; border-color: rgba(34, 197, 94, 0.35); color: rgb(21, 128, 61); background-color: rgba(255,255,255,0.3);">
                 <i class="fa-solid fa-file-excel"></i>Descargar Excel
             </button>
         </div>
@@ -193,14 +193,14 @@
                 <span class="text-muted small fw-medium" id="label-total-alumnos"></span>
             </div>
             <div id="botones-acciones-listado" class="d-flex gap-2">
-                <button type="button" class="btn btn-sm btn-outline-success fw-semibold d-flex align-items-center gap-1 shadow-sm" onclick="marcarTodos('A')" style="border-radius: 10px; font-size: 0.78rem; background: #fff;">
+                <button type="button" class="btn btn-sm btn-outline-success fw-semibold d-flex align-items-center gap-1 shadow-sm" onclick="marcarTodos('A')" style="border-radius: 0; font-size: 0.78rem; background: #fff;">
                     <i class="fa-solid fa-check-double text-success"></i> Todos Asistencia
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold d-flex align-items-center gap-1 shadow-sm" onclick="marcarTodos(null)" style="border-radius: 10px; font-size: 0.78rem; background: #fff;">
+                <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold d-flex align-items-center gap-1 shadow-sm" onclick="marcarTodos(null)" style="border-radius: 0; font-size: 0.78rem; background: #fff;">
                     <i class="fa-solid fa-eraser text-secondary"></i> Limpiar
                 </button>
                 @if(session('rol') !== 'DOCENTE')
-                    <button type="button" id="btn-reabrir-pase" class="btn btn-sm fw-semibold d-flex align-items-center gap-1 shadow-sm" onclick="toggleReaperturaDocente()" style="border-radius: 10px; font-size: 0.78rem; background: #fff; border: 1px solid #f59e0b; color: #b45309;" title="Permitir que el docente pueda volver a modificar y reenviar el pase de lista">
+                    <button type="button" id="btn-reabrir-pase" class="btn btn-sm fw-semibold d-flex align-items-center gap-1 shadow-sm" onclick="toggleReaperturaDocente()" style="border-radius: 0; font-size: 0.78rem; background: #fff; border: 1px solid #f59e0b; color: #b45309;" title="Permitir que el docente pueda volver a modificar y reenviar el pase de lista">
                         <i class="fa-solid fa-lock-open" id="icon-reabrir-pase"></i>
                         <span id="label-reabrir-pase">Permitir Edición a Docente</span>
                     </button>
@@ -221,7 +221,7 @@
 
         <!-- Botón de Confirmación del Pase de Lista (Hasta abajo de la lista de alumnos) -->
         <div id="panel-guardar-asistencias-bottom" class="mt-4 pt-3 pb-5 text-center">
-            <button id="btn-guardar-asistencias" type="button" class="btn btn-success py-3 px-5 fw-bold d-inline-flex align-items-center justify-content-center gap-2 shadow" onclick="guardarAsistencias()" style="border-radius: 14px; font-size: 1.05rem; min-width: 280px; box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);">
+            <button id="btn-guardar-asistencias" type="button" class="btn btn-success py-3 px-5 fw-bold d-inline-flex align-items-center justify-content-center gap-2 shadow" onclick="guardarAsistencias()" style="border-radius: 0; font-size: 1.05rem; min-width: 280px; box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);">
                 <i class="fa-solid fa-check-circle" style="font-size: 1.2rem;"></i>
                 <span id="btn-guardar-texto">Confirmar Pase de Lista</span>
             </button>
@@ -233,10 +233,10 @@
 
     <!-- Contenido Principal: VISTA MATRIZ EXCEL -->
     <div id="contenedor-vista-matriz" class="d-none">
-        <div class="card border-0 shadow-sm" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.15) !important;">
+        <div class="card border-0 shadow-sm" style="border-radius: 0; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.15) !important;">
             <div class="card-body p-0">
                 <!-- Contenedor scrollable horizontal y vertical -->
-                <div class="table-responsive matriz-scroll-container" style="max-height: 72vh; overflow: auto; border-radius: 16px; background: #ffffff;">
+                <div class="table-responsive matriz-scroll-container" style="max-height: 72vh; overflow: auto; border-radius: 0; background: #ffffff;">
                     <table id="tabla-matriz" class="table table-hover mb-0 align-middle text-center table-bordered" style="border-color: rgba(49, 125, 146, 0.15); font-size: 0.78rem; color: #1e293b;">
                         <thead>
                             <!-- Fila 1: Trimestre / Nivel Académico -->
@@ -298,7 +298,7 @@
             </div>
         <!-- Botón Guardar Cambios Matriz -->
         <div id="panel-guardar-matriz-bottom" class="mt-3 pt-2 pb-3 d-flex justify-content-end px-3">
-            <button id="btn-guardar-matriz" type="button" class="btn btn-success py-2 px-4 fw-semibold d-flex align-items-center gap-2" onclick="guardarAsistencias()" style="border-radius: 12px; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);">
+            <button id="btn-guardar-matriz" type="button" class="btn btn-success py-2 px-4 fw-semibold d-flex align-items-center gap-2" onclick="guardarAsistencias()" style="border-radius: 0; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);">
                 <i class="fa-solid fa-floppy-disk"></i>Guardar Cambios Matriz
             </button>
         </div>
@@ -311,7 +311,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title fw-bold" id="modalAgregarAlumnoLabel">
-                    <i class="ti ti-user-plus me-2" style="color: #1E5B66;"></i>Agregar Nuevo Alumno
+                    <i class="ti ti-user-plus me-2" style="color: #26687B;"></i>Agregar Nuevo Alumno
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -379,7 +379,7 @@
         position: relative;
         max-height: 72vh !important;
         overflow: auto !important;
-        border-radius: 16px;
+        border-radius: 0;
         background-color: #ffffff !important;
         border: 1px solid rgba(49, 125, 146, 0.2) !important;
     }
@@ -474,7 +474,7 @@
     .btn-circle-status {
         width: 28px;
         height: 28px;
-        border-radius: 50%;
+        border-radius:0;
         border: 1px solid rgba(255,255,255,0.15);
         background: transparent;
         color: #94a3b8;
@@ -519,7 +519,7 @@
     .attendance-card {
         background: #ffffff;
         border: 1.5px solid #edf2f7;
-        border-radius: 18px;
+        border-radius: 0;
         box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
         transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     }
@@ -534,7 +534,7 @@
         min-width: 58px;
         height: 34px;
         padding: 0 12px;
-        border-radius: 20px;
+        border-radius: 0;
         border: 2px solid #0284c7;
         color: #0284c7;
         background-color: #f0f9ff;
@@ -593,7 +593,7 @@
         justify-content: center;
         gap: 5px;
         padding: 8px 3px;
-        border-radius: 12px;
+        border-radius: 0;
         font-size: 0.77rem;
         font-weight: 700;
         letter-spacing: 0.3px;
@@ -665,7 +665,7 @@
         width: 100%;
         background-color: #f8fafc;
         border: 1.5px solid #e2e8f0;
-        border-radius: 12px;
+        border-radius: 0;
         font-size: 0.82rem;
         height: 38px;
         padding: 6px 14px;
@@ -1241,7 +1241,7 @@
                                     <div class="alumno-nombre-card">${nombreCompleto}</div>
                                     <div class="alumno-subtitulo-card">
                                         <span>Número de lista: ${numLista}</span>
-                                        ${al.matricula ? `<span class="opacity-50">•</span><span>Matrícula: ${al.matricula}</span>` : ''}
+                                        ${al.matricula ? `<span>, matrícula ${al.matricula}</span>` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -2079,7 +2079,7 @@
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-family: Arial, sans-serif;">
                 <tr>
                     <td style="width: 10%; text-align: left; vertical-align: middle;">
-                        <img src="${window.location.origin}/img/logo.png" alt="Logo" style="width: 75px; height: 75px; border-radius: 50%; padding: 2px; background: white; border: 1px solid #ddd;">
+                        <img src="${window.location.origin}/img/logo.png" alt="Logo" style="width: 75px; height: 75px; border-radius:0; padding: 2px; background: white; border: 1px solid #ddd;">
                     </td>
                     <td style="width: 80%; text-align: center; vertical-align: middle;">
                         <h2 style="margin: 0; font-size: 1.4rem; font-weight: bold; letter-spacing: 0.5px;">BACHILLERATO INTERAMERICANO</h2>

@@ -2,1522 +2,310 @@
 
 @section('content')
 
-<link rel="stylesheet" href="{{ asset('css/estilosQrp.css') }}">
+@php
+    use Illuminate\Support\Str;
 
-<div class="container-fluid py-4">
+    $procesado = isset($procesado) && $procesado;
+    $movs = collect($movimientos ?? []);
+    $dinero = fn ($v) => '$' . number_format((float) $v, 2);
 
-    {{-- ============================================
-         ENCABEZADO
-    ============================================= --}}
+    // Etiqueta y tono de cada categoría que devuelve el analizador
+    $categorias = [
+        'Colegiatura'  => ['plural' => 'Colegiaturas', 'tono' => 'tw:bg-brand-50 tw:text-brand-800', 'marca' => 'tw:bg-brand-700'],
+        'Examen'       => ['plural' => 'Exámenes',     'tono' => 'tw:bg-amber-50 tw:text-amber-800', 'marca' => 'tw:bg-amber-500'],
+        'Otros'        => ['plural' => 'Otros',        'tono' => 'tw:bg-slate-100 tw:text-slate-700', 'marca' => 'tw:bg-slate-400'],
+        'Sin concepto' => ['plural' => 'Sin concepto', 'tono' => 'tw:bg-danger-50 tw:text-danger-600', 'marca' => 'tw:bg-danger-500'],
+    ];
+    $catDe = fn ($m) => array_key_exists($m['categoria'] ?? '', $categorias) ? $m['categoria'] : 'Sin concepto';
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    $totalCobrado = (float) $movs->sum('total');
+    $totalRecargos = (float) $movs->sum('recargo');
 
-        <div>
-            <h2 class="fw-bold mb-1">
-                Analizar Estado de Cuenta
-            </h2>
+    // Desglose por concepto (solo las categorías con movimientos, en el orden de $categorias)
+    $desglose = collect($categorias)->map(function ($cfg, $cat) use ($movs, $catDe, $totalCobrado) {
+        $grupo = $movs->filter(fn ($m) => $catDe($m) === $cat);
+        $total = (float) $grupo->sum('total');
+        return $cfg + [
+            'clave'    => $cat,
+            'cantidad' => $grupo->count(),
+            'importe'  => (float) $grupo->sum('importe'),
+            'recargo'  => (float) $grupo->sum('recargo'),
+            'total'    => $total,
+            'pct'      => $totalCobrado > 0 ? round($total * 100 / $totalCobrado, 1) : 0,
+        ];
+    })->filter(fn ($d) => $d['cantidad'] > 0)->values();
 
-            <p class="text-muted mb-0">
-                Carga un archivo QRP para analizar sus movimientos.
+    $th = 'tw:whitespace-nowrap tw:border-b tw:border-slate-300 tw:bg-slate-50 tw:px-3 tw:py-2.5 tw:text-left tw:text-[0.8125rem] tw:font-semibold tw:text-slate-700';
+    $td = 'tw:border-b tw:border-slate-200 tw:px-3 tw:py-2 tw:align-middle';
+    $num = 'tw:text-right tw:tabular-nums tw:whitespace-nowrap';
+@endphp
+
+<div class="tw:mx-auto tw:flex tw:max-w-[1600px] tw:flex-col tw:gap-6">
+
+    <x-ui.page-header title="Analizar estado de cuenta">
+        Sube el reporte de caja en formato .QRP para revisar lo cobrado por concepto y cada movimiento.
+    </x-ui.page-header>
+
+    {{-- ===================== ERRORES ===================== --}}
+    @if ($errors->any())
+        <div role="alert" class="tw:border tw:border-danger-200 tw:bg-danger-50 tw:px-5 tw:py-4">
+            <p class="tw:m-0 tw:font-semibold tw:text-danger-800">No se pudo analizar el archivo</p>
+            <ul class="tw:m-0 tw:mt-1 tw:pl-5 tw:text-[0.9375rem] tw:text-slate-800">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <p class="tw:m-0 tw:mt-2 tw:text-[0.875rem] tw:text-slate-600">Revisa que sea el reporte .QRP exportado de caja y vuelve a subirlo.</p>
+        </div>
+    @endif
+
+    {{-- ===================== CARGA DEL ARCHIVO ===================== --}}
+    <section class="{{ \App\View\Ui::PANEL }} tw:p-5">
+        <form action="{{ route('estado_cuenta.analizar') }}" method="POST" enctype="multipart/form-data" id="formQrp"
+              class="tw:grid tw:grid-cols-1 tw:items-end tw:gap-4 tw:md:grid-cols-[minmax(0,1fr)_auto]">
+            @csrf
+            <x-ui.field label="Reporte de caja (.QRP)" for="archivo_qrp">
+                <input type="file" name="archivo_qrp" id="archivo_qrp" accept=".qrp" required
+                       class="tw:block tw:h-10 tw:w-full tw:cursor-pointer tw:border tw:border-slate-300 tw:bg-white tw:text-[0.9375rem] tw:text-slate-700 tw:file:mr-4 tw:file:h-full tw:file:cursor-pointer tw:file:border-0 tw:file:border-r tw:file:border-slate-300 tw:file:bg-slate-100 tw:file:px-4 tw:file:font-semibold tw:file:text-slate-800 tw:hover:file:bg-slate-200 tw:focus:outline-none tw:focus-visible:ring-2 tw:focus-visible:ring-brand-700/30">
+            </x-ui.field>
+            <x-ui.button type="submit" id="btnAnalizar" icon="file-search">Analizar archivo</x-ui.button>
+        </form>
+        @if ($procesado)
+            <p class="tw:m-0 tw:mt-3 tw:text-[0.875rem] tw:text-slate-600">
+                Archivo analizado: <span class="tw:font-semibold tw:text-slate-900">{{ $archivoProcesado }}</span>, con {{ $totalMovimientos }} {{ Str::plural('movimiento', $totalMovimientos) }}.
+            </p>
+        @else
+            <p class="tw:m-0 tw:mt-3 tw:text-[0.875rem] tw:text-slate-600">Solo se aceptan archivos .QRP exportados del sistema de caja.</p>
+        @endif
+    </section>
+
+    @if ($procesado)
+
+    {{-- ===================== RESUMEN: total cobrado + desglose por concepto ===================== --}}
+    <section class="{{ \App\View\Ui::PANEL }} tw:grid tw:grid-cols-1 tw:lg:grid-cols-[280px_minmax(0,1fr)]">
+        <div class="tw:border-b tw:border-slate-200 tw:bg-brand-700 tw:p-6 tw:text-white tw:lg:border-b-0">
+            <p class="tw:m-0 tw:text-[0.9375rem] tw:text-white/80">Total cobrado</p>
+            <p class="tw:m-0 tw:mt-1 tw:text-[2.25rem] tw:font-semibold tw:leading-tight tw:tabular-nums">{{ $dinero($totalCobrado) }}</p>
+            <p class="tw:m-0 tw:mt-2 tw:text-[0.875rem] tw:text-white/80">
+                En {{ $totalMovimientos }} {{ Str::plural('movimiento', $totalMovimientos) }}{{ $totalRecargos > 0 ? ', incluye ' . $dinero($totalRecargos) . ' de recargos' : '' }}.
             </p>
         </div>
 
-    </div>
-
-
-    {{-- ============================================
-         MENSAJES DE ERROR
-    ============================================= --}}
-
-    @if ($errors->any())
-
-    <div class="alert alert-danger alert-dismissible fade show">
-
-        <div class="fw-bold mb-2">
-
-            <i class="fa-solid fa-triangle-exclamation me-2"></i>
-
-            No se pudo procesar el archivo
-
-        </div>
-
-        <ul class="mb-0">
-
-            @foreach ($errors->all() as $error)
-
-            <li>{{ $error }}</li>
-
-            @endforeach
-
-        </ul>
-
-        <button type="button" class="btn-close" data-bs-dismiss="alert">
-        </button>
-
-    </div>
-
-    @endif
-
-
-    {{-- ============================================
-         FORMULARIO
-    ============================================= --}}
-
-    <div class="card shadow-sm border-0 mb-4">
-
-        <div class="card-body p-4">
-
-            <form action="{{ route('analizar-estado-cuenta') }}" method="POST" enctype="multipart/form-data"
-                id="formQrp">
-
-                @csrf
-
-                <div class="row align-items-end">
-
-                    <div class="col-md-8">
-
-                        <label for="archivo_qrp" class="form-label fw-semibold">
-                            Archivo de Estado de Cuenta
-                        </label>
-
-                        <input type="file" name="archivo_qrp" id="archivo_qrp" class="form-control" accept=".qrp"
-                            required>
-
-                        <div class="form-text">
-
-                            Selecciona un archivo con extensión
-                            <strong>.QRP</strong>.
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="col-md-4 mt-3 mt-md-0">
-
-                        <button type="submit" class="btn btn-primary w-100" id="btnAnalizar">
-
-                            <i class="fa-solid fa-magnifying-glass me-2"></i>
-
-                            Analizar Estado de Cuenta
-
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </div>
-    
-
-
-
-    {{-- ============================================
-         RESULTADOS
-    ============================================= --}}
-
-    @if(isset($procesado) && $procesado)
-
-    {{-- ARCHIVO PROCESADO --}}
-
-    <div class="alert alert-success shadow-sm">
-
-        <i class="fa-solid fa-circle-check me-2"></i>
-
-        Archivo procesado correctamente:
-
-        <strong>
-            {{ $archivoProcesado }}
-        </strong>
-
-    </div>
-
-
-    {{-- ========================================
-             TARJETAS RESUMEN
-        ========================================= --}}
-
-    <div class="row g-3 mb-4">
-
-
-        {{-- =====================================
-                 MOVIMIENTOS
-            ====================================== --}}
-
-        <div class="col-xl col-md-6">
-
-            <div class="card resumen-card shadow-sm border-0 h-100">
-
-                <div class="card-body">
-
-                    <div class="d-flex justify-content-between">
-
-                        <div>
-
-                            <div class="text-muted small">
-                                Movimientos
-                            </div>
-
-                            <div class="fs-3 fw-bold">
-                                {{ $totalMovimientos }}
-                            </div>
-
-                        </div>
-
-                        <div class="resumen-icon bg-primary-subtle text-primary">
-
-                            <i class="fa-solid fa-list"></i>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        {{-- =====================================
-                 COLEGIATURAS
-            ====================================== --}}
-
-        <div class="col-xl col-md-6">
-
-            <div class="card resumen-card resumen-clickable shadow-sm border-0 h-100"
-                onclick="mostrarDetalle('Colegiatura')" role="button" tabindex="0">
-
-                <div class="card-body">
-
-                    <div class="d-flex justify-content-between">
-
-                        <div>
-
-                            <div class="text-muted small">
-                                Colegiaturas
-                            </div>
-
-                            <div class="fs-3 fw-bold">
-
-                                {{ $resumen['Colegiatura']['cantidad'] ?? 0 }}
-
-                            </div>
-
-                            <div class="text-muted">
-
-                                ${{ number_format(
-                                        $resumen['Colegiatura']['importe'] ?? 0,
-                                        2
-                                    ) }}
-
-                            </div>
-
-                            <div class="detalle-link mt-2">
-
-                                <i class="fa-solid fa-eye me-1"></i>
-
-                                Ver detalles
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="resumen-icon bg-success-subtle text-success">
-
-                            <i class="fa-solid fa-graduation-cap"></i>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        {{-- =====================================
-                 EXÁMENES
-            ====================================== --}}
-
-        <div class="col-xl col-md-6">
-
-            <div class="card resumen-card resumen-clickable shadow-sm border-0 h-100" onclick="mostrarDetalle('Examen')"
-                role="button" tabindex="0">
-
-                <div class="card-body">
-
-                    <div class="d-flex justify-content-between">
-
-                        <div>
-
-                            <div class="text-muted small">
-                                Exámenes
-                            </div>
-
-                            <div class="fs-3 fw-bold">
-
-                                {{ $resumen['Examen']['cantidad'] ?? 0 }}
-
-                            </div>
-
-                            <div class="text-muted">
-
-                                ${{ number_format(
-                                        $resumen['Examen']['importe'] ?? 0,
-                                        2
-                                    ) }}
-
-                            </div>
-
-                            <div class="detalle-link mt-2">
-
-                                <i class="fa-solid fa-eye me-1"></i>
-
-                                Ver detalles
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="resumen-icon bg-warning-subtle text-warning">
-
-                            <i class="fa-solid fa-file-pen"></i>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        {{-- =====================================
-                 OTROS
-            ====================================== --}}
-
-        <div class="col-xl col-md-6">
-
-            <div class="card resumen-card resumen-clickable shadow-sm border-0 h-100" onclick="mostrarDetalle('Otros')"
-                role="button" tabindex="0">
-
-                <div class="card-body">
-
-                    <div class="d-flex justify-content-between">
-
-                        <div>
-
-                            <div class="text-muted small">
-                                Otros
-                            </div>
-
-                            <div class="fs-3 fw-bold">
-
-                                {{ $resumen['Otros']['cantidad'] ?? 0 }}
-
-                            </div>
-
-                            <div class="text-muted">
-
-                                ${{ number_format(
-                                        $resumen['Otros']['importe'] ?? 0,
-                                        2
-                                    ) }}
-
-                            </div>
-
-                            <div class="detalle-link mt-2">
-
-                                <i class="fa-solid fa-eye me-1"></i>
-
-                                Ver detalles
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="resumen-icon bg-secondary-subtle text-secondary">
-
-                            <i class="fa-solid fa-folder"></i>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        {{-- =====================================
-                 TOTAL PAGADO
-            ====================================== --}}
-
-        @php
-
-        $totalPagado = collect($movimientos ?? [])
-        ->sum('total');
-
-        @endphp
-
-
-        <div class="col-xl col-md-6">
-
-            <div class="card resumen-card shadow-sm border-0 h-100">
-
-                <div class="card-body">
-
-                    <div class="d-flex justify-content-between">
-
-                        <div>
-
-                            <div class="text-muted small">
-                                Total pagado
-                            </div>
-
-                            <div class="fs-3 fw-bold text-primary">
-
-                                ${{ number_format(
-                                        $totalPagado,
-                                        2
-                                    ) }}
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="resumen-icon bg-primary-subtle text-primary">
-
-                            <i class="fa-solid fa-dollar-sign"></i>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    {{-- ========================================
-             TABLA GENERAL
-        ========================================= --}}
-
-    <div class="card shadow-sm border-0">
-
-        <div class="card-header bg-white border-0 py-3">
-
-            <div class="d-flex justify-content-between align-items-center">
-
-                <div>
-
-                    <h5 class="fw-bold mb-1">
-
-                        <i class="fa-solid fa-table me-2"></i>
-
-                        Movimientos del Estado de Cuenta
-
-                    </h5>
-
-                    <small class="text-muted">
-
-                        {{ $totalMovimientos }} movimientos encontrados
-
-                    </small>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="card-body p-0">
-
-            <div class="table-responsive">
-
-                <table class="table table-hover align-middle mb-0">
-
-                    <thead class="table-light">
-
-                        <tr>
-
-                            <th>Recibo</th>
-
-                            <th>Fecha</th>
-
-                            <th>Concepto</th>
-
-                            <th>Categoría</th>
-
-                            <th class="text-center">
-                                Cantidad
-                            </th>
-
-                            <th class="text-end">
-                                Importe
-                            </th>
-
-                            <th class="text-end">
-                                Recargo
-                            </th>
-
-                            <th class="text-end">
-                                Total
-                            </th>
-
-                            <th>Usuario</th>
-
-                            <th>Hora</th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        @forelse($movimientos as $movimiento)
-
-                        <tr>
-
-                            <td>
-
-                                <span class="fw-semibold">
-
-                                    {{ $movimiento['recibo'] }}
-
+        <div class="tw:min-w-0 tw:overflow-x-auto">
+            <table class="tw:w-full tw:border-collapse tw:text-[0.9375rem]">
+                <caption class="tw:sr-only">Desglose de lo cobrado por concepto. Elige un concepto para ver solo sus movimientos.</caption>
+                <thead>
+                    <tr>
+                        <th scope="col" class="{{ $th }}">Concepto</th>
+                        <th scope="col" class="{{ $th }} tw:text-right">Movimientos</th>
+                        <th scope="col" class="{{ $th }} tw:text-right">Importe</th>
+                        <th scope="col" class="{{ $th }} tw:text-right">Recargos</th>
+                        <th scope="col" class="{{ $th }} tw:text-right">Total</th>
+                        <th scope="col" class="{{ $th }} tw:w-[22%]">Parte del total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($desglose as $d)
+                        <tr class="fila-desglose tw:cursor-pointer tw:hover:bg-slate-50 tw:[&.activa]:bg-brand-50" data-filtro="{{ $d['clave'] }}"
+                            tabindex="0" role="button" aria-label="Ver solo los movimientos de {{ $d['plural'] }}">
+                            <td class="{{ $td }}">
+                                <span class="tw:inline-flex tw:items-center tw:gap-2 tw:font-semibold tw:text-slate-900">
+                                    <span class="tw:size-2.5 {{ $d['marca'] }}" aria-hidden="true"></span>
+                                    {{ $d['plural'] }}
                                 </span>
-
                             </td>
-
-
-                            <td>
-
-                                {{ $movimiento['fecha'] }}
-
-                            </td>
-
-
-                            <td>
-
-                                {{ $movimiento['concepto'] }}
-
-                            </td>
-
-
-                            <td>
-
-                                @if($movimiento['categoria'] === 'Colegiatura')
-
-                                <span class="badge bg-success-subtle text-success">
-
-                                    <i class="fa-solid fa-graduation-cap me-1"></i>
-
-                                    Colegiatura
-
-                                </span>
-
-                                @elseif($movimiento['categoria'] === 'Examen')
-
-                                <span class="badge bg-warning-subtle text-warning">
-
-                                    <i class="fa-solid fa-file-pen me-1"></i>
-
-                                    Examen
-
-                                </span>
-
-                                @elseif($movimiento['categoria'] === 'Otros')
-
-                                <span class="badge bg-secondary-subtle text-secondary">
-
-                                    <i class="fa-solid fa-folder me-1"></i>
-
-                                    Otros
-
-                                </span>
-
-                                @else
-
-                                <span class="badge bg-light text-dark">
-
-                                    Sin concepto
-
-                                </span>
-
-                                @endif
-
-                            </td>
-
-
-                            <td class="text-center">
-
-                                {{ $movimiento['cantidad_colegiaturas'] ?? 0 }}
-
-                            </td>
-
-
-                            <td class="text-end">
-
-                                ${{ number_format(
-                                            $movimiento['importe'] ?? 0,
-                                            2
-                                        ) }}
-
-                            </td>
-
-
-                            <td class="text-end">
-
-                                ${{ number_format(
-                                            $movimiento['recargo'] ?? 0,
-                                            2
-                                        ) }}
-
-                            </td>
-
-
-                            <td class="text-end fw-semibold">
-
-                                ${{ number_format(
-                                            $movimiento['total'] ?? 0,
-                                            2
-                                        ) }}
-
-                            </td>
-
-
-                            <td>
-
-                                {{ $movimiento['usuario'] ?? '' }}
-
-                            </td>
-
-
-                            <td>
-
-                                {{ $movimiento['hora'] ?? '' }}
-
-                            </td>
-
-                        </tr>
-
-                        @empty
-
-                        <tr>
-
-                            <td colspan="10" class="text-center py-5 text-muted">
-
-                                <i class="fa-solid fa-inbox fa-2x mb-3"></i>
-
-                                <div>
-                                    No se encontraron movimientos.
+                            <td class="{{ $td }} {{ $num }}">{{ $d['cantidad'] }}</td>
+                            <td class="{{ $td }} {{ $num }}">{{ $dinero($d['importe']) }}</td>
+                            <td class="{{ $td }} {{ $num }} {{ $d['recargo'] > 0 ? 'tw:text-danger-600' : 'tw:text-slate-400' }}">{{ $dinero($d['recargo']) }}</td>
+                            <td class="{{ $td }} {{ $num }} tw:font-semibold tw:text-slate-900">{{ $dinero($d['total']) }}</td>
+                            <td class="{{ $td }}">
+                                <div class="tw:flex tw:items-center tw:gap-3">
+                                    <div class="tw:h-2 tw:flex-1 tw:bg-slate-100" aria-hidden="true">
+                                        <div class="tw:h-full tw:bg-brand-700" style="width: {{ $d['pct'] }}%"></div>
+                                    </div>
+                                    <span class="tw:w-12 tw:text-right tw:text-[0.875rem] tw:tabular-nums tw:text-slate-600">{{ number_format($d['pct'], 1) }}%</span>
                                 </div>
-
                             </td>
-
                         </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </section>
 
-                        @endforelse
-
-                    </tbody>
-
-                </table>
-
+    {{-- ===================== MOVIMIENTOS ===================== --}}
+    <section class="{{ \App\View\Ui::PANEL }}">
+        <div class="tw:flex tw:flex-col tw:gap-4 tw:border-b tw:border-slate-200 tw:p-5 tw:xl:flex-row tw:xl:items-end tw:xl:justify-between">
+            <div>
+                <h2 class="tw:m-0 tw:text-[1.25rem] tw:font-semibold tw:text-slate-900">Movimientos</h2>
+                <p class="tw:m-0 tw:mt-1 tw:text-[0.875rem] tw:text-slate-600" id="lblConteo" aria-live="polite">
+                    Mostrando {{ $movs->count() }} de {{ $movs->count() }}
+                </p>
             </div>
 
+            <div class="tw:flex tw:flex-col tw:gap-3 tw:md:flex-row tw:md:items-center">
+                {{-- Filtro por concepto --}}
+                <div role="group" aria-label="Filtrar por concepto" class="tw:inline-flex tw:border tw:border-slate-300 tw:bg-white">
+                    <button type="button" class="btn-filtro activa tw:h-9 tw:cursor-pointer tw:border-0 tw:bg-transparent tw:px-3.5 tw:text-[0.875rem] tw:font-medium tw:text-slate-700 tw:hover:bg-slate-100 tw:focus-visible:outline-2 tw:focus-visible:outline-brand-700 tw:[&.activa]:bg-brand-700 tw:[&.activa]:text-white" data-filtro="" aria-pressed="true">Todos</button>
+                    @foreach ($desglose as $d)
+                        <button type="button" class="btn-filtro tw:h-9 tw:cursor-pointer tw:border-0 tw:border-l tw:border-slate-300 tw:bg-transparent tw:px-3.5 tw:text-[0.875rem] tw:font-medium tw:text-slate-700 tw:hover:bg-slate-100 tw:focus-visible:outline-2 tw:focus-visible:outline-brand-700 tw:[&.activa]:bg-brand-700 tw:[&.activa]:text-white" data-filtro="{{ $d['clave'] }}" aria-pressed="false">{{ $d['plural'] }}</button>
+                    @endforeach
+                </div>
+
+                <div class="tw:relative tw:md:w-72">
+                    <label for="buscarMovimiento" class="tw:sr-only">Buscar por recibo, concepto o usuario</label>
+                    <i data-lucide="search" class="tw:pointer-events-none tw:absolute tw:left-3 tw:top-1/2 tw:size-4 tw:-translate-y-1/2 tw:text-slate-400" aria-hidden="true"></i>
+                    <input type="search" id="buscarMovimiento" placeholder="Recibo, concepto o usuario" autocomplete="off"
+                           class="{{ \App\View\Ui::INPUT }} tw:h-9 tw:pl-9 tw:text-[0.875rem]">
+                </div>
+            </div>
         </div>
 
-    </div>
+        <div class="tw:max-h-[70vh] tw:overflow-auto">
+            <table class="tw:w-full tw:border-collapse tw:text-[0.875rem]" id="tablaMovimientos">
+                <thead class="tw:sticky tw:top-0 tw:z-10">
+                    <tr>
+                        <th scope="col" class="{{ $th }}">Recibo</th>
+                        <th scope="col" class="{{ $th }}">Fecha</th>
+                        <th scope="col" class="{{ $th }}">Hora</th>
+                        <th scope="col" class="{{ $th }}">Concepto</th>
+                        <th scope="col" class="{{ $th }}">Categoría</th>
+                        <th scope="col" class="{{ $th }} tw:text-right">Cant.</th>
+                        <th scope="col" class="{{ $th }} tw:text-right">Importe</th>
+                        <th scope="col" class="{{ $th }} tw:text-right">Recargo</th>
+                        <th scope="col" class="{{ $th }} tw:text-right">Total</th>
+                        <th scope="col" class="{{ $th }}">Usuario</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($movs as $m)
+                        @php $cat = $catDe($m); @endphp
+                        <tr class="fila-mov tw:hover:bg-slate-50"
+                            data-categoria="{{ $cat }}"
+                            data-importe="{{ (float) ($m['importe'] ?? 0) }}"
+                            data-recargo="{{ (float) ($m['recargo'] ?? 0) }}"
+                            data-total="{{ (float) ($m['total'] ?? 0) }}"
+                            data-busqueda="{{ Str::lower(Str::ascii(($m['recibo'] ?? '') . ' ' . ($m['concepto'] ?? '') . ' ' . ($m['usuario'] ?? ''))) }}">
+                            <td class="{{ $td }} tw:whitespace-nowrap tw:font-semibold tw:tabular-nums tw:text-slate-900">{{ $m['recibo'] ?? '' }}</td>
+                            <td class="{{ $td }} tw:whitespace-nowrap tw:tabular-nums">{{ $m['fecha'] ?? '' }}</td>
+                            <td class="{{ $td }} tw:whitespace-nowrap tw:tabular-nums tw:text-slate-600">{{ $m['hora'] ?? '' }}</td>
+                            <td class="{{ $td }} tw:min-w-[13rem] tw:text-slate-800">{{ $m['concepto'] ?? '' }}</td>
+                            <td class="{{ $td }}">
+                                <span class="tw:inline-block tw:whitespace-nowrap tw:px-2 tw:py-0.5 tw:text-[0.8125rem] tw:font-semibold {{ $categorias[$cat]['tono'] }}">{{ $cat }}</span>
+                            </td>
+                            <td class="{{ $td }} {{ $num }}">{{ $m['cantidad_colegiaturas'] ?? 0 }}</td>
+                            <td class="{{ $td }} {{ $num }}">{{ $dinero($m['importe'] ?? 0) }}</td>
+                            <td class="{{ $td }} {{ $num }} {{ ($m['recargo'] ?? 0) > 0 ? 'tw:text-danger-600' : 'tw:text-slate-400' }}">{{ $dinero($m['recargo'] ?? 0) }}</td>
+                            <td class="{{ $td }} {{ $num }} tw:font-semibold tw:text-slate-900">{{ $dinero($m['total'] ?? 0) }}</td>
+                            <td class="{{ $td }} tw:whitespace-nowrap tw:text-slate-700">{{ $m['usuario'] ?? '' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="10" class="tw:px-4 tw:py-10 tw:text-center tw:text-slate-600">
+                                El archivo no contiene movimientos. Verifica que el reporte de caja abarque el periodo correcto y vuelve a exportarlo.
+                            </td>
+                        </tr>
+                    @endforelse
+                    <tr id="filaSinResultados" hidden>
+                        <td colspan="10" class="tw:px-4 tw:py-10 tw:text-center tw:text-slate-600">
+                            Ningún movimiento coincide. Borra la búsqueda o elige «Todos».
+                        </td>
+                    </tr>
+                </tbody>
+                @if ($movs->isNotEmpty())
+                    <tfoot class="tw:sticky tw:bottom-0">
+                        <tr class="tw:bg-slate-100 tw:font-semibold tw:text-slate-900">
+                            <td colspan="6" class="tw:border-t-2 tw:border-slate-300 tw:px-4 tw:py-3">Total de lo mostrado</td>
+                            <td class="tw:border-t-2 tw:border-slate-300 tw:px-4 tw:py-3 {{ $num }}" id="sumImporte">{{ $dinero($movs->sum('importe')) }}</td>
+                            <td class="tw:border-t-2 tw:border-slate-300 tw:px-4 tw:py-3 {{ $num }}" id="sumRecargo">{{ $dinero($movs->sum('recargo')) }}</td>
+                            <td class="tw:border-t-2 tw:border-slate-300 tw:px-4 tw:py-3 {{ $num }}" id="sumTotal">{{ $dinero($movs->sum('total')) }}</td>
+                            <td class="tw:border-t-2 tw:border-slate-300"></td>
+                        </tr>
+                    </tfoot>
+                @endif
+            </table>
+        </div>
+    </section>
+
+    @else
+
+    {{-- ===================== ANTES DE SUBIR UN ARCHIVO ===================== --}}
+    <section class="{{ \App\View\Ui::PANEL }} tw:p-6">
+        <h2 class="tw:m-0 tw:text-[1.125rem] tw:font-semibold tw:text-slate-900">Qué obtendrás</h2>
+        <ul class="tw:m-0 tw:mt-3 tw:grid tw:list-none tw:grid-cols-1 tw:gap-4 tw:p-0 tw:text-[0.9375rem] tw:text-slate-700 tw:md:grid-cols-3">
+            <li class="tw:border-t-2 tw:border-brand-700 tw:pt-3"><span class="tw:block tw:font-semibold tw:text-slate-900">Total cobrado</span>La suma de todos los recibos del reporte, con los recargos incluidos.</li>
+            <li class="tw:border-t-2 tw:border-brand-700 tw:pt-3"><span class="tw:block tw:font-semibold tw:text-slate-900">Desglose por concepto</span>Cuánto corresponde a colegiaturas, exámenes y otros cobros.</li>
+            <li class="tw:border-t-2 tw:border-brand-700 tw:pt-3"><span class="tw:block tw:font-semibold tw:text-slate-900">Cada movimiento</span>Recibo, fecha, concepto, importe y quién lo cobró, con búsqueda.</li>
+        </ul>
+    </section>
 
     @endif
-
 </div>
-
-
-{{-- =========================================================
-     MODAL DETALLE
-========================================================= --}}
-
-@if(isset($procesado) && $procesado)
-
-<div class="modal fade" id="modalDetalle" tabindex="-1" aria-labelledby="modalDetalleTitulo" aria-hidden="true">
-
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-
-        <div class="modal-content border-0 shadow-lg">
-
-
-            {{-- HEADER --}}
-
-            <div class="modal-header">
-
-                <div>
-
-                    <h5 class="modal-title fw-bold" id="modalDetalleTitulo">
-
-                        <i class="ti ti-list-details me-2" style="color: #1E5B66;"></i>
-
-                        Detalle
-
-                    </h5>
-
-                    <small class="text-muted" id="modalDetalleSubtitulo">
-
-                        Movimientos encontrados
-
-                    </small>
-
-                </div>
-
-
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-
-            </div>
-
-
-            {{-- BODY --}}
-
-            <div class="modal-body">
-
-
-                {{-- =====================================
-                     RESUMEN
-                ====================================== --}}
-
-                <div class="row g-3 mb-4">
-
-
-                    {{-- CANTIDAD --}}
-
-                    <div class="col-md-4">
-
-                        <div class="detalle-resumen">
-
-                            <div class="text-muted small">
-
-                                Movimientos
-
-                            </div>
-
-                            <div class="fs-4 fw-bold" id="detalleCantidad">
-                                0
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    {{-- IMPORTE --}}
-
-                    <div class="col-md-4">
-
-                        <div class="detalle-resumen">
-
-                            <div class="text-muted small">
-
-                                Importe
-
-                            </div>
-
-                            <div class="fs-4 fw-bold" id="detalleImporte">
-                                $0.00
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    {{-- TOTAL --}}
-
-                    <div class="col-md-4">
-
-                        <div class="detalle-resumen">
-
-                            <div class="text-muted small">
-
-                                Total
-
-                            </div>
-
-                            <div class="fs-4 fw-bold text-primary" id="detalleTotal">
-                                $0.00
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                {{-- =====================================
-                     TABLA DETALLE
-                ====================================== --}}
-
-                <div class="table-responsive">
-
-                    <table class="table table-hover align-middle mb-0">
-
-                        <thead class="table-light">
-
-                            <tr>
-
-                                <th>Recibo</th>
-
-                                <th>Fecha</th>
-
-                                <th>Concepto</th>
-
-                                <th class="text-center">
-                                    Cantidad
-                                </th>
-
-                                <th class="text-end">
-                                    Importe
-                                </th>
-
-                                <th class="text-end">
-                                    Recargo
-                                </th>
-
-                                <th class="text-end">
-                                    Total
-                                </th>
-
-                                <th>Usuario</th>
-
-                                <th>Hora</th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody id="detalleTabla">
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </div>
-
-
-            {{-- FOOTER --}}
-
-            <div class="modal-footer">
-
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-
-                    <i class="fa-solid fa-xmark me-1"></i>
-
-                    Cerrar
-
-                </button>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-@endif
-
-
-{{-- =========================================================
-     ESTILOS
-========================================================= --}}
-
-<style>
-/* ============================================
-   TARJETAS RESUMEN
-============================================ */
-
-.resumen-card {
-
-    transition:
-        transform .2s ease,
-        box-shadow .2s ease;
-
-}
-
-
-.resumen-card:hover {
-
-    transform: translateY(-3px);
-
-    box-shadow:
-        0 .5rem 1rem rgba(0, 0, 0, .12) !important;
-
-}
-
-
-/* ============================================
-   TARJETAS CLICKEABLES
-============================================ */
-
-.resumen-clickable {
-
-    cursor: pointer;
-
-    user-select: none;
-
-}
-
-
-.resumen-clickable:hover {
-
-    transform: translateY(-5px);
-
-    box-shadow:
-        0 .75rem 1.5rem rgba(0, 0, 0, .16) !important;
-
-}
-
-
-.resumen-clickable:active {
-
-    transform: translateY(-2px);
-
-}
-
-
-/* ============================================
-   ENLACE VER DETALLES
-============================================ */
-
-.detalle-link {
-
-    font-size: .85rem;
-
-    font-weight: 600;
-
-    color: #0d6efd;
-
-    opacity: .85;
-
-    transition:
-        opacity .2s ease;
-
-}
-
-
-.resumen-clickable:hover .detalle-link {
-
-    opacity: 1;
-
-}
-
-
-/* ============================================
-   ICONOS
-============================================ */
-
-.resumen-icon {
-
-    width: 48px;
-
-    height: 48px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    border-radius: 12px;
-
-    font-size: 20px;
-
-}
-
-
-/* ============================================
-   TABLA PRINCIPAL
-============================================ */
-
-.table th {
-
-    white-space: nowrap;
-
-    font-size: .85rem;
-
-}
-
-
-.table td {
-
-    font-size: .9rem;
-
-}
-
-
-/* ============================================
-   BOTÓN ANALIZAR
-============================================ */
-
-#btnAnalizar {
-
-    height: 42px;
-
-}
-
-
-/* ============================================
-   MODAL
-============================================ */
-
-#modalDetalle .modal-content {
-
-    border-radius: 16px;
-
-    overflow: hidden;
-
-}
-
-
-#modalDetalle .modal-header {
-
-    padding: 1.25rem 1.5rem;
-
-    background: #f8f9fa;
-
-    border-bottom: 1px solid #e9ecef;
-
-}
-
-
-#modalDetalle .modal-body {
-
-    padding: 1.5rem;
-
-}
-
-
-/* ============================================
-   RESUMEN DENTRO DEL MODAL
-============================================ */
-
-.detalle-resumen {
-
-    background: #f8f9fa;
-
-    border-radius: 12px;
-
-    padding: 15px 18px;
-
-    border: 1px solid #e9ecef;
-
-}
-
-
-/* ============================================
-   TABLA DEL MODAL
-============================================ */
-
-#modalDetalle .table th {
-
-    white-space: nowrap;
-
-    font-size: .82rem;
-
-}
-
-
-#modalDetalle .table td {
-
-    font-size: .88rem;
-
-}
-
-
-#modalDetalle .table tbody tr {
-
-    transition:
-        background-color .15s ease;
-
-}
-
-
-/* ============================================
-   RESPONSIVE
-============================================ */
-
-@media (max-width: 768px) {
-
-    #modalDetalle .modal-body {
-
-        padding: 1rem;
-
-    }
-
-    #modalDetalle .table {
-
-        min-width: 900px;
-
-    }
-
-}
-</style>
-
-
-{{-- =========================================================
-     JAVASCRIPT
-========================================================= --}}
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
+    // Al enviar: evitar doble envío y avisar que se está procesando
+    const form = document.getElementById('formQrp');
+    const boton = document.getElementById('btnAnalizar');
+    form?.addEventListener('submit', () => {
+        if (!document.getElementById('archivo_qrp')?.files.length) return;
+        boton.disabled = true;
+        boton.innerHTML = '<span class="tw:inline-block tw:size-4 tw:animate-spin tw:rounded-full tw:border-2 tw:border-white/40 tw:border-t-white" aria-hidden="true"></span> Analizando…';
+    });
 
+    const filas = [...document.querySelectorAll('.fila-mov')];
+    if (!filas.length) return;
 
-    /* ============================================
-       FORMULARIO QRP
-    ============================================ */
+    const moneda = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+    const sinAcentos = t => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    const buscar = document.getElementById('buscarMovimiento');
+    let filtro = '';
 
-    const formulario =
-        document.getElementById('formQrp');
-
-
-    const archivo =
-        document.getElementById('archivo_qrp');
-
-
-    const boton =
-        document.getElementById('btnAnalizar');
-
-
-    if (formulario) {
-
-        formulario.addEventListener('submit', function() {
-
-            if (!archivo || !archivo.files.length) {
-
-                return;
-
+    function aplicar() {
+        const q = sinAcentos(buscar.value.trim());
+        let n = 0, importe = 0, recargo = 0, total = 0;
+        filas.forEach(f => {
+            const ok = (!filtro || f.dataset.categoria === filtro) && (!q || f.dataset.busqueda.includes(q));
+            f.hidden = !ok;
+            if (ok) {
+                n++;
+                importe += +f.dataset.importe;
+                recargo += +f.dataset.recargo;
+                total += +f.dataset.total;
             }
-
-
-            boton.disabled = true;
-
-
-            boton.innerHTML = `
-
-                <span
-                    class="spinner-border spinner-border-sm me-2"
-                    role="status"
-                    aria-hidden="true"
-                ></span>
-
-                Analizando QRP...
-
-            `;
-
         });
-
+        document.getElementById('lblConteo').textContent = `Mostrando ${n} de ${filas.length}`;
+        document.getElementById('sumImporte').textContent = moneda.format(importe);
+        document.getElementById('sumRecargo').textContent = moneda.format(recargo);
+        document.getElementById('sumTotal').textContent = moneda.format(total);
+        document.getElementById('filaSinResultados').hidden = n > 0;
     }
 
-
-    /* ============================================
-       ACCESIBILIDAD DE LAS TARJETAS
-    ============================================ */
-
-    document
-        .querySelectorAll('.resumen-clickable')
-        .forEach(function(tarjeta) {
-
-            tarjeta.addEventListener('keydown', function(event) {
-
-                if (
-                    event.key === 'Enter' ||
-                    event.key === ' '
-                ) {
-
-                    event.preventDefault();
-
-                    tarjeta.click();
-
-                }
-
-            });
-
+    function elegir(valor) {
+        filtro = valor;
+        document.querySelectorAll('.btn-filtro').forEach(b => {
+            const activo = b.dataset.filtro === valor;
+            b.classList.toggle('activa', activo);
+            b.setAttribute('aria-pressed', activo);
         });
+        document.querySelectorAll('.fila-desglose').forEach(r => r.classList.toggle('activa', !!valor && r.dataset.filtro === valor));
+        aplicar();
+    }
 
+    document.querySelectorAll('.btn-filtro').forEach(b => b.addEventListener('click', () => elegir(b.dataset.filtro)));
+
+    // Las filas del desglose también filtran; un segundo clic regresa a "Todos"
+    document.querySelectorAll('.fila-desglose').forEach(r => {
+        const accion = () => {
+            elegir(filtro === r.dataset.filtro ? '' : r.dataset.filtro);
+            document.getElementById('tablaMovimientos').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+        r.addEventListener('click', accion);
+        r.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); accion(); } });
+    });
+
+    buscar.addEventListener('input', aplicar);
 });
-
-
-/* =========================================================
-   DATOS DE LOS MOVIMIENTOS
-========================================================= */
-
-const movimientosQrp = @json($movimientos ?? []);
-
-
-/* =========================================================
-   MOSTRAR DETALLE
-========================================================= */
-
-function mostrarDetalle(categoria) {
-
-
-    /* ============================================
-       FILTRAR MOVIMIENTOS
-    ============================================ */
-
-    const movimientos = movimientosQrp.filter(function(movimiento) {
-
-        return movimiento.categoria === categoria;
-
-    });
-
-
-    /* ============================================
-       CONFIGURACIÓN DEL TÍTULO
-    ============================================ */
-
-    let titulo = 'Detalle';
-
-    let icono = 'fa-list';
-
-
-    if (categoria === 'Colegiatura') {
-
-        titulo = 'Detalle de Colegiaturas';
-
-        icono = 'fa-graduation-cap';
-
-    } else if (categoria === 'Examen') {
-
-        titulo = 'Detalle de Exámenes';
-
-        icono = 'fa-file-pen';
-
-    } else if (categoria === 'Otros') {
-
-        titulo = 'Detalle de Otros conceptos';
-
-        icono = 'fa-folder';
-
-    }
-
-
-    /* ============================================
-       ACTUALIZAR TÍTULO
-    ============================================ */
-
-    const tituloElemento =
-        document.getElementById('modalDetalleTitulo');
-
-
-    tituloElemento.innerHTML = `
-
-        <i class="fa-solid ${icono} me-2"></i>
-
-        ${escapeHtml(titulo)}
-
-    `;
-
-
-    /* ============================================
-       SUBTÍTULO
-    ============================================ */
-
-    document
-        .getElementById('modalDetalleSubtitulo')
-        .textContent =
-        `${movimientos.length} movimiento(s) encontrado(s)`;
-
-
-    /* ============================================
-       CALCULAR TOTALES
-    ============================================ */
-
-    let importe = 0;
-
-    let total = 0;
-
-
-    movimientos.forEach(function(movimiento) {
-
-        importe += parseFloat(
-            movimiento.importe || 0
-        );
-
-
-        total += parseFloat(
-            movimiento.total || 0
-        );
-
-    });
-
-
-    /* ============================================
-       MOSTRAR RESUMEN
-    ============================================ */
-
-    document
-        .getElementById('detalleCantidad')
-        .textContent =
-        movimientos.length;
-
-
-    document
-        .getElementById('detalleImporte')
-        .textContent =
-        formatoMoneda(importe);
-
-
-    document
-        .getElementById('detalleTotal')
-        .textContent =
-        formatoMoneda(total);
-
-
-    /* ============================================
-       TABLA
-    ============================================ */
-
-    const tabla =
-        document.getElementById('detalleTabla');
-
-
-    tabla.innerHTML = '';
-
-
-    /* ============================================
-       SIN MOVIMIENTOS
-    ============================================ */
-
-    if (!movimientos.length) {
-
-        tabla.innerHTML = `
-
-            <tr>
-
-                <td
-                    colspan="9"
-                    class="text-center text-muted py-5"
-                >
-
-                    <i
-                        class="fa-solid fa-inbox fa-2x mb-3"
-                    ></i>
-
-                    <div>
-
-                        No existen movimientos
-                        para esta categoría.
-
-                    </div>
-
-                </td>
-
-            </tr>
-
-        `;
-
-    }
-
-
-    /* ============================================
-       MOSTRAR MOVIMIENTOS
-    ============================================ */
-    else {
-
-        movimientos.forEach(function(movimiento) {
-
-
-            const fila =
-                document.createElement('tr');
-
-
-            fila.innerHTML = `
-
-                <td>
-
-                    <span class="fw-semibold">
-
-                        ${escapeHtml(
-                            movimiento.recibo ?? ''
-                        )}
-
-                    </span>
-
-                </td>
-
-
-                <td>
-
-                    ${escapeHtml(
-                        movimiento.fecha ?? ''
-                    )}
-
-                </td>
-
-
-                <td>
-
-                    ${escapeHtml(
-                        movimiento.concepto ?? ''
-                    )}
-
-                </td>
-
-
-                <td class="text-center">
-
-                    ${escapeHtml(
-                        String(
-                            movimiento.cantidad_colegiaturas ?? 0
-                        )
-                    )}
-
-                </td>
-
-
-                <td class="text-end">
-
-                    ${formatoMoneda(
-                        movimiento.importe
-                    )}
-
-                </td>
-
-
-                <td class="text-end">
-
-                    ${formatoMoneda(
-                        movimiento.recargo
-                    )}
-
-                </td>
-
-
-                <td class="text-end fw-semibold">
-
-                    ${formatoMoneda(
-                        movimiento.total
-                    )}
-
-                </td>
-
-
-                <td>
-
-                    ${escapeHtml(
-                        movimiento.usuario ?? ''
-                    )}
-
-                </td>
-
-
-                <td>
-
-                    ${escapeHtml(
-                        movimiento.hora ?? ''
-                    )}
-
-                </td>
-
-            `;
-
-
-            tabla.appendChild(fila);
-
-        });
-
-    }
-
-
-    /* ============================================
-       ABRIR MODAL
-    ============================================ */
-
-    const modalElemento =
-        document.getElementById('modalDetalle');
-
-
-    if (!modalElemento) {
-
-        return;
-
-    }
-
-
-    const modal =
-        bootstrap.Modal.getOrCreateInstance(
-            modalElemento
-        );
-
-
-    modal.show();
-
-}
-
-
-/* =========================================================
-   FORMATO DE MONEDA
-========================================================= */
-
-function formatoMoneda(valor) {
-
-    const numero =
-        parseFloat(valor || 0);
-
-
-    return new Intl.NumberFormat(
-        'es-MX', {
-            style: 'currency',
-            currency: 'MXN',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }
-    ).format(numero);
-
-}
-
-
-/* =========================================================
-   ESCAPAR HTML
-========================================================= */
-
-function escapeHtml(valor) {
-
-    const div =
-        document.createElement('div');
-
-
-    div.textContent =
-        String(valor ?? '');
-
-
-    return div.innerHTML;
-
-}
 </script>
 
 @endsection

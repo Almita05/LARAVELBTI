@@ -15,7 +15,7 @@
     background: rgba(255, 255, 255, .08);
     backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
+    border-radius: 0;
     overflow: hidden;
     box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
     padding: .5%;
@@ -115,7 +115,7 @@
 
 .glass-modal {
     border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
+    border-radius: 0;
     overflow: hidden;
     color: white;
     backdrop-filter: blur(12px);
@@ -136,7 +136,7 @@
 .accordion-item {
     background: rgba(255, 255, 255, .06);
     border: none;
-    border-radius: 14px;
+    border-radius: 0;
     overflow: hidden;
 }
 

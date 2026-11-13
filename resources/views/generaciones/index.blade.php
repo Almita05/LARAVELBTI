@@ -11,7 +11,7 @@
             color: rgb(49, 125, 146);
             font-size: 0.8rem;
             padding: 6px 12px;
-            border-radius: 8px;
+            border-radius: 0;
             display: inline-block;
             margin-top: 8px;
             font-weight: 500;
@@ -96,7 +96,7 @@
             
             <div class="modal-header">
                 <h5 class="modal-title" id="modalTitulo">
-                    <i class="ti ti-school me-2" style="color: #1E5B66;"></i>Alta de Generación
+                    <i class="ti ti-school me-2" style="color: #26687B;"></i>Alta de Generación
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -409,7 +409,7 @@
         modoGeneracion = 'crear';
         document.getElementById('formGeneracion').reset();
         document.getElementById('inputGeneracionId').value = '';
-        document.getElementById('modalTitulo').innerHTML = '<i class="ti ti-school me-2" style="color: #1E5B66;"></i> Alta de Generación';
+        document.getElementById('modalTitulo').innerHTML = '<i class="ti ti-school me-2" style="color: #26687B;"></i> Alta de Generación';
         document.getElementById('boxSugerenciaConsecutivo').style.display = 'none';
         document.getElementById('inputAnioInicio').value = new Date().getFullYear();
         
@@ -443,7 +443,7 @@
         document.getElementById('selectMesFin').value = gen.mesFin || 'JULIO';
         document.getElementById('inputAnioFin').value = gen.aniofin || gen.anioFin || '';
 
-        document.getElementById('modalTitulo').innerHTML = '<i class="ti ti-pencil me-2" style="color: #1E5B66;"></i> Editar Generación';
+        document.getElementById('modalTitulo').innerHTML = '<i class="ti ti-pencil me-2" style="color: #26687B;"></i> Editar Generación';
         document.getElementById('boxSugerenciaConsecutivo').style.display = 'none';
 
         // Asegurar que al editar se puedan corregir los campos de inicio

@@ -18,7 +18,7 @@
     </div>
 
     <!-- Barra de Selección de Grupo -->
-    <div class="card border-0 mb-4 shadow-sm" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important; position: relative; z-index: 100;">
+    <div class="card border-0 mb-4 shadow-sm" style="border-radius: 0; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important; position: relative; z-index: 100;">
         <div class="card-body p-4 d-flex flex-column flex-md-row align-items-center gap-3">
             <div class="d-flex align-items-center gap-2 flex-grow-1 w-100">
                 <label class="text-muted fw-semibold mb-0" style="font-size: 0.88rem; min-width: 140px;">Seleccionar Grupo:</label>
@@ -41,7 +41,7 @@
         
         <!-- Pestañas del Reporte -->
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-            <ul class="nav nav-pills border-0 p-1" style="border-radius: 12px; gap: 4px; background: rgba(0, 0, 0, 0.06); border: 1px solid rgba(49, 125, 146, 0.1) !important;">
+            <ul class="nav nav-pills border-0 p-1" style="border-radius: 0; gap: 4px; background: rgba(0, 0, 0, 0.06); border: 1px solid rgba(49, 125, 146, 0.1) !important;">
                 <li class="nav-item">
                     <button class="nav-link active px-4 py-2 border-0 rounded-3 fw-medium" id="tab-materias" onclick="alternarTab('MATERIAS')" style="font-size: 0.82rem; transition: 0.2s;">
                         <i class="fa-solid fa-book me-1"></i>Porcentaje por Asignatura
@@ -65,7 +65,7 @@
         <!-- VISTA 2: HISTORIAL POR ALUMNO -->
         <div id="vista-alumnos" class="d-none">
             <!-- Barra de Selección de Alumno -->
-            <div class="card border-0 mb-4 shadow-sm" style="border-radius: 16px; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important; position: relative; z-index: 100;">
+            <div class="card border-0 mb-4 shadow-sm" style="border-radius: 0; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important; position: relative; z-index: 100;">
                 <div class="card-body p-4 d-flex flex-column flex-md-row align-items-center gap-3">
                     <div class="d-flex align-items-center gap-2 flex-grow-1 w-100">
                         <label class="text-muted fw-semibold mb-0" style="font-size: 0.88rem; min-width: 140px;">Seleccionar Alumno:</label>
@@ -112,7 +112,7 @@
     
     /* Card Premium */
     .card-materia-reporte {
-        border-radius: 20px; 
+        border-radius: 0; 
         background: rgba(255, 255, 255, 0.65); 
         border: 1px solid rgba(49, 125, 146, 0.18) !important; 
         backdrop-filter: blur(12px); 
@@ -139,7 +139,7 @@
         font-size: 0.68rem;
         font-weight: 700;
         padding: 5px 10px;
-        border-radius: 12px;
+        border-radius: 0;
         display: inline-flex;
         align-items: center;
         gap: 4px;
@@ -186,7 +186,7 @@
         top: 6px;
         width: 12px;
         height: 12px;
-        border-radius: 50%;
+        border-radius:0;
         background-color: rgb(49, 125, 146);
         border: 2px solid white;
     }
@@ -461,7 +461,7 @@
         // Header del alumno
         const headerCard = document.createElement('div');
         headerCard.className = 'card border-0 mb-4 shadow-sm';
-        headerCard.style = 'border-radius: 16px; background-color: rgba(49, 125, 146, 0.05);';
+        headerCard.style = 'border-radius: 0; background-color: rgba(49, 125, 146, 0.05);';
         headerCard.innerHTML = `
             <div class="card-body p-4 d-flex align-items-center justify-content-between">
                 <div>
@@ -481,14 +481,14 @@
             dayDiv.innerHTML = `
                 <div class="d-flex align-items-baseline mb-3">
                     <h5 class="fw-bold text-dark mb-0 me-2" style="font-size: 1rem;">${day.fecha}</h5>
-                    <span class="text-muted fw-semibold" style="font-size: 0.8rem;">• ${day.dia_nombre}</span>
+                    <span class="text-muted fw-semibold" style="font-size: 0.8rem;">${day.dia_nombre}</span>
                 </div>
             `;
 
             // Listado de clases programadas
             const card = document.createElement('div');
             card.className = 'card border-0 shadow-sm overflow-hidden';
-            card.style = 'border-radius: 14px;';
+            card.style = 'border-radius: 0;';
             
             let classesListHtml = '';
             day.clases.forEach((clase, idx) => {

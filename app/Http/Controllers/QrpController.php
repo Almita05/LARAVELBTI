@@ -129,10 +129,14 @@ class QrpController extends Controller
 
         try {
 
-            $python = 'python3';
+            // Intérprete configurable (QRP_PYTHON en .env). En Windows, "python3"/"python" suelen
+            // resolver al alias de la Microsoft Store, que no ejecuta nada; por eso el valor por
+            // defecto ahí es el lanzador "py -3".
+            $python = config('services.qrp.python')
+                ?: (PHP_OS_FAMILY === 'Windows' ? 'py -3' : 'python3');
 
             $comando =
-                $python
+                (is_file($python) ? escapeshellarg($python) : $python)
                 . ' '
                 . escapeshellarg($scriptPython)
                 . ' '
@@ -174,6 +178,17 @@ class QrpController extends Controller
             // ========================================
 
             if ($codigoSalida !== 0) {
+
+                // Intérprete inexistente (alias de la Microsoft Store, comando no reconocido, etc.)
+                if (preg_match('/Python was not found|no se reconoce|is not recognized|not found|No such file/i', $resultadoPython)) {
+                    return back()
+                        ->withErrors([
+                            'archivo_qrp' =>
+                                'El servidor no encontró Python para analizar el archivo. '
+                                . 'Configura QRP_PYTHON en el archivo .env con la ruta completa de python.exe '
+                                . '(intérprete usado ahora: ' . $python . ').'
+                        ]);
+                }
 
                 return back()
                     ->withErrors([

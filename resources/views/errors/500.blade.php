@@ -25,7 +25,7 @@
         .error-container {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
+            border-radius: 0;
             padding: 40px;
             max-width: 550px;
             width: 100%;
@@ -37,7 +37,7 @@
             width: 80px;
             height: 80px;
             background-color: #ebf8ff;
-            border-radius: 50%;
+            border-radius:0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -66,7 +66,7 @@
             color: #ffffff;
             text-decoration: none;
             padding: 12px 30px;
-            border-radius: 10px;
+            border-radius: 0;
             font-weight: 600;
             font-size: 15px;
             transition: all 0.3s ease;

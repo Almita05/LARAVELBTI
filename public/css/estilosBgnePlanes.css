@@ -1,16 +1,16 @@
 /* ========================================================
    ESTILOS DE PLANES DE ESTUDIO BGNE
    Design System: shadcn/ui & Radix UI Tokens
-   Colores: #1E5B66 (Teal institucional), #0F172A (Texto)
+   Colores: #26687B (Teal institucional), #0F172A (Texto)
    Tipografía: Inter & JetBrains Mono
    Iconografía: Tabler Icons (ti ti-*)
 ======================================================== */
 
 :root {
-    --bg-primary: #1E5B66;
-    --bg-primary-hover: #16464F;
-    --bg-primary-subtle: #F0F7F8;
-    --border-primary-subtle: #CBE4E8;
+    --bg-primary: #26687B;
+    --bg-primary-hover: #1F5565;
+    --bg-primary-subtle: #EFF6F7;
+    --border-primary-subtle: #BBDBE1;
     --border-color: #E2E8F0;
     --card-bg: #FFFFFF;
     --text-primary: #0F172A;
@@ -47,7 +47,7 @@
     color: var(--text-secondary);
     height: 38px;
     padding: 0 14px;
-    border-radius: var(--radius-md);
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 500;
     display: inline-flex;
@@ -86,7 +86,7 @@
     color: var(--bg-primary);
     border: 1px solid var(--border-primary-subtle);
     padding: 6px 14px;
-    border-radius: 999px;
+    border-radius: 0;
     font-size: 0.75rem;
     font-weight: 600;
     display: inline-flex;
@@ -98,7 +98,7 @@
 .planes-main-card {
     background: #FFFFFF;
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
+    border-radius: 0;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     padding: 24px;
 }
@@ -122,7 +122,7 @@
 
 .custom-tabs .nav-link {
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: 0;
     background: #FFFFFF;
     color: var(--text-secondary);
     font-size: 0.875rem;
@@ -146,14 +146,14 @@
     border-color: var(--bg-primary) !important;
     color: #FFFFFF !important;
     font-weight: 600;
-    box-shadow: 0 2px 4px rgba(30, 91, 102, 0.18);
+    box-shadow: 0 2px 4px rgba(38, 104, 123, 0.18);
 }
 
 /* Tarjetas de Materia */
 .materia-card {
     background: #FFFFFF !important;
     border: 1px solid var(--border-color) !important;
-    border-radius: var(--radius-lg) !important;
+    border-radius: 0!important;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
     transition: all 0.2s ease !important;
     height: 100%;
@@ -183,7 +183,7 @@
 .materia-icon-box {
     width: 38px;
     height: 38px;
-    border-radius: var(--radius-md);
+    border-radius: 0;
     background: var(--bg-primary-subtle);
     border: 1px solid var(--border-primary-subtle);
     color: var(--bg-primary);
@@ -221,7 +221,7 @@
     background: var(--bg-primary);
     color: #FFFFFF !important;
     border: 1px solid var(--bg-primary);
-    border-radius: 6px;
+    border-radius: 0;
     padding: 8px 12px;
     font-size: 0.8125rem;
     font-weight: 500;
@@ -245,7 +245,7 @@
     background: #FFFFFF;
     color: var(--text-secondary) !important;
     border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: 0;
     padding: 8px 12px;
     font-size: 0.8125rem;
     font-weight: 500;
@@ -271,7 +271,7 @@
 .matriz-excel-card {
     background: #FFFFFF;
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
+    border-radius: 0;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     padding: 20px;
     margin-bottom: 24px;
@@ -301,7 +301,7 @@
     color: #166534;
     border: 1px solid #BBF7D0;
     padding: 4px 10px;
-    border-radius: 999px;
+    border-radius: 0;
     font-size: 0.72rem;
     font-weight: 600;
     display: inline-flex;
@@ -312,7 +312,7 @@
 .matriz-excel-wrapper {
     background: #FFFFFF;
     border: 1.5px solid #000000;
-    border-radius: 8px;
+    border-radius: 0;
     overflow-x: auto;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
 }
@@ -506,7 +506,7 @@
 
 .mes-section-badge {
     padding: 5px 14px;
-    border-radius: 999px;
+    border-radius: 0;
     font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.03em;

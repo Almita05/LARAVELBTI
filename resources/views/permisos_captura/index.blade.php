@@ -4,973 +4,364 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<style>
-/* ==========================================================================
-   PORTAL DE PERMISOS DE CAPTURA - DESIGN SYSTEM (Linear / shadcn/ui)
-   ========================================================================== */
+@php
+    /*
+     * NOTA: los elementos que el JS muestra/oculta con style.display (spinners, wrappers de tabla,
+     * estados vacíos, tarjetas de periodo) no llevan utilidades de display de Tailwind (son !important).
+     */
+    $card      = ' tw:border tw:border-slate-200 tw:bg-white tw:shadow-card';
+    $label     = 'tw:mb-1.5 tw:block tw:text-[0.8125rem] tw:font-medium tw:text-slate-700';
+    $input     = 'tw:h-10 tw:w-full tw:border tw:border-slate-200 tw:bg-white tw:px-3 tw:text-sm tw:text-slate-900 tw:shadow-xs tw:outline-none tw:transition tw:placeholder:text-slate-400 tw:hover:border-slate-300 tw:focus:border-brand-500 tw:focus:ring-4 tw:focus:ring-brand-500/10 tw:disabled:cursor-not-allowed tw:disabled:bg-slate-50 tw:disabled:text-slate-400';
+    $inputSm   = 'tw:h-9 tw:w-full tw:border tw:border-slate-200 tw:bg-white tw:px-2.5 tw:text-[0.8125rem] tw:text-slate-900 tw:shadow-xs tw:outline-none tw:transition tw:focus:border-brand-500 tw:focus:ring-4 tw:focus:ring-brand-500/10 tw:disabled:cursor-not-allowed tw:disabled:bg-slate-50 tw:disabled:text-slate-400 tw:disabled:shadow-none';
+    $btnBase   = 'tw:inline-flex tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2 tw:text-sm tw:font-semibold tw:transition-all tw:duration-150 tw:focus-visible:outline-2 tw:focus-visible:outline-offset-2 tw:focus-visible:outline-brand-500 tw:active:scale-[0.98]';
+    $btnPrimary   = $btnBase . ' tw:h-10 tw:border-0 tw:bg-brand-700 tw:px-4 tw:text-white tw:shadow-brand tw:hover:bg-brand-800';
+    $btnSecondary = $btnBase . ' tw:h-10 tw:border tw:border-slate-200 tw:bg-white tw:px-4 tw:text-slate-700 tw:shadow-xs tw:hover:bg-slate-50';
+    $tab  = 'tw:group tw:inline-flex tw:shrink-0 tw:cursor-pointer tw:items-center tw:gap-2 tw:border-0 tw:border-b-2 tw:border-transparent tw:bg-transparent tw:px-3 tw:pt-2 tw:pb-3 tw:text-[0.8125rem] tw:font-medium tw:whitespace-nowrap tw:text-slate-500 tw:transition-colors tw:hover:text-slate-900 tw:aria-selected:border-brand-700 tw:aria-selected:font-semibold tw:aria-selected:text-brand-700';
+    $th   = 'tw:px-4 tw:py-2.5 tw:text-left tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-500';
+    $searchWrap = 'tw:relative tw:w-full tw:sm:w-80';
+    $search = 'tw:h-9 tw:w-full tw:border tw:border-slate-200 tw:bg-white tw:pr-3 tw:pl-9 tw:text-[0.8125rem] tw:text-slate-900 tw:shadow-xs tw:outline-none tw:transition tw:placeholder:text-slate-400 tw:focus:border-brand-500 tw:focus:ring-4 tw:focus:ring-brand-500/10';
+    $spinner = '<span class="tw:inline-block tw:size-6 tw:animate-spin tw:rounded-full tw:border-2 tw:border-slate-200 tw:border-t-brand-700"></span>';
 
-:root {
-    --brand-primary: #1E5B66;
-    --brand-primary-hover: #184A54;
-    --brand-primary-subtle: #F0F7F8;
-    --border-subtle: #E2E8F0;
-    --bg-canvas: #F8FAFC;
-    --text-primary: #0F172A;
-    --text-secondary: #475569;
-    --text-muted: #64748B;
-}
+    $periodos = [
+        ['key' => 'p1',             'cap' => 'P1',             'card' => 'cardAjusteP1',        'titulo' => '1er parcial',             'icon' => 'circle-dot',   'tituloId' => 'lblGrupoP1Title'],
+        ['key' => 'p2',             'cap' => 'P2',             'card' => 'cardAjusteP2',        'titulo' => '2do parcial',             'icon' => 'circle-dot'],
+        ['key' => 'p3',             'cap' => 'P3',             'card' => 'cardAjusteP3',        'titulo' => '3er parcial',             'icon' => 'circle-dot'],
+        ['key' => 'semestral',      'cap' => 'Semestral',      'card' => 'cardAjusteSemestral', 'titulo' => 'Examen semestral / final', 'icon' => 'file-check'],
+        ['key' => 'extraordinario', 'cap' => 'Extraordinario', 'card' => 'cardAjusteExtraordinario', 'titulo' => 'Examen extraordinario', 'icon' => 'zap'],
+    ];
+@endphp
 
-/* Page Header */
-.permisos-page-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-.permisos-page-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #0F172A;
-    margin: 0 0 4px 0;
-    letter-spacing: -0.01em;
-}
-.permisos-page-subtitle {
-    font-size: 0.875rem;
-    color: #64748B;
-    margin: 0;
-}
+<div class="tw:mx-auto tw:flex tw:max-w-[1600px] tw:flex-col tw:gap-6">
 
-/* Primary Button SaaS */
-.btn-primary-saas {
-    background: #1E5B66 !important;
-    color: #FFFFFF !important;
-    height: 36px;
-    padding: 0 16px;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border: none !important;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background 0.15s ease, box-shadow 0.15s ease;
-}
-.btn-primary-saas:hover {
-    background: #184A54 !important;
-    color: #FFFFFF !important;
-    box-shadow: 0 2px 6px rgba(30, 91, 102, 0.25);
-}
-.btn-primary-saas i {
-    font-size: 16px;
-    line-height: 1;
-}
-
-/* Segmented Tabs Control */
-.segmented-tabs-wrapper {
-    display: inline-flex;
-    background: #F1F5F9;
-    padding: 4px;
-    border-radius: 8px;
-    border: 1px solid #E2E8F0;
-    margin-bottom: 20px;
-    gap: 4px;
-    max-width: 100%;
-    overflow-x: auto;
-}
-.segmented-tab {
-    height: 34px;
-    padding: 0 14px;
-    border-radius: 6px;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: #475569;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.15s ease;
-}
-.segmented-tab:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.6);
-    color: #0F172A;
-}
-.segmented-tab.active {
-    background: #FFFFFF !important;
-    color: #1E5B66 !important;
-    font-weight: 600 !important;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
-}
-.segmented-tab i {
-    font-size: 16px;
-    line-height: 1;
-}
-
-/* Unified Card Container */
-.card-unified {
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-    overflow: hidden;
-}
-
-/* Filters Header Bar */
-.filters-header-bar {
-    display: grid;
-    grid-template-columns: 1fr 260px;
-    gap: 12px;
-    padding: 16px 20px;
-    border-bottom: 1px solid #E2E8F0;
-    background: #FFFFFF;
-    align-items: center;
-}
-@media (max-width: 768px) {
-    .filters-header-bar {
-        grid-template-columns: 1fr;
-    }
-}
-.filter-search-wrapper {
-    position: relative;
-    width: 100%;
-}
-.filter-search-wrapper .search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #94A3B8;
-    font-size: 16px;
-    pointer-events: none;
-    line-height: 1;
-}
-.filter-input-search {
-    height: 38px;
-    padding: 0 12px 0 36px;
-    border: 1px solid #E2E8F0;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    background: #F8FAFC;
-    width: 100%;
-    color: #0F172A;
-    transition: all 0.15s ease;
-}
-.filter-input-search:focus {
-    background: #FFFFFF;
-    border-color: #1E5B66;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12);
-}
-.filter-select {
-    height: 38px;
-    padding: 0 32px 0 12px;
-    border: 1px solid #E2E8F0;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    color: #0F172A;
-    background-color: #FFFFFF;
-    width: 100%;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23475569' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 14px 10px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-.filter-select:focus {
-    border-color: #1E5B66;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12);
-}
-
-/* Glass Table Base */
-.glass-table {
-    width: 100%;
-    margin-bottom: 0;
-    border-collapse: separate;
-    border-spacing: 0;
-}
-.glass-table th {
-    background: #F8FAFC !important;
-    color: #475569 !important;
-    font-size: 0.75rem !important;
-    font-weight: 600 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.04em !important;
-    padding: 12px 16px !important;
-    border-bottom: 1px solid #E2E8F0 !important;
-    border-top: none !important;
-    white-space: nowrap !important;
-}
-.glass-table td {
-    padding: 12px 16px !important;
-    border-bottom: 1px solid #F1F5F9 !important;
-    border-top: none !important;
-    vertical-align: middle !important;
-    font-size: 0.8125rem !important;
-    color: #334155;
-    background: #FFFFFF;
-}
-.glass-table tr:hover td {
-    background-color: #F8FAFC;
-}
-.glass-table tr:last-child td {
-    border-bottom: none !important;
-}
-.table-danger-light td {
-    background-color: #FEF2F2 !important;
-}
-.table-danger-light:hover td {
-    background-color: #FEE2E2 !important;
-}
-
-/* Column Typography Tokens */
-.id-mono {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    color: #64748B;
-    font-weight: 500;
-}
-.docente-nombre-matriz {
-    font-weight: 600;
-    color: #0F172A;
-    text-transform: uppercase;
-    font-size: 0.8125rem;
-    letter-spacing: 0.01em;
-    display: block;
-}
-.badge-grupo-mono {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    font-weight: 600;
-    background: #F1F5F9;
-    color: #334155;
-    border: 1px solid #E2E8F0;
-    padding: 2px 8px;
-    border-radius: 6px;
-    white-space: nowrap;
-    display: inline-block;
-}
-.materia-nombre-matriz {
-    font-weight: 600;
-    color: #0F172A;
-    font-size: 0.8125rem;
-    line-height: 1.3;
-}
-.materia-clave-mono {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    color: #64748B;
-    margin-top: 2px;
-}
-.progress-text-row {
-    font-size: 0.75rem;
-    color: #475569;
-    margin-bottom: 6px;
-    display: flex;
-    justify-content: space-between;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 500;
-}
-.progress-track-saas {
-    height: 6px;
-    width: 100%;
-    background: #F1F5F9;
-    border-radius: 999px;
-    overflow: hidden;
-}
-.progress-fill-saas {
-    height: 100%;
-    border-radius: 999px;
-    transition: width 0.4s ease;
-}
-.fecha-limite-cell {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8125rem;
-    color: #334155;
-    font-weight: 500;
-}
-.fecha-limite-cell i {
-    color: #64748B;
-    font-size: 15px;
-    line-height: 1;
-}
-
-/* Soft Badges */
-.badge-matriz-soft {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    height: 24px;
-    padding: 0 10px;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    white-space: nowrap;
-    border: 1px solid transparent;
-    line-height: 1;
-}
-.badge-matriz-soft i {
-    font-size: 13px;
-    line-height: 1;
-}
-.badge-soft-warning {
-    background: #FFFBEB !important;
-    color: #B45309 !important;
-    border-color: #FDE68A !important;
-}
-.badge-soft-success {
-    background: #DCFCE7 !important;
-    color: #15803D !important;
-    border-color: #BBF7D0 !important;
-}
-.badge-soft-info {
-    background: #E0F2FE !important;
-    color: #0369A1 !important;
-    border-color: #BAE6FD !important;
-}
-.badge-soft-danger {
-    background: #FEE2E2 !important;
-    color: #B91C1C !important;
-    border-color: #FECACA !important;
-}
-.badge-soft-neutral {
-    background: #F1F5F9 !important;
-    color: #475569 !important;
-    border-color: #E2E8F0 !important;
-}
-
-/* Direct Action Buttons */
-.actions-cell-matriz {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-    white-space: nowrap;
-}
-.btn-action-prorroga {
-    height: 32px;
-    padding: 0 10px;
-    border-radius: 6px;
-    background: #F0F7F8;
-    border: 1px solid #CBE4E8;
-    color: #1E5B66;
-    font-size: 0.75rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    white-space: nowrap;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.15s ease;
-}
-.btn-action-prorroga i {
-    font-size: 15px;
-    line-height: 1;
-}
-.btn-action-prorroga:hover {
-    background: #1E5B66;
-    border-color: #1E5B66;
-    color: #FFFFFF;
-}
-.btn-action-notas {
-    height: 32px;
-    padding: 0 10px;
-    border-radius: 6px;
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
-    color: #334155;
-    font-size: 0.75rem;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    white-space: nowrap;
-    cursor: pointer;
-    text-decoration: none;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
-    transition: all 0.15s ease;
-}
-.btn-action-notas i {
-    font-size: 15px;
-    line-height: 1;
-    color: #64748B;
-}
-.btn-action-notas:hover {
-    background: #F8FAFC;
-    border-color: #CBD5E1;
-    color: #0F172A;
-}
-
-/* Ghost Buttons (Historial de Prórrogas) */
-.btn-ghost-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    background: transparent !important;
-    border: none !important;
-    color: #64748B !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    padding: 0;
-    text-decoration: none;
-}
-.btn-ghost-icon:hover {
-    background: #F1F5F9 !important;
-    color: #0F172A !important;
-}
-.btn-ghost-danger:hover {
-    background: #FEF2F2 !important;
-    color: #DC2626 !important;
-}
-.btn-ghost-icon i {
-    font-size: 16px !important;
-    line-height: 1 !important;
-    color: currentColor !important;
-}
-
-/* Modals & Switch Forms */
-.form-select-premium, .form-control-premium {
-    border-radius: 6px;
-    border: 1px solid #E2E8F0;
-    padding: 8px 12px;
-    font-size: 0.875rem;
-    transition: all 0.15s ease;
-}
-.form-select-premium:focus, .form-control-premium:focus {
-    border-color: #1E5B66;
-    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12);
-    outline: none;
-}
-.switch-premium {
-    position: relative;
-    display: inline-block;
-    width: 44px;
-    height: 22px;
-}
-.switch-premium input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-.slider-premium {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #CBD5E1;
-    transition: .25s ease;
-    border-radius: 22px;
-}
-.slider-premium:before {
-    position: absolute;
-    content: "";
-    height: 16px;
-    width: 16px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: .25s ease;
-    border-radius: 50%;
-}
-input:checked + .slider-premium {
-    background-color: #1E5B66;
-}
-input:checked + .slider-premium:before {
-    transform: translateX(22px);
-}
-</style>
-
-<div class="page-container">
-
-    {{-- Encabezado Principal --}}
-    <div class="permisos-page-header">
+    {{-- ===================== ENCABEZADO ===================== --}}
+    <header class="tw:flex tw:flex-col tw:gap-4 tw:lg:flex-row tw:lg:items-end tw:lg:justify-between">
         <div>
-            <h1 class="permisos-page-title">Portal de Permisos de Captura</h1>
-            <p class="permisos-page-subtitle">Administra los tiempos de captura, monitorea el avance de calificaciones y asigna prórrogas especiales.</p>
+            <h1 class="tw:m-0 tw:text-[1.5rem] tw:font-bold tw:tracking-tight tw:text-slate-900">Permisos de captura</h1>
+            <p class="tw:m-0 tw:mt-1 tw:text-sm tw:text-slate-500">Monitorea el avance de calificaciones, asigna prórrogas y define los periodos de captura por grupo.</p>
         </div>
+        <button type="button" class="{{ $btnPrimary }}" onclick="abrirModalAlta()">
+            <i data-lucide="calendar-plus" class="tw:size-4"></i> Asignar prórroga
+        </button>
+    </header>
 
-        <button type="button" class="btn btn-primary-saas" onclick="abrirModalAlta()">
-            <i class="ti ti-plus"></i>
-            <span>Asignar Prórroga Especial</span>
+    {{-- ===================== PESTAÑAS (Bootstrap pills) ===================== --}}
+    <nav id="pills-tab" role="tablist" class="tw:flex tw:gap-1 tw:overflow-x-auto tw:border-b tw:border-slate-200 tw:[scrollbar-width:none]">
+        <button class="{{ $tab }} active" id="tab-matriz-btn" data-bs-toggle="pill" data-bs-target="#tab-matriz" type="button" role="tab" aria-controls="tab-matriz" aria-selected="true" onclick="cargarMatriz()">
+            <i data-lucide="chart-no-axes-column" class="tw:size-4"></i> Avance de captura
         </button>
-    </div>
+        <button class="{{ $tab }}" id="tab-prorrogas-btn" data-bs-toggle="pill" data-bs-target="#tab-prorrogas" type="button" role="tab" aria-controls="tab-prorrogas" aria-selected="false" onclick="cargarPermisos()">
+            <i data-lucide="calendar-clock" class="tw:size-4"></i> Prórrogas
+        </button>
+        <button class="{{ $tab }}" id="tab-cct-btn" data-bs-toggle="pill" data-bs-target="#tab-cct" type="button" role="tab" aria-controls="tab-cct" aria-selected="false" onclick="cargarCctConfigList()">
+            <i data-lucide="sliders-horizontal" class="tw:size-4"></i> Periodos por grupo
+        </button>
+    </nav>
 
-    {{-- Sistema de Pestañas (Segmented Tabs) --}}
-    <div class="segmented-tabs-wrapper" id="pills-tab" role="tablist">
-        <button class="segmented-tab active" id="tab-matriz-btn" data-bs-toggle="pill" data-bs-target="#tab-matriz" type="button" role="tab" aria-controls="tab-matriz" aria-selected="true" onclick="cargarMatriz()">
-            <i class="ti ti-chart-bar"></i>
-            <span>Matriz de Avance (Monitoreo)</span>
-        </button>
-        <button class="segmented-tab" id="tab-prorrogas-btn" data-bs-toggle="pill" data-bs-target="#tab-prorrogas" type="button" role="tab" aria-controls="tab-prorrogas" aria-selected="false" onclick="cargarPermisos()">
-            <i class="ti ti-history"></i>
-            <span>Historial de Prórrogas</span>
-        </button>
-        <button class="segmented-tab" id="tab-cct-btn" data-bs-toggle="pill" data-bs-target="#tab-cct" type="button" role="tab" aria-controls="tab-cct" aria-selected="false" onclick="cargarCctConfigList()">
-            <i class="ti ti-building-community"></i>
-            <span>Ajustes de Cierre por Plantel (CCT)</span>
-        </button>
-    </div>
-
-    {{-- Contenido de las Pestañas --}}
     <div class="tab-content" id="pills-tabContent">
-        
-        {{-- PESTAÑA 1: MATRIZ DE AVANCE --}}
+
+        {{-- ===================== 1. AVANCE DE CAPTURA ===================== --}}
         <div class="tab-pane fade show active" id="tab-matriz" role="tabpanel" aria-labelledby="tab-matriz-btn">
-            
-            <div class="card-unified">
-                {{-- Header de Filtros (Buscador + Select de Estado) --}}
-                <div class="filters-header-bar">
-                    <div class="filter-search-wrapper">
-                        <i class="ti ti-search search-icon"></i>
-                        <input type="text" id="buscadorMatriz" class="filter-input-search" placeholder="Buscar en la matriz por docente, materia o grupo..." oninput="filtrarTablaMatriz()">
-                    </div>
-                    <div class="filter-select-wrapper">
-                        <select id="filtroEstadoMatriz" class="filter-select" onchange="filtrarTablaMatriz()">
-                            <option value="">Todos los Estados</option>
-                            <option value="completo">Completo</option>
-                            <option value="pendiente">Pendiente (En fecha)</option>
-                            <option value="prorroga">Con Prórroga Activa</option>
-                            <option value="expirado">Expirado / Atrasado</option>
-                            <option value="bloqueado_pasado">Bloqueado (Periodo pasado)</option>
-                        </select>
+            <section class="{{ $card }} tw:overflow-hidden">
+                <div class="tw:flex tw:flex-col tw:gap-3 tw:border-b tw:border-slate-100 tw:px-5 tw:py-4 tw:lg:flex-row tw:lg:items-center tw:lg:justify-between">
+                    {{-- Filtros por estado (con conteo) generados por JS --}}
+                    <div id="resumenMatriz" role="group" aria-label="Filtrar por estado" class="tw:flex tw:flex-wrap tw:gap-1.5"></div>
+                    <div class="{{ $searchWrap }}">
+                        <i data-lucide="search" class="tw:pointer-events-none tw:absolute tw:left-3 tw:top-1/2 tw:size-4 tw:-translate-y-1/2 tw:text-slate-400"></i>
+                        <input type="text" id="buscadorMatriz" class="{{ $search }}" placeholder="Docente, materia o grupo…" oninput="filtrarTablaMatrizDebounced()">
                     </div>
                 </div>
 
-                {{-- Spinner de carga matriz --}}
-                <div id="spinnerMatriz" class="text-center py-5">
-                    <div class="spinner-border" style="width: 2.5rem; height: 2.5rem; color: #1E5B66;" role="status"></div>
-                    <p class="text-muted mt-2 fw-semibold mb-0" style="font-size: 0.875rem;">Calculando matriz de avance de calificaciones...</p>
+                <div id="spinnerMatriz">
+                    <div class="tw:flex tw:flex-col tw:items-center tw:gap-3 tw:py-16 tw:text-[0.8125rem] tw:text-slate-500">{!! $spinner !!} Calculando avance de calificaciones…</div>
                 </div>
 
-                {{-- Tabla Matriz --}}
                 <div id="wrapperMatriz" style="display: none;">
-                    <div class="table-responsive">
-                        <table class="table glass-table align-middle mb-0" id="tablaMatriz">
-                            <thead>
-                                <tr>
-                                    <th style="width: 45px;">#</th>
-                                    <th>Docente</th>
-                                    <th>Grupo</th>
-                                    <th>Materia Impartida</th>
-                                    <th style="min-width: 150px;">Avance de Captura</th>
-                                    <th>Fecha Límite</th>
-                                    <th class="text-center">Estado</th>
-                                    <th class="text-end" style="width: 260px; padding-right: 20px;">Acción Directa</th>
+                    <div class="tw:overflow-x-auto">
+                        <table class="tw:w-full tw:min-w-[980px] tw:border-collapse" id="tablaMatriz">
+                            <thead class="tw:bg-slate-50">
+                                <tr class="tw:border-b tw:border-slate-200">
+                                    <th class="{{ $th }} tw:pl-5">Docente</th>
+                                    <th class="{{ $th }}">Grupo</th>
+                                    <th class="{{ $th }}">Materia</th>
+                                    <th class="{{ $th }} tw:w-[190px]">Avance</th>
+                                    <th class="{{ $th }}">Fecha límite</th>
+                                    <th class="{{ $th }}">Estado</th>
+                                    <th class="{{ $th }} tw:pr-5 tw:text-right"><span class="tw:sr-only">Acciones</span></th>
                                 </tr>
                             </thead>
-                            <tbody id="tbodyMatriz">
-                                {{-- Llenado por JS --}}
-                            </tbody>
+                            <tbody id="tbodyMatriz" class="tw:divide-y tw:divide-slate-100"></tbody>
                         </table>
                     </div>
                 </div>
 
-                {{-- Vacío Matriz --}}
-                <div id="emptyMatriz" class="text-center p-5" style="display: none;">
-                    <i class="ti ti-users-minus text-muted" style="font-size: 3rem; display: inline-block; margin-bottom: 12px; color: #94A3B8;"></i>
-                    <h5 class="mt-2 mb-1" style="font-size: 1rem; font-weight: 600; color: #334155;">No se encontraron registros en la carga académica</h5>
-                    <p class="text-muted small mb-0">Verifica que existan horarios asignados en el sistema.</p>
+                <div id="emptyMatriz" style="display: none;">
+                    <div class="tw:flex tw:flex-col tw:items-center tw:px-6 tw:py-14 tw:text-center">
+                        <span class="tw:inline-flex tw:size-12 tw:items-center tw:justify-center tw:bg-slate-100 tw:text-slate-400"><i data-lucide="search-x" class="tw:size-5"></i></span>
+                        <p class="tw:m-0 tw:mt-3 tw:text-sm tw:font-semibold tw:text-slate-900">Sin resultados</p>
+                        <p class="tw:m-0 tw:mt-1 tw:text-[0.8125rem] tw:text-slate-500">No hay asignaciones que coincidan con el filtro, o no existen horarios cargados.</p>
+                    </div>
                 </div>
-            </div>
-
+            </section>
         </div>
 
-        {{-- PESTAÑA 2: HISTORIAL DE PRÓRROGAS --}}
+        {{-- ===================== 2. PRÓRROGAS ===================== --}}
         <div class="tab-pane fade" id="tab-prorrogas" role="tabpanel" aria-labelledby="tab-prorrogas-btn">
-            
-            <div class="card-unified">
-                {{-- Header de Filtros (Buscador + Select de Estado) --}}
-                <div class="filters-header-bar">
-                    <div class="filter-search-wrapper">
-                        <i class="ti ti-search search-icon"></i>
-                        <input type="text" id="buscadorPermisos" class="filter-input-search" placeholder="Buscar prórrogas por docente, materia o grupo..." oninput="filtrarTablaPermisos()">
-                    </div>
-                    <div class="filter-select-wrapper">
-                        <select id="filtroEstado" class="filter-select" onchange="filtrarTablaPermisos()">
-                            <option value="">Todos los Estados</option>
-                            <option value="activo">Solo Activos</option>
-                            <option value="inactivo">Solo Inactivos</option>
-                        </select>
+            <section class="{{ $card }} tw:overflow-hidden">
+                <div class="tw:flex tw:flex-col tw:gap-3 tw:border-b tw:border-slate-100 tw:px-5 tw:py-4 tw:lg:flex-row tw:lg:items-center tw:lg:justify-between">
+                    <div id="resumenPermisos" role="group" aria-label="Filtrar por estado" class="tw:flex tw:flex-wrap tw:gap-1.5"></div>
+                    <div class="{{ $searchWrap }}">
+                        <i data-lucide="search" class="tw:pointer-events-none tw:absolute tw:left-3 tw:top-1/2 tw:size-4 tw:-translate-y-1/2 tw:text-slate-400"></i>
+                        <input type="text" id="buscadorPermisos" class="{{ $search }}" placeholder="Docente, materia o grupo…" oninput="filtrarTablaPermisosDebounced()">
                     </div>
                 </div>
 
-                {{-- Spinner de carga permisos --}}
-                <div id="spinnerCarga" class="text-center py-5" style="display: none;">
-                    <div class="spinner-border" style="width: 2.5rem; height: 2.5rem; color: #1E5B66;" role="status"></div>
-                    <p class="text-muted mt-2 fw-semibold mb-0" style="font-size: 0.875rem;">Cargando listado de prórrogas...</p>
+                <div id="spinnerCarga" style="display: none;">
+                    <div class="tw:flex tw:flex-col tw:items-center tw:gap-3 tw:py-16 tw:text-[0.8125rem] tw:text-slate-500">{!! $spinner !!} Cargando prórrogas…</div>
                 </div>
 
-                {{-- Tabla Prórrogas --}}
                 <div id="tablaWrapper" style="display: none;">
-                    <div class="table-responsive">
-                        <table class="table glass-table align-middle mb-0" id="tablaPermisos">
-                            <thead>
-                                <tr>
-                                    <th style="width: 45px;">#</th>
-                                    <th>Docente</th>
-                                    <th>Grupo</th>
-                                    <th>Asignatura</th>
-                                    <th>Fecha Límite</th>
-                                    <th class="text-center">Modificar Historial</th>
-                                    <th class="text-center">Estado</th>
-                                    <th class="text-end" style="width: 140px; padding-right: 20px;">Acciones</th>
+                    <div class="tw:overflow-x-auto">
+                        <table class="tw:w-full tw:min-w-[900px] tw:border-collapse" id="tablaPermisos">
+                            <thead class="tw:bg-slate-50">
+                                <tr class="tw:border-b tw:border-slate-200">
+                                    <th class="{{ $th }} tw:pl-5">Docente</th>
+                                    <th class="{{ $th }}">Grupo</th>
+                                    <th class="{{ $th }}">Asignatura</th>
+                                    <th class="{{ $th }}">Fecha límite</th>
+                                    <th class="{{ $th }}">Periodos pasados</th>
+                                    <th class="{{ $th }}">Estado</th>
+                                    <th class="{{ $th }} tw:pr-5 tw:text-right"><span class="tw:sr-only">Acciones</span></th>
                                 </tr>
                             </thead>
-                            <tbody id="tbodyPermisos">
-                                {{-- Llenado por JS --}}
-                            </tbody>
+                            <tbody id="tbodyPermisos" class="tw:divide-y tw:divide-slate-100"></tbody>
                         </table>
                     </div>
                 </div>
 
-                {{-- Vacío Prórrogas --}}
-                <div id="emptyState" class="text-center p-5" style="display: none;">
-                    <i class="ti ti-lock-open text-muted" style="font-size: 3rem; display: inline-block; margin-bottom: 12px; color: #94A3B8;"></i>
-                    <h5 class="mt-2 mb-1" style="font-size: 1rem; font-weight: 600; color: #334155;">No se encontraron prórrogas especiales</h5>
-                    <p class="text-muted small mb-0">Todos los docentes operan bajo los tiempos ordinarios de captura.</p>
+                <div id="emptyState" style="display: none;">
+                    <div class="tw:flex tw:flex-col tw:items-center tw:px-6 tw:py-14 tw:text-center">
+                        <span class="tw:inline-flex tw:size-12 tw:items-center tw:justify-center tw:bg-brand-50 tw:text-brand-700"><i data-lucide="calendar-check" class="tw:size-5"></i></span>
+                        <p class="tw:m-0 tw:mt-3 tw:text-sm tw:font-semibold tw:text-slate-900">Sin prórrogas</p>
+                        <p class="tw:m-0 tw:mt-1 tw:text-[0.8125rem] tw:text-slate-500">Todos los docentes operan con los tiempos ordinarios de captura.</p>
+                    </div>
                 </div>
-            </div>
-
+            </section>
         </div>
 
-        {{-- PESTAÑA 3: CONFIGURACIÓN POR GRUPO --}}
+        {{-- ===================== 3. PERIODOS POR GRUPO ===================== --}}
         <div class="tab-pane fade" id="tab-cct" role="tabpanel" aria-labelledby="tab-cct-btn">
-            <div class="glass-card p-4 mb-4 shadow-sm bg-white border">
-                <h5 class="fw-bold text-dark mb-3"><i class="ti ti-building-community me-2" style="color: #1E5B66;"></i> Seleccionar Plantel y Grupo</h5>
-                <div class="row g-3">
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <label class="form-label small fw-bold text-muted">1. Plantel (CCT):</label>
-                        <select id="selectCctConfig" class="form-select form-select-premium" onchange="cargarGruposConfig(this.value)">
-                            <option value="">Seleccione un plantel...</option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <label class="form-label small fw-bold text-muted">2. Grupo:</label>
-                        <select id="selectGrupoConfig" class="form-select form-select-premium" onchange="cargarConfiguracionGrupo(this.value)" disabled>
-                            <option value="">(Primero selecciona un plantel)</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+            <div class="tw:grid tw:grid-cols-1 tw:items-start tw:gap-6 tw:lg:grid-cols-[300px_minmax(0,1fr)]">
 
-            {{-- Card de Ajustes --}}
-            <div id="cardAjustesGrupo" class="glass-card p-4 shadow-sm bg-white border" style="display: none;">
-                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-                    <div>
-                        <h4 class="fw-bold text-dark mb-1" id="lblGrupoNombreTitle">Ajustes de Captura - Grupo</h4>
-                        <p class="text-muted mb-0 small">Establece la habilitación y fechas límite de captura de calificaciones para los docentes de este grupo.</p>
-                    </div>
-                </div>
-
-                <form id="formGrupoConfig">
-                    {{-- HABILITAR GENERAL --}}
-                    <div class="mb-4 p-3 rounded border bg-light d-flex align-items-center justify-content-between" style="max-width: 700px;">
+                {{-- Selección --}}
+                <aside class="{{ $card }} tw:p-5 tw:lg:sticky tw:lg:top-[84px]">
+                    <p class="tw:m-0 tw:mb-4 tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.08em] tw:text-slate-400">Grupo a configurar</p>
+                    <div class="tw:flex tw:flex-col tw:gap-4">
                         <div>
-                            <label class="fw-bold text-dark mb-0 d-block" style="font-size: 1.02rem;"><i class="ti ti-power me-2" style="color: #1E5B66;"></i> Habilitar Captura de Calificaciones en este Grupo</label>
-                            <small class="text-muted">Si se desactiva, los docentes no podrán capturar calificaciones en ninguna asignatura de este grupo.</small>
+                            <label for="selectCctConfig" class="{{ $label }}">Plantel</label>
+                            <select id="selectCctConfig" class="{{ $input }}" onchange="cargarGruposConfig(this.value)">
+                                <option value="">Selecciona un plantel…</option>
+                            </select>
                         </div>
-                        <label class="switch-premium mb-0">
-                            <input type="checkbox" id="checkGrupoHabilitada" onchange="toggleInputsGrupo(this.checked)">
-                            <span class="slider-premium"></span>
-                        </label>
+                        <div>
+                            <label for="selectGrupoConfig" class="{{ $label }}">Grupo</label>
+                            <select id="selectGrupoConfig" class="{{ $input }}" onchange="cargarConfiguracionGrupo(this.value)" disabled>
+                                <option value="">Primero elige un plantel</option>
+                            </select>
+                        </div>
+                    </div>
+                </aside>
+
+                <div class="tw:min-w-0">
+                    {{-- Vacío --}}
+                    <div id="vacioAjustesGrupo">
+                        <div class="{{ $card }} tw:flex tw:flex-col tw:items-center tw:px-6 tw:py-16 tw:text-center">
+                            <span class="tw:inline-flex tw:size-12 tw:items-center tw:justify-center tw:bg-brand-50 tw:text-brand-700 tw:ring-1 tw:ring-brand-200"><i data-lucide="calendar-range" class="tw:size-5"></i></span>
+                            <p class="tw:m-0 tw:mt-3 tw:text-sm tw:font-semibold tw:text-slate-900">Selecciona un plantel y un grupo</p>
+                            <p class="tw:m-0 tw:mt-1 tw:max-w-sm tw:text-[0.8125rem] tw:text-slate-500">Podrás habilitar la captura y definir el rango de fechas de cada periodo de evaluación.</p>
+                        </div>
                     </div>
 
-                    {{-- DROPDOWN SEMESTRE HABILITADO --}}
-                    <div class="mb-4 p-3 rounded border bg-light" style="max-width: 700px;" id="divGrupoSemestreHabilitado">
-                        <label class="form-label small fw-bold text-muted d-block"><i class="ti ti-school me-2" style="color: #1E5B66;"></i> Semestre Habilitado para Captura:</label>
-                        <select id="selectGrupoNivelCaptura" class="form-select form-select-premium" required>
-                            <option value="">Seleccione un semestre...</option>
-                        </select>
-                        <small class="text-muted d-block mt-1">Los docentes solo podrán capturar calificaciones para asignaturas correspondientes a este semestre/nivel académico.</small>
-                    </div>
+                    {{-- Ajustes --}}
+                    <section id="cardAjustesGrupo" style="display: none;">
+                        <form id="formGrupoConfig" class="{{ $card }} tw:overflow-hidden" onsubmit="event.preventDefault(); guardarConfiguracionGrupo();">
+                            <header class="tw:border-b tw:border-slate-100 tw:px-6 tw:py-5">
+                                <h2 id="lblGrupoNombreTitle" class="tw:m-0 tw:text-[1.0625rem] tw:font-semibold tw:tracking-tight tw:text-slate-900">Grupo</h2>
+                                <p class="tw:m-0 tw:mt-0.5 tw:text-[0.8125rem] tw:text-slate-500">Habilitación y fechas límite de captura para los docentes de este grupo.</p>
+                            </header>
 
-                    <h5 class="fw-bold text-dark mt-4 mb-3" id="lblPeriodosEvaluacionHeader"><i class="ti ti-calendar-event me-2" style="color: #475569;"></i> Rango de Fechas por Periodo de Evaluación</h5>
-                    <div class="row g-4" style="max-width: 700px;">
-                        
-                        {{-- Parcial 1 --}}
-                        <div class="col-12 p-3 rounded border bg-light card-periodo-ajuste" id="cardAjusteP1">
-                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                <span class="fw-bold text-dark fs-6" id="lblGrupoP1Title"><i class="ti ti-checkbox text-muted me-2"></i> 1er. Parcial</span>
-                                <label class="switch-premium mb-0">
-                                    <input type="checkbox" id="checkGrupoP1" class="switch-grupo-sub" onchange="toggleFilaFecha('p1', this.checked)">
-                                    <span class="slider-premium"></span>
-                                </label>
-                            </div>
-                            <div class="row g-2 div-fechas-periodo" id="divFechasP1">
-                                <div class="col-6">
-                                    <label class="form-label small text-muted">Fecha de Inicio:</label>
-                                    <input type="date" id="inputGrupoP1Inicio" class="form-control form-control-sm">
+                            {{-- Interruptor general --}}
+                            <div class="tw:flex tw:items-center tw:justify-between tw:gap-4 tw:border-b tw:border-slate-100 tw:bg-slate-50/60 tw:px-6 tw:py-4">
+                                <div>
+                                    <p class="tw:m-0 tw:text-sm tw:font-semibold tw:text-slate-900">Captura habilitada</p>
+                                    <p class="tw:m-0 tw:mt-0.5 tw:text-xs tw:text-slate-500">Si se desactiva, nadie podrá capturar calificaciones en este grupo.</p>
                                 </div>
-                                <div class="col-6">
-                                    <label class="form-label small text-muted">Fecha de Fin (Límite):</label>
-                                    <input type="date" id="inputGrupoP1Fin" class="form-control form-control-sm">
-                                </div>
+                                <x-ui.switch id="checkGrupoHabilitada" label="Captura habilitada" onchange="toggleInputsGrupo(this.checked)" />
                             </div>
-                        </div>
 
-                        {{-- Parcial 2 --}}
-                        <div class="col-12 p-3 rounded border bg-light card-periodo-ajuste" id="cardAjusteP2">
-                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                <span class="fw-bold text-dark fs-6"><i class="ti ti-checkbox text-muted me-2"></i> 2do. Parcial</span>
-                                <label class="switch-premium mb-0">
-                                    <input type="checkbox" id="checkGrupoP2" class="switch-grupo-sub" onchange="toggleFilaFecha('p2', this.checked)">
-                                    <span class="slider-premium"></span>
-                                </label>
+                            <div class="tw:px-6 tw:py-5" id="divGrupoSemestreHabilitado">
+                                <label for="selectGrupoNivelCaptura" class="{{ $label }}">Semestre habilitado para captura</label>
+                                <select id="selectGrupoNivelCaptura" class="{{ $input }} tw:sm:max-w-sm">
+                                    <option value="">Selecciona un semestre…</option>
+                                </select>
+                                <p class="tw:m-0 tw:mt-1.5 tw:text-xs tw:text-slate-500">Solo se podrán capturar asignaturas de este semestre o nivel.</p>
                             </div>
-                            <div class="row g-2 div-fechas-periodo" id="divFechasP2">
-                                <div class="col-6">
-                                    <label class="form-label small text-muted">Fecha de Inicio:</label>
-                                    <input type="date" id="inputGrupoP2Inicio" class="form-control form-control-sm">
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small text-muted">Fecha de Fin (Límite):</label>
-                                    <input type="date" id="inputGrupoP2Fin" class="form-control form-control-sm">
-                                </div>
-                            </div>
-                        </div>
 
-                        {{-- Parcial 3 --}}
-                        <div class="col-12 p-3 rounded border bg-light card-periodo-ajuste" id="cardAjusteP3">
-                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                <span class="fw-bold text-dark fs-6"><i class="ti ti-checkbox text-muted me-2"></i> 3er. Parcial</span>
-                                <label class="switch-premium mb-0">
-                                    <input type="checkbox" id="checkGrupoP3" class="switch-grupo-sub" onchange="toggleFilaFecha('p3', this.checked)">
-                                    <span class="slider-premium"></span>
-                                </label>
-                            </div>
-                            <div class="row g-2 div-fechas-periodo" id="divFechasP3">
-                                <div class="col-6">
-                                    <label class="form-label small text-muted">Fecha de Inicio:</label>
-                                    <input type="date" id="inputGrupoP3Inicio" class="form-control form-control-sm">
+                            {{-- Periodos --}}
+                            <div class="tw:px-6 tw:pb-2">
+                                <div class="tw:mb-1 tw:hidden tw:grid-cols-[44px_minmax(0,1fr)_150px_150px] tw:gap-4 tw:px-1 tw:sm:grid">
+                                    <span></span>
+                                    <span id="lblPeriodosEvaluacionHeader" class="tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-400">Periodo de evaluación</span>
+                                    <span class="tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-400">Inicio</span>
+                                    <span class="tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-400">Fin (límite)</span>
                                 </div>
-                                <div class="col-6">
-                                    <label class="form-label small text-muted">Fecha de Fin (Límite):</label>
-                                    <input type="date" id="inputGrupoP3Fin" class="form-control form-control-sm">
+                                <div class="tw:overflow-hidden tw:border tw:border-slate-200">
+                                    @foreach ($periodos as $p)
+                                    {{-- .card-periodo-ajuste: el JS alterna display y opacidad --}}
+                                    <div class="card-periodo-ajuste tw:border-slate-100 tw:transition-opacity tw:not-first:border-t" id="{{ $p['card'] }}">
+                                        <div class="tw:grid tw:grid-cols-[44px_minmax(0,1fr)] tw:items-center tw:gap-x-4 tw:gap-y-2 tw:px-4 tw:py-3 tw:sm:grid-cols-[44px_minmax(0,1fr)_150px_150px]">
+                                            <x-ui.switch id="checkGrupo{{ $p['cap'] }}" class="switch-grupo-sub" :label="$p['titulo']" onchange="toggleFilaFecha('{{ $p['key'] }}', this.checked)" />
+                                            <span class="tw:flex tw:min-w-0 tw:items-center tw:gap-2 tw:text-sm tw:font-medium tw:text-slate-800" @isset($p['tituloId']) id="{{ $p['tituloId'] }}" @endisset>
+                                                {{ $p['titulo'] }}
+                                            </span>
+                                            <div class="tw:col-start-2 tw:sm:col-start-auto">
+                                                <label for="inputGrupo{{ $p['cap'] }}Inicio" class="tw:mb-1 tw:block tw:text-[0.6875rem] tw:text-slate-500 tw:sm:sr-only">Inicio</label>
+                                                <input type="date" id="inputGrupo{{ $p['cap'] }}Inicio" class="{{ $inputSm }}">
+                                            </div>
+                                            <div class="tw:col-start-2 tw:sm:col-start-auto">
+                                                <label for="inputGrupo{{ $p['cap'] }}Fin" class="tw:mb-1 tw:block tw:text-[0.6875rem] tw:text-slate-500 tw:sm:sr-only">Fin (límite)</label>
+                                                <input type="date" id="inputGrupo{{ $p['cap'] }}Fin" class="{{ $inputSm }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
-                        </div>
 
-                        {{-- Semestral --}}
-                        <div class="col-12 p-3 rounded border bg-light card-periodo-ajuste" id="cardAjusteSemestral">
-                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                <span class="fw-bold text-dark fs-6"><i class="ti ti-file-certificate text-muted me-2"></i> Examen Semestral / Final</span>
-                                <label class="switch-premium mb-0">
-                                    <input type="checkbox" id="checkGrupoSemestral" class="switch-grupo-sub" onchange="toggleFilaFecha('semestral', this.checked)">
-                                    <span class="slider-premium"></span>
-                                </label>
-                            </div>
-                            <div class="row g-2 div-fechas-periodo" id="divFechasSemestral">
-                                <div class="col-6">
-                                    <label class="form-label small text-muted">Fecha de Inicio:</label>
-                                    <input type="date" id="inputGrupoSemestralInicio" class="form-control form-control-sm">
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small text-muted">Fecha de Fin (Límite):</label>
-                                    <input type="date" id="inputGrupoSemestralFin" class="form-control form-control-sm">
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Extraordinario --}}
-                        <div class="col-12 p-3 rounded border bg-light card-periodo-ajuste">
-                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                                <span class="fw-bold text-dark fs-6"><i class="ti ti-bolt text-muted me-2"></i> Examen Extraordinario</span>
-                                <label class="switch-premium mb-0">
-                                    <input type="checkbox" id="checkGrupoExtraordinario" class="switch-grupo-sub" onchange="toggleFilaFecha('extraordinario', this.checked)">
-                                    <span class="slider-premium"></span>
-                                </label>
-                            </div>
-                            <div class="row g-2 div-fechas-periodo" id="divFechasExtraordinario">
-                                <div class="col-6">
-                                    <label class="form-label small text-muted">Fecha de Inicio:</label>
-                                    <input type="date" id="inputGrupoExtraordinarioInicio" class="form-control form-control-sm">
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small text-muted">Fecha de Fin (Límite):</label>
-                                    <input type="date" id="inputGrupoExtraordinarioFin" class="form-control form-control-sm">
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="mt-4 pt-3 border-top" style="max-width: 700px;">
-                        <button type="button" class="btn btn-primary-saas px-4" onclick="guardarConfiguracionGrupo()">
-                            <i class="ti ti-device-floppy me-1"></i> Guardar Ajustes de Captura del Grupo
-                        </button>
-                    </div>
-                </form>
+                            <footer class="tw:mt-4 tw:flex tw:items-center tw:justify-end tw:gap-3 tw:border-t tw:border-slate-100 tw:bg-slate-50/60 tw:px-6 tw:py-4">
+                                <button type="submit" class="{{ $btnPrimary }}">
+                                    <i data-lucide="save" class="tw:size-4"></i> Guardar ajustes
+                                </button>
+                            </footer>
+                        </form>
+                    </section>
+                </div>
             </div>
         </div>
-
     </div>
-
 </div>
 
-{{-- MODAL PARA ASIGNAR NUEVO PERMISO / PRÓRROGA --}}
-<div class="modal fade" id="modalAltaPermiso" tabindex="-1" aria-hidden="true" style="z-index: 1200;">
+{{-- ===================== MODAL: ASIGNAR PRÓRROGA ===================== --}}
+<div class="modal fade" id="modalAltaPermiso" tabindex="-1" aria-labelledby="modalAltaPermisoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content glass-modal border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
-            <div class="modal-header px-4 py-3" style="border-bottom: 1px solid #E2E8F0;">
-                <div class="d-flex align-items-center">
-                    <i class="ti ti-key me-2 fs-5" style="color: #1E5B66;"></i>
-                    <h5 class="modal-title fw-bold mb-0">Asignar Prórroga / Permiso Especial</h5>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAltaPermisoLabel"><i data-lucide="calendar-plus" class="tw:size-5"></i> Asignar prórroga</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <div class="modal-body p-4 bg-white text-dark">
-                <form id="formAltaPermiso">
-                    
-                    {{-- DOCENTE --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark"><i class="ti ti-chalkboard me-1" style="color: var(--brand-primary);"></i> Docente:</label>
-                        <select id="selectAltaDocente" class="form-select form-select-premium w-100" onchange="filtrarMaterias()" required>
-                            <option value="">Selecciona un docente...</option>
+            <div class="modal-body">
+                <form id="formAltaPermiso" class="tw:flex tw:flex-col tw:gap-4" onsubmit="event.preventDefault(); guardarNuevoPermiso();">
+                    <div>
+                        <label for="selectAltaDocente" class="{{ $label }}">Docente</label>
+                        <select id="selectAltaDocente" class="{{ $input }}" onchange="filtrarMaterias()" required>
+                            <option value="">Selecciona un docente…</option>
                         </select>
                     </div>
-
-                    {{-- GRUPO --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark"><i class="ti ti-users me-1" style="color: var(--brand-primary);"></i> Grupo:</label>
-                        <select id="selectAltaGrupo" class="form-select form-select-premium w-100" onchange="cargarMateriasPorGrupo(this.value)" required>
-                            <option value="">Selecciona un grupo...</option>
+                    <div>
+                        <label for="selectAltaGrupo" class="{{ $label }}">Grupo</label>
+                        <select id="selectAltaGrupo" class="{{ $input }}" onchange="cargarMateriasPorGrupo(this.value)" required>
+                            <option value="">Selecciona un grupo…</option>
                         </select>
                     </div>
-
-                    {{-- MATERIA --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark"><i class="ti ti-books me-1" style="color: var(--brand-primary);"></i> Asignatura:</label>
-                        <select id="selectAltaMateria" class="form-select form-select-premium w-100" required disabled>
-                            <option value="">(Primero selecciona un grupo)</option>
+                    <div>
+                        <label for="selectAltaMateria" class="{{ $label }} tw:flex tw:items-center tw:gap-2">
+                            Asignatura
+                            <span id="loaderMaterias" class="tw:size-3.5 tw:animate-spin tw:rounded-full tw:border-2 tw:border-slate-200 tw:border-t-brand-700" style="display: none;" role="status" aria-label="Cargando asignaturas"></span>
+                        </label>
+                        <select id="selectAltaMateria" class="{{ $input }}" required disabled>
+                            <option value="">Primero elige un grupo</option>
                         </select>
-                        <div id="loaderMaterias" class="spinner-border spinner-border-sm text-primary ms-2" role="status" style="display: none;"></div>
-                        
-                        {{-- Mostrar materias pasadas del grupo --}}
-                        <div class="form-check mt-2" id="divCheckMateriaPasada" style="display: none;">
-                            <input class="form-check-input" type="checkbox" id="checkMateriaPasada" onchange="filtrarMaterias()" style="cursor: pointer;">
-                            <label class="form-check-label text-dark fw-semibold" for="checkMateriaPasada" style="font-size: 0.85rem; cursor: pointer;">
-                                <i class="ti ti-history text-warning me-1"></i> Mostrar materias pasadas o de otros niveles
+                        <div id="divCheckMateriaPasada" class="tw:mt-2" style="display: none;">
+                            <label class="tw:inline-flex tw:cursor-pointer tw:items-center tw:gap-2 tw:text-[0.8125rem] tw:text-slate-600">
+                                <input type="checkbox" id="checkMateriaPasada" class="tw:size-4 tw:cursor-pointer tw:accent-brand-700" onchange="filtrarMaterias()">
+                                Incluir materias de semestres pasados u otros niveles
                             </label>
                         </div>
                     </div>
-
-                    {{-- FECHA LÍMITE (EXTENSION) --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark"><i class="ti ti-calendar-event me-1" style="color: var(--brand-primary);"></i> Prórroga / Fecha Límite de Captura:</label>
-                        <input type="date" id="inputAltaFechaLimite" class="form-control form-control-premium" required>
-                        <small class="text-muted d-block mt-1">El docente podrá capturar calificaciones en esta materia hasta las 23:59 hrs de la fecha indicada.</small>
+                    <div>
+                        <label for="inputAltaFechaLimite" class="{{ $label }}">Fecha límite de captura</label>
+                        <input type="date" id="inputAltaFechaLimite" class="{{ $input }}" required>
+                        <p class="tw:m-0 tw:mt-1.5 tw:text-xs tw:text-slate-500">El docente podrá capturar hasta las 23:59 h de esta fecha.</p>
                     </div>
-
-                    {{-- PRIVILEGIOS DE PERIODOS PASADOS --}}
-                    <div class="mb-3 p-3 rounded border bg-light d-flex align-items-center justify-content-between">
+                    <div class="tw:flex tw:items-center tw:justify-between tw:gap-4 tw:border tw:border-slate-200 tw:bg-slate-50/60 tw:px-4 tw:py-3">
                         <div>
-                            <label class="fw-bold text-dark mb-0 d-block" style="font-size: 0.9rem;">Modificar Semestres/Trimestres Pasados</label>
-                            <small class="text-muted">Permitir editar calificaciones de periodos anteriores o grupos cerrados.</small>
+                            <p class="tw:m-0 tw:text-sm tw:font-medium tw:text-slate-900">Modificar periodos pasados</p>
+                            <p class="tw:m-0 tw:mt-0.5 tw:text-xs tw:text-slate-500">Permite editar calificaciones de periodos anteriores o grupos cerrados.</p>
                         </div>
-                        <label class="switch-premium mb-0">
-                            <input type="checkbox" id="checkAltaPasados" value="1">
-                            <span class="slider-premium"></span>
-                        </label>
+                        <x-ui.switch id="checkAltaPasados" value="1" label="Modificar periodos pasados" />
                     </div>
-
                 </form>
             </div>
-            <div class="modal-footer bg-light border-0 px-4 py-3 d-flex justify-content-between">
-                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary-saas px-4" onclick="guardarNuevoPermiso()">
-                    <i class="ti ti-circle-check me-1"></i> Asignar Prórroga
+            <div class="modal-footer">
+                <button type="button" class="{{ $btnSecondary }}" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="formAltaPermiso" class="{{ $btnPrimary }}" id="btnGuardarAlta">
+                    <i data-lucide="check" class="tw:size-4"></i> Asignar prórroga
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-{{-- MODAL PARA EDITAR PERMISO EXISTENTE --}}
-<div class="modal fade" id="modalEditarPermiso" tabindex="-1" aria-hidden="true" style="z-index: 1200;">
+{{-- ===================== MODAL: EDITAR PRÓRROGA ===================== --}}
+<div class="modal fade" id="modalEditarPermiso" tabindex="-1" aria-labelledby="modalEditarPermisoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content glass-modal border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
-            <div class="modal-header px-4 py-3" style="border-bottom: 1px solid #E2E8F0;">
-                <div class="d-flex align-items-center">
-                    <i class="ti ti-edit me-2 fs-5" style="color: #1E5B66;"></i>
-                    <h5 class="modal-title fw-bold mb-0">Modificar Permiso Especial</h5>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditarPermisoLabel"><i data-lucide="pencil" class="tw:size-5"></i> Editar prórroga</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <div class="modal-body p-4 bg-white text-dark">
-                <form id="formEditarPermiso">
+            <div class="modal-body">
+                <form id="formEditarPermiso" class="tw:flex tw:flex-col tw:gap-4" onsubmit="event.preventDefault(); guardarEdicionPermiso();">
                     <input type="hidden" id="inputEditId">
-                    
-                    {{-- DETALLES INFORMATIVOS --}}
-                    <div class="mb-4 p-3 rounded bg-light border">
-                        <div class="mb-1 text-muted" style="font-size: 0.8rem;">DOCENTE:</div>
-                        <div id="lblEditDocente" class="fw-bold text-dark mb-2">—</div>
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="text-muted" style="font-size: 0.8rem;">GRUPO:</div>
-                                <div id="lblEditGrupo" class="fw-bold text-dark">—</div>
-                            </div>
-                            <div class="col-6">
-                                <div class="text-muted" style="font-size: 0.8rem;">ASIGNATURA:</div>
-                                <div id="lblEditMateria" class="fw-bold text-dark">—</div>
-                            </div>
+                    <dl class="tw:m-0 tw:grid tw:grid-cols-2 tw:gap-x-4 tw:gap-y-3 tw:border tw:border-slate-200 tw:bg-slate-50/60 tw:p-4">
+                        <div class="tw:col-span-2">
+                            <dt class="tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-400">Docente</dt>
+                            <dd id="lblEditDocente" class="tw:m-0 tw:mt-0.5 tw:text-sm tw:font-semibold tw:text-slate-900">—</dd>
                         </div>
-                    </div>
-
-                    {{-- FECHA LÍMITE (EXTENSION) --}}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold text-dark"><i class="ti ti-calendar-event me-1" style="color: var(--brand-primary);"></i> Prórroga / Fecha Límite de Captura:</label>
-                        <input type="date" id="inputEditFechaLimite" class="form-control form-control-premium" required>
-                    </div>
-
-                    {{-- PRIVILEGIOS DE PERIODOS PASADOS --}}
-                    <div class="mb-3 p-3 rounded border bg-light d-flex align-items-center justify-content-between">
                         <div>
-                            <label class="fw-bold text-dark mb-0 d-block" style="font-size: 0.9rem;">Modificar Semestres/Trimestres Pasados</label>
-                            <small class="text-muted">Permitir editar calificaciones de periodos anteriores.</small>
+                            <dt class="tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-400">Grupo</dt>
+                            <dd id="lblEditGrupo" class="tw:m-0 tw:mt-0.5 tw:font-mono tw:text-sm tw:font-semibold tw:text-slate-900">—</dd>
                         </div>
-                        <label class="switch-premium mb-0">
-                            <input type="checkbox" id="checkEditPasados" value="1">
-                            <span class="slider-premium"></span>
-                        </label>
-                    </div>
-
-                    {{-- ESTADO HABILITADO --}}
-                    <div class="mb-3 p-3 rounded border bg-light d-flex align-items-center justify-content-between">
                         <div>
-                            <label class="fw-bold text-dark mb-0 d-block" style="font-size: 0.9rem;">Permiso Habilitado</label>
-                            <small class="text-muted">Si se desactiva, el docente tendrá bloqueada la captura de inmediato.</small>
+                            <dt class="tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-400">Asignatura</dt>
+                            <dd id="lblEditMateria" class="tw:m-0 tw:mt-0.5 tw:text-sm tw:font-semibold tw:text-slate-900">—</dd>
                         </div>
-                        <label class="switch-premium mb-0">
-                            <input type="checkbox" id="checkEditHabilitado" value="1">
-                            <span class="slider-premium"></span>
-                        </label>
+                    </dl>
+                    <div>
+                        <label for="inputEditFechaLimite" class="{{ $label }}">Fecha límite de captura</label>
+                        <input type="date" id="inputEditFechaLimite" class="{{ $input }}" required>
                     </div>
-
+                    <div class="tw:overflow-hidden tw:border tw:border-slate-200">
+                        <div class="tw:flex tw:items-center tw:justify-between tw:gap-4 tw:px-4 tw:py-3">
+                            <div>
+                                <p class="tw:m-0 tw:text-sm tw:font-medium tw:text-slate-900">Prórroga habilitada</p>
+                                <p class="tw:m-0 tw:mt-0.5 tw:text-xs tw:text-slate-500">Al desactivarla, la captura se bloquea de inmediato.</p>
+                            </div>
+                            <x-ui.switch id="checkEditHabilitado" value="1" label="Prórroga habilitada" />
+                        </div>
+                        <div class="tw:flex tw:items-center tw:justify-between tw:gap-4 tw:border-t tw:border-slate-100 tw:px-4 tw:py-3">
+                            <div>
+                                <p class="tw:m-0 tw:text-sm tw:font-medium tw:text-slate-900">Modificar periodos pasados</p>
+                                <p class="tw:m-0 tw:mt-0.5 tw:text-xs tw:text-slate-500">Permite editar calificaciones de periodos anteriores.</p>
+                            </div>
+                            <x-ui.switch id="checkEditPasados" value="1" label="Modificar periodos pasados" />
+                        </div>
+                    </div>
                 </form>
             </div>
-            <div class="modal-footer bg-light border-0 px-4 py-3 d-flex justify-content-between">
-                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary-saas px-4" onclick="guardarEdicionPermiso()">
-                    <i class="ti ti-device-floppy me-1"></i> Guardar Cambios
+            <div class="modal-footer">
+                <button type="button" class="{{ $btnSecondary }}" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="formEditarPermiso" class="{{ $btnPrimary }}">
+                    <i data-lucide="save" class="tw:size-4"></i> Guardar cambios
                 </button>
             </div>
         </div>
@@ -978,428 +369,332 @@ input:checked + .slider-premium:before {
 </div>
 
 <script>
-let listadoPermisos = [];
-let listadoMatriz = [];
+// =====================================================================
+// UTILIDADES
+// =====================================================================
+const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+const BRAND = '#26687B';
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const refrescarIconos = () => { if (window.lucide?.createIcons) lucide.createIcons(); };
+const mensajeError = (resp, fallback) => (resp && (resp.message || resp.error)) || fallback;
+const debounce = (fn, ms = 180) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+const normalizar = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const iniciales = (n) => String(n || '').trim().split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('') || '—';
 
-// ==========================================
-// CARGAR MATRIZ DE AVANCE (TAB 1)
-// ==========================================
-function cargarMatriz() {
-    const spinner = document.getElementById('spinnerMatriz');
-    const wrapper = document.getElementById('wrapperMatriz');
-    const empty = document.getElementById('emptyMatriz');
-
-    spinner.style.display = 'block';
-    wrapper.style.display = 'none';
-    empty.style.display = 'none';
-
-    fetch('/permisos-captura/matriz')
-        .then(res => res.json())
-        .then(data => {
-            listadoMatriz = data;
-            filtrarTablaMatriz();
-        })
-        .catch(err => {
-            console.error('Error al cargar la matriz de avance:', err);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de carga',
-                text: 'No se pudo generar la matriz de avance.'
-            });
-        })
-        .finally(() => {
-            spinner.style.display = 'none';
-        });
+async function fetchJson(url, options = {}) {
+    const res = await fetch(url, options);
+    let data = null;
+    try { data = await res.json(); } catch (e) { /* respuesta no JSON */ }
+    if (!res.ok && data && typeof data === 'object' && data.success === undefined) data.success = false;
+    if (!res.ok && !data) throw new Error(`HTTP ${res.status}`);
+    return data;
 }
 
-// ==========================================
-// RENDERIZAR TABLA DE MATRIZ CON FILTROS
-// ==========================================
-function filtrarTablaMatriz() {
-    const busqueda = document.getElementById('buscadorMatriz').value.toLowerCase().trim();
-    const filtroEstado = document.getElementById('filtroEstadoMatriz').value;
+const TONO = {
+    success: 'tw:bg-success-100 tw:text-success-700',
+    warning: 'tw:bg-warning-100 tw:text-warning-600',
+    brand:   'tw:bg-brand-50 tw:text-brand-700 tw:ring-1 tw:ring-brand-200',
+    danger:  'tw:bg-danger-100 tw:text-danger-600',
+    slate:   'tw:bg-slate-100 tw:text-slate-600',
+};
+const ESTADOS_MATRIZ = {
+    completo:         { label: 'Completo',       icon: 'circle-check',   tono: 'success', barra: '#10B981' },
+    pendiente:        { label: 'En tiempo',      icon: 'clock',          tono: 'warning', barra: BRAND },
+    prorroga:         { label: 'Con prórroga',   icon: 'calendar-check', tono: 'brand',   barra: BRAND },
+    expirado:         { label: 'Expirado',       icon: 'triangle-alert', tono: 'danger',  barra: '#EF4444' },
+    bloqueado_pasado: { label: 'Periodo pasado', icon: 'lock',           tono: 'slate',   barra: '#94A3B8' },
+    deshabilitado:    { label: 'Desactivado',    icon: 'ban',            tono: 'slate',   barra: '#94A3B8' },
+    sin_alumnos:      { label: 'Sin alumnos',    icon: 'users',          tono: 'slate',   barra: '#CBD5E1' },
+};
 
-    const filtrados = listadoMatriz.filter(h => {
-        const docente = (h.nombre_docente || '').toLowerCase();
-        const grupo = (h.clave_grupo || '').toLowerCase();
-        const materia = (h.nombre_materia || '').toLowerCase();
-        const clMateria = (h.clave_materia || '').toLowerCase();
-
-        const matchBusqueda = !busqueda || 
-            docente.includes(busqueda) || 
-            grupo.includes(busqueda) || 
-            materia.includes(busqueda) || 
-            clMateria.includes(busqueda);
-
-        let matchEstado = true;
-        if (filtroEstado !== '') {
-            matchEstado = h.estado === filtroEstado;
-        }
-
-        return matchBusqueda && matchEstado;
-    });
-
-    const tbody = document.getElementById('tbodyMatriz');
-    const wrapper = document.getElementById('wrapperMatriz');
-    const empty = document.getElementById('emptyMatriz');
-
-    if (filtrados.length === 0) {
-        wrapper.style.display = 'none';
-        empty.style.display = 'block';
-        return;
-    }
-
-    wrapper.style.display = 'block';
-    empty.style.display = 'none';
-
-    let html = '';
-    filtrados.forEach((h, index) => {
-        // Estatus Badge
-        let statusBadge = '';
-        let rowColorClass = '';
-        switch (h.estado) {
-            case 'completo':
-                statusBadge = '<span class="badge-matriz-soft badge-soft-success"><i class="ti ti-circle-check"></i> Completo</span>';
-                break;
-            case 'pendiente':
-                statusBadge = '<span class="badge-matriz-soft badge-soft-warning"><i class="ti ti-clock"></i> Ordinario</span>';
-                break;
-            case 'prorroga':
-                statusBadge = '<span class="badge-matriz-soft badge-soft-info"><i class="ti ti-calendar-check"></i> Prórroga</span>';
-                break;
-            case 'expirado':
-                statusBadge = '<span class="badge-matriz-soft badge-soft-danger"><i class="ti ti-alert-triangle"></i> Expirado</span>';
-                rowColorClass = 'table-danger-light';
-                break;
-            case 'bloqueado_pasado':
-                statusBadge = '<span class="badge-matriz-soft badge-soft-neutral"><i class="ti ti-lock"></i> Periodo Pasado</span>';
-                break;
-            case 'deshabilitado':
-                statusBadge = '<span class="badge-matriz-soft badge-soft-neutral"><i class="ti ti-ban"></i> Desactivado</span>';
-                break;
-            case 'sin_alumnos':
-                statusBadge = '<span class="badge-matriz-soft badge-soft-neutral"><i class="ti ti-users-minus"></i> Sin Alumnos</span>';
-                break;
-        }
-
-        // Avance de Captura
-        const pct = h.alumnos_totales > 0 ? Math.round((h.alumnos_calificados / h.alumnos_totales) * 100) : 0;
-        let progressBg = '#1E5B66';
-        if (h.estado === 'completo') progressBg = '#10B981';
-        else if (h.estado === 'expirado') progressBg = '#EF4444';
-
-        const progressHtml = `
-            <div style="min-width: 150px;">
-                <div class="progress-text-row">
-                    <span>${h.alumnos_calificados} / ${h.alumnos_totales} alumnos</span>
-                    <span>${pct}%</span>
-                </div>
-                <div class="progress-track-saas">
-                    <div class="progress-fill-saas" style="width: ${pct}%; background-color: ${progressBg};"></div>
-                </div>
-            </div>
-        `;
-
-        // Botones de acción directa
-        let actionBtn = '';
-        if (h.estado !== 'completo' && h.estado !== 'sin_alumnos') {
-            actionBtn += `
-                <button type="button" class="btn-action-prorroga" onclick="otorgarProrrogaRapida(${h.id_docente}, ${h.id_grupo}, ${h.id_materia})" title="Asignar prórroga especial">
-                    <i class="ti ti-calendar-plus"></i> <span>Prórroga</span>
-                </button>
-            `;
-        }
-        
-        // Botón Administrador de capturar/cambiar notas
-        actionBtn += `
-            <a href="/grupos/captura_calificaciones?id_grupo=${h.id_grupo}&id_materia=${h.id_materia}" class="btn-action-notas" title="Capturar o modificar notas directamente como administrador">
-                <i class="ti ti-edit"></i> <span>Calificaciones</span>
-            </a>
-        `;
-
-        html += `
-        <tr class="${rowColorClass}">
-            <td><span class="id-mono">${index + 1}</span></td>
-            <td>
-                <span class="docente-nombre-matriz">${h.nombre_docente}</span>
-            </td>
-            <td>
-                <span class="badge-grupo-mono">${h.clave_grupo}</span>
-            </td>
-            <td>
-                <div class="materia-nombre-matriz">${h.nombre_materia}</div>
-                <div class="materia-clave-mono">Clave: ${h.clave_materia}</div>
-            </td>
-            <td>
-                ${progressHtml}
-            </td>
-            <td>
-                <div class="fecha-limite-cell">
-                    <i class="ti ti-calendar-due"></i>
-                    <span>${formatearFechaEspanol(h.fecha_limite)}</span>
-                </div>
-            </td>
-            <td class="text-center">
-                ${statusBadge}
-            </td>
-            <td class="text-end" style="padding-right: 20px;">
-                <div class="actions-cell-matriz">
-                    ${actionBtn}
-                </div>
-            </td>
-        </tr>
-        `;
-    });
-
-    tbody.innerHTML = html;
+function badge(tono, icon, texto) {
+    return `<span class="tw:inline-flex tw:items-center tw:gap-1 tw:whitespace-nowrap tw:rounded-none tw:px-2.5 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold ${TONO[tono]}">
+        <i data-lucide="${icon}" class="tw:size-3"></i>${esc(texto)}</span>`;
 }
 
-// ==========================================
-// OTORGAR PRÓRROGA RÁPIDA DESDE LA MATRIZ
-// ==========================================
-function otorgarProrrogaRapida(idDocente, idGrupo, idMateria) {
-    // Resetear formulario
-    document.getElementById('formAltaPermiso').reset();
-
-    // Cargar catálogos
-    Promise.all([
-        fetch('/permisos-captura/docentes').then(r => r.json()),
-        fetch('/permisos-captura/grupos').then(r => r.json())
-    ]).then(([docentes, grupos]) => {
-        // Cargar Docentes
-        const selectDocente = document.getElementById('selectAltaDocente');
-        selectDocente.innerHTML = '<option value="">Selecciona un docente...</option>';
-        docentes.forEach(d => {
-            const opt = document.createElement('option');
-            opt.value = d.id;
-            opt.textContent = d.nombre;
-            if (d.id == idDocente) opt.selected = true;
-            selectDocente.appendChild(opt);
-        });
-
-        // Cargar Grupos
-        const selectGrupo = document.getElementById('selectAltaGrupo');
-        selectGrupo.innerHTML = '<option value="">Selecciona un grupo...</option>';
-        grupos.forEach(g => {
-            const opt = document.createElement('option');
-            opt.value = g.id;
-            opt.textContent = g.clave;
-            if (g.id == idGrupo) opt.selected = true;
-            selectGrupo.appendChild(opt);
-        });
-
-        // Cargar materias del grupo y pre-seleccionar
-        const selectMateria = document.getElementById('selectAltaMateria');
-        selectMateria.disabled = true;
-
-        fetch(`/grupos/${idGrupo}/calificaciones-materia`)
-            .then(res => res.json())
-            .then(resp => {
-                selectMateria.innerHTML = '';
-                if (resp.success && resp.data && Array.isArray(resp.data.materias)) {
-                    resp.data.materias.forEach(m => {
-                        const opt = document.createElement('option');
-                        opt.value = m.idMateria;
-                        opt.textContent = `${m.nombreMateria} (${m.claveMateria})`;
-                        if (m.idMateria == idMateria) opt.selected = true;
-                        selectMateria.appendChild(opt);
-                    });
-                    selectMateria.disabled = false;
-                }
-            })
-            .finally(() => {
-                // Abrir modal
-                const modal = new bootstrap.Modal(document.getElementById('modalAltaPermiso'));
-                modal.show();
-            });
-    });
+function accion({ icon, label, tono = 'neutral', onclick = '', href = '' }) {
+    const tonos = {
+        brand: 'tw:text-brand-700 tw:hover:bg-brand-50',
+        danger: 'tw:text-slate-400 tw:hover:bg-danger-50 tw:hover:text-danger-600',
+        neutral: 'tw:text-slate-500 tw:hover:bg-slate-100 tw:hover:text-slate-800',
+    };
+    const cls = `tw:group/act tw:relative tw:inline-flex tw:size-8 tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:bg-transparent tw:no-underline tw:transition-colors ${tonos[tono]}`;
+    const tip = `<span role="tooltip" class="tw:pointer-events-none tw:absolute tw:bottom-full tw:left-1/2 tw:z-20 tw:mb-2 tw:-translate-x-1/2 tw:whitespace-nowrap tw:bg-slate-900 tw:px-2 tw:py-1 tw:text-[0.6875rem] tw:font-medium tw:text-white tw:opacity-0 tw:shadow-raised tw:transition-opacity tw:group-hover/act:opacity-100 tw:group-focus-visible/act:opacity-100">${esc(label)}</span>`;
+    const inner = `<i data-lucide="${icon}" class="tw:size-4"></i>${tip}`;
+    return href
+        ? `<a href="${href}" class="${cls}" aria-label="${esc(label)}">${inner}</a>`
+        : `<button type="button" class="${cls}" aria-label="${esc(label)}" onclick="${onclick}">${inner}</button>`;
 }
 
-
-// ==========================================
-// CARGAR HISTORIAL DE PRÓRROGAS (TAB 2)
-// ==========================================
-function cargarPermisos() {
-    const spinner = document.getElementById('spinnerCarga');
-    const wrapper = document.getElementById('tablaWrapper');
-    const empty = document.getElementById('emptyState');
-
-    spinner.style.display = 'block';
-    wrapper.style.display = 'none';
-    empty.style.display = 'none';
-
-    fetch('/permisos-captura/lista')
-        .then(res => res.json())
-        .then(data => {
-            listadoPermisos = data;
-            filtrarTablaPermisos();
-        })
-        .catch(err => {
-            console.error('Error al cargar permisos:', err);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de carga',
-                text: 'No se pudieron recuperar las prórrogas registradas.'
-            });
-        })
-        .finally(() => {
-            spinner.style.display = 'none';
-        });
+function chipFiltro({ valor, texto, total, activo, onclick, punto }) {
+    const cls = activo
+        ? 'tw:border-brand-700 tw:bg-brand-700 tw:text-white'
+        : 'tw:border-slate-200 tw:bg-white tw:text-slate-600 tw:hover:border-slate-300 tw:hover:text-slate-900';
+    const contador = activo ? 'tw:bg-white/20 tw:text-white' : 'tw:bg-slate-100 tw:text-slate-500';
+    const dot = punto ? `<span class="tw:size-1.5 tw:rounded-full" style="background:${punto}"></span>` : '';
+    return `<button type="button" aria-pressed="${activo}" onclick="${onclick}('${valor}')"
+        class="tw:inline-flex tw:cursor-pointer tw:items-center tw:gap-1.5 tw:border tw:py-1 tw:pr-1.5 tw:pl-3 tw:text-xs tw:font-medium tw:transition-colors ${cls}">
+        ${dot}${esc(texto)}<span class="tw:inline-flex tw:h-5 tw:min-w-5 tw:items-center tw:justify-center tw:rounded-none tw:px-1.5 tw:text-[0.6875rem] tw:font-semibold tw:tabular-nums ${contador}">${total}</span></button>`;
 }
 
-// ==========================================
-// RENDERIZAR TABLA DE HISTORIAL DE PRÓRROGAS
-// ==========================================
-function filtrarTablaPermisos() {
-    const busqueda = document.getElementById('buscadorPermisos').value.toLowerCase().trim();
-    const filtroEstado = document.getElementById('filtroEstado').value;
-
-    const filtrados = listadoPermisos.filter(p => {
-        const docente = (p.nombre_docente || '').toLowerCase();
-        const grupo = (p.clave_grupo || '').toLowerCase();
-        const materia = (p.nombre_materia || '').toLowerCase();
-        const clMateria = (p.clave_materia || '').toLowerCase();
-
-        const matchBusqueda = !busqueda || 
-            docente.includes(busqueda) || 
-            grupo.includes(busqueda) || 
-            materia.includes(busqueda) || 
-            clMateria.includes(busqueda);
-
-        let matchEstado = true;
-        if (filtroEstado === 'activo') {
-            matchEstado = p.habilitado == 1;
-        } else if (filtroEstado === 'inactivo') {
-            matchEstado = p.habilitado == 0;
-        }
-
-        return matchBusqueda && matchEstado;
-    });
-
-    const tbody = document.getElementById('tbodyPermisos');
-    const wrapper = document.getElementById('tablaWrapper');
-    const empty = document.getElementById('emptyState');
-
-    if (filtrados.length === 0) {
-        wrapper.style.display = 'none';
-        empty.style.display = 'block';
-        return;
-    }
-
-    wrapper.style.display = 'block';
-    empty.style.display = 'none';
-
-    let html = '';
-    filtrados.forEach((p, index) => {
-        let estadoBadge = '';
-        if (p.finalizado == 1 || p.finalizado === true) {
-            estadoBadge = '<span class="badge-matriz-soft badge-soft-neutral"><i class="ti ti-lock"></i> Entregado</span>';
-        } else if (p.habilitado == 1) {
-            estadoBadge = '<span class="badge-matriz-soft badge-soft-success"><i class="ti ti-circle-check"></i> Activo</span>';
-        } else {
-            estadoBadge = '<span class="badge-matriz-soft badge-soft-danger"><i class="ti ti-circle-x"></i> Inactivo</span>';
-        }
-
-        const pasadosBadge = p.permitir_modificar_pasados == 1
-            ? '<span class="badge-matriz-soft badge-soft-warning"><i class="ti ti-history"></i> Autorizado</span>'
-            : '<span class="badge-matriz-soft badge-soft-neutral">No</span>';
-
-        html += `
-        <tr>
-            <td><span class="id-mono">${index + 1}</span></td>
-            <td>
-                <span class="docente-nombre-matriz">${p.nombre_docente}</span>
-            </td>
-            <td>
-                <span class="badge-grupo-mono">${p.clave_grupo}</span>
-            </td>
-            <td>
-                <div class="materia-nombre-matriz">${p.nombre_materia}</div>
-                <div class="materia-clave-mono">Clave: ${p.clave_materia}</div>
-            </td>
-            <td>
-                <div class="fecha-limite-cell">
-                    <i class="ti ti-calendar-due"></i>
-                    <span>${formatearFechaEspanol(p.fecha_limite)}</span>
-                </div>
-            </td>
-            <td class="text-center">
-                ${pasadosBadge}
-            </td>
-            <td class="text-center">
-                ${estadoBadge}
-            </td>
-            <td class="text-end" style="padding-right: 20px;">
-                <div class="actions-cell-matriz">
-                    <button type="button" class="btn-ghost-icon" title="Editar Permiso" onclick="abrirModalEdicion(${p.id})">
-                        <i class="ti ti-edit"></i>
-                    </button>
-                    <button type="button" class="btn-ghost-icon btn-ghost-danger" title="Eliminar Permiso" onclick="eliminarPermiso(${p.id})">
-                        <i class="ti ti-trash"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
-        `;
-    });
-
-    tbody.innerHTML = html;
+function celdaDocente(nombre) {
+    return `<div class="tw:flex tw:items-center tw:gap-2.5">
+        <span class="tw:inline-flex tw:size-8 tw:shrink-0 tw:items-center tw:justify-center tw:bg-slate-100 tw:text-[0.6875rem] tw:font-semibold tw:text-slate-600">${esc(iniciales(nombre))}</span>
+        <span class="tw:text-[0.8125rem] tw:font-semibold tw:text-slate-900">${esc(nombre)}</span></div>`;
 }
+const celdaGrupo = (g) => `<span class=" tw:bg-slate-100 tw:px-2 tw:py-0.5 tw:font-mono tw:text-xs tw:font-semibold tw:text-slate-700">${esc(g)}</span>`;
+const celdaMateria = (nombre, clave) => `<div class="tw:text-[0.8125rem] tw:font-medium tw:text-slate-800">${esc(nombre)}</div><div class="tw:font-mono tw:text-[0.6875rem] tw:text-slate-400">${esc(clave)}</div>`;
 
 function formatearFechaEspanol(fechaStr) {
     if (!fechaStr) return '—';
     const partes = fechaStr.split('-');
-    if (partes.length === 3) {
-        return `${partes[2]}/${partes[1]}/${partes[0]}`;
-    }
-    return fechaStr;
+    return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : fechaStr;
 }
 
-// ==========================================
-// ABRIR ALTA PERMISO (GENERAL)
-// ==========================================
-function abrirModalAlta() {
-    document.getElementById('formAltaPermiso').reset();
-    document.getElementById('selectAltaMateria').innerHTML = '<option value="">(Primero selecciona un grupo)</option>';
-    document.getElementById('selectAltaMateria').disabled = true;
+function cerrarModal(id) {
+    const modal = bootstrap.Modal.getInstance(document.getElementById(id));
+    if (modal) modal.hide();
+}
 
-    Promise.all([
-        fetch('/permisos-captura/docentes').then(r => r.json()),
-        fetch('/permisos-captura/grupos').then(r => r.json())
-    ]).then(([docentes, grupos]) => {
-        const selectDocente = document.getElementById('selectAltaDocente');
-        selectDocente.innerHTML = '<option value="">Selecciona un docente...</option>';
-        docentes.forEach(d => {
-            const opt = document.createElement('option');
-            opt.value = d.id;
-            opt.textContent = d.nombre;
-            selectDocente.appendChild(opt);
-        });
+// =====================================================================
+// 1. AVANCE DE CAPTURA
+// =====================================================================
+let listadoMatriz = [];
+let estadoMatriz = '';
 
-        const selectGrupo = document.getElementById('selectAltaGrupo');
-        selectGrupo.innerHTML = '<option value="">Selecciona un grupo...</option>';
-        grupos.forEach(g => {
-            const opt = document.createElement('option');
-            opt.value = g.id;
-            opt.textContent = g.clave;
-            selectGrupo.appendChild(opt);
-        });
+function cargarMatriz() {
+    const spinner = document.getElementById('spinnerMatriz');
+    spinner.style.display = 'block';
+    document.getElementById('wrapperMatriz').style.display = 'none';
+    document.getElementById('emptyMatriz').style.display = 'none';
 
-        const modal = new bootstrap.Modal(document.getElementById('modalAltaPermiso'));
-        modal.show();
-    }).catch(err => {
-        console.error('Error al cargar datos auxiliares:', err);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'No se pudieron recuperar los catálogos de docentes o grupos.'
-        });
+    fetchJson('/permisos-captura/matriz')
+        .then(data => {
+            listadoMatriz = Array.isArray(data) ? data : [];
+            filtrarTablaMatriz();
+        })
+        .catch(err => {
+            console.error('Error al cargar la matriz de avance:', err);
+            Swal.fire({ icon: 'error', title: 'Error de carga', text: 'No se pudo generar la matriz de avance.', confirmButtonColor: BRAND });
+        })
+        .finally(() => { spinner.style.display = 'none'; });
+}
+
+function filtrarEstadoMatriz(valor) {
+    estadoMatriz = estadoMatriz === valor ? '' : valor;
+    filtrarTablaMatriz();
+}
+
+function renderResumenMatriz() {
+    const conteo = listadoMatriz.reduce((acc, h) => (acc[h.estado] = (acc[h.estado] || 0) + 1, acc), {});
+    let html = chipFiltro({ valor: '', texto: 'Todos', total: listadoMatriz.length, activo: estadoMatriz === '', onclick: 'filtrarEstadoMatriz' });
+    Object.entries(ESTADOS_MATRIZ).forEach(([valor, cfg]) => {
+        if (!conteo[valor]) return;
+        html += chipFiltro({ valor, texto: cfg.label, total: conteo[valor], activo: estadoMatriz === valor, onclick: 'filtrarEstadoMatriz', punto: cfg.barra });
     });
+    document.getElementById('resumenMatriz').innerHTML = html;
 }
 
-// Variables para almacenar las materias y la información del grupo cargados
+function filtrarTablaMatriz() {
+    const busqueda = normalizar(document.getElementById('buscadorMatriz').value.trim());
+    const filtrados = listadoMatriz.filter(h => {
+        const texto = normalizar(`${h.nombre_docente} ${h.clave_grupo} ${h.nombre_materia} ${h.clave_materia}`);
+        return (!busqueda || texto.includes(busqueda)) && (!estadoMatriz || h.estado === estadoMatriz);
+    });
+
+    renderResumenMatriz();
+
+    const wrapper = document.getElementById('wrapperMatriz');
+    const empty = document.getElementById('emptyMatriz');
+    if (filtrados.length === 0) {
+        wrapper.style.display = 'none';
+        empty.style.display = 'block';
+        refrescarIconos();
+        return;
+    }
+    wrapper.style.display = 'block';
+    empty.style.display = 'none';
+
+    document.getElementById('tbodyMatriz').innerHTML = filtrados.map(h => {
+        const cfg = ESTADOS_MATRIZ[h.estado] || { label: h.estado || '—', icon: 'circle', tono: 'slate', barra: '#94A3B8' };
+        const total = Number(h.alumnos_totales) || 0;
+        const hechos = Number(h.alumnos_calificados) || 0;
+        const pct = total > 0 ? Math.round((hechos / total) * 100) : 0;
+        const ids = [h.id_docente, h.id_grupo, h.id_materia].map(Number);
+
+        const acciones = [];
+        if (h.estado !== 'completo' && h.estado !== 'sin_alumnos') {
+            acciones.push(accion({ icon: 'calendar-plus', label: 'Asignar prórroga', tono: 'brand', onclick: `otorgarProrrogaRapida(${ids.join(', ')})` }));
+        }
+        acciones.push(accion({ icon: 'square-pen', label: 'Capturar calificaciones', href: `/grupos/captura_calificaciones?id_grupo=${ids[1]}&id_materia=${ids[2]}` }));
+
+        return `<tr class="tw:transition-colors ${h.estado === 'expirado' ? 'tw:bg-danger-50/50 tw:hover:bg-danger-50' : 'tw:hover:bg-slate-50'}">
+            <td class="tw:py-3 tw:pr-4 tw:pl-5 tw:align-middle">${celdaDocente(h.nombre_docente)}</td>
+            <td class="tw:px-4 tw:py-3 tw:align-middle">${celdaGrupo(h.clave_grupo)}</td>
+            <td class="tw:px-4 tw:py-3 tw:align-middle">${celdaMateria(h.nombre_materia, h.clave_materia)}</td>
+            <td class="tw:px-4 tw:py-3 tw:align-middle">
+                <div class="tw:mb-1 tw:flex tw:justify-between tw:text-[0.6875rem] tw:text-slate-500"><span>${hechos}/${total} alumnos</span><span class="tw:font-semibold tw:text-slate-700">${pct}%</span></div>
+                <div class="tw:h-1.5 tw:overflow-hidden tw:bg-slate-100"><div class="tw:h-full" style="width:${pct}%;background:${cfg.barra}"></div></div>
+            </td>
+            <td class="tw:px-4 tw:py-3 tw:align-middle tw:font-mono tw:text-xs tw:whitespace-nowrap tw:text-slate-600">${formatearFechaEspanol(h.fecha_limite)}</td>
+            <td class="tw:px-4 tw:py-3 tw:align-middle">${badge(cfg.tono, cfg.icon, cfg.label)}</td>
+            <td class="tw:py-3 tw:pr-5 tw:pl-4 tw:text-right tw:align-middle tw:whitespace-nowrap">${acciones.join('')}</td>
+        </tr>`;
+    }).join('');
+    refrescarIconos();
+}
+const filtrarTablaMatrizDebounced = debounce(filtrarTablaMatriz);
+
+// =====================================================================
+// 2. PRÓRROGAS
+// =====================================================================
+let listadoPermisos = [];
+let estadoPermisos = '';
+
+function estadoPermiso(p) {
+    if (p.finalizado == 1 || p.finalizado === true) return 'entregado';
+    return p.habilitado == 1 ? 'activo' : 'inactivo';
+}
+const ESTADOS_PERMISO = {
+    activo:    { label: 'Activa',    icon: 'circle-check', tono: 'success', punto: '#15803D' },
+    inactivo:  { label: 'Inactiva',  icon: 'circle-x',     tono: 'danger',  punto: '#DC2626' },
+    entregado: { label: 'Entregada', icon: 'lock',         tono: 'slate',   punto: '#94A3B8' },
+};
+
+function cargarPermisos() {
+    const spinner = document.getElementById('spinnerCarga');
+    spinner.style.display = 'block';
+    document.getElementById('tablaWrapper').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'none';
+
+    fetchJson('/permisos-captura/lista')
+        .then(data => {
+            listadoPermisos = Array.isArray(data) ? data : [];
+            filtrarTablaPermisos();
+        })
+        .catch(err => {
+            console.error('Error al cargar permisos:', err);
+            Swal.fire({ icon: 'error', title: 'Error de carga', text: 'No se pudieron recuperar las prórrogas registradas.', confirmButtonColor: BRAND });
+        })
+        .finally(() => { spinner.style.display = 'none'; });
+}
+
+function filtrarEstadoPermisos(valor) {
+    estadoPermisos = estadoPermisos === valor ? '' : valor;
+    filtrarTablaPermisos();
+}
+
+function filtrarTablaPermisos() {
+    const busqueda = normalizar(document.getElementById('buscadorPermisos').value.trim());
+    const filtrados = listadoPermisos.filter(p => {
+        const texto = normalizar(`${p.nombre_docente} ${p.clave_grupo} ${p.nombre_materia} ${p.clave_materia}`);
+        return (!busqueda || texto.includes(busqueda)) && (!estadoPermisos || estadoPermiso(p) === estadoPermisos);
+    });
+
+    const conteo = listadoPermisos.reduce((acc, p) => (acc[estadoPermiso(p)] = (acc[estadoPermiso(p)] || 0) + 1, acc), {});
+    document.getElementById('resumenPermisos').innerHTML =
+        chipFiltro({ valor: '', texto: 'Todas', total: listadoPermisos.length, activo: estadoPermisos === '', onclick: 'filtrarEstadoPermisos' }) +
+        Object.entries(ESTADOS_PERMISO).filter(([v]) => conteo[v]).map(([valor, cfg]) =>
+            chipFiltro({ valor, texto: cfg.label, total: conteo[valor], activo: estadoPermisos === valor, onclick: 'filtrarEstadoPermisos', punto: cfg.punto })
+        ).join('');
+
+    const wrapper = document.getElementById('tablaWrapper');
+    const empty = document.getElementById('emptyState');
+    if (filtrados.length === 0) {
+        wrapper.style.display = 'none';
+        empty.style.display = 'block';
+        refrescarIconos();
+        return;
+    }
+    wrapper.style.display = 'block';
+    empty.style.display = 'none';
+
+    document.getElementById('tbodyPermisos').innerHTML = filtrados.map(p => {
+        const cfg = ESTADOS_PERMISO[estadoPermiso(p)];
+        const id = Number(p.id);
+        const pasados = p.permitir_modificar_pasados == 1
+            ? badge('warning', 'history', 'Autorizado')
+            : '<span class="tw:text-xs tw:text-slate-400">No</span>';
+        return `<tr class="tw:transition-colors tw:hover:bg-slate-50">
+            <td class="tw:py-3 tw:pr-4 tw:pl-5 tw:align-middle">${celdaDocente(p.nombre_docente)}</td>
+            <td class="tw:px-4 tw:py-3 tw:align-middle">${celdaGrupo(p.clave_grupo)}</td>
+            <td class="tw:px-4 tw:py-3 tw:align-middle">${celdaMateria(p.nombre_materia, p.clave_materia)}</td>
+            <td class="tw:px-4 tw:py-3 tw:align-middle tw:font-mono tw:text-xs tw:whitespace-nowrap tw:text-slate-600">${formatearFechaEspanol(p.fecha_limite)}</td>
+            <td class="tw:px-4 tw:py-3 tw:align-middle">${pasados}</td>
+            <td class="tw:px-4 tw:py-3 tw:align-middle">${badge(cfg.tono, cfg.icon, cfg.label)}</td>
+            <td class="tw:py-3 tw:pr-5 tw:pl-4 tw:text-right tw:align-middle tw:whitespace-nowrap">
+                ${accion({ icon: 'pencil', label: 'Editar prórroga', tono: 'brand', onclick: `abrirModalEdicion(${id})` })}
+                ${accion({ icon: 'trash-2', label: 'Eliminar prórroga', tono: 'danger', onclick: `eliminarPermiso(${id})` })}
+            </td>
+        </tr>`;
+    }).join('');
+    refrescarIconos();
+}
+const filtrarTablaPermisosDebounced = debounce(filtrarTablaPermisos);
+
+// =====================================================================
+// MODAL: ASIGNAR PRÓRROGA (general o desde la matriz)
+// =====================================================================
+let catalogosCache = null;
 let materiasCargadas = [];
 let grupoCargado = null;
+
+async function obtenerCatalogos() {
+    if (!catalogosCache) {
+        catalogosCache = Promise.all([
+            fetchJson('/permisos-captura/docentes'),
+            fetchJson('/permisos-captura/grupos'),
+        ]).then(([docentes, grupos]) => ({
+            docentes: Array.isArray(docentes) ? docentes : [],
+            grupos: Array.isArray(grupos) ? grupos : [],
+        })).catch(err => { catalogosCache = null; throw err; });
+    }
+    return catalogosCache;
+}
+
+function llenarSelect(select, items, placeholder, valueKey, textKey, seleccionado) {
+    select.innerHTML = `<option value="">${placeholder}</option>` + items.map(it =>
+        `<option value="${esc(it[valueKey])}" ${it[valueKey] == seleccionado ? 'selected' : ''}>${esc(it[textKey])}</option>`
+    ).join('');
+}
+
+async function abrirModalAlta(preset = {}) {
+    document.getElementById('formAltaPermiso').reset();
+    const selectMateria = document.getElementById('selectAltaMateria');
+    selectMateria.innerHTML = '<option value="">Primero elige un grupo</option>';
+    selectMateria.disabled = true;
+    document.getElementById('divCheckMateriaPasada').style.display = 'none';
+    materiasCargadas = [];
+    grupoCargado = null;
+
+    try {
+        const { docentes, grupos } = await obtenerCatalogos();
+        llenarSelect(document.getElementById('selectAltaDocente'), docentes, 'Selecciona un docente…', 'id', 'nombre', preset.idDocente);
+        llenarSelect(document.getElementById('selectAltaGrupo'), grupos, 'Selecciona un grupo…', 'id', 'clave', preset.idGrupo);
+
+        if (preset.idGrupo) {
+            await cargarMateriasPorGrupo(preset.idGrupo);
+            if (preset.idMateria) {
+                // Si la materia no aparece con el filtro por nivel, incluir las de otros niveles
+                if (![...selectMateria.options].some(o => o.value == preset.idMateria)) {
+                    document.getElementById('checkMateriaPasada').checked = true;
+                    filtrarMaterias();
+                }
+                selectMateria.value = String(preset.idMateria);
+            }
+        }
+
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAltaPermiso')).show();
+        setTimeout(() => document.getElementById('inputAltaFechaLimite').focus(), 350);
+    } catch (err) {
+        console.error('Error al cargar datos auxiliares:', err);
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron recuperar los catálogos de docentes o grupos.', confirmButtonColor: BRAND });
+    }
+}
+
+function otorgarProrrogaRapida(idDocente, idGrupo, idMateria) {
+    abrirModalAlta({ idDocente, idGrupo, idMateria });
+}
 
 function cargarMateriasPorGrupo(idGrupo) {
     const selectMateria = document.getElementById('selectAltaMateria');
@@ -1407,113 +702,73 @@ function cargarMateriasPorGrupo(idGrupo) {
     const divCheck = document.getElementById('divCheckMateriaPasada');
     const checkPasada = document.getElementById('checkMateriaPasada');
 
-    if (!idGrupo) {
-        selectMateria.innerHTML = '<option value="">(Primero selecciona un grupo)</option>';
+    const limpiar = (texto) => {
+        selectMateria.innerHTML = `<option value="">${texto}</option>`;
         selectMateria.disabled = true;
-        if (divCheck) divCheck.style.display = 'none';
-        if (checkPasada) checkPasada.checked = false;
+        divCheck.style.display = 'none';
+        checkPasada.checked = false;
         materiasCargadas = [];
         grupoCargado = null;
-        return;
-    }
+    };
+
+    if (!idGrupo) { limpiar('Primero elige un grupo'); return Promise.resolve(); }
 
     loader.style.display = 'inline-block';
     selectMateria.disabled = true;
 
-    fetch(`/grupos/${idGrupo}/calificaciones-materia`)
-        .then(res => res.json())
+    return fetchJson(`/grupos/${encodeURIComponent(idGrupo)}/calificaciones-materia`)
         .then(resp => {
-            if (resp.success && resp.data) {
+            if (resp && resp.success && resp.data) {
                 materiasCargadas = resp.data.materias || [];
                 grupoCargado = resp.data.grupo || null;
-                if (divCheck) divCheck.style.display = 'block';
+                divCheck.style.display = 'block';
                 filtrarMaterias();
             } else {
-                selectMateria.innerHTML = '<option value="">No hay asignaturas en este grupo</option>';
-                if (divCheck) divCheck.style.display = 'none';
-                if (checkPasada) checkPasada.checked = false;
-                materiasCargadas = [];
-                grupoCargado = null;
+                limpiar('No hay asignaturas en este grupo');
             }
         })
         .catch(err => {
             console.error('Error al cargar materias:', err);
-            selectMateria.innerHTML = '<option value="">Error al cargar asignaturas</option>';
-            if (divCheck) divCheck.style.display = 'none';
-            if (checkPasada) checkPasada.checked = false;
-            materiasCargadas = [];
-            grupoCargado = null;
+            limpiar('Error al cargar asignaturas');
         })
-        .finally(() => {
-            loader.style.display = 'none';
-        });
+        .finally(() => { loader.style.display = 'none'; });
 }
 
 function filtrarMaterias() {
     const selectMateria = document.getElementById('selectAltaMateria');
     const docenteId = document.getElementById('selectAltaDocente').value;
-    const checkPasada = document.getElementById('checkMateriaPasada');
-    const mostrarPasadas = checkPasada ? checkPasada.checked : false;
-
-    selectMateria.innerHTML = '';
+    const mostrarPasadas = document.getElementById('checkMateriaPasada').checked;
 
     if (materiasCargadas.length === 0) {
-        selectMateria.innerHTML = '<option value="">No hay asignaturas en este grupo</option>';
+        selectMateria.innerHTML = '<option value="">' + (document.getElementById('selectAltaGrupo').value ? 'No hay asignaturas en este grupo' : 'Primero elige un grupo') + '</option>';
         selectMateria.disabled = true;
         return;
     }
 
-    // 1. Filtrar materias por el docente seleccionado (si hay uno elegido)
     let filtered = materiasCargadas;
     if (docenteId) {
-        filtered = materiasCargadas.filter(m => {
-            return m.id_docente && parseInt(m.id_docente) === parseInt(docenteId);
-        });
+        filtered = filtered.filter(m => m.id_docente && parseInt(m.id_docente) === parseInt(docenteId));
     }
-
-    // 2. Si no mostramos las pasadas, filtrar por el nivel actual del grupo
     if (!mostrarPasadas && grupoCargado && grupoCargado.id_nivel_academico) {
-        const currentLevel = parseInt(grupoCargado.id_nivel_academico);
-        filtered = filtered.filter(m => {
-            return !m.id_nivel_academico || parseInt(m.id_nivel_academico) === currentLevel;
-        });
+        const nivel = parseInt(grupoCargado.id_nivel_academico);
+        filtered = filtered.filter(m => !m.id_nivel_academico || parseInt(m.id_nivel_academico) === nivel);
     }
 
     if (filtered.length === 0) {
-        const optNone = document.createElement('option');
-        optNone.value = '';
-        optNone.textContent = docenteId 
-            ? (mostrarPasadas ? 'El docente no imparte materias en este grupo' : 'El docente no imparte materias en el nivel actual del grupo')
+        const texto = docenteId
+            ? (mostrarPasadas ? 'El docente no imparte materias en este grupo' : 'El docente no imparte materias del nivel actual')
             : 'No hay materias que coincidan';
-        selectMateria.appendChild(optNone);
+        selectMateria.innerHTML = `<option value="">${texto}</option>`;
         selectMateria.disabled = true;
         return;
     }
 
-    const optDef = document.createElement('option');
-    optDef.value = '';
-    optDef.textContent = 'Selecciona una asignatura...';
-    selectMateria.appendChild(optDef);
-
-    filtered.forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = m.idMateria;
-        
-        let labelNivel = '';
-        if (m.nombreNivel) {
-            labelNivel = ` - ${m.nombreNivel}`;
-        }
-        
-        opt.textContent = `${m.nombreMateria} (${m.claveMateria})${labelNivel}`;
-        selectMateria.appendChild(opt);
-    });
-
+    selectMateria.innerHTML = '<option value="">Selecciona una asignatura…</option>' + filtered.map(m =>
+        `<option value="${esc(m.idMateria)}">${esc(m.nombreMateria)} (${esc(m.claveMateria)})${m.nombreNivel ? ', ' + esc(m.nombreNivel) : ''}</option>`
+    ).join('');
     selectMateria.disabled = false;
 }
 
-// ==========================================
-// GUARDAR NUEVO PERMISO
-// ==========================================
 function guardarNuevoPermiso() {
     const idDocente = document.getElementById('selectAltaDocente').value;
     const idGrupo = document.getElementById('selectAltaGrupo').value;
@@ -1522,20 +777,16 @@ function guardarNuevoPermiso() {
     const checkPasados = document.getElementById('checkAltaPasados').checked ? 1 : 0;
 
     if (!idDocente || !idGrupo || !idMateria || !fechaLimite) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Campos incompletos',
-            text: 'Por favor, llena todos los campos obligatorios del formulario.'
-        });
+        Swal.fire({ icon: 'warning', title: 'Campos incompletos', text: 'Selecciona docente, grupo, asignatura y fecha límite.', confirmButtonColor: BRAND });
         return;
     }
 
-    fetch('/permisos-captura', {
+    const btn = document.getElementById('btnGuardarAlta');
+    btn.disabled = true;
+
+    fetchJson('/permisos-captura', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF },
         body: JSON.stringify({
             id_docente: parseInt(idDocente),
             id_grupo: parseInt(idGrupo),
@@ -1544,49 +795,28 @@ function guardarNuevoPermiso() {
             permitir_modificar_pasados: checkPasados
         })
     })
-    .then(res => res.json())
     .then(resp => {
-        if (resp.success) {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Asignado!',
-                text: resp.message,
-                timer: 2000,
-                showConfirmButton: false
-            });
-            const modalEl = document.getElementById('modalAltaPermiso');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) modal.hide();
-            
-            // Recargar datos en la pestaña activa
-            if (document.getElementById('tab-matriz-btn').classList.contains('active')) {
-                cargarMatriz();
-            } else {
-                cargarPermisos();
-            }
+        if (resp && resp.success) {
+            Swal.fire({ icon: 'success', title: '¡Prórroga asignada!', text: resp.message, timer: 2000, showConfirmButton: false });
+            cerrarModal('modalAltaPermiso');
+            if (document.getElementById('tab-matriz-btn').classList.contains('active')) cargarMatriz();
+            else cargarPermisos();
         } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'No se pudo asignar',
-                text: resp.message || 'Error desconocido'
-            });
+            Swal.fire({ icon: 'error', title: 'No se pudo asignar', text: mensajeError(resp, 'Error desconocido.'), confirmButtonColor: BRAND });
         }
     })
     .catch(err => {
         console.error('Error al guardar:', err);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error de servidor',
-            text: 'Ocurrió un error al intentar crear el permiso.'
-        });
-    });
+        Swal.fire({ icon: 'error', title: 'Error de servidor', text: 'Ocurrió un error al intentar crear la prórroga.', confirmButtonColor: BRAND });
+    })
+    .finally(() => { btn.disabled = false; });
 }
 
-// ==========================================
-// ABRIR EDICION
-// ==========================================
+// =====================================================================
+// MODAL: EDITAR / ELIMINAR PRÓRROGA
+// =====================================================================
 function abrirModalEdicion(idPermiso) {
-    const permiso = listadoPermisos.find(p => p.id === idPermiso);
+    const permiso = listadoPermisos.find(p => Number(p.id) === Number(idPermiso));
     if (!permiso) return;
 
     document.getElementById('inputEditId').value = permiso.id;
@@ -1597,191 +827,135 @@ function abrirModalEdicion(idPermiso) {
     document.getElementById('checkEditPasados').checked = permiso.permitir_modificar_pasados == 1;
     document.getElementById('checkEditHabilitado').checked = permiso.habilitado == 1;
 
-    const modal = new bootstrap.Modal(document.getElementById('modalEditarPermiso'));
-    modal.show();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarPermiso')).show();
 }
 
-// ==========================================
-// GUARDAR EDICION
-// ==========================================
 function guardarEdicionPermiso() {
     const id = document.getElementById('inputEditId').value;
     const fechaLimite = document.getElementById('inputEditFechaLimite').value;
-    const checkPasados = document.getElementById('checkEditPasados').checked ? 1 : 0;
-    const checkHabilitado = document.getElementById('checkEditHabilitado').checked ? 1 : 0;
 
     if (!id || !fechaLimite) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Fecha Requerida',
-            text: 'Por favor especifique la fecha límite del permiso.'
-        });
+        Swal.fire({ icon: 'warning', title: 'Fecha requerida', text: 'Indica la fecha límite de la prórroga.', confirmButtonColor: BRAND });
         return;
     }
 
-    fetch(`/permisos-captura/${id}`, {
+    fetchJson(`/permisos-captura/${encodeURIComponent(id)}`, {
         method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF },
         body: JSON.stringify({
             fecha_limite: fechaLimite,
-            permitir_modificar_pasados: checkPasados,
-            habilitado: checkHabilitado
+            permitir_modificar_pasados: document.getElementById('checkEditPasados').checked ? 1 : 0,
+            habilitado: document.getElementById('checkEditHabilitado').checked ? 1 : 0
         })
     })
-    .then(res => res.json())
     .then(resp => {
-        if (resp.success) {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Actualizado!',
-                text: resp.message,
-                timer: 1500,
-                showConfirmButton: false
-            });
-            const modalEl = document.getElementById('modalEditarPermiso');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) modal.hide();
-            
+        if (resp && resp.success) {
+            Swal.fire({ icon: 'success', title: '¡Actualizada!', text: resp.message, timer: 1500, showConfirmButton: false });
+            cerrarModal('modalEditarPermiso');
             cargarPermisos();
         } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: resp.message || 'No se pudo guardar la actualización.'
-            });
+            Swal.fire({ icon: 'error', title: 'Error', text: mensajeError(resp, 'No se pudo guardar la actualización.'), confirmButtonColor: BRAND });
         }
     })
     .catch(err => {
         console.error('Error al actualizar:', err);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error de servidor',
-            text: 'Ocurrió un error al intentar modificar el permiso.'
+        Swal.fire({ icon: 'error', title: 'Error de servidor', text: 'Ocurrió un error al intentar modificar la prórroga.', confirmButtonColor: BRAND });
+    });
+}
+
+function eliminarPermiso(idPermiso) {
+    const permiso = listadoPermisos.find(p => Number(p.id) === Number(idPermiso));
+    if (!permiso) return;
+
+    Swal.fire({
+        title: '¿Eliminar prórroga?',
+        text: `${permiso.nombre_docente} perderá la prórroga en "${permiso.nombre_materia}" y volverá a los tiempos ordinarios de captura.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#DC2626',
+        cancelButtonColor: '#64748B',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+        fetchJson(`/permisos-captura/${encodeURIComponent(idPermiso)}`, {
+            method: 'DELETE',
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF }
+        })
+        .then(resp => {
+            if (resp && resp.success) {
+                Swal.fire({ icon: 'success', title: '¡Eliminada!', text: resp.message, timer: 1500, showConfirmButton: false });
+                cargarPermisos();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Error', text: mensajeError(resp, 'No se pudo eliminar la prórroga.'), confirmButtonColor: BRAND });
+            }
+        })
+        .catch(err => {
+            console.error('Error al eliminar:', err);
+            Swal.fire({ icon: 'error', title: 'Error de servidor', text: 'Ocurrió un error al intentar eliminar la prórroga.', confirmButtonColor: BRAND });
         });
     });
 }
 
-// ==========================================
-// ELIMINAR PERMISO
-// ==========================================
-function eliminarPermiso(idPermiso) {
-    const permiso = listadoPermisos.find(p => p.id === idPermiso);
-    if (!permiso) return;
-
-    Swal.fire({
-        title: '¿Eliminar Permiso Especial?',
-        text: `Se retirará el permiso del docente "${permiso.nombre_docente}" para la materia "${permiso.nombre_materia}". Su acceso volverá a los límites de tiempo regulares.`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#E53935',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`/permisos-captura/${idPermiso}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(res => res.json())
-            .then(resp => {
-                if (resp.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Eliminado!',
-                        text: resp.message,
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                    cargarPermisos();
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: resp.message || 'No se pudo eliminar el permiso.'
-                    });
-                }
-            })
-            .catch(err => {
-                console.error('Error al eliminar:', err);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error de servidor',
-                    text: 'Ocurrió un error al intentar eliminar el permiso.'
-                });
-            });
-        }
-    });
-}
-
-// ==========================================
-// SECCIÓN DE CONFIGURACIÓN CCT / GRUPO (TAB 3)
-// ==========================================
+// =====================================================================
+// 3. PERIODOS POR GRUPO
+// =====================================================================
+const PERIODOS = [
+    { key: 'p1', cap: 'P1', nombre: '1er parcial' },
+    { key: 'p2', cap: 'P2', nombre: '2do parcial' },
+    { key: 'p3', cap: 'P3', nombre: '3er parcial' },
+    { key: 'semestral', cap: 'Semestral', nombre: 'Examen semestral' },
+    { key: 'extraordinario', cap: 'Extraordinario', nombre: 'Examen extraordinario' },
+];
 let listadoCcts = [];
 let listadoGruposCct = [];
 let grupoConfiguracionActualId = null;
 
+function mostrarAjustes(visible) {
+    document.getElementById('cardAjustesGrupo').style.display = visible ? 'block' : 'none';
+    document.getElementById('vacioAjustesGrupo').style.display = visible ? 'none' : 'block';
+}
+
 function cargarCctConfigList() {
     const selectCct = document.getElementById('selectCctConfig');
     const selectGrupo = document.getElementById('selectGrupoConfig');
-    document.getElementById('cardAjustesGrupo').style.display = 'none';
-    
-    selectGrupo.innerHTML = '<option value="">(Primero selecciona un plantel)</option>';
+    mostrarAjustes(false);
+    selectGrupo.innerHTML = '<option value="">Primero elige un plantel</option>';
     selectGrupo.disabled = true;
 
-    fetch('/permisos-captura/ccts')
-        .then(res => res.json())
+    fetchJson('/permisos-captura/ccts')
         .then(data => {
-            listadoCcts = data;
-            selectCct.innerHTML = '<option value="">Seleccione un plantel...</option>';
-            data.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c.id;
-                opt.textContent = `${c.nombre} (${c.clave})`;
-                selectCct.appendChild(opt);
-            });
+            listadoCcts = Array.isArray(data) ? data : [];
+            selectCct.innerHTML = '<option value="">Selecciona un plantel…</option>' +
+                listadoCcts.map(c => `<option value="${esc(c.id)}">${esc(c.nombre)} (${esc(c.clave)})</option>`).join('');
         })
         .catch(err => {
             console.error('Error al cargar planteles CCT:', err);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de carga',
-                text: 'No se pudo cargar el listado de planteles.'
-            });
+            Swal.fire({ icon: 'error', title: 'Error de carga', text: 'No se pudo cargar el listado de planteles.', confirmButtonColor: BRAND });
         });
 }
 
 function cargarGruposConfig(idCct) {
     const selectGrupo = document.getElementById('selectGrupoConfig');
-    document.getElementById('cardAjustesGrupo').style.display = 'none';
+    mostrarAjustes(false);
     grupoConfiguracionActualId = null;
 
     if (!idCct) {
-        selectGrupo.innerHTML = '<option value="">(Primero selecciona un plantel)</option>';
+        selectGrupo.innerHTML = '<option value="">Primero elige un plantel</option>';
         selectGrupo.disabled = true;
         return;
     }
 
-    selectGrupo.innerHTML = '<option value="">Cargando grupos...</option>';
+    selectGrupo.innerHTML = '<option value="">Cargando grupos…</option>';
     selectGrupo.disabled = true;
 
-    fetch(`/permisos-captura/cct/${idCct}/grupos`)
-        .then(res => res.json())
+    fetchJson(`/permisos-captura/cct/${encodeURIComponent(idCct)}/grupos`)
         .then(data => {
-            listadoGruposCct = data;
-            selectGrupo.innerHTML = '<option value="">Seleccione un grupo...</option>';
-            if (data.length > 0) {
-                data.forEach(g => {
-                    const opt = document.createElement('option');
-                    opt.value = g.id;
-                    opt.textContent = g.clave;
-                    selectGrupo.appendChild(opt);
-                });
+            listadoGruposCct = Array.isArray(data) ? data : [];
+            if (listadoGruposCct.length > 0) {
+                selectGrupo.innerHTML = '<option value="">Selecciona un grupo…</option>' +
+                    listadoGruposCct.map(g => `<option value="${esc(g.id)}">${esc(g.clave)}</option>`).join('');
                 selectGrupo.disabled = false;
             } else {
                 selectGrupo.innerHTML = '<option value="">No hay grupos activos en este plantel</option>';
@@ -1794,243 +968,142 @@ function cargarGruposConfig(idCct) {
 }
 
 function cargarConfiguracionGrupo(idGrupo) {
-    const card = document.getElementById('cardAjustesGrupo');
     if (!idGrupo) {
-        card.style.display = 'none';
+        mostrarAjustes(false);
         grupoConfiguracionActualId = null;
         return;
     }
 
     grupoConfiguracionActualId = parseInt(idGrupo);
     const selectedGrupo = listadoGruposCct.find(g => g.id == idGrupo);
-    document.getElementById('lblGrupoNombreTitle').textContent = `Ajustes de Captura - Grupo: ${selectedGrupo ? selectedGrupo.clave : '—'}`;
+    document.getElementById('lblGrupoNombreTitle').textContent = `Grupo ${selectedGrupo ? selectedGrupo.clave : '—'}`;
 
-    fetch(`/permisos-captura/grupo-config/${idGrupo}`)
-        .then(res => res.json())
+    fetchJson(`/permisos-captura/grupo-config/${encodeURIComponent(idGrupo)}`)
         .then(resp => {
-            if (resp.success && resp.config) {
-                const c = resp.config;
-                
-                // Populate level dropdown
-                const selectNivel = document.getElementById('selectGrupoNivelCaptura');
-                selectNivel.innerHTML = '<option value="">Seleccione un semestre...</option>';
-                if (resp.levels && resp.levels.length > 0) {
-                    resp.levels.forEach(lvl => {
-                        const opt = document.createElement('option');
-                        opt.value = lvl.id;
-                        opt.textContent = lvl.nombre;
-                        selectNivel.appendChild(opt);
-                    });
-                }
-                selectNivel.value = c.id_nivel_academico || '';
-
-                // Handle CCT BGNE visibility adaptations
-                const isBgne = resp.isBgne === true;
-                const cardP2 = document.getElementById('cardAjusteP2');
-                const cardP3 = document.getElementById('cardAjusteP3');
-                const cardSem = document.getElementById('cardAjusteSemestral');
-                const lblP1Title = document.getElementById('lblGrupoP1Title');
-
-                if (isBgne) {
-                    if (cardP2) cardP2.style.display = 'none';
-                    if (cardP3) cardP3.style.display = 'none';
-                    if (cardSem) cardSem.style.display = 'none';
-                    if (lblP1Title) {
-                        lblP1Title.innerHTML = '<i class="ti ti-checkbox text-muted me-2"></i> Calificación Final de la Asignatura';
-                    }
-                } else {
-                    if (cardP2) cardP2.style.display = 'block';
-                    if (cardP3) cardP3.style.display = 'block';
-                    if (cardSem) cardSem.style.display = 'block';
-                    if (lblP1Title) {
-                        lblP1Title.innerHTML = '<i class="ti ti-checkbox text-muted me-2"></i> 1er. Parcial';
-                    }
-                }
-
-                document.getElementById('checkGrupoHabilitada').checked = c.captura_habilitada == 1;
-                
-                // Parcial 1
-                document.getElementById('checkGrupoP1').checked = c.p1_habilitado == 1;
-                document.getElementById('inputGrupoP1Inicio').value = c.p1_fecha_inicio || '';
-                document.getElementById('inputGrupoP1Fin').value = c.p1_fecha_fin || '';
-                toggleFilaFecha('p1', c.p1_habilitado == 1);
-
-                // Parcial 2
-                document.getElementById('checkGrupoP2').checked = c.p2_habilitado == 1;
-                document.getElementById('inputGrupoP2Inicio').value = c.p2_fecha_inicio || '';
-                document.getElementById('inputGrupoP2Fin').value = c.p2_fecha_fin || '';
-                toggleFilaFecha('p2', c.p2_habilitado == 1);
-
-                // Parcial 3
-                document.getElementById('checkGrupoP3').checked = c.p3_habilitado == 1;
-                document.getElementById('inputGrupoP3Inicio').value = c.p3_fecha_inicio || '';
-                document.getElementById('inputGrupoP3Fin').value = c.p3_fecha_fin || '';
-                toggleFilaFecha('p3', c.p3_habilitado == 1);
-
-                // Semestral
-                document.getElementById('checkGrupoSemestral').checked = c.semestral_habilitado == 1;
-                document.getElementById('inputGrupoSemestralInicio').value = c.semestral_fecha_inicio || '';
-                document.getElementById('inputGrupoSemestralFin').value = c.semestral_fecha_fin || '';
-                toggleFilaFecha('semestral', c.semestral_habilitado == 1);
-
-                // Extraordinario
-                document.getElementById('checkGrupoExtraordinario').checked = c.extraordinario_habilitado == 1;
-                document.getElementById('inputGrupoExtraordinarioInicio').value = c.extraordinario_fecha_inicio || '';
-                document.getElementById('inputGrupoExtraordinarioFin').value = c.extraordinario_fecha_fin || '';
-                toggleFilaFecha('extraordinario', c.extraordinario_habilitado == 1);
-
-                toggleInputsGrupo(c.captura_habilitada == 1);
-                card.style.display = 'block';
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: resp.message || 'No se pudo obtener la configuración.'
-                });
+            if (!(resp && resp.success && resp.config)) {
+                Swal.fire({ icon: 'error', title: 'Error', text: mensajeError(resp, 'No se pudo obtener la configuración.'), confirmButtonColor: BRAND });
+                return;
             }
+            const c = resp.config;
+
+            const selectNivel = document.getElementById('selectGrupoNivelCaptura');
+            selectNivel.innerHTML = '<option value="">Selecciona un semestre…</option>' +
+                (resp.levels || []).map(l => `<option value="${esc(l.id)}">${esc(l.nombre)}</option>`).join('');
+            selectNivel.value = c.id_nivel_academico || '';
+
+            // BGNE solo maneja una calificación final (sin P2, P3 ni semestral)
+            const isBgne = resp.isBgne === true;
+            ['cardAjusteP2', 'cardAjusteP3', 'cardAjusteSemestral'].forEach(id => {
+                document.getElementById(id).style.display = isBgne ? 'none' : 'block';
+            });
+            document.getElementById('lblGrupoP1Title').textContent = isBgne ? 'Calificación final de la asignatura' : '1er parcial';
+
+            document.getElementById('checkGrupoHabilitada').checked = c.captura_habilitada == 1;
+            PERIODOS.forEach(({ key, cap }) => {
+                document.getElementById(`checkGrupo${cap}`).checked = c[`${key}_habilitado`] == 1;
+                document.getElementById(`inputGrupo${cap}Inicio`).value = c[`${key}_fecha_inicio`] || '';
+                document.getElementById(`inputGrupo${cap}Fin`).value = c[`${key}_fecha_fin`] || '';
+            });
+
+            toggleInputsGrupo(c.captura_habilitada == 1);
+            mostrarAjustes(true);
         })
         .catch(err => {
             console.error('Error al cargar config grupo:', err);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de carga',
-                text: 'No se pudo cargar la configuración de este grupo.'
-            });
+            Swal.fire({ icon: 'error', title: 'Error de carga', text: 'No se pudo cargar la configuración de este grupo.', confirmButtonColor: BRAND });
         });
 }
 
 function toggleInputsGrupo(enabled) {
-    const switches = document.querySelectorAll('.switch-grupo-sub');
-    switches.forEach(s => {
-        s.disabled = !enabled;
-    });
-
-    const cardAjustes = document.querySelectorAll('.card-periodo-ajuste');
-    cardAjustes.forEach(c => {
-        if (!enabled) {
-            c.style.opacity = '0.5';
-            c.querySelectorAll('input').forEach(i => i.disabled = true);
-        } else {
-            c.style.opacity = '1';
-            const sw = c.querySelector('.switch-grupo-sub');
-            c.querySelectorAll('input[type="date"]').forEach(i => i.disabled = !sw.checked);
-        }
+    document.getElementById('selectGrupoNivelCaptura').disabled = !enabled;
+    document.querySelectorAll('.card-periodo-ajuste').forEach(card => {
+        const sw = card.querySelector('.switch-grupo-sub');
+        sw.disabled = !enabled;
+        card.style.opacity = enabled ? '1' : '0.55';
+        card.querySelectorAll('input[type="date"]').forEach(i => i.disabled = !enabled || !sw.checked);
     });
 }
 
 function toggleFilaFecha(periodKey, enabled) {
-    const capitalized = periodKey.charAt(0).toUpperCase() + periodKey.slice(1);
-    const inpInicio = document.getElementById(`inputGrupo${capitalized}Inicio`);
-    const inpFin = document.getElementById(`inputGrupo${capitalized}Fin`);
+    const cap = periodKey.charAt(0).toUpperCase() + periodKey.slice(1);
     const masterEnabled = document.getElementById('checkGrupoHabilitada').checked;
+    ['Inicio', 'Fin'].forEach(s => {
+        const inp = document.getElementById(`inputGrupo${cap}${s}`);
+        if (inp) inp.disabled = !enabled || !masterEnabled;
+    });
+}
 
-    if (inpInicio && inpFin) {
-        const shouldDisable = !enabled || !masterEnabled;
-        inpInicio.disabled = shouldDisable;
-        inpFin.disabled = shouldDisable;
+function validarConfiguracionGrupo() {
+    const errores = [];
+    if (!document.getElementById('checkGrupoHabilitada').checked) return errores;
+
+    if (!document.getElementById('selectGrupoNivelCaptura').value) {
+        errores.push('Selecciona el semestre habilitado para captura.');
     }
+    PERIODOS.forEach(({ cap, nombre }) => {
+        const card = document.getElementById(`checkGrupo${cap}`).closest('.card-periodo-ajuste');
+        if (card.style.display === 'none' || !document.getElementById(`checkGrupo${cap}`).checked) return;
+        const ini = document.getElementById(`inputGrupo${cap}Inicio`).value;
+        const fin = document.getElementById(`inputGrupo${cap}Fin`).value;
+        const titulo = cap === 'P1' ? document.getElementById('lblGrupoP1Title').textContent.trim() : nombre;
+        if (!ini || !fin) errores.push(`${titulo}: indica fecha de inicio y de fin.`);
+        else if (ini > fin) errores.push(`${titulo}: la fecha de fin es anterior a la de inicio.`);
+    });
+    return errores;
 }
 
 function guardarConfiguracionGrupo() {
     if (!grupoConfiguracionActualId) return;
 
-    const idNivelAcademico = document.getElementById('selectGrupoNivelCaptura').value;
-    const capturaHabilitada = document.getElementById('checkGrupoHabilitada').checked ? 1 : 0;
-    
-    const p1Habilitado = document.getElementById('checkGrupoP1').checked ? 1 : 0;
-    const p1Inicio = document.getElementById('inputGrupoP1Inicio').value;
-    const p1Fin = document.getElementById('inputGrupoP1Fin').value;
+    const errores = validarConfiguracionGrupo();
+    if (errores.length) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Revisa los ajustes',
+            html: `<ul style="text-align:left;margin:0;padding-left:1.2em;font-size:.875rem;color:#475569">${errores.map(e => `<li>${esc(e)}</li>`).join('')}</ul>`,
+            confirmButtonColor: BRAND
+        });
+        return;
+    }
 
-    const p2Habilitado = document.getElementById('checkGrupoP2').checked ? 1 : 0;
-    const p2Inicio = document.getElementById('inputGrupoP2Inicio').value;
-    const p2Fin = document.getElementById('inputGrupoP2Fin').value;
+    const payload = {
+        id_nivel_academico: document.getElementById('selectGrupoNivelCaptura').value,
+        captura_habilitada: document.getElementById('checkGrupoHabilitada').checked ? 1 : 0,
+    };
+    PERIODOS.forEach(({ key, cap }) => {
+        payload[`${key}_habilitado`] = document.getElementById(`checkGrupo${cap}`).checked ? 1 : 0;
+        payload[`${key}_fecha_inicio`] = document.getElementById(`inputGrupo${cap}Inicio`).value;
+        payload[`${key}_fecha_fin`] = document.getElementById(`inputGrupo${cap}Fin`).value;
+    });
 
-    const p3Habilitado = document.getElementById('checkGrupoP3').checked ? 1 : 0;
-    const p3Inicio = document.getElementById('inputGrupoP3Inicio').value;
-    const p3Fin = document.getElementById('inputGrupoP3Fin').value;
-
-    const semestralHabilitado = document.getElementById('checkGrupoSemestral').checked ? 1 : 0;
-    const semestralInicio = document.getElementById('inputGrupoSemestralInicio').value;
-    const semestralFin = document.getElementById('inputGrupoSemestralFin').value;
-
-    const extraordinarioHabilitado = document.getElementById('checkGrupoExtraordinario').checked ? 1 : 0;
-    const extraordinarioInicio = document.getElementById('inputGrupoExtraordinarioInicio').value;
-    const extraordinarioFin = document.getElementById('inputGrupoExtraordinarioFin').value;
-
-    fetch(`/permisos-captura/grupo-config/${grupoConfiguracionActualId}`, {
+    fetchJson(`/permisos-captura/grupo-config/${grupoConfiguracionActualId}`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            id_nivel_academico: idNivelAcademico,
-            captura_habilitada: capturaHabilitada,
-            
-            p1_habilitado: p1Habilitado,
-            p1_fecha_inicio: p1Inicio,
-            p1_fecha_fin: p1Fin,
-
-            p2_habilitado: p2Habilitado,
-            p2_fecha_inicio: p2Inicio,
-            p2_fecha_fin: p2Fin,
-
-            p3_habilitado: p3Habilitado,
-            p3_fecha_inicio: p3Inicio,
-            p3_fecha_fin: p3Fin,
-
-            semestral_habilitado: semestralHabilitado,
-            semestral_fecha_inicio: semestralInicio,
-            semestral_fecha_fin: semestralFin,
-
-            extraordinario_habilitado: extraordinarioHabilitado,
-            extraordinario_fecha_inicio: extraordinarioInicio,
-            extraordinario_fecha_fin: extraordinarioFin
-        })
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF },
+        body: JSON.stringify(payload)
     })
-    .then(res => res.json())
     .then(resp => {
-        if (resp.success) {
-            Swal.fire({
-                icon: 'success',
-                title: '¡Guardado!',
-                text: resp.message,
-                timer: 2000,
-                showConfirmButton: false
-            });
+        if (resp && resp.success) {
+            Swal.fire({ icon: 'success', title: '¡Guardado!', text: resp.message, timer: 2000, showConfirmButton: false });
         } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error al guardar',
-                text: resp.message || 'No se pudo guardar la configuración.'
-            });
+            Swal.fire({ icon: 'error', title: 'Error al guardar', text: mensajeError(resp, 'No se pudo guardar la configuración.'), confirmButtonColor: BRAND });
         }
     })
     .catch(err => {
         console.error('Error al guardar config grupo:', err);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error de servidor',
-            text: 'Ocurrió un error al guardar los ajustes de este grupo.'
-        });
+        Swal.fire({ icon: 'error', title: 'Error de servidor', text: 'Ocurrió un error al guardar los ajustes de este grupo.', confirmButtonColor: BRAND });
     });
 }
 
-// Carga Inicial
-document.addEventListener("DOMContentLoaded", function() {
-    const modalAlta = document.getElementById('modalAltaPermiso');
-    const modalEdit = document.getElementById('modalEditarPermiso');
+// =====================================================================
+// CARGA INICIAL
+// =====================================================================
+document.addEventListener('DOMContentLoaded', function () {
     const modalContainer = document.getElementById('contenedorModal') || document.body;
-
-    if (modalAlta && modalAlta.parentElement !== modalContainer) {
-        modalContainer.appendChild(modalAlta);
-    }
-    if (modalEdit && modalEdit.parentElement !== modalContainer) {
-        modalContainer.appendChild(modalEdit);
-    }
-
+    ['modalAltaPermiso', 'modalEditarPermiso'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.parentElement !== modalContainer) modalContainer.appendChild(el);
+    });
     cargarMatriz();
 });
 </script>
-
 @endsection

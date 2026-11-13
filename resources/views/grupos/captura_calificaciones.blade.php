@@ -3,846 +3,383 @@
 @section('content')
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link rel="stylesheet" href="{{ asset('css/estilosGrupos.css') }}">
 
 <style>
-/* ==========================================================================
-   CAPTURA DE CALIFICACIONES - DESIGN SYSTEM (Linear / shadcn/ui)
-   ========================================================================== */
+/* Apilamiento: SweetAlert por encima de los modales de captura */
+.swal2-container { z-index: 99999 !important; }
+.modal { z-index: 1200 !important; }
+.modal-backdrop { z-index: 1150 !important; }
 
-:root {
-    --brand-primary: #1E5B66;
-    --brand-primary-hover: #184A54;
-    --brand-primary-subtle: #F0F7F8;
-    --border-subtle: #E2E8F0;
-    --bg-canvas: #F8FAFC;
-    --bg-surface: #FFFFFF;
-    --text-primary: #0F172A;
-    --text-secondary: #475569;
-    --text-muted: #64748B;
-}
+.ti-spin { animation: ti-spin-anim 1s linear infinite; display: inline-block; }
+@keyframes ti-spin-anim { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-.page-container {
-    padding: 0;
-    min-height: auto;
-}
-
-/* Page Header */
-.page-header-standard {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    gap: 16px;
-}
-
-.page-header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.page-heading {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #0F172A;
-    margin: 0;
-    letter-spacing: -0.01em;
-}
-
-/* Regresar Button */
-.btn-regresar {
-    background: #FFFFFF !important;
-    border: 1px solid #E2E8F0 !important;
-    color: #475569 !important;
-    height: 36px;
-    padding: 0 12px;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: all 0.15s ease;
-}
-
-.btn-regresar:hover {
-    background: #F8FAFC !important;
-    color: #0F172A !important;
-    border-color: #CBD5E1 !important;
-}
-
-.btn-regresar i {
-    font-size: 16px;
-    line-height: 1;
-}
-
-/* Unified Surface: Filter Bar + Table Container */
-.glass-card {
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-    overflow: hidden;
-    padding: 0;
-}
-
-/* Filter Bar */
-.filtros-header-bar {
-    display: grid;
-    grid-template-columns: 240px 180px 1fr;
-    gap: 16px;
-    padding: 16px 20px;
-    border-bottom: 1px solid #E2E8F0;
-    background: #FFFFFF;
-    align-items: flex-end;
-}
-
-@media (max-width: 992px) {
-    .filtros-header-bar {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-@media (max-width: 576px) {
-    .filtros-header-bar {
-        grid-template-columns: 1fr;
-    }
-}
-
-.filtro-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #475569;
-    margin-bottom: 6px;
-    display: block;
-}
-
-.filter-search-wrapper {
-    position: relative;
+/* ---------------------------------------------------------------
+   Tabla de captura de calificaciones (filas generadas por JS)
+   --------------------------------------------------------------- */
+.table-calif-oficial {
+    min-width: 1100px;
     width: 100%;
-}
-
-.filter-search-wrapper .search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #94A3B8;
-    font-size: 16px;
-    pointer-events: none;
-    line-height: 1;
-}
-
-.filter-input-search {
-    height: 38px;
-    padding: 0 12px 0 36px;
-    border: 1px solid #E2E8F0;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    background: #F8FAFC;
-    width: 100%;
-    color: #0F172A;
-    transition: all 0.15s ease;
-}
-
-.filter-input-search:focus {
-    background: #FFFFFF;
-    border-color: #1E5B66;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12);
-}
-
-.filter-select {
-    height: 38px;
-    padding: 0 32px 0 12px;
-    border: 1px solid #E2E8F0;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    color: #0F172A;
-    background-color: #FFFFFF;
-    width: 100%;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23475569' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 14px 10px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.filter-select:focus {
-    border-color: #1E5B66;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12);
-}
-
-/* Standardized SaaS Table */
-.glass-table {
-    width: 100%;
-    margin-bottom: 0;
     border-collapse: separate;
     border-spacing: 0;
-}
-
-.glass-table th {
-    background: #F8FAFC !important;
-    color: #475569 !important;
-    font-size: 0.75rem !important;
-    font-weight: 600 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.04em !important;
-    padding: 12px 16px !important;
-    border-bottom: 1px solid #E2E8F0 !important;
-    border-top: none !important;
-    white-space: nowrap !important;
-}
-
-.glass-table td {
-    padding: 12px 16px !important;
-    border-bottom: 1px solid #F1F5F9 !important;
-    border-top: none !important;
-    vertical-align: middle !important;
-    font-size: 0.8125rem !important;
-    color: #334155;
-    background: #FFFFFF;
-}
-
-.glass-table tr:hover td {
-    background-color: #F8FAFC;
-}
-
-.glass-table tr:last-child td {
-    border-bottom: none !important;
-}
-
-/* Typography Tokens */
-.id-mono {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    color: #64748B;
-    font-weight: 500;
-}
-
-.grupo-clave-mono {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: 0.8125rem;
     color: #0F172A;
-    letter-spacing: -0.01em;
 }
-
-/* Badges */
-.badge-cct {
-    display: inline-flex;
-    align-items: center;
-    height: 22px;
-    padding: 0 8px;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    line-height: 1;
-    white-space: nowrap;
-}
-
-.badge-cct-bti {
-    background: #E0F2FE;
-    color: #0369A1;
-    border: 1px solid #BAE6FD;
-}
-
-.badge-cct-bgne {
-    background: #F0F7F8;
-    color: #1E5B66;
-    border: 1px solid #CBE4E8;
-}
-
-.badge-cct-inf {
-    background: #F1F5F9;
-    color: #475569;
-    border: 1px solid #E2E8F0;
-}
-
-.badge-nivel-pill {
-    display: inline-flex;
-    align-items: center;
-    background: #F1F5F9;
-    color: #334155;
-    border: 1px solid #E2E8F0;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    padding: 3px 10px;
-    white-space: nowrap;
-}
-
-.fechas-col-mono {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    line-height: 1.4;
-    color: #334155;
-}
-
-.fechas-col-mono .text-muted {
-    color: #94A3B8 !important;
-    font-size: 0.72rem;
-}
-
-/* Progreso Periodo */
-.progreso-periodo-box {
+.table-calif-oficial thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
     background: #F8FAFC;
-    border: 1px solid #E2E8F0;
-    border-radius: 8px;
-    padding: 8px 10px;
-    min-width: 190px;
-}
-
-.progreso-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #475569;
-}
-
-.progreso-percent {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #1E5B66;
-}
-
-.progress-track-saas {
-    height: 6px;
-    width: 100%;
-    background: #E2E8F0;
-    border-radius: 999px;
-    overflow: hidden;
-}
-
-.progress-fill-saas {
-    height: 100%;
-    background: #1E5B66;
-    border-radius: 999px;
-    transition: width 0.3s ease;
-}
-
-.progreso-dates {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6875rem;
     color: #64748B;
-}
-
-/* Soft Status Badges */
-.badge-soft-success {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    height: 22px;
-    padding: 0 8px;
-    border-radius: 9999px;
-    font-size: 0.75rem;
     font-weight: 600;
-    background: #DCFCE7;
-    color: #15803D;
-    border: 1px solid #BBF7D0;
-}
-
-.badge-soft-danger {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    height: 22px;
-    padding: 0 8px;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    background: #FEE2E2;
-    color: #B91C1C;
-    border: 1px solid #FECACA;
-}
-
-.badge-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: currentColor;
-    display: inline-block;
-}
-
-/* Action Buttons */
-.actions-cell-grupos {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 10px 8px;
+    border-bottom: 1px solid #E2E8F0;
+    text-align: center;
+    vertical-align: bottom;
     white-space: nowrap;
 }
-
-.btn-action-calif {
-    height: 32px;
-    padding: 0 12px;
-    border-radius: 6px;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    background: #F0F7F8;
-    color: #1E5B66;
-    border: 1px solid #CBE4E8;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    text-decoration: none;
-}
-
-.btn-action-calif:hover {
-    background: #1E5B66;
-    color: #FFFFFF;
-    border-color: #1E5B66;
-}
-
-.btn-action-calif i {
-    font-size: 15px;
-    line-height: 1;
-}
-
-.btn-action-asist {
-    height: 32px;
-    padding: 0 12px;
-    border-radius: 6px;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    background: #EEF2FF;
-    color: #4338CA;
-    border: 1px solid #C7D2FE;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    text-decoration: none;
-}
-
-.btn-action-asist:hover {
-    background: #4338CA;
-    color: #FFFFFF;
-    border-color: #4338CA;
-}
-
-.btn-action-asist i {
-    font-size: 15px;
-    line-height: 1;
-}
-
-/* Spin animation for icons */
-.ti-spin {
-    animation: ti-spin-anim 1s linear infinite;
-    display: inline-block;
-}
-@keyframes ti-spin-anim {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-.modal {
-    z-index: 1200 !important;
-}
-.modal-backdrop {
-    z-index: 1150 !important;
-}
-
-/* Estilos de la tabla tipo Excel Oficial */
-.control-header-box {
-    background: #ffffff;
-    border: 1.5px solid #0f172a;
-    border-radius: 8px;
-    padding: 12px 16px;
-}
-
-.table-calif-oficial {
-    min-width: 1150px;
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.86rem;
-}
-.table-calif-oficial th {
-    background-color: #e2e8f0;
-    color: #0f172a;
-    font-weight: 800;
-    text-transform: uppercase;
-    font-size: 0.76rem;
-    border: 1.2px solid #0f172a;
+.table-calif-oficial thead th:nth-child(-n+4) { text-align: left; }
+.table-calif-oficial tbody td {
+    border-bottom: 1px solid #F1F5F9;
     padding: 6px 8px;
-    text-align: center;
     vertical-align: middle;
+    background-color: #FFFFFF;
 }
-.table-calif-oficial td {
-    border: 1px solid #94a3b8;
-    padding: 4px 6px;
-    vertical-align: middle;
-    background-color: #ffffff;
+.table-calif-oficial tbody tr:hover td { background-color: #F8FAFC !important; }
+.table-calif-oficial tbody td:first-child { color: #94A3B8; font-variant-numeric: tabular-nums; }
+.table-calif-oficial tfoot td {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background: #F8FAFC !important;
+    border: 0 !important;
+    border-top: 1px solid #E2E8F0 !important;
+    padding: 10px 8px !important;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
 }
-.table-calif-oficial tr:hover td {
-    background-color: #f8fafc;
-}
+.td-calif-letra { font-size: 0.6875rem !important; letter-spacing: 0.04em; }
 
 .input-calif-celda {
     width: 100%;
+    max-width: 64px;
+    margin: 0 auto;
+    display: block;
+    height: 32px;
     text-align: center;
     font-weight: 700;
-    border: 1px solid transparent;
-    background: transparent;
-    padding: 4px 2px;
-    font-size: 0.88rem;
-    border-radius: 4px;
-    transition: all 0.2s;
+    font-variant-numeric: tabular-nums;
+    border: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    padding: 0 4px;
+    font-size: 0.875rem;
+    border-radius: 0;
+    transition: border-color .15s ease, box-shadow .15s ease;
+    -moz-appearance: textfield;
 }
-.input-calif-celda:hover {
-    border-color: #cbd5e1;
-    background: #ffffff;
-}
+.input-calif-celda::-webkit-outer-spin-button,
+.input-calif-celda::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.input-calif-celda:hover { border-color: #CBD5E1; }
+.input-calif-celda::placeholder { color: #CBD5E1; font-weight: 500; font-size: 0.75rem; }
 .input-calif-celda:focus {
-    border-color: #0284c7;
-    background: #ffffff;
+    border-color: #26687B;
     outline: none;
-    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25);
+    box-shadow: 0 0 0 3px rgba(38, 104, 123, 0.15);
 }
+.input-calif-celda:disabled { background: #F8FAFC; color: #94A3B8; cursor: not-allowed; border-color: #F1F5F9; }
+.input-calif-celda[readonly] { border-color: transparent; background: transparent !important; cursor: default; box-shadow: none; }
 
 .input-observaciones-celda {
     width: 100%;
+    height: 32px;
     border: 1px solid transparent;
     background: transparent;
-    padding: 4px 6px;
-    font-size: 0.82rem;
-    border-radius: 4px;
+    padding: 0 8px;
+    font-size: 0.8125rem;
+    border-radius: 0;
+    transition: border-color .15s ease, background-color .15s ease;
 }
-.input-observaciones-celda:hover, .input-observaciones-celda:focus {
-    border-color: #cbd5e1;
-    background: #ffffff;
-    outline: none;
+.input-observaciones-celda:hover { border-color: #E2E8F0; background: #FFFFFF; }
+.input-observaciones-celda:focus { border-color: #26687B; background: #FFFFFF; outline: none; box-shadow: 0 0 0 3px rgba(38, 104, 123, 0.15); }
+
+/* Chips y botones usados por el JS dentro de la tabla */
+.chip-equiv {
+    display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 0;
+    background: #FEF3C7; color: #B45309; font-size: 0.6875rem; font-weight: 700; letter-spacing: .02em;
 }
+.btn-equiv {
+    display: inline-flex; align-items: center; height: 22px; padding: 0 6px; border-radius: 0;
+    border: 1px solid #FDE68A; background: #FFFBEB; color: #B45309;
+    font-size: 0.625rem; font-weight: 700; letter-spacing: .04em; cursor: pointer; transition: background-color .15s ease;
+}
+.btn-equiv:hover:not(:disabled) { background: #FEF3C7; }
+.btn-equiv:disabled { opacity: .4; cursor: not-allowed; }
+.btn-equiv-undo {
+    display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 0;
+    border: 0; background: transparent; color: #94A3B8; cursor: pointer;
+}
+.btn-equiv-undo:hover:not(:disabled) { background: #F1F5F9; color: #0F172A; }
+
+/* Tabla de asistencias (filas generadas por JS) */
+#tablaAsistenciasGrupoModal .inp-tot-asist,
+#tablaAsistenciasGrupoModal .inp-asist {
+    width: 84px; height: 32px; margin: 0 auto; display: block; text-align: center; font-weight: 700;
+    border: 1px solid #E2E8F0; border-radius: 0; font-size: 0.875rem; background: #FFFFFF;
+}
+#tablaAsistenciasGrupoModal .inp-tot-asist:focus,
+#tablaAsistenciasGrupoModal .inp-asist:focus { border-color: #26687B; outline: none; box-shadow: 0 0 0 3px rgba(38, 104, 123, 0.15); }
+#tablaAsistenciasGrupoModal input[aria-invalid="true"] { border-color: #DC2626; background: #FEF2F2; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12); }
+#tablaAsistenciasGrupoModal .asist-aviso { display: block; margin-top: 4px; font-size: 0.6875rem; line-height: 1.2; color: #DC2626; text-align: center; }
+#tablaAsistenciasGrupoModal .asist-aviso:empty { display: none; }
 </style>
 
-<div class="page-container">
+@php
+    $card = ' tw:border tw:border-slate-200 tw:bg-white tw:shadow-card';
+    $label = 'tw:mb-1.5 tw:block tw:text-[0.8125rem] tw:font-medium tw:text-slate-700';
+    $labelUp = 'tw:mb-1 tw:block tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-400';
+    $input = 'tw:h-10 tw:w-full tw:border tw:border-slate-200 tw:bg-white tw:px-3 tw:text-sm tw:text-slate-900 tw:shadow-xs tw:outline-none tw:transition tw:placeholder:text-slate-400 tw:hover:border-slate-300 tw:focus:border-brand-500 tw:focus:ring-4 tw:focus:ring-brand-500/10 tw:disabled:cursor-not-allowed tw:disabled:bg-slate-50 tw:disabled:text-slate-500';
+    $btnBase = 'tw:inline-flex tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2 tw:text-sm tw:font-semibold tw:transition-all tw:duration-150 tw:focus-visible:outline-2 tw:focus-visible:outline-offset-2 tw:focus-visible:outline-brand-500 tw:active:scale-[0.98] tw:disabled:cursor-not-allowed tw:disabled:opacity-60';
+    $btnPrimary = $btnBase . ' tw:h-10 tw:border-0 tw:bg-brand-700 tw:px-4 tw:text-white tw:shadow-brand tw:hover:bg-brand-800';
+    $btnSecondary = $btnBase . ' tw:h-10 tw:border tw:border-slate-200 tw:bg-white tw:px-4 tw:text-slate-700 tw:shadow-xs tw:hover:bg-slate-50';
+    $th = 'tw:px-4 tw:py-2.5 tw:text-left tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-500';
+    $spinner = '<span class="tw:inline-block tw:size-6 tw:animate-spin tw:rounded-full tw:border-2 tw:border-slate-200 tw:border-t-brand-700"></span>';
+    $stat = 'tw:inline-flex tw:items-center tw:gap-1.5 tw:bg-white tw:px-2.5 tw:py-1 tw:text-xs tw:text-slate-600 tw:ring-1 tw:ring-slate-200';
+@endphp
 
-    {{-- Encabezado Principal Estándar --}}
-    <div class="page-header-standard">
-        <div class="page-header-left">
-            <a href="{{ route('grupos') }}" class="btn-regresar">
-                <i class="ti ti-arrow-left"></i>
-                <span>Regresar a Grupos</span>
-            </a>
-            <h1 class="page-heading">Captura de Calificaciones por Grupo</h1>
+<div class="tw:mx-auto tw:flex tw:max-w-[1600px] tw:flex-col tw:gap-6">
+
+    {{-- ===================== ENCABEZADO ===================== --}}
+    <header class="tw:flex tw:items-start tw:gap-4">
+        <a href="{{ route('grupos') }}" aria-label="Regresar a grupos" title="Regresar a grupos"
+            class="tw:mt-0.5 tw:inline-flex tw:size-10 tw:shrink-0 tw:items-center tw:justify-center tw:border tw:border-slate-200 tw:bg-white tw:text-slate-500 tw:no-underline tw:shadow-xs tw:transition-colors tw:hover:bg-slate-50 tw:hover:text-slate-900">
+            <i data-lucide="arrow-left" class="tw:size-[18px]"></i>
+        </a>
+        <div>
+            <h1 class="tw:m-0 tw:text-[1.5rem] tw:font-bold tw:tracking-tight tw:text-slate-900">Captura de calificaciones</h1>
+            <p class="tw:m-0 tw:mt-1 tw:text-sm tw:text-slate-500">Elige un grupo para capturar calificaciones por asignatura o registrar asistencias del periodo.</p>
         </div>
-    </div>
+    </header>
 
-    {{-- Tarjeta Unificada: Filtros + Tabla --}}
-    <div class="glass-card">
-        {{-- Barra de Filtros y Búsqueda --}}
-        <div class="filtros-header-bar">
-            {{-- Filtro CCT --}}
-            <div>
-                <label class="filtro-label" for="selectFiltroCct">Centro de Trabajo (CCT):</label>
-                <select id="selectFiltroCct" class="filter-select" onchange="setFiltroCct(this.value)">
-                    <option value="" selected>Todos los CCT</option>
-                    <option value="3">BGNE (Bachillerato No Escolarizado)</option>
-                    <option value="2">BTI (Bachillerato Tecnológico Interamericano)</option>
-                    <option value="1">INF (Informática y Computación)</option>
-                </select>
-            </div>
-
-            {{-- Filtro Estatus --}}
-            <div>
-                <label class="filtro-label" for="selectFiltroEstatus">Estatus:</label>
-                <select id="selectFiltroEstatus" class="filter-select" onchange="aplicarFiltros()">
-                    <option value="ACTIVO" selected>Solo Activos</option>
-                    <option value="INACTIVO">Solo Inactivos</option>
-                    <option value="">Todos los Estatus</option>
-                </select>
-            </div>
-
-            {{-- Buscador en tiempo real --}}
-            <div>
-                <label class="filtro-label" for="buscadorGrupoCaptura">Buscar Grupo:</label>
-                <div class="filter-search-wrapper">
-                    <i class="ti ti-search search-icon"></i>
-                    <input type="text" id="buscadorGrupoCaptura" class="filter-input-search" placeholder="Ej. BGNE291125..." oninput="aplicarFiltros()">
+    <section class="{{ $card }} tw:overflow-hidden">
+        {{-- Filtros --}}
+        <div class="tw:flex tw:flex-col tw:gap-3 tw:border-b tw:border-slate-100 tw:px-5 tw:py-4 tw:lg:flex-row tw:lg:items-center tw:lg:justify-between">
+            <div class="tw:flex tw:flex-wrap tw:items-center tw:gap-3">
+                {{-- Plantel: chips que sincronizan el select oculto que usa el JS --}}
+                <div role="group" aria-label="Plantel" id="chipsFiltroCct" class="tw:inline-flex tw:border tw:border-slate-200 tw:bg-slate-100/80 tw:p-0.5">
+                    @foreach (['' => 'Todos', '2' => 'BTI', '3' => 'BGNE', '1' => 'INF'] as $val => $txt)
+                    <button type="button" data-cct="{{ $val }}" onclick="setFiltroCct('{{ $val }}')" aria-pressed="{{ $val === '' ? 'true' : 'false' }}"
+                        class="tw:cursor-pointer tw:border-0 tw:bg-transparent tw:px-3 tw:py-1.5 tw:text-xs tw:font-semibold tw:text-slate-500 tw:transition-all tw:hover:text-slate-900 tw:aria-pressed:bg-white tw:aria-pressed:text-brand-700 tw:aria-pressed:shadow-xs">{{ $txt }}</button>
+                    @endforeach
                 </div>
+                <select id="selectFiltroCct" class="tw:sr-only" tabindex="-1" aria-hidden="true" onchange="setFiltroCct(this.value)">
+                    <option value="" selected>Todos</option>
+                    <option value="3">BGNE</option>
+                    <option value="2">BTI</option>
+                    <option value="1">INF</option>
+                </select>
+
+                <label for="selectFiltroEstatus" class="tw:sr-only">Estatus</label>
+                <select id="selectFiltroEstatus" onchange="aplicarFiltros()"
+                    class="tw:h-9 tw:border tw:border-slate-200 tw:bg-white tw:px-3 tw:text-[0.8125rem] tw:text-slate-700 tw:shadow-xs tw:outline-none tw:focus:border-brand-500 tw:focus:ring-4 tw:focus:ring-brand-500/10">
+                    <option value="ACTIVO" selected>Grupos activos</option>
+                    <option value="INACTIVO">Grupos inactivos</option>
+                    <option value="">Todos los estatus</option>
+                </select>
+            </div>
+            <div class="tw:relative tw:w-full tw:lg:w-80">
+                <label for="buscadorGrupoCaptura" class="tw:sr-only">Buscar grupo</label>
+                <i data-lucide="search" class="tw:pointer-events-none tw:absolute tw:left-3 tw:top-1/2 tw:size-4 tw:-translate-y-1/2 tw:text-slate-400"></i>
+                <input type="text" id="buscadorGrupoCaptura" placeholder="Clave, plantel o nivel…" oninput="aplicarFiltros()"
+                    class="tw:h-9 tw:w-full tw:border tw:border-slate-200 tw:bg-white tw:pr-3 tw:pl-9 tw:text-[0.8125rem] tw:text-slate-900 tw:shadow-xs tw:outline-none tw:transition tw:placeholder:text-slate-400 tw:focus:border-brand-500 tw:focus:ring-4 tw:focus:ring-brand-500/10">
             </div>
         </div>
 
-        {{-- Spinner de Carga --}}
-        <div id="loadingGrupos" class="text-center py-5" style="display:none;">
-            <div class="spinner-border" style="width: 2.5rem; height: 2.5rem; color: #1E5B66;" role="status">
-                <span class="visually-hidden">Cargando...</span>
-            </div>
-            <div class="text-muted mt-2 fw-semibold" style="font-size: 0.875rem;">Cargando grupos para captura...</div>
+        <div id="loadingGrupos" style="display:none;">
+            <div class="tw:flex tw:flex-col tw:items-center tw:gap-3 tw:py-16 tw:text-[0.8125rem] tw:text-slate-500">{!! $spinner !!} Cargando grupos…</div>
         </div>
 
-        {{-- Tabla de Grupos para Captura --}}
         <div id="contenedorTablaGruposWrapper" style="display:none;">
-            <div class="table-responsive">
-                <table class="table glass-table align-middle mb-0" id="tablaGruposCaptura">
-                    <thead>
-                        <tr>
-                            <th style="width: 45px;">#</th>
-                            <th>Clave del Grupo</th>
-                            <th>CCT</th>
-                            <th>Nivel / Periodo</th>
-                            <th>Fechas</th>
-                            <th style="min-width: 200px;">Progreso Periodo</th>
-                            <th>Estatus</th>
-                            <th class="text-end" style="width: 260px; padding-right: 20px;">Acción</th>
+            <div class="tw:overflow-x-auto">
+                <table class="tw:w-full tw:min-w-[900px] tw:border-collapse" id="tablaGruposCaptura">
+                    <thead class="tw:bg-slate-50">
+                        <tr class="tw:border-b tw:border-slate-200">
+                            <th class="{{ $th }} tw:pl-5">Grupo</th>
+                            <th class="{{ $th }}">Nivel</th>
+                            <th class="{{ $th }}">Vigencia</th>
+                            <th class="{{ $th }} tw:w-[240px]">Avance del periodo</th>
+                            <th class="{{ $th }}">Estatus</th>
+                            <th class="{{ $th }} tw:pr-5 tw:text-right"><span class="tw:sr-only">Acciones</span></th>
                         </tr>
                     </thead>
-                    <tbody id="tbodyGruposCaptura">
-                        {{-- Poblado por JS --}}
-                    </tbody>
+                    <tbody id="tbodyGruposCaptura" class="tw:divide-y tw:divide-slate-100"></tbody>
                 </table>
             </div>
+            <div class="tw:border-t tw:border-slate-100 tw:px-5 tw:py-3 tw:text-xs tw:text-slate-500" id="lblConteoGrupos"></div>
         </div>
 
-        {{-- Estado Vacío --}}
-        <div id="emptyStateGrupos" class="text-center p-5" style="display:none;">
-            <i class="ti ti-users-minus" style="font-size: 3rem; display: inline-block; margin-bottom: 12px; color: #94A3B8;"></i>
-            <h5 class="mt-2 mb-1" style="font-size: 1rem; font-weight: 600; color: #334155;">No se encontraron grupos</h5>
-            <p class="text-muted small mb-0">Intenta ajustar los filtros de CCT o el estatus seleccionado.</p>
+        <div id="emptyStateGrupos" style="display:none;">
+            <div class="tw:flex tw:flex-col tw:items-center tw:px-6 tw:py-14 tw:text-center">
+                <span class="tw:inline-flex tw:size-12 tw:items-center tw:justify-center tw:bg-slate-100 tw:text-slate-400"><i data-lucide="search-x" class="tw:size-5"></i></span>
+                <p class="tw:m-0 tw:mt-3 tw:text-sm tw:font-semibold tw:text-slate-900">No se encontraron grupos</p>
+                <p class="tw:m-0 tw:mt-1 tw:text-[0.8125rem] tw:text-slate-500">Ajusta el plantel, el estatus o la búsqueda.</p>
+            </div>
         </div>
-    </div>
-
+    </section>
 </div>
 
-{{-- MODAL OFICIAL DE CONTROL DE CALIFICACIONES POR MATERIA Y GRUPO --}}
-<div class="modal fade" id="modalCapturaMateriaGrupo" tabindex="-1" aria-hidden="true" style="z-index: 1200;">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="max-width: 95%;">
-        <div class="modal-content glass-modal shadow-lg border-0" style="border-radius: 14px;">
-            
-            {{-- Encabezado Modal --}}
-            <div class="modal-header px-4 py-3" style="border-bottom: 1px solid #E2E8F0;">
-                <div class="d-flex align-items-center">
-                    <i class="ti ti-clipboard-check me-2" style="font-size: 1.5rem; line-height: 1; color: #1E5B66;"></i>
-                    <div>
-                        <h5 class="modal-title fw-bold mb-0" id="modalHeaderTitulo" style="font-size: 1.05rem; letter-spacing: -0.01em; color: #0F172A;">CONTROL DE CALIFICACIONES FINALES</h5>
-                        <small id="modalHeaderSubtitulo" class="text-muted" style="font-size: 0.8125rem;">Captura por Asignatura y Docente Asignado</small>
+{{-- ===================== MODAL: CAPTURA DE CALIFICACIONES ===================== --}}
+<div class="modal fade" id="modalCapturaMateriaGrupo" tabindex="-1" aria-labelledby="modalHeaderTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="max-width: min(1440px, 96vw);">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <div class="tw:flex tw:min-w-0 tw:items-center tw:gap-3">
+                    <span id="badgeClaveGrupoOficial" class="tw:inline-flex tw:h-9 tw:shrink-0 tw:items-center tw:bg-brand-700 tw:px-3 tw:font-mono tw:text-sm tw:font-bold tw:tracking-wide tw:text-white">GRUPO</span>
+                    <div class="tw:min-w-0">
+                        <h5 class="modal-title tw:truncate" id="modalHeaderTitulo">Control de calificaciones finales</h5>
+                        <p class="tw:m-0 tw:truncate tw:text-xs tw:text-slate-500" id="boxNombreInstitucion">Bachillerato Interamericano</p>
                     </div>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
 
-            <div class="modal-body p-4 bg-white text-dark">
-                
-                {{-- Spinner de Carga de Materia --}}
-                <div id="loadingMateriaGrupo" class="text-center py-4" style="display: none;">
-                    <div class="spinner-border" style="width: 2rem; height: 2rem; color: #1E5B66;" role="status"></div>
-                    <div class="text-muted mt-2" style="font-size: 0.875rem;">Cargando materias y alumnos del grupo...</div>
+            <div class="modal-body tw:bg-slate-50/70 tw:p-5">
+                <div id="loadingMateriaGrupo" style="display: none;">
+                    <div class="tw:flex tw:flex-col tw:items-center tw:gap-3 tw:py-16 tw:text-[0.8125rem] tw:text-slate-500">{!! $spinner !!} Cargando asignaturas y alumnos…</div>
                 </div>
 
-                {{-- Contenido de Captura --}}
                 <div id="contentCapturaMateriaGrupo">
-                    
-                    {{-- Banner de Restricción de Solo Lectura --}}
-                    <div id="bannerSoloLectura" class="alert alert-warning border-warning shadow-sm align-items-center gap-2 mb-3" style="display: none !important; border-radius: 8px; padding: 12px 16px;">
-                        <i class="ti ti-alert-triangle fs-5 text-warning"></i>
-                        <div>
-                            <strong class="d-block" style="font-size: 0.92rem; color: #856404;">Captura Bloqueada (Solo Lectura)</strong>
-                            <span id="mensajeBannerSoloLectura" class="small text-dark">—</span>
+                    {{-- Solo lectura: el JS alterna su display --}}
+                    <div id="bannerSoloLectura" class="tw:mb-4" style="display: none;">
+                        <div class="tw:flex tw:items-start tw:gap-3 tw:border tw:border-warning-600/30 tw:bg-warning-50 tw:px-4 tw:py-3">
+                            <i data-lucide="lock" class="tw:mt-0.5 tw:size-4 tw:shrink-0 tw:text-warning-600"></i>
+                            <div>
+                                <p class="tw:m-0 tw:text-sm tw:font-semibold tw:text-slate-900">Captura bloqueada: solo lectura</p>
+                                <p class="tw:m-0 tw:mt-0.5 tw:text-[0.8125rem] tw:text-slate-600" id="mensajeBannerSoloLectura">—</p>
+                            </div>
                         </div>
                     </div>
 
-                    {{-- Calendario de Captura de Calificaciones --}}
-                    <div id="containerCalendarioPeriodos" class="alert alert-info border-info shadow-sm p-3 mb-3" style="display: none; border-radius: 8px;">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="ti ti-calendar text-primary fs-5"></i>
-                            <strong style="font-size: 0.95rem; color: #0c5460;">Calendario de Captura (Límites de Fecha por Grupo)</strong>
-                        </div>
-                        <div class="row g-2 text-center" id="gridCalendarioPeriodos" style="font-size: 0.84rem;">
-                            {{-- Poblado por JS --}}
-                        </div>
-                    </div>
-                    
-                    {{-- Formato Membrete Oficial --}}
-                    <div class="control-header-box mb-3">
-                        <div class="text-center mb-3">
-                            <h4 class="fw-bold text-dark mb-1" id="boxNombreInstitucion">BACHILLERATO INTERAMERICANO</h4>
-                            <h6 class="fw-bold text-secondary mb-2">CONTROL DE CALIFICACIONES FINALES</h6>
-                            <span class="badge px-4 py-2 fs-5 text-dark shadow-sm" id="badgeClaveGrupoOficial" style="background-color: #ffeb3b; border: 1.5px solid #0f172a; font-weight: 800; letter-spacing: 1px;">
-                                GRUPO
-                            </span>
-                        </div>
-
-                        <div class="row g-2 border-top pt-3 align-items-center" style="font-size: 0.88rem;">
-                            {{-- ASIGNATURA --}}
-                            <div class="col-12 col-md-6 col-lg-4">
-                                <div class="d-flex align-items-center gap-2">
-                                    <strong class="text-nowrap" style="min-width: 105px;">ASIGNATURA:</strong>
-                                    <select id="selectMateriaGrupo" class="form-select form-select-sm fw-bold border-dark shadow-sm" onchange="cambiarMateriaSeleccionada(this.value)">
-                                        {{-- Poblado por JS --}}
-                                    </select>
+                    {{-- Selección y datos de la asignatura --}}
+                    <div class=" tw:border tw:border-slate-200 tw:bg-white tw:p-4 tw:shadow-xs">
+                        <div class="tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-2 tw:xl:grid-cols-[minmax(0,2fr)_minmax(0,4fr)_minmax(0,4fr)]">
+                            <div>
+                                <label for="selectPeriodoCaptura" class="{{ $labelUp }}" id="labelPeriodoCaptura">Periodo</label>
+                                <select id="selectPeriodoCaptura" class="{{ $input }}" onchange="cambiarPeriodoSeleccionado(this.value)" {{ session('rol') === 'DOCENTE' ? 'disabled' : '' }}></select>
+                            </div>
+                            <div>
+                                <label for="selectMateriaGrupo" class="{{ $labelUp }}">Asignatura</label>
+                                <select id="selectMateriaGrupo" class="{{ $input }} tw:font-semibold" onchange="cambiarMateriaSeleccionada(this.value)"></select>
+                            </div>
+                            <div class="tw:md:col-span-2 tw:xl:col-span-1">
+                                <span class="{{ $labelUp }}">Docente</span>
+                                <div class="tw:flex tw:h-10 tw:items-center tw:gap-2 tw:bg-slate-50 tw:px-3 tw:ring-1 tw:ring-slate-200">
+                                    <i data-lucide="presentation" class="tw:size-4 tw:shrink-0 tw:text-slate-400"></i>
+                                    <span id="boxNombreDocente" class="tw:truncate tw:text-sm tw:font-semibold tw:text-slate-800">—</span>
                                 </div>
                             </div>
-
-                            {{-- DOCENTE --}}
-                            <div class="col-12 col-md-6 col-lg-5">
-                                <div class="d-flex align-items-center gap-2">
-                                    <strong class="text-nowrap" style="min-width: 80px;">DOCENTE:</strong>
-                                    <div id="boxNombreDocente" class="fw-bold text-primary text-truncate p-1 bg-light rounded border w-100">
-                                        —
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- MÓDULO / PERIODO --}}
-                            <div class="col-12 col-md-6 col-lg-3">
-                                <div class="d-flex align-items-center gap-2">
-                                    <strong class="text-nowrap" id="labelPeriodoCaptura">MÓDULO:</strong>
-                                    <select id="selectPeriodoCaptura" class="form-select form-select-sm fw-bold border-dark shadow-sm" onchange="cambiarPeriodoSeleccionado(this.value)" {{ session('rol') === 'DOCENTE' ? 'disabled' : '' }}>
-                                        {{-- Poblado por JS --}}
-                                    </select>
-                                </div>
-                            </div>
-
-                            {{-- FECHAS Y MODALIDAD --}}
-                            <div class="col-12 col-md-4">
-                                <small class="text-muted fw-bold">FECHA DE INICIO:</small>
-                                <span id="boxFechaInicioGrupo" class="fw-semibold ms-1 text-dark">—</span>
-                            </div>
-
-                            <div class="col-12 col-md-4">
-                                <small class="text-muted fw-bold">FECHA DE FIN:</small>
-                                <span id="boxFechaFinGrupo" class="fw-semibold ms-1 text-dark">—</span>
-                            </div>
-
-                            <div class="col-12 col-md-4">
-                                <small class="text-muted fw-bold">SISTEMA / MODALIDAD:</small>
-                                <span id="boxModalidadGrupo" class="badge bg-info text-dark ms-1">—</span>
-                            </div>
+                        </div>
+                        <div class="tw:mt-4 tw:flex tw:flex-wrap tw:items-center tw:gap-x-5 tw:gap-y-2 tw:border-t tw:border-slate-100 tw:pt-3 tw:text-xs tw:text-slate-500">
+                            <span class="tw:inline-flex tw:items-center tw:gap-1.5"><i data-lucide="calendar" class="tw:size-3.5"></i>Inicio <strong id="boxFechaInicioGrupo" class="tw:font-mono tw:font-semibold tw:text-slate-700">—</strong></span>
+                            <span class="tw:inline-flex tw:items-center tw:gap-1.5"><i data-lucide="calendar-check" class="tw:size-3.5"></i>Fin <strong id="boxFechaFinGrupo" class="tw:font-mono tw:font-semibold tw:text-slate-700">—</strong></span>
+                            <span id="boxModalidadGrupo" class="tw:inline-flex tw:items-center tw:rounded-none tw:bg-brand-50 tw:px-2.5 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold tw:text-brand-700 tw:ring-1 tw:ring-brand-200">—</span>
                         </div>
                     </div>
 
-                    {{-- Tabla de Calificaciones de Alumnos --}}
-                    <div class="table-responsive" style="max-height: 480px;">
-                        <table class="table-calif-oficial">
-                            <thead style="position: sticky; top: 0; z-index: 2;" id="theadCalificacionesOficial">
-                                <tr>
-                                    <th style="width: 40px;">N°</th>
-                                    <th style="width: 130px;">Apellido Paterno</th>
-                                    <th style="width: 130px;">Apellido Materno</th>
-                                    <th style="width: 160px;">Nombre(s)</th>
-                                    <th style="width: 80px;">% EXA (P1)</th>
-                                    <th style="width: 80px;">% (P2)</th>
-                                    <th style="width: 80px;">% (P3)</th>
-                                    <th style="width: 95px;">Calificación Final</th>
-                                    <th style="width: 160px;">Calificación con Letra</th>
-                                    <th style="min-width: 140px;">Observaciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbodyAlumnosCalificacionesMateria">
-                                {{-- Poblado por JS --}}
-                            </tbody>
-                            <tfoot id="tfootCalificacionesOficial" style="position: sticky; bottom: 0; background-color: #f8fafc; font-weight: bold; border-top: 2.5px solid #0f172a;">
-                                {{-- Poblado por JS --}}
-                            </tfoot>
-                        </table>
+                    {{-- Calendario de captura (el JS alterna su display) --}}
+                    <div id="containerCalendarioPeriodos" class="tw:mt-4" style="display: none;">
+                        <p class="tw:m-0 tw:mb-2 tw:flex tw:items-center tw:gap-1.5 tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-400">
+                            <i data-lucide="calendar-range" class="tw:size-3.5"></i> Ventanas de captura del grupo
+                        </p>
+                        <div id="gridCalendarioPeriodos" class="tw:grid tw:grid-cols-2 tw:gap-2 tw:md:grid-cols-3 tw:xl:grid-cols-5"></div>
                     </div>
 
-                    {{-- Estadísticas Rápidas al pie --}}
-                    <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
-                        <small class="text-muted">
-                            Total Alumnos: <strong id="statTotalAlumnos">0</strong> | 
-                            Aprobados: <strong class="text-success" id="statAprobados">0</strong> | 
-                            Reprobados: <strong class="text-danger" id="statReprobados">0</strong> | 
-                            Equivalencias: <strong class="text-warning" id="statEquivalencias">0</strong>
-                        </small>
-                        <span class="badge bg-primary px-3 py-2" id="statPromedioMateria">Promedio Materia: 0.0</span>
+                    {{-- Tabla --}}
+                    <div class="tw:mt-4 tw:overflow-hidden tw:border tw:border-slate-200 tw:bg-white tw:shadow-xs">
+                        <div class="tw:max-h-[56vh] tw:overflow-auto">
+                            <table class="table-calif-oficial">
+                                <thead id="theadCalificacionesOficial"></thead>
+                                <tbody id="tbodyAlumnosCalificacionesMateria"></tbody>
+                                <tfoot id="tfootCalificacionesOficial"></tfoot>
+                            </table>
+                        </div>
                     </div>
-
+                    <p class="tw:m-0 tw:mt-2 tw:text-[0.6875rem] tw:text-slate-400">Calificaciones enteras de 0 a 10, presiona <kbd class=" tw:border tw:border-slate-200 tw:bg-white tw:px-1 tw:font-mono tw:text-[0.6875rem] tw:font-semibold tw:text-slate-700 tw:shadow-none">E</kbd> en una celda para marcar equivalencia, las calificaciones menores a 6 se muestran en rojo.</p>
                 </div>
-
             </div>
 
-            {{-- Footer con Botón Guardar --}}
-            <div class="modal-footer bg-light border-0 px-4 py-3 d-flex justify-content-between" style="border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;">
-                <button type="button" class="btn btn-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-success px-4 py-2 fw-bold shadow-sm" id="btnGuardarCalifsMateria" onclick="guardarCalificacionesMateriaSeleccionada()" style="background: #1E5B66; border-color: #1E5B66; border-radius: 6px; font-weight: 500; font-size: 0.875rem;">
-                    <i class="ti ti-device-floppy me-1"></i> Guardar Calificaciones de la Asignatura
-                </button>
+            <div class="modal-footer tw:justify-between tw:flex-wrap">
+                <div class="tw:flex tw:flex-wrap tw:items-center tw:gap-1.5">
+                    <span class="{{ $stat }}">Alumnos <strong id="statTotalAlumnos" class="tw:text-slate-900">0</strong></span>
+                    <span class="{{ $stat }}"><span class="tw:size-1.5 tw:rounded-full tw:bg-success-500"></span>Aprobados <strong id="statAprobados" class="tw:text-success-700">0</strong></span>
+                    <span class="{{ $stat }}"><span class="tw:size-1.5 tw:rounded-full tw:bg-danger-500"></span>Reprobados <strong id="statReprobados" class="tw:text-danger-600">0</strong></span>
+                    <span class="{{ $stat }}"><span class="tw:size-1.5 tw:rounded-full tw:bg-warning-600"></span>Equivalencias <strong id="statEquivalencias" class="tw:text-warning-600">0</strong></span>
+                    <span id="statPromedioMateria" class="tw:inline-flex tw:items-center tw:rounded-none tw:bg-brand-700 tw:px-3 tw:py-1 tw:text-xs tw:font-semibold tw:text-white">Promedio 0.0</span>
+                </div>
+                <div class="tw:flex tw:items-center tw:gap-2">
+                    <button type="button" class="{{ $btnSecondary }}" data-bs-dismiss="modal">Cerrar</button>
+                    <span id="wrapGuardarCalifs">{{-- el JS alterna su display --}}<button type="button" class="{{ $btnPrimary }}" id="btnGuardarCalifsMateria" onclick="guardarCalificacionesMateriaSeleccionada()">
+                        <i class="ti ti-device-floppy"></i> Guardar calificaciones
+                    </button></span>
+                </div>
             </div>
-
         </div>
     </div>
 </div>
 
-<!-- MODAL: CAPTURA DE ASISTENCIAS POR SEMESTRE / GRUPO -->
+{{-- ===================== MODAL: ASISTENCIAS DEL PERIODO ===================== --}}
 <div class="modal fade" id="modalCapturaAsistenciasGrupo" tabindex="-1" aria-labelledby="modalCapturaAsistenciasLabel" aria-hidden="true" style="z-index: 1250;">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content shadow-lg border-0" style="border-radius: 14px; overflow: hidden;">
-            <div class="modal-header" style="padding: 16px 24px; border-bottom: 1px solid #E2E8F0;">
-                <div>
-                    <h5 class="modal-title fw-bold mb-0" id="modalCapturaAsistenciasLabel" style="font-size: 1.05rem; letter-spacing: -0.01em; color: #0F172A;">
-                        <i class="ti ti-calendar-check me-2" style="color: #1E5B66;"></i>Captura de Asistencias del Periodo
-                    </h5>
-                    <small class="text-muted" style="font-size: 0.8125rem;">Grupo: <strong id="lblAsistenciasGrupoClave" class="text-dark">---</strong></small>
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="tw:min-w-0">
+                    <h5 class="modal-title" id="modalCapturaAsistenciasLabel"><i data-lucide="calendar-check" class="tw:size-5"></i> Asistencias del periodo</h5>
+                    <p class="tw:m-0 tw:text-xs tw:text-slate-500">Grupo <strong id="lblAsistenciasGrupoClave" class="tw:font-mono tw:text-slate-800">---</strong></p>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
 
-            <div class="modal-body p-4" style="background: #f8fafc;">
-                <!-- Controles -->
-                <div class="card p-3 border-0 shadow-sm mb-3" style="border-radius: 10px; background: #ffffff;">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-5">
-                            <label class="form-label fw-bold text-slate-700 fs-7 mb-1">
-                                <i class="ti ti-school text-indigo me-1"></i>Periodo / Semestre:
-                            </label>
-                            <select id="selSemestreAsistenciasGrupo" class="form-select" onchange="recargarAlumnosAsistenciasModal()">
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold text-slate-700 fs-7 mb-1">
-                                <i class="ti ti-calendar text-primary me-1"></i>Clases Impartidas (Hubieron):
-                            </label>
-                            <input type="number" id="inpTotalClasesGlobal" class="form-control" placeholder="Ej. 50" min="0">
-                        </div>
-                        <div class="col-md-3">
-                            <button type="button" class="btn btn-outline-primary w-100 fw-bold" onclick="aplicarTotalClasesATodos()" style="height: 38px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-                                <i class="ti ti-refresh"></i> <span>Aplicar a todos</span>
-                            </button>
-                        </div>
+            <div class="modal-body tw:bg-slate-50/70 tw:p-5">
+                <div class="tw:grid tw:grid-cols-1 tw:items-end tw:gap-3 tw:border tw:border-slate-200 tw:bg-white tw:p-4 tw:shadow-xs tw:sm:grid-cols-[minmax(0,1fr)_160px_auto]">
+                    <div>
+                        <label for="selSemestreAsistenciasGrupo" class="{{ $label }}">Periodo</label>
+                        <select id="selSemestreAsistenciasGrupo" class="{{ $input }}" onchange="recargarAlumnosAsistenciasModal()"></select>
                     </div>
+                    <div>
+                        <label for="inpTotalClasesGlobal" class="{{ $label }}">Clases impartidas</label>
+                        <input type="number" id="inpTotalClasesGlobal" class="{{ $input }}" placeholder="Ej. 50" min="0" max="999" step="1" inputmode="numeric" data-entero>
+                    </div>
+                    <button type="button" class="{{ $btnSecondary }}" onclick="aplicarTotalClasesATodos()" title="Copia el total de clases a todos los alumnos">
+                        <i data-lucide="copy-check" class="tw:size-4"></i> Aplicar a todos
+                    </button>
                 </div>
 
-                <!-- Tabla de alumnos -->
-                <div class="card border-0 shadow-sm" style="border-radius: 10px; overflow: hidden; background: #ffffff;">
-                    <div class="table-responsive" style="max-height: 380px;">
-                        <table class="table table-hover align-middle mb-0" id="tablaAsistenciasGrupoModal">
-                            <thead style="background: #e2e8f0; font-size: 0.8rem; text-transform: uppercase;" class="sticky-top">
-                                <tr>
-                                    <th class="text-center" style="width: 45px;">#</th>
-                                    <th style="width: 140px;">Matrícula</th>
-                                    <th>Nombre del Alumno</th>
-                                    <th class="text-center" style="width: 130px;">Clases que Hubieron</th>
-                                    <th class="text-center" style="width: 130px;">Asistencias que Tuvo</th>
-                                    <th class="text-center" style="width: 100px;">% Asistencia</th>
+                <div class="tw:mt-4 tw:overflow-hidden tw:border tw:border-slate-200 tw:bg-white tw:shadow-xs">
+                    <div class="tw:max-h-[420px] tw:overflow-auto">
+                        <table class="tw:w-full tw:border-collapse" id="tablaAsistenciasGrupoModal">
+                            <thead class="tw:sticky tw:top-0 tw:z-10 tw:bg-slate-50">
+                                <tr class="tw:border-b tw:border-slate-200">
+                                    <th class="{{ $th }} tw:w-12 tw:text-center">#</th>
+                                    <th class="{{ $th }}">Alumno</th>
+                                    <th class="{{ $th }} tw:text-center">Clases</th>
+                                    <th class="{{ $th }} tw:text-center">Asistencias</th>
+                                    <th class="{{ $th }} tw:text-center">%</th>
                                 </tr>
                             </thead>
-                            <tbody id="tbodyAsistenciasGrupoModal">
-                                <tr>
-                                    <td colspan="6" class="text-center py-4 text-muted">
-                                        <i class="ti ti-loader-2 ti-spin me-2"></i>Cargando alumnos...
-                                    </td>
-                                </tr>
+                            <tbody id="tbodyAsistenciasGrupoModal" class="tw:divide-y tw:divide-slate-100">
+                                <tr><td colspan="5" class="tw:py-8 tw:text-center tw:text-[0.8125rem] tw:text-slate-500">Cargando alumnos…</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <div class="modal-footer bg-white border-top d-flex justify-content-between p-3">
-                <button type="button" class="btn btn-secondary px-4 fw-semibold" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary px-4 fw-bold" id="btnGuardarAsistenciasModal" onclick="guardarAsistenciasGrupoModal()" style="background: #1E5B66; border-color: #1E5B66; border-radius: 6px; font-weight: 500; font-size: 0.875rem;">
-                    <i class="ti ti-device-floppy me-1"></i> Guardar Asistencias
+            <div class="modal-footer">
+                <button type="button" class="{{ $btnSecondary }}" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="{{ $btnPrimary }}" id="btnGuardarAsistenciasModal" onclick="guardarAsistenciasGrupoModal()">
+                    <i class="ti ti-device-floppy"></i> Guardar asistencias
                 </button>
             </div>
         </div>
@@ -926,73 +463,121 @@ function recargarAlumnosAsistenciasModal() {
     if (!grupoAsistenciasActual) return;
     const tbody = document.getElementById('tbodyAsistenciasGrupoModal');
     if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted"><i class="ti ti-loader-2 ti-spin me-2" style="color: #1E5B66;"></i>Cargando lista de alumnos...</td></tr>`;
+    tbody.innerHTML = filaMensajeAsist('Cargando lista de alumnos…');
 
     const idNivel = document.getElementById('selSemestreAsistenciasGrupo') ? document.getElementById('selSemestreAsistenciasGrupo').value : 7;
 
-    fetch(`/grupos/${grupoAsistenciasActual.id}/asistencias-semestre?id_nivel_academico=${idNivel}`)
+    fetch(`/grupos/${encodeURIComponent(grupoAsistenciasActual.id)}/asistencias-semestre?id_nivel_academico=${encodeURIComponent(idNivel)}`)
         .then(r => r.json())
         .then(resp => {
             const alumnos = resp.alumnos || [];
             if (!alumnos.length) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No hay alumnos inscritos en este grupo.</td></tr>`;
+                tbody.innerHTML = filaMensajeAsist('No hay alumnos inscritos en este grupo.');
                 return;
             }
 
-            let html = '';
-            alumnos.forEach((al, idx) => {
-                const totVal = al.total_asistencias !== null && al.total_asistencias !== undefined ? al.total_asistencias : '';
-                const asistVal = al.asistencias !== null && al.asistencias !== undefined ? al.asistencias : '';
-                const pct = al.porcentaje !== null && al.porcentaje !== undefined ? `${al.porcentaje}%` : '---';
-                let badgeClass = 'bg-secondary';
-                if (al.porcentaje !== null) {
-                    if (al.porcentaje >= 80) badgeClass = 'bg-success';
-                    else if (al.porcentaje >= 60) badgeClass = 'bg-warning text-dark';
-                    else badgeClass = 'bg-danger';
-                }
-
-                html += `
-                    <tr data-alumno-id="${al.idAlumno}">
-                        <td class="text-center fw-bold text-muted">${idx + 1}</td>
-                        <td><span class="badge bg-light text-dark border font-monospace">${al.numeroControl || al.idAlumno}</span></td>
-                        <td class="fw-semibold text-slate-800">${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}</td>
-                        <td class="text-center">
-                            <input type="number" min="0" class="form-control form-control-sm text-center inp-tot-asist fw-bold" value="${totVal}" placeholder="Hubieron" oninput="actualizarPorcentajeFila(this)" style="max-width: 100px; margin: 0 auto;">
+            tbody.innerHTML = alumnos.map((al, idx) => {
+                const totVal = al.total_asistencias ?? '';
+                const asistVal = al.asistencias ?? '';
+                const pct = (al.porcentaje !== null && al.porcentaje !== undefined) ? Number(al.porcentaje) : null;
+                return `
+                    <tr data-alumno-id="${Number(al.idAlumno)}" class="tw:transition-colors tw:hover:bg-slate-50">
+                        <td class="tw:px-4 tw:py-2.5 tw:text-center tw:text-xs tw:text-slate-400 tw:tabular-nums">${idx + 1}</td>
+                        <td class="tw:px-4 tw:py-2.5">
+                            <div class="tw:text-[0.8125rem] tw:font-semibold tw:text-slate-900">${escHtml(`${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}`.trim())}</div>
+                            <div class="tw:font-mono tw:text-[0.6875rem] tw:text-slate-400">${escHtml(al.numeroControl || al.idAlumno)}</div>
                         </td>
-                        <td class="text-center">
-                            <input type="number" min="0" class="form-control form-control-sm text-center inp-asist fw-bold text-primary" value="${asistVal}" placeholder="Tuvo" oninput="actualizarPorcentajeFila(this)" style="max-width: 100px; margin: 0 auto;">
-                        </td>
-                        <td class="text-center td-pct">
-                            <span class="badge ${badgeClass} px-2 py-1">${pct}</span>
-                        </td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html;
+                        <td class="tw:px-4 tw:py-2.5"><input type="number" min="0" max="${ASIST_MAX_CLASES}" step="1" inputmode="numeric" data-entero class="inp-tot-asist" value="${escHtml(totVal)}" placeholder="—" aria-label="Clases impartidas" oninput="validarFilaAsistencia(this)"></td>
+                        <td class="tw:px-4 tw:py-2.5"><input type="number" min="0" ${totVal !== '' ? `max="${escHtml(totVal)}"` : ''} step="1" inputmode="numeric" data-entero class="inp-asist" value="${escHtml(asistVal)}" placeholder="—" aria-label="Asistencias" oninput="validarFilaAsistencia(this)"><span class="asist-aviso" role="alert"></span></td>
+                        <td class="tw:px-4 tw:py-2.5 tw:text-center td-pct">${chipPorcentaje(pct)}</td>
+                    </tr>`;
+            }).join('');
         })
         .catch(err => {
             console.error(err);
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger"><i class="ti ti-alert-triangle me-2"></i>Error al cargar las asistencias del grupo.</td></tr>`;
+            tbody.innerHTML = filaMensajeAsist('Error al cargar las asistencias del grupo.', true);
         });
+}
+
+function filaMensajeAsist(texto, error = false) {
+    return `<tr><td colspan="5" class="tw:py-8 tw:text-center tw:text-[0.8125rem] ${error ? 'tw:text-danger-600' : 'tw:text-slate-500'}">${escHtml(texto)}</td></tr>`;
+}
+
+function chipPorcentaje(pct) {
+    if (pct === null || isNaN(pct)) {
+        return '<span class="tw:inline-flex tw:rounded-none tw:bg-slate-100 tw:px-2.5 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold tw:text-slate-400">—</span>';
+    }
+    const tono = pct >= 80 ? 'tw:bg-success-100 tw:text-success-700' : (pct >= 60 ? 'tw:bg-warning-100 tw:text-warning-600' : 'tw:bg-danger-100 tw:text-danger-600');
+    return `<span class="tw:inline-flex tw:rounded-none tw:px-2.5 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold tw:tabular-nums ${tono}">${pct}%</span>`;
+}
+
+function escHtml(v) {
+    return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// ---------------------------------------------------------------------------
+// Validación de asistencias: enteros ≥ 0 y asistencias ≤ clases impartidas
+// ---------------------------------------------------------------------------
+const ASIST_MAX_CLASES = 999;
+
+// En campos numéricos enteros no se permite escribir "-", "+", "e" ni decimales
+document.addEventListener('keydown', (e) => {
+    if (e.target.matches?.('input[data-entero]') && ['-', '+', 'e', 'E', '.', ','].includes(e.key)) e.preventDefault();
+});
+// Pegar texto: se conservan solo los dígitos
+document.addEventListener('paste', (e) => {
+    if (!e.target.matches?.('input[data-entero]')) return;
+    e.preventDefault();
+    e.target.value = (e.clipboardData?.getData('text') || '').replace(/\D/g, '');
+    e.target.dispatchEvent(new Event('input', { bubbles: true }));
+});
+
+/** Normaliza un input a entero >= 0 (o vacío) sin pasar de `max`. Devuelve el número o null. */
+function normalizarEntero(inp, max) {
+    const txt = String(inp.value ?? '').replace(/\D/g, '');
+    if (txt === '') { inp.value = ''; return null; }
+    let n = parseInt(txt, 10);
+    if (max !== undefined && max !== null && n > max) n = max;
+    if (String(n) !== inp.value) inp.value = n;
+    return n;
+}
+
+/** Valida la fila al escribir: si las asistencias superan las clases se ajustan al máximo y se avisa. */
+function validarFilaAsistencia(inputEl) {
+    const tr = inputEl.closest('tr');
+    if (!tr) return;
+    const inpTot = tr.querySelector('.inp-tot-asist');
+    const inpAsist = tr.querySelector('.inp-asist');
+    const aviso = tr.querySelector('.asist-aviso');
+
+    const tot = normalizarEntero(inpTot, ASIST_MAX_CLASES);
+    if (tot === null) inpAsist.removeAttribute('max'); else inpAsist.max = tot;
+
+    // Solo se recorta al escribir en Asistencias. Si se cambian las Clases (p. ej. al teclear "10"
+    // pasa por "1"), las asistencias NO se modifican: se marcan en rojo y se bloquea el guardado.
+    const escribiendoAsistencias = inputEl === inpAsist;
+    const escrito = parseInt(String(inpAsist.value).replace(/\D/g, ''), 10);
+    const asist = normalizarEntero(inpAsist, escribiendoAsistencias ? tot : null);
+    let mensaje = '';
+    if (tot !== null && !isNaN(escrito) && escrito > tot) {
+        mensaje = escribiendoAsistencias ? `Máximo ${tot} (clases impartidas)` : `Supera las ${tot} clases`;
+    } else if (tot === null && asist !== null) {
+        mensaje = 'Primero captura las clases';
+    }
+
+    if (mensaje) inpAsist.setAttribute('aria-invalid', 'true'); else inpAsist.removeAttribute('aria-invalid');
+    if (aviso) aviso.textContent = mensaje;
+    actualizarPorcentajeFila(inputEl);
 }
 
 function actualizarPorcentajeFila(inputEl) {
     const tr = inputEl.closest('tr');
     if (!tr) return;
-    const totInp = tr.querySelector('.inp-tot-asist');
-    const asistInp = tr.querySelector('.inp-asist');
+    const tot = parseFloat(tr.querySelector('.inp-tot-asist')?.value);
+    const asist = parseFloat(tr.querySelector('.inp-asist')?.value);
     const tdPct = tr.querySelector('.td-pct');
-
-    const tot = parseFloat(totInp ? totInp.value : 0);
-    const asist = parseFloat(asistInp ? asistInp.value : 0);
-
-    if (!isNaN(tot) && !isNaN(asist) && tot > 0) {
-        const pct = Math.round((asist / tot) * 100);
-        let badgeClass = pct >= 80 ? 'bg-success' : (pct >= 60 ? 'bg-warning text-dark' : 'bg-danger');
-        if (tdPct) tdPct.innerHTML = `<span class="badge ${badgeClass} px-2 py-1">${pct}%</span>`;
-    } else {
-        if (tdPct) tdPct.innerHTML = `<span class="badge bg-secondary px-2 py-1">---</span>`;
-    }
+    if (!tdPct) return;
+    tdPct.innerHTML = chipPorcentaje((!isNaN(tot) && !isNaN(asist) && tot > 0) ? Math.round((asist / tot) * 100) : null);
 }
 
 function aplicarTotalClasesATodos() {
@@ -1003,15 +588,28 @@ function aplicarTotalClasesATodos() {
             icon: 'info',
             title: 'Ingrese un valor',
             text: 'Por favor, escriba el total de clases impartidas en el campo superior.',
-            confirmButtonColor: '#4f46e5'
+            confirmButtonColor: '#26687B'
         });
         return;
     }
+    const total = normalizarEntero(inp, ASIST_MAX_CLASES);
+    if (total === null) return;
     const inputs = document.querySelectorAll('#tbodyAsistenciasGrupoModal .inp-tot-asist');
+    let ajustadas = 0;
     inputs.forEach(i => {
-        i.value = val;
-        actualizarPorcentajeFila(i);
+        const asist = parseInt(i.closest('tr')?.querySelector('.inp-asist')?.value, 10);
+        if (!isNaN(asist) && asist > total) ajustadas++;
+        i.value = total;
+        validarFilaAsistencia(i);
     });
+    if (ajustadas) {
+        Swal.fire({
+            icon: 'info',
+            title: 'Asistencias ajustadas',
+            text: `${ajustadas} ${ajustadas === 1 ? 'alumno tenía' : 'alumnos tenían'} más de ${total} asistencias; se ajustaron a ${total}. Revísalas antes de guardar.`,
+            confirmButtonColor: '#26687B'
+        });
+    }
 }
 
 function guardarAsistenciasGrupoModal() {
@@ -1022,6 +620,31 @@ function guardarAsistenciasGrupoModal() {
 
     if (!rows.length) {
         Swal.fire({ icon: 'warning', title: 'Sin alumnos', text: 'No hay alumnos para guardar.' });
+        return;
+    }
+
+    // Validación final: enteros >= 0, asistencias <= clases y sin asistencias sin clases
+    const invalidas = [];
+    rows.forEach(tr => {
+        const tot = tr.querySelector('.inp-tot-asist').value.trim();
+        const asist = tr.querySelector('.inp-asist').value.trim();
+        const nombre = tr.querySelector('td:nth-child(2) div')?.textContent.trim() || 'Alumno';
+        if (asist !== '' && tot === '') {
+            tr.querySelector('.inp-asist').setAttribute('aria-invalid', 'true');
+            invalidas.push(`${nombre}: tiene asistencias pero no clases impartidas`);
+        } else if (asist !== '' && parseInt(asist, 10) > parseInt(tot, 10)) {
+            tr.querySelector('.inp-asist').setAttribute('aria-invalid', 'true');
+            invalidas.push(`${nombre}: ${asist} asistencias de ${tot} clases`);
+        }
+    });
+    if (invalidas.length) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Revisa las asistencias',
+            html: invalidas.slice(0, 6).map(escHtml).join('<br>') + (invalidas.length > 6 ? `<br>… y ${invalidas.length - 6} más` : ''),
+            confirmButtonColor: '#26687B'
+        });
+        document.querySelector('#tbodyAsistenciasGrupoModal input[aria-invalid="true"]')?.focus();
         return;
     }
 
@@ -1051,6 +674,7 @@ function guardarAsistenciasGrupoModal() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : ''
         },
         body: JSON.stringify({
@@ -1070,14 +694,14 @@ function guardarAsistenciasGrupoModal() {
                 icon: 'success',
                 title: '¡Asistencias Guardadas!',
                 text: 'Las asistencias del periodo fueron actualizadas exitosamente y se reflejarán en las boletas.',
-                confirmButtonColor: '#4f46e5'
+                confirmButtonColor: '#26687B'
             });
             recargarAlumnosAsistenciasModal();
         } else {
             Swal.fire({
                 icon: 'error',
                 title: 'Error al guardar',
-                text: resp.message || resp.error || 'Ocurrió un error inesperado.'
+                text: (resp.errors ? Object.values(resp.errors).flat().join(' ') : '') || resp.message || resp.error || 'Ocurrió un error inesperado.'
             });
         }
     })
@@ -1348,7 +972,7 @@ function cargarGruposCaptura() {
                 icon: 'error',
                 title: 'Error al cargar grupos',
                 text: 'No se pudieron cargar los grupos desde el servidor backend. Verifique que el servicio esté iniciado.',
-                confirmButtonColor: 'rgb(49, 125, 146)'
+                confirmButtonColor: '#26687B'
             });
         })
         .finally(() => {
@@ -1362,6 +986,7 @@ function setFiltroCct(cctVal) {
     if (select && select.value !== cctVal) {
         select.value = cctVal;
     }
+    document.querySelectorAll('#chipsFiltroCct [data-cct]').forEach(b => b.setAttribute('aria-pressed', b.dataset.cct === String(cctVal) ? 'true' : 'false'));
     aplicarFiltros();
 }
 
@@ -1416,26 +1041,18 @@ function renderTablaGrupos(grupos) {
 
     if (tableWrapper) tableWrapper.style.display = 'block';
     if (emptyState) emptyState.style.display = 'none';
-    let html = '';
+    const CCT = {
+        2: ['BTI', 'tw:bg-brand-50 tw:text-brand-700 tw:ring-brand-200'],
+        3: ['BGNE', 'tw:bg-accent-100 tw:text-accent-600 tw:ring-accent-400/40'],
+        1: ['INF', 'tw:bg-slate-100 tw:text-slate-600 tw:ring-slate-200'],
+    };
 
-    grupos.forEach((g, idx) => {
-        const status = String(g.statusGrupo || g.status_grupo || 'ACTIVO').toUpperCase();
-        const statusBadge = status === 'ACTIVO'
-            ? `<span class="badge-soft-success"><span class="badge-dot"></span>Activo</span>`
-            : `<span class="badge-soft-danger"><span class="badge-dot"></span>Inactivo</span>`;
-
+    const html = grupos.map(g => {
+        const activo = String(g.statusGrupo || g.status_grupo || 'ACTIVO').toUpperCase() === 'ACTIVO';
         const idCct = parseInt(g.id_centroTrabajo ?? g.id_centro_trabajo, 10);
-        let cctBadge = '';
-        if (idCct === 3) {
-            cctBadge = '<span class="badge-cct badge-cct-bgne">BGNE</span>';
-        } else if (idCct === 2) {
-            cctBadge = '<span class="badge-cct badge-cct-bti">BTI</span>';
-        } else {
-            cctBadge = '<span class="badge-cct badge-cct-inf">INF</span>';
-        }
-
+        const [cctTxt, cctTono] = CCT[idCct] || CCT[1];
         const nivelNombre = g.nombre_nivel || g.nombreNivel || (g.id_nivel_academico ? (g.id_nivel_academico <= 6 ? `${g.id_nivel_academico}° Trimestre` : `${g.id_nivel_academico - 6}° Semestre`) : '—');
-        
+
         let progreso = { percent: 0, nivelText: 'Periodo', inicioPeriodo: '—', finPeriodo: '—' };
         try {
             progreso = calcularProgresoPeriodo(g) || progreso;
@@ -1443,62 +1060,47 @@ function renderTablaGrupos(grupos) {
             console.warn('Error calculando progreso para grupo:', g, eProg);
         }
 
-        const fechaIniStr = formatearFecha(g.fechaInicio);
-        const fechaFinStr = formatearFecha(g.fechaFin);
+        // Argumentos seguros para los onclick (la clave puede contener comillas)
+        const id = Number(g.id);
+        const argsAsist = [id, g.clave || '', Number(g.id_centroTrabajo ?? idCct), Number(g.id_nivel_academico || 7)]
+            .map(v => escHtml(JSON.stringify(v))).join(', ');
 
-        html += `
-        <tr>
-            <td><span class="id-mono">${idx + 1}</span></td>
-            <td>
-                <span class="grupo-clave-mono">${g.clave || '—'}</span>
-            </td>
-            <td>
-                ${cctBadge}
-            </td>
-            <td>
-                <span class="badge-nivel-pill">${nivelNombre}</span>
-            </td>
-            <td>
-                <div class="fechas-col-mono">
-                    <div><span class="text-muted">Inicio:</span> <span>${fechaIniStr}</span></div>
-                    <div><span class="text-muted">Fin:</span> <span>${fechaFinStr}</span></div>
+        return `
+        <tr class="tw:transition-colors tw:hover:bg-slate-50">
+            <td class="tw:py-3 tw:pr-4 tw:pl-5 tw:align-middle">
+                <div class="tw:flex tw:items-center tw:gap-2">
+                    <span class="tw:font-mono tw:text-[0.8125rem] tw:font-bold tw:text-slate-900">${escHtml(g.clave || '—')}</span>
+                    <span class="tw:rounded-none tw:px-2 tw:py-0.5 tw:text-[0.625rem] tw:font-bold tw:ring-1 ${cctTono}">${cctTxt}</span>
                 </div>
             </td>
-            <td>
-                <div class="progreso-periodo-box">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="progreso-label">${progreso.nivelText || 'Periodo'}</span>
-                        <span class="progreso-percent">${progreso.percent}%</span>
-                    </div>
-                    <div class="progress-track-saas">
-                        <div class="progress-fill-saas" style="width: ${progreso.percent}%;"></div>
-                    </div>
-                    <div class="d-flex justify-content-between progreso-dates mt-1">
-                        <span>${progreso.inicioPeriodo}</span>
-                        <span>${progreso.finPeriodo}</span>
-                    </div>
-                </div>
+            <td class="tw:px-4 tw:py-3 tw:align-middle tw:text-[0.8125rem] tw:text-slate-700">${escHtml(nivelNombre)}</td>
+            <td class="tw:px-4 tw:py-3 tw:align-middle tw:font-mono tw:text-xs tw:whitespace-nowrap tw:text-slate-500">${formatearFecha(g.fechaInicio)} – ${formatearFecha(g.fechaFin)}</td>
+            <td class="tw:px-4 tw:py-3 tw:align-middle">
+                <div class="tw:mb-1 tw:flex tw:justify-between tw:text-[0.6875rem]"><span class="tw:font-semibold tw:text-slate-700">${escHtml(progreso.nivelText || 'Periodo')}</span><span class="tw:text-slate-500 tw:tabular-nums">${progreso.percent}%</span></div>
+                <div class="tw:h-1.5 tw:overflow-hidden tw:bg-slate-100"><div class="tw:h-full tw:bg-brand-700" style="width:${progreso.percent}%"></div></div>
+                <div class="tw:mt-1 tw:flex tw:justify-between tw:font-mono tw:text-[0.625rem] tw:text-slate-400"><span>${progreso.inicioPeriodo}</span><span>${progreso.finPeriodo}</span></div>
             </td>
-            <td>
-                ${statusBadge}
+            <td class="tw:px-4 tw:py-3 tw:align-middle">
+                <span class="tw:inline-flex tw:items-center tw:gap-1.5 tw:rounded-none tw:px-2.5 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold ${activo ? 'tw:bg-success-100 tw:text-success-700' : 'tw:bg-slate-100 tw:text-slate-500'}">
+                    <span class="tw:size-1.5 tw:rounded-full ${activo ? 'tw:bg-success-700' : 'tw:bg-slate-400'}"></span>${activo ? 'Activo' : 'Inactivo'}
+                </span>
             </td>
-            <td class="text-end" style="padding-right: 20px;">
-                <div class="actions-cell-grupos">
-                    <button type="button" class="btn-action-calif" onclick="abrirCapturaGrupoMateria(${g.id})" title="Capturar calificaciones por materia">
-                        <i class="ti ti-edit"></i>
-                        <span>Calificaciones</span>
-                    </button>
-                    <button type="button" class="btn-action-asist" onclick="abrirModalAsistenciasGrupo(${g.id}, '${g.clave}', ${g.id_centroTrabajo}, ${g.id_nivel_academico || 7})" title="Capturar asistencias del periodo para todo el grupo">
-                        <i class="ti ti-calendar-check"></i>
-                        <span>Asistencias</span>
-                    </button>
-                </div>
+            <td class="tw:py-3 tw:pr-5 tw:pl-4 tw:text-right tw:align-middle tw:whitespace-nowrap">
+                <button type="button" onclick="abrirModalAsistenciasGrupo(${argsAsist})" title="Capturar asistencias del periodo"
+                    class="tw:mr-1.5 tw:inline-flex tw:h-8 tw:cursor-pointer tw:items-center tw:gap-1.5 tw:border tw:border-slate-200 tw:bg-white tw:px-3 tw:text-xs tw:font-semibold tw:text-slate-600 tw:transition-colors tw:hover:bg-slate-50 tw:hover:text-slate-900">
+                    <i class="ti ti-calendar-check"></i> Asistencias
+                </button>
+                <button type="button" onclick="abrirCapturaGrupoMateria(${id})" title="Capturar calificaciones por asignatura"
+                    class="tw:inline-flex tw:h-8 tw:cursor-pointer tw:items-center tw:gap-1.5 tw:border-0 tw:bg-brand-700 tw:px-3 tw:text-xs tw:font-semibold tw:text-white tw:shadow-xs tw:transition-colors tw:hover:bg-brand-800">
+                    <i class="ti ti-pencil"></i> Calificaciones
+                </button>
             </td>
-        </tr>
-        `;
-    });
+        </tr>`;
+    }).join('');
 
     if (tbody) tbody.innerHTML = html;
+    const conteo = document.getElementById('lblConteoGrupos');
+    if (conteo) conteo.textContent = `${grupos.length} ${grupos.length === 1 ? 'grupo' : 'grupos'} de ${listaTodosGrupos.length}`;
 }
 
 // ==========================================
@@ -1571,7 +1173,7 @@ function abrirCapturaGrupoMateria(idGrupo, idMateria = null) {
                     icon: 'error',
                     title: 'Error',
                     text: res.error || 'No se pudieron cargar los datos del grupo.',
-                    confirmButtonColor: 'rgb(49, 125, 146)'
+                    confirmButtonColor: '#26687B'
                 });
             }
         })
@@ -1581,7 +1183,7 @@ function abrirCapturaGrupoMateria(idGrupo, idMateria = null) {
                 icon: 'error',
                 title: 'Error',
                 text: 'Error de conexión al obtener información del grupo.',
-                confirmButtonColor: 'rgb(49, 125, 146)'
+                confirmButtonColor: '#26687B'
             });
         })
         .finally(() => {
@@ -1607,7 +1209,7 @@ function cambiarPeriodoSeleccionado(idPeriodo) {
             icon: 'info',
             title: 'Sin asignaturas',
             text: 'No hay asignaturas registradas para este periodo en el grupo.',
-            confirmButtonColor: 'rgb(49, 125, 146)'
+            confirmButtonColor: '#26687B'
         });
     }
 }
@@ -1637,10 +1239,6 @@ function renderDatosControlOficial(data) {
     const disSem = (isSoloLectura || (isDocente && !cctConfig.captura_semestral)) ? 'disabled' : '';
     const disExt = (isSoloLectura || (isDocente && !cctConfig.captura_extraordinario)) ? 'disabled' : '';
 
-    console.log("--- CAPTURA CALIFS DEBUG ---");
-    console.log("cctConfig:", cctConfig);
-    console.log("isSoloLectura:", isSoloLectura);
-    console.log("disSem:", disSem, "disExt:", disExt);
 
     // Handle Solo Lectura Banner and Save Button
     const banner = document.getElementById('bannerSoloLectura');
@@ -1649,20 +1247,20 @@ function renderDatosControlOficial(data) {
 
     if (isSoloLectura) {
         if (banner) {
-            banner.style.setProperty('display', 'flex', 'important');
+            banner.style.display = 'block';
             mensajeBanner.textContent = data.mensaje_restriccion || 'Captura de calificaciones deshabilitada.';
         }
         if (btnGuardar) {
             btnGuardar.disabled = true;
-            btnGuardar.style.display = 'none';
+            document.getElementById('wrapGuardarCalifs').style.display = 'none';
         }
     } else {
         if (banner) {
-            banner.style.setProperty('display', 'none', 'important');
+            banner.style.display = 'none';
         }
         if (btnGuardar) {
             btnGuardar.disabled = false;
-            btnGuardar.style.display = 'block';
+            document.getElementById('wrapGuardarCalifs').style.display = '';
         }
     }
 
@@ -1673,98 +1271,40 @@ function renderDatosControlOficial(data) {
     if (containerCal && gridCal) {
         const fechas = data.grupo_fechas_limite;
         if (fechas) {
-            let calHtml = '';
-            
-            const formatRango = (inicio, fin) => {
-                if (!inicio && !fin) return '<span class="text-success fw-bold">Abierto (Sin límite)</span>';
-                let txt = '';
-                if (inicio) {
-                    const dIni = new Date(inicio + 'T00:00:00');
-                    txt += `Desde ${dIni.toLocaleDateString('es-MX', {day: 'numeric', month: 'short'})}`;
+            // Estado de cada ventana respecto a hoy: abierta / próxima / cerrada / sin límite
+            const hoyISO = new Date().toLocaleDateString('en-CA');
+            const fmt = (iso) => new Date(iso + 'T00:00:00').toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+            const ventana = (nombre, inicio, fin) => {
+                let estado, tono, rango;
+                if (!inicio && !fin) {
+                    estado = 'Sin límite'; tono = 'tw:bg-success-100 tw:text-success-700'; rango = 'Captura abierta';
+                } else {
+                    rango = `${inicio ? fmt(inicio) : '…'} – ${fin ? fmt(fin) : '…'}`;
+                    if (inicio && hoyISO < inicio) { estado = 'Próxima'; tono = 'tw:bg-slate-100 tw:text-slate-600'; }
+                    else if (fin && hoyISO > fin) { estado = 'Cerrada'; tono = 'tw:bg-danger-100 tw:text-danger-600'; }
+                    else { estado = 'Abierta'; tono = 'tw:bg-success-100 tw:text-success-700'; }
                 }
-                if (fin) {
-                    const dFin = new Date(fin + 'T00:00:00');
-                    txt += ` hasta ${dFin.toLocaleDateString('es-MX', {day: 'numeric', month: 'short'})}`;
-                }
-                return `<span class="fw-bold">${txt}</span>`;
+                return `
+                    <div class=" tw:border tw:border-slate-200 tw:bg-white tw:px-3 tw:py-2">
+                        <div class="tw:flex tw:items-center tw:justify-between tw:gap-2">
+                            <span class="tw:truncate tw:text-xs tw:font-semibold tw:text-slate-800">${nombre}</span>
+                            <span class="tw:shrink-0 tw:rounded-none tw:px-2 tw:py-0.5 tw:text-[0.625rem] tw:font-semibold ${tono}">${estado}</span>
+                        </div>
+                        <div class="tw:mt-0.5 tw:text-[0.6875rem] tw:text-slate-500">${rango}</div>
+                    </div>`;
             };
 
-            // Validar si el periodo es semestral o si es BGNE
             const isBgne = parseInt(grupo.id_centroTrabajo) === 3;
-            const isSemestral = matSel.tipoEvaluacion && matSel.tipoEvaluacion.toUpperCase() === 'SEMESTRAL';
-
+            const isSemestralCal = matSel.tipoEvaluacion && matSel.tipoEvaluacion.toUpperCase() === 'SEMESTRAL';
+            let ventanas;
             if (isBgne) {
-                calHtml += `
-                    <div class="col-12 col-md-6">
-                        <div class="p-2 border rounded bg-light">
-                            <div class="fw-bold text-dark" style="font-size: 0.82rem;">Calificación Final</div>
-                            <small class="text-muted" style="font-size: 0.72rem;">${formatRango(fechas.p1_inicio, fechas.p1_fin)}</small>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <div class="p-2 border rounded bg-light">
-                            <div class="fw-bold text-dark" style="font-size: 0.82rem;">Examen Extraordinario</div>
-                            <small class="text-muted" style="font-size: 0.72rem;">${formatRango(fechas.extraordinario_inicio, fechas.extraordinario_fin)}</small>
-                        </div>
-                    </div>
-                `;
-            } else if (isSemestral) {
-                calHtml += `
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <div class="p-2 border rounded bg-light">
-                            <div class="fw-bold text-dark" style="font-size: 0.82rem;">1er. Parcial</div>
-                            <small class="text-muted" style="font-size: 0.72rem;">${formatRango(fechas.p1_inicio, fechas.p1_fin)}</small>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <div class="p-2 border rounded bg-light">
-                            <div class="fw-bold text-dark" style="font-size: 0.82rem;">2do. Parcial</div>
-                            <small class="text-muted" style="font-size: 0.72rem;">${formatRango(fechas.p2_inicio, fechas.p2_fin)}</small>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <div class="p-2 border rounded bg-light">
-                            <div class="fw-bold text-dark" style="font-size: 0.82rem;">3er. Parcial</div>
-                            <small class="text-muted" style="font-size: 0.72rem;">${formatRango(fechas.p3_inicio, fechas.p3_fin)}</small>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-4 col-lg-3">
-                        <div class="p-2 border rounded bg-light">
-                            <div class="fw-bold text-dark" style="font-size: 0.82rem;">Semestral/Final</div>
-                            <small class="text-muted" style="font-size: 0.72rem;">${formatRango(fechas.semestral_inicio, fechas.semestral_fin)}</small>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-4 col-lg-3">
-                        <div class="p-2 border rounded bg-light">
-                            <div class="fw-bold text-dark" style="font-size: 0.82rem;">Extraordinario</div>
-                            <small class="text-muted" style="font-size: 0.72rem;">${formatRango(fechas.extraordinario_inicio, fechas.extraordinario_fin)}</small>
-                        </div>
-                    </div>
-                `;
+                ventanas = [['Calificación final', 'p1'], ['Extraordinario', 'extraordinario']];
+            } else if (isSemestralCal) {
+                ventanas = [['1er parcial', 'p1'], ['2do parcial', 'p2'], ['3er parcial', 'p3'], ['Semestral / final', 'semestral'], ['Extraordinario', 'extraordinario']];
             } else {
-                calHtml += `
-                    <div class="col-12 col-md-4">
-                        <div class="p-2 border rounded bg-light">
-                            <div class="fw-bold text-dark" style="font-size: 0.82rem;">1er. Parcial</div>
-                            <small class="text-muted" style="font-size: 0.72rem;">${formatRango(fechas.p1_inicio, fechas.p1_fin)}</small>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-4">
-                        <div class="p-2 border rounded bg-light">
-                            <div class="fw-bold text-dark" style="font-size: 0.82rem;">2do. Parcial</div>
-                            <small class="text-muted" style="font-size: 0.72rem;">${formatRango(fechas.p2_inicio, fechas.p2_fin)}</small>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-4">
-                        <div class="p-2 border rounded bg-light">
-                            <div class="fw-bold text-dark" style="font-size: 0.82rem;">3er. Parcial</div>
-                            <small class="text-muted" style="font-size: 0.72rem;">${formatRango(fechas.p3_inicio, fechas.p3_fin)}</small>
-                        </div>
-                    </div>
-                `;
+                ventanas = [['1er parcial', 'p1'], ['2do parcial', 'p2'], ['3er parcial', 'p3']];
             }
-            
-            gridCal.innerHTML = calHtml;
+            gridCal.innerHTML = ventanas.map(([n, k]) => ventana(n, fechas[`${k}_inicio`], fechas[`${k}_fin`])).join('');
             containerCal.style.display = 'block';
         } else {
             containerCal.style.display = 'none';
@@ -1779,7 +1319,7 @@ function renderDatosControlOficial(data) {
     const isBti = (parseInt(grupo.id_centroTrabajo) === 2 || (grupo.nombreCentroTrabajo || '').toUpperCase().includes('BTI'));
     const labelPeriodo = document.getElementById('labelPeriodoCaptura');
     if (labelPeriodo) {
-        labelPeriodo.textContent = isBti ? 'SEMESTRE:' : 'MÓDULO:';
+        labelPeriodo.textContent = isBti ? 'Semestre' : 'Módulo';
     }
 
     const uniqueLevels = [];
@@ -1901,32 +1441,32 @@ function renderDatosControlOficial(data) {
     if (isSemestral) {
         thead.innerHTML = `
             <tr>
-                <th style="width: 40px;">N°</th>
-                <th style="width: 130px;">Apellido Paterno</th>
-                <th style="width: 130px;">Apellido Materno</th>
-                <th style="width: 160px;">Nombre(s)</th>
-                <th style="width: 80px;">1ER. PARCIAL</th>
-                <th style="width: 80px;">2DO. PARCIAL</th>
-                <th style="width: 80px;">3ER. PARCIAL</th>
-                <th style="width: 80px;">SEMESTRAL</th>
-                <th style="width: 80px;">EXTRAORDINARIO</th>
-                <th style="width: 95px;">PROMEDIO FINAL</th>
-                <th style="width: 140px;">Calificación con Letra</th>
+                <th style="width: 44px;">#</th>
+                <th style="width: 140px;">Ap. paterno</th>
+                <th style="width: 140px;">Ap. materno</th>
+                <th style="width: 170px;">Nombre(s)</th>
+                <th style="width: 78px;">Parcial 1</th>
+                <th style="width: 78px;">Parcial 2</th>
+                <th style="width: 78px;">Parcial 3</th>
+                <th style="width: 82px;">Semestral</th>
+                <th style="width: 82px; background: #FFFBEB; color: #B45309;">Extraord.</th>
+                <th style="width: 120px; background: #EFF6F7; color: #26687B;">Final</th>
+                <th style="width: 120px;">Con letra</th>
                 ${mostrarAsistencias ? '<th style="width: 120px;">Asistencias</th>' : ''}
-                <th style="min-width: 120px;">Observaciones</th>
+                <th style="min-width: 160px; text-align: left;">Observaciones</th>
             </tr>
         `;
     } else {
         thead.innerHTML = `
             <tr>
-                <th style="width: 40px;">N°</th>
-                <th style="width: 130px;">Apellido Paterno</th>
-                <th style="width: 130px;">Apellido Materno</th>
-                <th style="width: 160px;">Nombre(s)</th>
-                <th style="width: 120px;">Calificación Final</th>
-                <th style="width: 120px;">Extraordinario</th>
-                <th style="width: 160px;">Calificación con Letra</th>
-                <th style="min-width: 140px;">Observaciones</th>
+                <th style="width: 44px;">#</th>
+                <th style="width: 150px;">Ap. paterno</th>
+                <th style="width: 150px;">Ap. materno</th>
+                <th style="width: 180px;">Nombre(s)</th>
+                <th style="width: 130px; background: #EFF6F7; color: #26687B;">Calificación final</th>
+                <th style="width: 100px; background: #FFFBEB; color: #B45309;">Extraord.</th>
+                <th style="width: 130px;">Con letra</th>
+                <th style="min-width: 180px; text-align: left;">Observaciones</th>
             </tr>
         `;
     }
@@ -1938,7 +1478,7 @@ function renderDatosControlOficial(data) {
         document.getElementById('statTotalAlumnos').textContent = '0';
         document.getElementById('statAprobados').textContent = '0';
         document.getElementById('statReprobados').textContent = '0';
-        document.getElementById('statPromedioMateria').textContent = 'Promedio Materia: 0.0';
+        document.getElementById('statPromedioMateria').textContent = 'Promedio 0.0';
         const tfoot = document.getElementById('tfootCalificacionesOficial');
         if (tfoot) tfoot.innerHTML = '';
         return;
@@ -1960,17 +1500,17 @@ function renderDatosControlOficial(data) {
         let asistInput = '';
 
         if (isEquiv) {
-            p1Input = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
-            p2Input = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
-            p3Input = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
-            semInput = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
-            extInput = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
-            asistInput = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
+            p1Input = `<span class="chip-equiv">EQUIV.</span>`;
+            p2Input = `<span class="chip-equiv">EQUIV.</span>`;
+            p3Input = `<span class="chip-equiv">EQUIV.</span>`;
+            semInput = `<span class="chip-equiv">EQUIV.</span>`;
+            extInput = `<span class="chip-equiv">EQUIV.</span>`;
+            asistInput = `<span class="chip-equiv">EQUIV.</span>`;
             finalInput = `
                 <div class="d-flex align-items-center justify-content-center gap-1">
-                    <span class="badge bg-warning text-dark px-2 py-1 fw-bold d-inline-block shadow-sm" style="font-size: 0.82rem;">EQUIV.</span>
-                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 border-0" title="Cambiar a calificación numérica" onclick="conmutarEquivalenciaFila(this.closest('tr'), false)" ${disAttr}>
-                        <i class="ti ti-edit text-muted"></i>
+                    <span class="chip-equiv">EQUIV.</span>
+                    <button type="button" class="btn-equiv-undo" title="Cambiar a calificación numérica" onclick="conmutarEquivalenciaFila(this.closest('tr'), false)" ${disAttr}>
+                        <i class="ti ti-pencil"></i>
                     </button>
                     <input type="hidden" class="inp-calif-final" value="EQUIV">
                 </div>
@@ -1984,15 +1524,15 @@ function renderDatosControlOficial(data) {
                 const intExtSem = (a.extraordinario !== null && a.extraordinario !== undefined && a.extraordinario !== '') ? parseInt(a.extraordinario) : '';
                 const intFinalSem = (calif !== '' && !isNaN(calif)) ? parseInt(calif) : '';
 
-                p1Input = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p1" value="${intP1}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP1}>`;
-                p2Input = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p2" value="${intP2}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP2}>`;
-                p3Input = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p3" value="${intP3}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP3}>`;
-                semInput = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-semestral" value="${intSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disSem}>`;
-                extInput = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="${intExtSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disExt}>`;
+                p1Input = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p1" value="${intP1}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="–" ${disP1}>`;
+                p2Input = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p2" value="${intP2}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="–" ${disP2}>`;
+                p3Input = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p3" value="${intP3}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="–" ${disP3}>`;
+                semInput = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-semestral" value="${intSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="–" ${disSem}>`;
+                extInput = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="${intExtSem}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="–" ${disExt}>`;
                 finalInput = `
                     <div class="d-flex align-items-center justify-content-center gap-1">
-                        <input type="number" step="1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="${intFinalSem}" readonly style="background-color: #f1f5f9;" ${disAttr}>
-                        <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-1 fw-bold shadow-sm" title="Marcar como Equivalencia (alumno transferido)" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" style="font-size: 0.68rem; line-height: 1.2;" ${disAttr}>
+                        <input type="number" step="1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="${intFinalSem}" readonly ${disAttr}>
+                        <button type="button" class="btn-equiv" title="Marcar como Equivalencia (alumno transferido)" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" ${disAttr}>
                             EQUIV
                         </button>
                     </div>
@@ -2013,13 +1553,13 @@ function renderDatosControlOficial(data) {
                 const intExt = (a.extraordinario !== null && a.extraordinario !== undefined && a.extraordinario !== '' && !isNaN(a.extraordinario)) ? parseInt(a.extraordinario) : '';
                 finalInput = `
                     <div class="d-flex align-items-center justify-content-center gap-1">
-                        <input type="number" step="1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="${intCalif}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="0-10" ${disP1}>
-                        <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-1 fw-bold shadow-sm" title="Marcar alumno con EQUIVALENCIA" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" style="font-size: 0.68rem; line-height: 1.2;" ${disP1}>
+                        <input type="number" step="1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="${intCalif}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="–" ${disP1}>
+                        <button type="button" class="btn-equiv" title="Marcar alumno con EQUIVALENCIA" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" ${disP1}>
                             EQUIV
                         </button>
                     </div>
                 `;
-                extInput = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="${intExt}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="0-10" ${disExt}>`;
+                extInput = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="${intExt}" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="–" ${disExt}>`;
             }
         }
 
@@ -2027,33 +1567,33 @@ function renderDatosControlOficial(data) {
             html += `
             <tr data-alumno-id="${a.idAlumno}" data-is-equivalencia="${isEquiv}">
                 <td class="text-center fw-bold">${idx + 1}</td>
-                <td class="fw-semibold">${a.apPaterno || ''}</td>
-                <td class="fw-semibold">${a.apMaterno || ''}</td>
-                <td class="fw-bold text-dark">${a.nombre || ''}</td>
+                <td class="fw-semibold">${escHtml(a.apPaterno)}</td>
+                <td class="fw-semibold">${escHtml(a.apMaterno)}</td>
+                <td class="fw-bold text-dark">${escHtml(a.nombre)}</td>
                 
-                <td style="background-color: #fafafa; text-align: center;">${p1Input}</td>
-                <td style="background-color: #fafafa; text-align: center;">${p2Input}</td>
-                <td style="background-color: #fafafa; text-align: center;">${p3Input}</td>
-                <td style="background-color: #fafafa; text-align: center;">${semInput}</td>
-                <td style="background-color: #fffbeb; text-align: center;">${extInput}</td>
-                <td style="background-color: #f1f5f9; text-align: center;">${finalInput}</td>
+                <td style="text-align: center;">${p1Input}</td>
+                <td style="text-align: center;">${p2Input}</td>
+                <td style="text-align: center;">${p3Input}</td>
+                <td style="text-align: center;">${semInput}</td>
+                <td style="background-color: #FFFBEB; text-align: center;">${extInput}</td>
+                <td style="background-color: #EFF6F7; text-align: center;">${finalInput}</td>
                 <td class="text-center fw-bold td-calif-letra" style="font-size: 0.78rem;">${califLetra}</td>
                 ${mostrarAsistencias ? `<td class="td-asistencias" style="background-color: #f8fafc; text-align: center;">${asistInput}</td>` : ''}
-                <td><input type="text" class="input-observaciones-celda inp-obs" value="${obs}" placeholder="Opcional..." ${isEquiv ? 'disabled' : ''} ${disAttr}></td>
+                <td><input type="text" class="input-observaciones-celda inp-obs" value="${escHtml(obs)}" placeholder="Opcional..." ${isEquiv ? 'disabled' : ''} ${disAttr}></td>
             </tr>
             `;
         } else {
             html += `
             <tr data-alumno-id="${a.idAlumno}" data-is-equivalencia="${isEquiv}">
                 <td class="text-center fw-bold">${idx + 1}</td>
-                <td class="fw-semibold">${a.apPaterno || ''}</td>
-                <td class="fw-semibold">${a.apMaterno || ''}</td>
-                <td class="fw-bold text-dark">${a.nombre || ''}</td>
+                <td class="fw-semibold">${escHtml(a.apPaterno)}</td>
+                <td class="fw-semibold">${escHtml(a.apMaterno)}</td>
+                <td class="fw-bold text-dark">${escHtml(a.nombre)}</td>
                 
-                <td style="background-color: #f1f5f9; text-align: center;">${finalInput}</td>
-                <td style="background-color: #fffbeb; text-align: center;">${extInput}</td>
+                <td style="background-color: #EFF6F7; text-align: center;">${finalInput}</td>
+                <td style="background-color: #FFFBEB; text-align: center;">${extInput}</td>
                 <td class="text-center fw-bold td-calif-letra" style="font-size: 0.78rem;">${califLetra}</td>
-                <td><input type="text" class="input-observaciones-celda inp-obs" value="${obs}" placeholder="Opcional..." ${isEquiv ? 'disabled' : ''} ${disAttr}></td>
+                <td><input type="text" class="input-observaciones-celda inp-obs" value="${escHtml(obs)}" placeholder="Opcional..." ${isEquiv ? 'disabled' : ''} ${disAttr}></td>
             </tr>
             `;
         }
@@ -2075,7 +1615,7 @@ function renderDatosControlOficial(data) {
         } else {
             const tdLetra = tr.querySelector('.td-calif-letra');
             if (tdLetra) {
-                tdLetra.className = 'text-center fw-bold text-warning td-calif-letra';
+                tdLetra.className = 'text-center fw-bold td-calif-letra tw:text-warning-600';
             }
         }
     });
@@ -2116,30 +1656,30 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
         tr.setAttribute('data-is-equivalencia', 'true');
         
         if (isSemestral) {
-            tr.children[4].innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
-            tr.children[5].innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
-            tr.children[6].innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
-            tr.children[7].innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
-            tr.children[8].innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
+            tr.children[4].innerHTML = `<span class="chip-equiv">EQUIV.</span>`;
+            tr.children[5].innerHTML = `<span class="chip-equiv">EQUIV.</span>`;
+            tr.children[6].innerHTML = `<span class="chip-equiv">EQUIV.</span>`;
+            tr.children[7].innerHTML = `<span class="chip-equiv">EQUIV.</span>`;
+            tr.children[8].innerHTML = `<span class="chip-equiv">EQUIV.</span>`;
             tr.children[9].innerHTML = `
                 <div class="d-flex align-items-center justify-content-center gap-1">
-                    <span class="badge bg-warning text-dark px-2 py-1 fw-bold d-inline-block shadow-sm">EQUIV.</span>
-                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 border-0" title="Cambiar a calificación numérica" onclick="conmutarEquivalenciaFila(this.closest('tr'), false)" ${disAttr}>
-                        <i class="ti ti-edit text-muted"></i>
+                    <span class="chip-equiv">EQUIV.</span>
+                    <button type="button" class="btn-equiv-undo" title="Cambiar a calificación numérica" onclick="conmutarEquivalenciaFila(this.closest('tr'), false)" ${disAttr}>
+                        <i class="ti ti-pencil"></i>
                     </button>
                     <input type="hidden" class="inp-calif-final" value="EQUIV">
                 </div>
             `;
             if (tdAsist) {
-                tdAsist.innerHTML = `<span class="badge bg-warning text-dark px-2 py-1">EQUIV.</span>`;
+                tdAsist.innerHTML = `<span class="chip-equiv">EQUIV.</span>`;
             }
         } else {
             // BGNE (children[4] es Final, children[5] es Extraordinario)
             tr.children[4].innerHTML = `
                 <div class="d-flex align-items-center justify-content-center gap-1">
-                    <span class="badge bg-warning text-dark px-2 py-1 fw-bold d-inline-block shadow-sm" style="font-size: 0.82rem;">EQUIV.</span>
-                    <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 border-0" title="Cambiar a calificación numérica" onclick="conmutarEquivalenciaFila(this.closest('tr'), false)" ${disAttr}>
-                        <i class="ti ti-edit text-muted"></i>
+                    <span class="chip-equiv">EQUIV.</span>
+                    <button type="button" class="btn-equiv-undo" title="Cambiar a calificación numérica" onclick="conmutarEquivalenciaFila(this.closest('tr'), false)" ${disAttr}>
+                        <i class="ti ti-pencil"></i>
                     </button>
                     <input type="hidden" class="inp-calif-final" value="EQUIV">
                 </div>
@@ -2149,21 +1689,21 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
 
         if (tdLetra) {
             tdLetra.textContent = 'EQUIVALENCIA';
-            tdLetra.className = 'text-center fw-bold text-warning td-calif-letra';
+            tdLetra.className = 'text-center fw-bold td-calif-letra tw:text-warning-600';
         }
     } else {
         tr.setAttribute('data-is-equivalencia', 'false');
 
         if (isSemestral) {
-            tr.children[4].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p1" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP1}>`;
-            tr.children[5].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p2" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP2}>`;
-            tr.children[6].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p3" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disP3}>`;
-            tr.children[7].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-semestral" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disSem}>`;
-            tr.children[8].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="0-10" ${disExt}>`;
+            tr.children[4].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p1" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="–" ${disP1}>`;
+            tr.children[5].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p2" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="–" ${disP2}>`;
+            tr.children[6].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-p3" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="–" ${disP3}>`;
+            tr.children[7].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-semestral" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="–" ${disSem}>`;
+            tr.children[8].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaSemestral(this)" placeholder="–" ${disExt}>`;
             tr.children[9].innerHTML = `
                 <div class="d-flex align-items-center justify-content-center gap-1">
-                    <input type="number" step="1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="" readonly style="background-color: #f1f5f9;" ${disAttr}>
-                    <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-1 fw-bold shadow-sm" title="Marcar como Equivalencia (alumno transferido)" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" style="font-size: 0.68rem; line-height: 1.2;" ${disAttr}>
+                    <input type="number" step="1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="" readonly ${disAttr}>
+                    <button type="button" class="btn-equiv" title="Marcar como Equivalencia (alumno transferido)" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" ${disAttr}>
                         EQUIV
                     </button>
                 </div>
@@ -2180,18 +1720,18 @@ function conmutarEquivalenciaFila(tr, aEquiv) {
         } else {
             tr.children[4].innerHTML = `
                 <div class="d-flex align-items-center justify-content-center gap-1">
-                    <input type="number" step="1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="0-10" ${disP1}>
-                    <button type="button" class="btn btn-sm btn-outline-warning text-dark py-0 px-1 fw-bold shadow-sm" title="Marcar alumno con EQUIVALENCIA" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" style="font-size: 0.68rem; line-height: 1.2;" ${disP1}>
+                    <input type="number" step="1" min="0" max="10" class="input-calif-celda inp-calif-final fw-bold" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="–" ${disP1}>
+                    <button type="button" class="btn-equiv" title="Marcar alumno con EQUIVALENCIA" onclick="conmutarEquivalenciaFila(this.closest('tr'), true)" ${disP1}>
                         EQUIV
                     </button>
                 </div>
             `;
-            tr.children[5].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="0-10" ${disExt}>`;
+            tr.children[5].innerHTML = `<input type="number" step="1" min="0" max="10" class="input-calif-celda inp-extraordinario" value="" onkeydown="prevenirDecimales(event)" oninput="recalcularFilaOficial(this)" placeholder="–" ${disExt}>`;
         }
 
         if (tdLetra) {
             tdLetra.textContent = '—';
-            tdLetra.className = 'text-center fw-bold text-secondary td-calif-letra';
+            tdLetra.className = 'text-center fw-bold td-calif-letra tw:text-slate-500';
         }
     }
 
@@ -2279,7 +1819,7 @@ function recalcularFilaSemestral(inputEl) {
             // Para docente depende del calendario oficial
             semInp.disabled = isSoloLectura || !config.captura_semestral;
         }
-        semInp.placeholder = "0-10";
+        semInp.placeholder = "–";
     }
 
     if (extInp) {
@@ -2290,7 +1830,7 @@ function recalcularFilaSemestral(inputEl) {
             // Para docente depende del calendario oficial
             extInp.disabled = isSoloLectura || !config.captura_extraordinario;
         }
-        extInp.placeholder = "0-10";
+        extInp.placeholder = "–";
     }
 
     const semVal = semInp && semInp.value !== '' ? parseFloat(semInp.value) : NaN;
@@ -2344,9 +1884,9 @@ function recalcularFilaSemestral(inputEl) {
     if (tdLetra) {
         tdLetra.textContent = numeroALetrasCalificacion(finalVal);
         if (parseFloat(finalVal) < 6.0) {
-            tdLetra.className = 'text-center fw-bold text-danger td-calif-letra';
+            tdLetra.className = 'text-center fw-bold td-calif-letra tw:text-danger-600';
         } else {
-            tdLetra.className = 'text-center fw-bold text-secondary td-calif-letra';
+            tdLetra.className = 'text-center fw-bold td-calif-letra tw:text-slate-500';
         }
     }
 
@@ -2411,9 +1951,9 @@ function recalcularFilaOficial(inputEl) {
     if (tdLetra) {
         tdLetra.textContent = numeroALetrasCalificacion(finalVal);
         if (parseFloat(finalVal) < 6.0) {
-            tdLetra.className = 'text-center fw-bold text-danger td-calif-letra';
+            tdLetra.className = 'text-center fw-bold td-calif-letra tw:text-danger-600';
         } else {
-            tdLetra.className = 'text-center fw-bold text-secondary td-calif-letra';
+            tdLetra.className = 'text-center fw-bold td-calif-letra tw:text-slate-500';
         }
     }
 
@@ -2461,7 +2001,10 @@ function recalcularEstadisticasMateria() {
         if (semInp) { const v = parseFloat(semInp.value); if (!isNaN(v)) semVals.push(v); }
         if (extInp) { const v = parseFloat(extInp.value); if (!isNaN(v)) extVals.push(v); }
         
-        const val = parseFloat(inpFinal.value);
+        // Calificación efectiva: en BGNE, si hay extraordinario capturado es la que cuenta
+        // (coincide con la "calificación con letra" que muestra la fila)
+        let val = parseFloat(inpFinal.value);
+        if (!isSemestral && extInp && extInp.value !== '') val = parseFloat(extInp.value);
         if (!isNaN(val)) {
             finalVals.push(val);
             if (val >= 6.0) aprobados++;
@@ -2477,42 +2020,28 @@ function recalcularEstadisticasMateria() {
     const elEq = document.getElementById('statEquivalencias');
     if (elEq) elEq.textContent = totalEquiv;
 
-    const prom = finalVals.length > 0 ? (finalVals.reduce((a, b) => a + b, 0) / finalVals.length).toFixed(1) : '0.0';
-    document.getElementById('statPromedioMateria').textContent = `Promedio Materia: ${prom}`;
+    const prom = finalVals.length > 0 ? (finalVals.reduce((a, b) => a + b, 0) / finalVals.length).toFixed(1) : '—';
+    document.getElementById('statPromedioMateria').textContent = `Promedio ${prom}`;
 
-    // Render averages row at tfoot
+    // Fila de promedios por columna (alineada con el encabezado de cada tipo de tabla)
     const tfoot = document.getElementById('tfootCalificacionesOficial');
     if (tfoot) {
-        const getAvg = (arr) => arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '0.0';
-        
-        if (isSemestral) {
-            const grupo = (datosGrupoMateriaActual && datosGrupoMateriaActual.grupo) || {};
-            const isBti = (parseInt(grupo.id_centroTrabajo) === 2 || (grupo.nombreCentroTrabajo || '').toUpperCase().includes('BTI'));
-            const mostrarAsistencias = false;
+        const avg = (arr) => arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '—';
+        const celda = (valor, fondo = '') => {
+            const rojo = valor !== '—' && parseFloat(valor) < 6.0;
+            return `<td class="text-center" style="color: ${rojo ? '#DC2626' : (valor === '—' ? '#94A3B8' : '#0F172A')};${fondo ? ` background: ${fondo} !important;` : ''}">${valor}</td>`;
+        };
+        const etiqueta = `<td colspan="4" style="text-align: right; color: #64748B; font-size: 0.6875rem; letter-spacing: .06em; text-transform: uppercase;">Promedio del grupo</td>`;
 
-            tfoot.innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-end pe-3 fw-bold" style="border: 1.2px solid #0f172a; padding: 6px 8px;">PROMEDIO:</td>
-                    <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; color: ${parseFloat(getAvg(p1Vals)) < 6.0 ? '#dc2626' : '#0f172a'};">${getAvg(p1Vals)}</td>
-                    <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; color: ${parseFloat(getAvg(p2Vals)) < 6.0 ? '#dc2626' : '#0f172a'};">${getAvg(p2Vals)}</td>
-                    <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; color: ${parseFloat(getAvg(p3Vals)) < 6.0 ? '#dc2626' : '#0f172a'};">${getAvg(p3Vals)}</td>
-                    <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; color: ${parseFloat(getAvg(semVals)) < 6.0 ? '#dc2626' : '#0f172a'};">${getAvg(semVals)}</td>
-                    <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; color: ${parseFloat(getAvg(extVals)) < 6.0 ? '#dc2626' : '#0f172a'};">${getAvg(extVals)}</td>
-                    <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; background-color: #e2e8f0; color: ${parseFloat(prom) < 6.0 ? '#dc2626' : '#0f172a'};">${prom}</td>
-                    <td colspan="${mostrarAsistencias ? 3 : 2}" style="border: 1.2px solid #0f172a;"></td>
-                </tr>
-            `;
+        if (isSemestral) {
+            tfoot.innerHTML = `<tr>${etiqueta}
+                ${celda(avg(p1Vals))}${celda(avg(p2Vals))}${celda(avg(p3Vals))}${celda(avg(semVals))}
+                ${celda(avg(extVals), '#FFFBEB')}${celda(prom, '#EFF6F7')}
+                <td colspan="2"></td></tr>`;
         } else {
-            tfoot.innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-end pe-3 fw-bold" style="border: 1.2px solid #0f172a; padding: 6px 8px;">PROMEDIO:</td>
-                    <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; color: ${parseFloat(getAvg(p1Vals)) < 6.0 ? '#dc2626' : '#0f172a'};">${getAvg(p1Vals)}</td>
-                    <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; color: ${parseFloat(getAvg(p2Vals)) < 6.0 ? '#dc2626' : '#0f172a'};">${getAvg(p2Vals)}</td>
-                    <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; color: ${parseFloat(getAvg(p3Vals)) < 6.0 ? '#dc2626' : '#0f172a'};">${getAvg(p3Vals)}</td>
-                    <td class="text-center" style="border: 1.2px solid #0f172a; padding: 6px 8px; background-color: #e2e8f0; color: ${parseFloat(prom) < 6.0 ? '#dc2626' : '#0f172a'};">${prom}</td>
-                    <td colspan="2" style="border: 1.2px solid #0f172a;"></td>
-                </tr>
-            `;
+            tfoot.innerHTML = `<tr>${etiqueta}
+                ${celda(prom, '#EFF6F7')}${celda(avg(extVals), '#FFFBEB')}
+                <td colspan="2"></td></tr>`;
         }
     }
 }
@@ -2549,7 +2078,7 @@ function guardarCalificacionesMateriaSeleccionada() {
             icon: 'error',
             title: 'Valores Inválidos',
             text: 'Existen calificaciones fuera del rango permitido (números enteros del 0 al 10). Por favor corríjalas antes de guardar.',
-            confirmButtonColor: 'rgb(49, 125, 146)'
+            confirmButtonColor: '#26687B'
         });
         return;
     }
@@ -2563,8 +2092,8 @@ function guardarCalificacionesMateriaSeleccionada() {
             text: "Una vez enviadas, las calificaciones quedarán registradas de manera definitiva.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: 'rgb(49, 125, 146)',
-            cancelButtonColor: '#dc3545',
+            confirmButtonColor: '#26687B',
+            cancelButtonColor: '#64748B',
             confirmButtonText: '<i class="ti ti-send me-1"></i> Sí, confirmar y enviar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
@@ -2579,8 +2108,8 @@ function guardarCalificacionesMateriaSeleccionada() {
             text: "Se guardarán las calificaciones modificadas en la asignatura.",
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: 'rgb(49, 125, 146)',
-            cancelButtonColor: '#6c757d',
+            confirmButtonColor: '#26687B',
+            cancelButtonColor: '#64748B',
             confirmButtonText: 'Sí, guardar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
@@ -2595,7 +2124,7 @@ function enviarPeticionGuardar(finalizar) {
     const idMateria = datosGrupoMateriaActual.idMateriaSeleccionada;
     const btn = document.getElementById('btnGuardarCalifsMateria');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...';
+    btn.innerHTML = '<i class="ti ti-loader-2 ti-spin"></i> Guardando…';
 
     const rows = document.querySelectorAll('#tbodyAlumnosCalificacionesMateria tr');
     const calificaciones = [];
@@ -2723,7 +2252,7 @@ function enviarPeticionGuardar(finalizar) {
                     icon: 'success',
                     title: finalizar ? '¡Enviado!' : '¡Guardado!',
                     text: finalizar ? 'Calificaciones enviadas y guardadas exitosamente.' : 'Calificaciones de la materia registradas en borrador.',
-                    confirmButtonColor: 'rgb(49, 125, 146)'
+                    confirmButtonColor: '#26687B'
                 });
                 // Recargar modal para actualizar estado de solo lectura y ver los cambios reflejados
                 abrirCapturaGrupoMateria(grupoCapturaActualId, idMateria);
@@ -2732,7 +2261,7 @@ function enviarPeticionGuardar(finalizar) {
                     icon: 'error',
                     title: 'Error al Guardar',
                     text: (resp && (resp.error || resp.message)) || 'No se pudieron guardar las calificaciones.',
-                    confirmButtonColor: 'rgb(49, 125, 146)'
+                    confirmButtonColor: '#26687B'
                 });
             }
         })
@@ -2749,13 +2278,13 @@ function enviarPeticionGuardar(finalizar) {
                         </div>
                         <p class="text-muted small mb-0"><i class="ti ti-circle-check text-success me-1"></i>Tus notas ingresadas siguen en pantalla; no se han borrado.</p>
                        </div>`,
-                confirmButtonColor: '#1E5B66',
+                confirmButtonColor: '#26687B',
                 confirmButtonText: 'Entendido'
             });
         })
         .finally(() => {
             btn.disabled = false;
-            btn.innerHTML = '<i class="ti ti-device-floppy me-2"></i> Guardar Calificaciones de la Asignatura';
+            btn.innerHTML = '<i class="ti ti-device-floppy"></i> Guardar calificaciones';
         });
 }
 

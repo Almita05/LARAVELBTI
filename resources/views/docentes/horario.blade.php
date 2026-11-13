@@ -1,455 +1,168 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $card = ' tw:border tw:border-slate-200 tw:bg-white tw:shadow-card';
+    $meta = 'tw:flex tw:min-w-0 tw:items-center tw:gap-2 tw:text-[0.8125rem] tw:text-slate-600';
+    $metaIcon = 'tw:size-4 tw:shrink-0 tw:text-slate-400';
+    $th = 'tw:border-b tw:border-slate-200 tw:bg-slate-50 tw:px-3 tw:py-2.5 tw:text-center tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-500';
+@endphp
 
-<style>
-    /* Wrapper styling */
-    .horarios-page-wrapper {
-        background: #f4f6f9;
-        margin: -25px;
-        padding: 30px;
-        min-height: calc(100vh - 85px);
-        color: #1e293b;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    }
+<div class="tw:mx-auto tw:flex tw:max-w-[1600px] tw:flex-col tw:gap-6">
 
-    .dashboard-header {
-        border-bottom: 1px solid #e2e8f0;
-        padding-bottom: 15px;
-        margin-bottom: 25px;
-    }
-
-    .dashboard-title {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: rgb(38, 104, 123);
-    }
-
-    .dashboard-subtitle {
-        font-size: 0.9rem;
-        color: #64748b;
-    }
-
-    /* Return Button */
-    .btn-regresar-light {
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
-        color: rgb(38, 104, 123);
-        font-weight: 600;
-        padding: .375rem .75rem;
-        border-radius: .375rem;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-    }
-
-    .btn-regresar-light:hover {
-        background: #f8fafc;
-        color: rgb(38, 104, 123);
-        border-color: #94a3b8;
-    }
-
-    .glass-card {
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 12px !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
-        color: #1e293b !important;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-
-    .teacher-details-title {
-        font-size: 1.15rem;
-        font-weight: 700;
-        color: rgb(38, 104, 123);
-        border-bottom: 2px solid rgba(38, 104, 123, 0.15);
-        padding-bottom: 8px;
-        margin-bottom: 15px;
-    }
-
-    .info-label {
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: #64748b;
-        text-transform: uppercase;
-        margin-bottom: 2px;
-    }
-
-    .info-value {
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #1e293b;
-    }
-
-    .status-badge {
-        font-size: 0.8rem;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-weight: 700;
-    }
-
-    /* Hours summary */
-    .summary-card {
-        background: rgb(244, 246, 249);
-        border-radius: 8px;
-        padding: 15px;
-        border-left: 5px solid rgb(38, 104, 123);
-    }
-
-    .summary-title {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: #64748b;
-        text-transform: uppercase;
-    }
-
-    .summary-value {
-        font-size: 1.6rem;
-        font-weight: 800;
-        color: rgb(38, 104, 123);
-        margin: 5px 0 0 0;
-    }
-
-    /* Calendars styles */
-    .calendar-card-title {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #0f172a;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .calendar-table {
-        width: 100%;
-        table-layout: fixed;
-        border-collapse: collapse;
-        background: #ffffff;
-        border-radius: 8px;
-        overflow: hidden;
-        border: 1px solid #e2e8f0;
-    }
-
-    .calendar-table th {
-        background: rgb(38, 104, 123) !important;
-        color: #ffffff !important;
-        font-size: 0.82rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        text-align: center;
-        padding: 12px 10px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-    }
-
-    .calendar-table td {
-        border: 1px solid #e2e8f0 !important;
-        padding: 8px !important;
-        vertical-align: middle;
-        text-align: center;
-        background: #ffffff !important;
-        height: 70px;
-    }
-
-    .time-col {
-        background: #f8fafc !important;
-        color: #475569 !important;
-        font-size: 0.78rem;
-        font-weight: 700;
-        text-align: center;
-        width: 110px !important;
-        padding: 10px !important;
-        border-right: 1px solid #e2e8f0 !important;
-        height: auto;
-    }
-
-    .receso-row {
-        background: #f1f5f9 !important;
-        height: 35px !important;
-        text-align: center;
-        font-weight: 800;
-        font-size: 0.78rem;
-        color: #64748b;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-    }
-
-    /* Class cell style */
-    .class-block {
-        background: rgba(38, 104, 123, 0.08);
-        border: 1px solid rgba(38, 104, 123, 0.25);
-        border-left: 4px solid rgb(38, 104, 123);
-        border-radius: 6px;
-        padding: 6px;
-        text-align: left;
-        height: auto;
-        min-height: 52px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        transition: all 0.2s ease;
-        margin-bottom: 4px;
-    }
-
-    .class-block:last-child {
-        margin-bottom: 0;
-    }
-
-    .class-block:hover {
-        background: rgba(38, 104, 123, 0.12);
-        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-    }
-
-    .class-materia {
-        font-weight: 700;
-        font-size: 0.78rem;
-        color: #0f172a;
-        line-height: 1.25;
-        margin-bottom: 2px;
-        text-transform: uppercase;
-    }
-
-    .class-grupo {
-        font-size: 0.7rem;
-        font-weight: 700;
-        color: rgb(38, 104, 123);
-        display: inline-block;
-        margin-right: 5px;
-    }
-
-    .class-aula {
-        font-size: 0.7rem;
-        font-weight: 600;
-        color: #64748b;
-    }
-
-    /* Custom autocomplete search style */
-    #search-results {
-        background: #ffffff;
-        border-radius: 8px;
-        overflow-y: auto;
-    }
-    #search-results .list-group-item {
-        border: none;
-        border-bottom: 1px solid #f1f5f9;
-        color: #1e293b;
-        transition: background 0.2s ease;
-    }
-    #search-results .list-group-item:last-child {
-        border-bottom: none;
-    }
-    #search-results .list-group-item:hover {
-        background: #f8fafc;
-    }
-
-    .btn-action-system {
-        background: rgb(38, 104, 123) !important;
-        border: none;
-        color: white !important;
-        font-size: 0.9rem;
-        font-weight: 600;
-        padding: 10px 20px;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-    }
-
-    .btn-action-system:hover {
-        background: rgb(28, 79, 94) !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 10px rgba(38, 104, 123, 0.2);
-    }
-
-    .no-schedule-box {
-        background: #f8fafc;
-        border: 1px dashed #cbd5e1;
-        border-radius: 8px;
-        padding: 30px;
-        text-align: center;
-        color: #64748b;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-</style>
-
-<div class="horarios-page-wrapper">
-
-    <!-- CABECERA DE LA PÁGINA -->
-    <div class="dashboard-header d-flex justify-content-between align-items-center">
-        <div>
-            <a href="{{ route('docentes') }}" class="btn-regresar-light mb-2">
-                <i class="fa-solid fa-arrow-left me-2"></i>
-                Listado de Docentes
+    {{-- ===================== ENCABEZADO + BUSCADOR ===================== --}}
+    <header class="tw:flex tw:flex-col tw:gap-4 tw:lg:flex-row tw:lg:items-center tw:lg:justify-between">
+        <div class="tw:flex tw:items-start tw:gap-4">
+            <a href="{{ route('docentes') }}" id="btn-regresar-docentes" aria-label="Volver al listado de docentes" title="Listado de docentes"
+                class="tw:mt-0.5 tw:inline-flex tw:size-10 tw:shrink-0 tw:items-center tw:justify-center tw:border tw:border-slate-200 tw:bg-white tw:text-slate-500 tw:no-underline tw:shadow-xs tw:transition-colors tw:hover:bg-slate-50 tw:hover:text-slate-900">
+                <i data-lucide="arrow-left" class="tw:size-[18px]"></i>
             </a>
-            <h3 class="dashboard-title mb-0">
-                <i class="fa-solid fa-calendar-days me-2"></i>
-                Horario Docente
-            </h3>
-            <span class="dashboard-subtitle">Reporte consolidado de carga horaria (BTI y BGNE)</span>
-        </div>
-
-        <!-- SELECTOR DE DOCENTE AUTOCOMPLETAR -->
-        <div class="position-relative" style="width: 320px;">
-            <label class="form-label fw-bold text-dark mb-1">Buscar Docente:</label>
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0" style="border-radius: 8px 0 0 8px; height: 45px;"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                <input type="text" id="docente-search" class="form-control border-start-0 ps-0" placeholder="Escribe el nombre del docente..." autocomplete="off" style="border-radius: 0 8px 8px 0; height: 45px; font-weight: 500;">
+            <div>
+                <h1 class="tw:m-0 tw:text-[1.5rem] tw:font-bold tw:tracking-tight tw:text-slate-900">Horario docente</h1>
+                <p class="tw:m-0 tw:mt-1 tw:text-sm tw:text-slate-500">Carga horaria consolidada en BTI y BGNE.</p>
             </div>
-            <div id="search-results" class="list-group position-absolute w-100 d-none" style="z-index: 1100; max-height: 250px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 8px; border: 1px solid #e2e8f0;"></div>
+        </div>
+
+        {{-- Buscador (se oculta para el rol DOCENTE) --}}
+        <div id="docente-search-wrap" class="tw:relative tw:w-full tw:lg:w-[380px]">
+            <label for="docente-search" class="tw:sr-only">Buscar docente</label>
+            <i data-lucide="search" class="tw:pointer-events-none tw:absolute tw:left-3.5 tw:top-1/2 tw:size-[18px] tw:-translate-y-1/2 tw:text-slate-400"></i>
+            <input type="text" id="docente-search" autocomplete="off" placeholder="Buscar docente por nombre, correo o ID…"
+                class="tw:h-11 tw:w-full tw:border tw:border-slate-200 tw:bg-white tw:pr-3 tw:pl-11 tw:text-sm tw:text-slate-900 tw:shadow-xs tw:outline-none tw:transition tw:placeholder:text-slate-400 tw:hover:border-slate-300 tw:focus:border-brand-500 tw:focus:ring-4 tw:focus:ring-brand-500/10">
+            {{-- Bootstrap .d-none controla la visibilidad --}}
+            <div id="search-results" class="d-none tw:absolute tw:inset-x-0 tw:top-full tw:z-30 tw:mt-1.5 tw:max-h-72 tw:overflow-y-auto tw:border tw:border-slate-200 tw:bg-white tw:p-1 tw:shadow-raised"></div>
+        </div>
+    </header>
+
+    {{-- ===================== ESTADO VACÍO ===================== --}}
+    <div id="pantalla-vacia" class="{{ $card }}">
+        <div class="tw:flex tw:flex-col tw:items-center tw:px-6 tw:py-16 tw:text-center">
+            <span class="tw:inline-flex tw:size-14 tw:items-center tw:justify-center tw:bg-brand-50 tw:text-brand-700 tw:ring-1 tw:ring-brand-200">
+                <i data-lucide="calendar-search" class="tw:size-6"></i>
+            </span>
+            <p class="tw:m-0 tw:mt-4 tw:text-base tw:font-semibold tw:text-slate-900">Consulta el horario de un docente</p>
+            <p class="tw:m-0 tw:mt-1 tw:max-w-md tw:text-[0.8125rem] tw:text-slate-500">Búscalo en el campo superior para ver su carga horaria semanal y descargar el reporte oficial.</p>
         </div>
     </div>
 
-    <!-- PANTALLA INICIAL (SIN SELECCIÓN) -->
-    <div id="pantalla-vacia" class="glass-card text-center py-5">
-        <i class="fa-solid fa-chalkboard-user text-muted mb-3" style="font-size: 4rem; opacity: 0.4;"></i>
-        <h4 class="fw-bold text-slate-700">Consulta de Horario</h4>
-        <p class="text-muted mx-auto" style="max-width: 450px;">
-            Selecciona un docente de la lista en la esquina superior derecha para visualizar su carga horaria asignada y descargar su reporte.
-        </p>
-    </div>
-
-    <!-- PANEL PRINCIPAL DE HORARIO (SE MUESTRA AL SELECCIONAR) -->
+    {{-- ===================== PANEL DEL DOCENTE (el JS controla su display) ===================== --}}
     <div id="panel-horario" style="display: none;">
-        
-        <!-- FICHA DE DETALLES DEL DOCENTE -->
-        <div class="glass-card">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h5 class="teacher-details-title">
-                        <i class="fa-solid fa-address-card me-2"></i>Datos del Docente
-                    </h5>
-                    <div class="row g-3">
-                        <div class="col-md-6 col-lg-3">
-                            <div class="info-label">Nombre Completo</div>
-                            <div class="info-value" id="docente-nombre">—</div>
+        <div class="tw:flex tw:flex-col tw:gap-6">
+
+            {{-- Ficha del docente --}}
+            <section class="{{ $card }} tw:overflow-hidden">
+                <div class="tw:flex tw:flex-col tw:gap-6 tw:p-6 tw:xl:flex-row tw:xl:items-center tw:xl:justify-between">
+
+                    {{-- Identidad --}}
+                    <div class="tw:flex tw:min-w-0 tw:items-start tw:gap-4">
+                        <span id="docente-iniciales" class="tw:inline-flex tw:size-14 tw:shrink-0 tw:items-center tw:justify-center tw:bg-gradient-to-br tw:from-brand-500 tw:to-brand-700 tw:text-lg tw:font-semibold tw:text-white tw:shadow-brand">—</span>
+                        <div class="tw:min-w-0">
+                            <div class="tw:flex tw:flex-wrap tw:items-center tw:gap-2">
+                                <h2 id="docente-nombre" class="tw:m-0 tw:text-lg tw:font-semibold tw:tracking-tight tw:text-slate-900">—</h2>
+                                <span id="docente-estatus" class="tw:inline-flex tw:items-center tw:rounded-none tw:bg-success-100 tw:px-2.5 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold tw:text-success-700">ACTIVO</span>
+                            </div>
+                            <div class="tw:mt-3 tw:grid tw:grid-cols-1 tw:gap-x-6 tw:gap-y-2 tw:sm:grid-cols-2">
+                                <span class="{{ $meta }}" title="Correo electrónico"><i data-lucide="mail" class="{{ $metaIcon }}"></i><span id="docente-correo" class="tw:truncate">—</span></span>
+                                <span class="{{ $meta }}" title="Teléfono"><i data-lucide="phone" class="{{ $metaIcon }}"></i><span id="docente-telefono">—</span></span>
+                                <span class="{{ $meta }}" title="Nivel de estudios"><i data-lucide="graduation-cap" class="{{ $metaIcon }}"></i><span id="docente-estudios">—</span></span>
+                                <span class="{{ $meta }}" title="ID biométrico"><i data-lucide="fingerprint" class="{{ $metaIcon }}"></i><span>ID biométrico <strong id="docente-biometrico" class="tw:font-mono tw:font-semibold tw:text-slate-700">—</strong></span></span>
+                            </div>
                         </div>
-                        <div class="col-md-6 col-lg-3">
-                            <div class="info-label">ID Biométrico</div>
-                            <div class="info-value" id="docente-biometrico">—</div>
+                    </div>
+
+                    {{-- Carga + acción --}}
+                    <div class="tw:flex tw:flex-wrap tw:items-stretch tw:gap-3 tw:xl:shrink-0">
+                        <div class="tw:min-w-[96px] tw:border tw:border-slate-200 tw:bg-slate-50 tw:px-4 tw:py-3">
+                            <span class="tw:flex tw:items-center tw:gap-1.5 tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-500"><span class="tw:size-2 tw:rounded-full tw:bg-brand-700"></span>BTI</span>
+                            <span id="resumen-bti" class="tw:mt-1 tw:block tw:text-xl tw:font-bold tw:tabular-nums tw:text-slate-900">0h</span>
                         </div>
-                        <div class="col-md-6 col-lg-3">
-                            <div class="info-label">Correo Electrónico</div>
-                            <div class="info-value" id="docente-correo">—</div>
+                        <div class="tw:min-w-[96px] tw:border tw:border-slate-200 tw:bg-slate-50 tw:px-4 tw:py-3">
+                            <span class="tw:flex tw:items-center tw:gap-1.5 tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-500"><span class="tw:size-2 tw:rounded-full tw:bg-accent-400"></span>BGNE</span>
+                            <span id="resumen-bgne" class="tw:mt-1 tw:block tw:text-xl tw:font-bold tw:tabular-nums tw:text-slate-900">0h</span>
                         </div>
-                        <div class="col-md-6 col-lg-3">
-                            <div class="info-label">Nivel de Estudios</div>
-                            <div class="info-value" id="docente-estudios">—</div>
+                        <div class="tw:min-w-[120px] tw:bg-gradient-to-br tw:from-brand-600 tw:to-brand-800 tw:px-4 tw:py-3 tw:text-white tw:shadow-brand">
+                            <span class="tw:block tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-white/70">Total semanal</span>
+                            <span id="resumen-total" class="tw:mt-1 tw:block tw:text-xl tw:font-bold tw:tabular-nums">0h</span>
                         </div>
-                        <div class="col-md-6 col-lg-3">
-                            <div class="info-label">Teléfono</div>
-                            <div class="info-value" id="docente-telefono">—</div>
-                        </div>
-                        <div class="col-md-6 col-lg-3">
-                            <div class="info-label">Estado</div>
+                        <button type="button" onclick="imprimirReporteHorario()"
+                            class="tw:inline-flex tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2 tw:self-center tw:border tw:border-slate-200 tw:bg-white tw:px-4 tw:py-2.5 tw:text-sm tw:font-semibold tw:text-slate-700 tw:shadow-xs tw:transition-colors tw:hover:border-brand-200 tw:hover:bg-brand-50 tw:hover:text-brand-700">
+                            <i data-lucide="printer" class="tw:size-4"></i> Imprimir reporte oficial
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            {{-- Calendarios --}}
+            <div class="tw:grid tw:grid-cols-1 tw:items-start tw:gap-6 tw:2xl:grid-cols-[minmax(0,5fr)_minmax(0,2.4fr)]">
+
+                {{-- BTI --}}
+                <section class="{{ $card }} tw:min-w-0 tw:overflow-hidden">
+                    <header class="tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-2 tw:border-b tw:border-slate-100 tw:px-6 tw:py-4">
+                        <div class="tw:flex tw:items-center tw:gap-3">
+                            <span class="tw:inline-flex tw:size-9 tw:items-center tw:justify-center tw:bg-brand-50 tw:text-brand-700"><i data-lucide="school" class="tw:size-[18px]"></i></span>
                             <div>
-                                <span class="badge bg-success status-badge" id="docente-estatus">ACTIVO</span>
+                                <h3 class="tw:m-0 tw:text-[0.9375rem] tw:font-semibold tw:text-slate-900">BTI, Escolarizado</h3>
+                                <p class="tw:m-0 tw:text-xs tw:text-slate-500">Lunes a viernes</p>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- RESUMEN DE CARGA ACADÉMICA -->
-                <div class="col-md-4 mt-3 mt-md-0 border-start ps-md-4">
-                    <h5 class="teacher-details-title">
-                        <i class="fa-solid fa-business-time me-2"></i>Carga Asignada
-                    </h5>
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <div class="summary-card">
-                                <div class="summary-title">Horas BTI</div>
-                                <div class="summary-value" id="resumen-bti">0h</div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="summary-card">
-                                <div class="summary-title">Horas BGNE</div>
-                                <div class="summary-value" id="resumen-bgne">0h</div>
-                            </div>
-                        </div>
-                        <div class="col-12 mt-2">
-                            <div class="summary-card" style="background: rgb(38, 104, 123); color: white; border-left: none;">
-                                <div class="summary-title text-white opacity-75">Carga Horaria Semanal</div>
-                                <div class="summary-value text-white" id="resumen-total">0h</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="text-end mt-4 pt-3 border-top">
-                <button class="btn btn-action-system" onclick="imprimirReporteHorario()">
-                    <i class="fa-solid fa-print me-2"></i>Imprimir Reporte Oficial
-                </button>
-            </div>
-        </div>
-
-        <!-- SECCIÓN DE CALENDARIOS -->
-        <div class="row g-4">
-
-            <!-- CALENDARIO BTI -->
-            <div class="col-12">
-                <div class="glass-card">
-                    <h5 class="calendar-card-title">
-                        <i class="fa-solid fa-school text-primary" style="color: rgb(38, 104, 123) !important;"></i>
-                        Horario BTI (CCT: 21PCT0073R - Escolarizado)
-                    </h5>
-                    
-                    <div class="table-responsive">
-                        <table class="calendar-table">
+                        <span class=" tw:bg-slate-100 tw:px-2 tw:py-0.5 tw:font-mono tw:text-[0.6875rem] tw:font-semibold tw:text-slate-600">CCT 21PCT0073R</span>
+                    </header>
+                    <div class="tw:overflow-x-auto tw:p-4">
+                        {{-- El JS alterna el display de la tabla: sin utilidades de display --}}
+                        <table class="tw:w-full tw:min-w-[720px] tw:table-fixed tw:border-separate tw:border-spacing-0 tw:overflow-hidden tw:border tw:border-slate-200">
                             <thead>
                                 <tr>
-                                    <th class="time-col">Hora</th>
-                                    <th>Lunes</th>
-                                    <th>Martes</th>
-                                    <th>Miércoles</th>
-                                    <th>Jueves</th>
-                                    <th>Viernes</th>
+                                    <th class="{{ $th }} tw:w-[104px]">Hora</th>
+                                    @foreach (['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'] as $dia)
+                                        <th class="{{ $th }} tw:border-l">{{ $dia }}</th>
+                                    @endforeach
                                 </tr>
                             </thead>
-                            <tbody id="bti-tbody">
-                                <!-- Filas de horarios BTI cargadas dinámicamente -->
-                            </tbody>
+                            <tbody id="bti-tbody"></tbody>
                         </table>
+                        <div id="bti-no-schedule" style="display: none;">
+                            <div class="tw:flex tw:flex-col tw:items-center tw:border tw:border-dashed tw:border-slate-200 tw:bg-slate-50/60 tw:px-6 tw:py-10 tw:text-center">
+                                <i data-lucide="calendar-x" class="tw:size-6 tw:text-slate-400"></i>
+                                <p class="tw:m-0 tw:mt-2 tw:text-[0.8125rem] tw:text-slate-500">Sin materias asignadas en BTI.</p>
+                            </div>
+                        </div>
                     </div>
-                    <div id="bti-no-schedule" class="no-schedule-box mt-3" style="display: none;">
-                        El docente no tiene materias asignadas en el CCT de BTI.
-                    </div>
-                </div>
-            </div>
+                </section>
 
-            <!-- CALENDARIO BGNE -->
-            <div class="col-12">
-                <div class="glass-card">
-                    <h5 class="calendar-card-title">
-                        <i class="fa-solid fa-building-columns text-primary" style="color: rgb(38, 104, 123) !important;"></i>
-                        Horario BGNE (CCT: 21PBH0353G - Fin de Semana)
-                    </h5>
-                    
-                    <div class="table-responsive">
-                        <table class="calendar-table" id="bgne-table">
+                {{-- BGNE --}}
+                <section class="{{ $card }} tw:min-w-0 tw:overflow-hidden">
+                    <header class="tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-2 tw:border-b tw:border-slate-100 tw:px-6 tw:py-4">
+                        <div class="tw:flex tw:items-center tw:gap-3">
+                            <span class="tw:inline-flex tw:size-9 tw:items-center tw:justify-center tw:bg-accent-100 tw:text-accent-600"><i data-lucide="landmark" class="tw:size-[18px]"></i></span>
+                            <div>
+                                <h3 class="tw:m-0 tw:text-[0.9375rem] tw:font-semibold tw:text-slate-900">BGNE, Fin de semana</h3>
+                                <p class="tw:m-0 tw:text-xs tw:text-slate-500">Sábado y domingo</p>
+                            </div>
+                        </div>
+                        <span class=" tw:bg-slate-100 tw:px-2 tw:py-0.5 tw:font-mono tw:text-[0.6875rem] tw:font-semibold tw:text-slate-600">CCT 21PBH0353G</span>
+                    </header>
+                    <div class="tw:overflow-x-auto tw:p-4">
+                        <table id="bgne-table" class="tw:w-full tw:min-w-[380px] tw:table-fixed tw:border-separate tw:border-spacing-0 tw:overflow-hidden tw:border tw:border-slate-200">
                             <thead>
                                 <tr>
-                                    <th class="time-col">Hora</th>
-                                    <th>Sábado</th>
-                                    <th>Domingo</th>
+                                    <th class="{{ $th }} tw:w-[104px]">Hora</th>
+                                    <th class="{{ $th }} tw:border-l">Sábado</th>
+                                    <th class="{{ $th }} tw:border-l">Domingo</th>
                                 </tr>
                             </thead>
-                            <tbody id="bgne-tbody">
-                                <!-- Filas de horarios BGNE cargadas dinámicamente -->
-                            </tbody>
+                            <tbody id="bgne-tbody"></tbody>
                         </table>
+                        <div id="bgne-no-schedule" style="display: none;">
+                            <div class="tw:flex tw:flex-col tw:items-center tw:border tw:border-dashed tw:border-slate-200 tw:bg-slate-50/60 tw:px-6 tw:py-10 tw:text-center">
+                                <i data-lucide="calendar-x" class="tw:size-6 tw:text-slate-400"></i>
+                                <p class="tw:m-0 tw:mt-2 tw:text-[0.8125rem] tw:text-slate-500">Sin materias asignadas en BGNE.</p>
+                            </div>
+                        </div>
                     </div>
-                    <div id="bgne-no-schedule" class="no-schedule-box mt-3" style="display: none;">
-                        El docente no tiene materias asignadas en el CCT de BGNE.
-                    </div>
-                </div>
+                </section>
             </div>
-
         </div>
-
     </div>
-
 </div>
 
 <script>
@@ -459,6 +172,8 @@ let selectDocente = null;
 let docentesMap = {};
 let horarioActual = [];
 let docenteActual = null;
+
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // Estructura fija de horas BTI
 const BTI_HOURS = [
@@ -472,16 +187,41 @@ const BTI_HOURS = [
     { start: "13:00", end: "13:50", type: "class" }
 ];
 
+/*
+ * Clases de las celdas. Se conservan los nombres legacy (time-col, receso-row, class-block,
+ * class-materia, class-grupo, class-aula) porque el reporte oficial impreso copia este HTML
+ * y los estiliza con su propia hoja; las utilidades tw: solo aplican en pantalla.
+ */
+const CELL = {
+    time: 'time-col tw:border-t tw:border-slate-100 tw:bg-slate-50/70 tw:px-3 tw:py-2 tw:text-center tw:align-middle tw:font-mono tw:text-[0.6875rem] tw:font-semibold tw:whitespace-nowrap tw:text-slate-500',
+    day: 'tw:h-[64px] tw:border-t tw:border-l tw:border-slate-100 tw:p-1.5 tw:align-top',
+    receso: 'tw:border-t tw:border-slate-100 tw:bg-[repeating-linear-gradient(135deg,#F8FAFC_0,#F8FAFC_6px,#F1F5F9_6px,#F1F5F9_12px)] tw:py-1.5 tw:text-center tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.2em] tw:text-slate-400',
+};
+const BLOCK_TONE = {
+    bti: 'tw:border-l-brand-700 tw:bg-brand-50 tw:hover:bg-brand-100',
+    bgne: 'tw:border-l-accent-600 tw:bg-accent-100/70 tw:hover:bg-accent-100',
+};
+
+function bloqueClase(mc, tono) {
+    const grupo = `${mc.grupo_clave ?? ''}${mc.nivel_nombre ? ` (${mc.nivel_nombre})` : ''}`;
+    return `
+        <div class="class-block tw:mb-1 tw:border-l-[3px] tw:px-2.5 tw:py-1.5 tw:transition-colors tw:last:mb-0 ${BLOCK_TONE[tono]}" title="${esc(mc.materia_nombre)}, ${esc(grupo)}, ${esc(mc.aula)}">
+            <div class="class-materia tw:truncate tw:text-xs tw:font-semibold tw:leading-snug tw:text-slate-900">${esc(mc.materia_nombre)}</div>
+            <div class="tw:mt-0.5 tw:flex tw:items-center tw:justify-between tw:gap-2 tw:text-[0.6875rem]">
+                <span class="class-grupo tw:truncate tw:font-semibold tw:text-brand-700">${esc(grupo)}</span>
+                <span class="class-aula tw:shrink-0 tw:text-slate-500">${esc(mc.aula)}</span>
+            </div>
+        </div>`;
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     if (isDocenteRole && loggedInDocenteId) {
-        // Ocultar buscador e inputs innecesarios para el rol docente
-        const searchContainer = document.getElementById("docente-search")?.closest(".position-relative");
-        if (searchContainer) searchContainer.style.display = "none";
-        
-        const returnBtn = document.querySelector(".btn-regresar-light");
-        if (returnBtn) returnBtn.style.display = "none";
+        // Ocultar buscador y botón de regreso para el rol docente
+        const searchContainer = document.getElementById("docente-search-wrap");
+        if (searchContainer) searchContainer.remove();
+        const returnBtn = document.getElementById("btn-regresar-docentes");
+        if (returnBtn) returnBtn.remove();
 
-        // Cargar los datos del docente directamente
         fetch(`/docentes/${loggedInDocenteId}`)
             .then(res => res.json())
             .then(resp => {
@@ -494,9 +234,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     seleccionarDocente(d.idDocente);
                 }
             })
-            .catch(err => {
-                console.error("Error al cargar datos del docente:", err);
-            });
+            .catch(err => console.error("Error al cargar datos del docente:", err));
     } else {
         cargarListaDocentes();
     }
@@ -507,21 +245,18 @@ function cargarListaDocentes() {
         .then(res => res.json())
         .then(data => {
             const list = Array.isArray(data.data) ? data.data : [];
-            
             list.forEach(d => {
-                const nombreCompleto = `${d.nombreDocente} ${d.apPaternoDocente ?? ''} ${d.apMaternoDocente ?? ''}`.trim();
                 docentesMap[d.idDocente] = {
                     ...d,
-                    nombreCompleto: nombreCompleto
+                    nombreCompleto: `${d.nombreDocente} ${d.apPaternoDocente ?? ''} ${d.apMaternoDocente ?? ''}`.trim()
                 };
             });
 
-            // Configurar buscador Autocomplete
             const searchInput = document.getElementById("docente-search");
             const searchResults = document.getElementById("search-results");
+            const normalizeStr = str => (str || '').normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
             searchInput.addEventListener("input", function() {
-                const normalizeStr = str => (str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
                 const query = normalizeStr(this.value).trim();
                 if (query.length === 0) {
                     resetPantalla();
@@ -532,30 +267,30 @@ function cargarListaDocentes() {
                     searchResults.classList.add("d-none");
                     return;
                 }
-                
-                // Filtrar docentes
-                const matches = Object.values(docentesMap).filter(d => 
+
+                const matches = Object.values(docentesMap).filter(d =>
                     normalizeStr(d.nombreCompleto).includes(query) ||
                     normalizeStr(d.correoDocente).includes(query) ||
                     d.idDocente.toString().includes(query)
                 );
-                
-                if (matches.length === 0) {
-                    searchResults.innerHTML = '<div class="list-group-item text-muted text-center py-3">No se encontraron docentes</div>';
-                } else {
-                    searchResults.innerHTML = matches.map(d => `
-                        <a href="javascript:void(0)" class="list-group-item list-group-item-action py-2 text-start" onclick="seleccionarDocenteAutocompletar(${d.idDocente})">
-                            <strong style="color: #0f172a;">${d.nombreCompleto}</strong> <br>
-                            <small class="text-muted" style="font-size: 0.72rem;">ID: ${d.idDocente} | ${d.correoDocente || 'Sin correo'}</small>
-                        </a>
-                    `).join("");
-                }
+
+                searchResults.innerHTML = matches.length === 0
+                    ? '<div class="tw:px-3 tw:py-4 tw:text-center tw:text-[0.8125rem] tw:text-slate-500">No se encontraron docentes</div>'
+                    : matches.map(d => `
+                        <button type="button" onclick="seleccionarDocenteAutocompletar(${Number(d.idDocente)})"
+                            class="tw:flex tw:w-full tw:cursor-pointer tw:items-center tw:gap-3 tw:border-0 tw:bg-transparent tw:px-3 tw:py-2 tw:text-left tw:transition-colors tw:hover:bg-brand-50">
+                            <span class="tw:inline-flex tw:size-8 tw:shrink-0 tw:items-center tw:justify-center tw:bg-slate-100 tw:text-[0.6875rem] tw:font-semibold tw:text-slate-600">${esc(iniciales(d.nombreCompleto))}</span>
+                            <span class="tw:min-w-0">
+                                <span class="tw:block tw:truncate tw:text-[0.8125rem] tw:font-semibold tw:text-slate-900">${esc(d.nombreCompleto)}</span>
+                                <span class="tw:block tw:truncate tw:text-[0.6875rem] tw:text-slate-500">ID ${esc(d.idDocente)}, ${esc(d.correoDocente || 'Sin correo')}</span>
+                            </span>
+                        </button>`).join("");
                 searchResults.classList.remove("d-none");
             });
 
             // Cerrar resultados al hacer clic fuera
             document.addEventListener("click", function(e) {
-                if (e.target !== searchInput && e.target !== searchResults) {
+                if (!searchResults.contains(e.target) && e.target !== searchInput) {
                     searchResults.classList.add("d-none");
                 }
             });
@@ -569,30 +304,29 @@ function cargarListaDocentes() {
                 }
             };
         })
-        .catch(err => {
-            console.error("Error al cargar listado de docentes:", err);
-        });
+        .catch(err => console.error("Error al cargar listado de docentes:", err));
+}
+
+function iniciales(nombre) {
+    return String(nombre || '').trim().split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('') || '—';
 }
 
 function seleccionarDocente(id) {
     docenteActual = docentesMap[id];
-    
-    // Rellenar ficha del docente
-    document.getElementById("docente-nombre").textContent = docenteActual.nombreCompleto;
-    document.getElementById("docente-biometrico").textContent = docenteActual.idBiometrico || "Sin ID";
-    document.getElementById("docente-correo").textContent = docenteActual.correoDocente || "N/A";
-    document.getElementById("docente-estudios").textContent = docenteActual.nivelEstudios || "N/A";
-    document.getElementById("docente-telefono").textContent = docenteActual.telefonoDocente || "N/A";
-    
-    const est = document.getElementById("docente-estatus");
-    est.textContent = docenteActual.statusDocente;
-    if (docenteActual.statusDocente === "ACTIVO") {
-        est.className = "badge bg-success status-badge";
-    } else {
-        est.className = "badge bg-danger status-badge";
-    }
 
-    // Cargar Horario
+    document.getElementById("docente-nombre").textContent = docenteActual.nombreCompleto;
+    document.getElementById("docente-iniciales").textContent = iniciales(docenteActual.nombreCompleto);
+    document.getElementById("docente-biometrico").textContent = docenteActual.idBiometrico || "Sin ID";
+    document.getElementById("docente-correo").textContent = docenteActual.correoDocente || "Sin correo";
+    document.getElementById("docente-estudios").textContent = docenteActual.nivelEstudios || "Sin nivel registrado";
+    document.getElementById("docente-telefono").textContent = docenteActual.telefonoDocente || "Sin teléfono";
+
+    const est = document.getElementById("docente-estatus");
+    const activo = docenteActual.statusDocente === "ACTIVO";
+    est.textContent = docenteActual.statusDocente || "—";
+    est.className = 'tw:inline-flex tw:items-center tw:px-2.5 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold ' +
+        (activo ? 'tw:bg-success-100 tw:text-success-700' : 'tw:bg-danger-100 tw:text-danger-600');
+
     cargarHorariosServicio(id);
 }
 
@@ -615,152 +349,72 @@ function cargarHorariosServicio(idDocente) {
         .then(horarios => {
             horarioActual = Array.isArray(horarios) ? horarios : [];
             renderCalendars();
-            
             document.getElementById("pantalla-vacia").style.display = "none";
             document.getElementById("panel-horario").style.display = "block";
         })
-        .catch(err => {
-            console.error("Error al cargar el horario del docente:", err);
-        });
+        .catch(err => console.error("Error al cargar el horario del docente:", err));
 }
 
 function renderCalendars() {
-    // Dividir las clases por CCT (BTI y BGNE)
     const btiClasses = [];
     const bgneClasses = [];
-    
-    let hoursBtiCount = 0;
-    let hoursBgneCount = 0;
 
     horarioActual.forEach(c => {
-        // Normalizar tiempos
         c.horaInicioFormatted = formatTimeHM(c.horaInicio);
         c.horaFinFormatted = formatTimeHM(c.horaFin);
-        
-        if (c.id_centroTrabajo === 2 || c.diaSemana <= 5) {
-            btiClasses.push(c);
-            hoursBtiCount++;
-        } else if (c.id_centroTrabajo === 3 || c.diaSemana >= 6) {
-            bgneClasses.push(c);
-            hoursBgneCount++; // En BGNE las sesiones suelen ser de 1 hora
-        }
+        if (c.id_centroTrabajo === 2 || c.diaSemana <= 5) btiClasses.push(c);
+        else if (c.id_centroTrabajo === 3 || c.diaSemana >= 6) bgneClasses.push(c);
     });
 
-    // Actualizar resúmenes
-    document.getElementById("resumen-bti").textContent = `${hoursBtiCount}h`;
-    document.getElementById("resumen-bgne").textContent = `${hoursBgneCount}h`;
-    document.getElementById("resumen-total").textContent = `${hoursBtiCount + hoursBgneCount}h`;
+    document.getElementById("resumen-bti").textContent = `${btiClasses.length}h`;
+    document.getElementById("resumen-bgne").textContent = `${bgneClasses.length}h`;
+    document.getElementById("resumen-total").textContent = `${btiClasses.length + bgneClasses.length}h`;
 
-    // 1. RENDER BTI
+    // 1. BTI (Lunes=1 … Viernes=5)
+    const btiBody = document.getElementById("bti-tbody");
     if (btiClasses.length > 0) {
-        document.getElementById("bti-tbody").innerHTML = "";
         document.getElementById("bti-no-schedule").style.display = "none";
-        document.querySelector("#bti-tbody").closest("table").style.display = "table";
-        
-        let htmlBti = "";
-        BTI_HOURS.forEach(block => {
+        btiBody.closest("table").style.display = "table";
+
+        btiBody.innerHTML = BTI_HOURS.map(block => {
             if (block.type === "receso") {
-                htmlBti += `
-                    <tr class="receso-row">
-                        <td class="time-col">${block.start} - ${block.end}</td>
-                        <td colspan="5">RECESO</td>
-                    </tr>
-                `;
-            } else {
-                htmlBti += `<tr>
-                    <td class="time-col">${block.start} - ${block.end}</td>`;
-                
-                // Columnas de días: Lunes(1) a Viernes(5)
-                for (let day = 1; day <= 5; day++) {
-                    // Buscar clase
-                    const matchingClasses = btiClasses.filter(c => 
-                        parseInt(c.diaSemana) === day && 
-                        c.horaInicioFormatted === block.start
-                    );
-                    
-                    if (matchingClasses.length > 0) {
-                        let cellHtml = "";
-                        matchingClasses.forEach(mc => {
-                            cellHtml += `
-                                <div class="class-block">
-                                    <div class="class-materia" title="${mc.materia_nombre}">${mc.materia_nombre}</div>
-                                    <div>
-                                        <span class="class-grupo">${mc.grupo_clave} ${mc.nivel_nombre ? `(${mc.nivel_nombre})` : ''}</span>
-                                        <span class="class-aula"><i class="fa-solid fa-location-dot me-1"></i>${mc.aula}</span>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        htmlBti += `<td>${cellHtml}</td>`;
-                    } else {
-                        htmlBti += `<td></td>`;
-                    }
-                }
-                htmlBti += `</tr>`;
+                return `<tr class="receso-row">
+                    <td class="${CELL.time}">${block.start} - ${block.end}</td>
+                    <td colspan="5" class="${CELL.receso}">Receso</td>
+                </tr>`;
             }
-        });
-        document.getElementById("bti-tbody").innerHTML = htmlBti;
+            let row = `<tr><td class="${CELL.time}">${block.start} - ${block.end}</td>`;
+            for (let day = 1; day <= 5; day++) {
+                const clases = btiClasses.filter(c => parseInt(c.diaSemana) === day && c.horaInicioFormatted === block.start);
+                row += `<td class="${CELL.day}">${clases.map(mc => bloqueClase(mc, 'bti')).join('')}</td>`;
+            }
+            return row + `</tr>`;
+        }).join('');
     } else {
-        document.getElementById("bti-tbody").innerHTML = "";
-        document.querySelector("#bti-tbody").closest("table").style.display = "none";
+        btiBody.innerHTML = "";
+        btiBody.closest("table").style.display = "none";
         document.getElementById("bti-no-schedule").style.display = "block";
     }
 
-    // 2. RENDER BGNE (Sábado(6) y Domingo(7))
+    // 2. BGNE (Sábado=6, Domingo=7) con intervalos dinámicos
+    const bgneBody = document.getElementById("bgne-tbody");
     if (bgneClasses.length > 0) {
-        document.getElementById("bgne-tbody").innerHTML = "";
         document.getElementById("bgne-no-schedule").style.display = "none";
-        document.querySelector("#bgne-tbody").closest("table").style.display = "table";
-        
-        // Obtener rangos de horas de BGNE de forma dinámica
-        const bgneIntervals = [];
-        bgneClasses.forEach(c => {
-            const intv = `${c.horaInicioFormatted} - ${c.horaFinFormatted}`;
-            if (!bgneIntervals.includes(intv)) {
-                bgneIntervals.push(intv);
-            }
-        });
-        
-        // Ordenar rangos de horas
-        bgneIntervals.sort();
-        
-        let htmlBgne = "";
-        bgneIntervals.forEach(interval => {
-            const [start, end] = interval.split(" - ");
-            htmlBgne += `<tr>
-                <td class="time-col">${interval}</td>`;
-            
-            // Sábado(6) y Domingo(7)
+        bgneBody.closest("table").style.display = "table";
+
+        const intervalos = [...new Set(bgneClasses.map(c => `${c.horaInicioFormatted} - ${c.horaFinFormatted}`))].sort();
+        bgneBody.innerHTML = intervalos.map(interval => {
+            const [start] = interval.split(" - ");
+            let row = `<tr><td class="${CELL.time}">${interval}</td>`;
             for (let day = 6; day <= 7; day++) {
-                const matchingClasses = bgneClasses.filter(c => 
-                    parseInt(c.diaSemana) === day && 
-                    c.horaInicioFormatted === start
-                );
-                
-                if (matchingClasses.length > 0) {
-                    let cellHtml = "";
-                    matchingClasses.forEach(mc => {
-                        cellHtml += `
-                            <div class="class-block" style="background: rgba(13, 148, 136, 0.08); border-left-color: rgb(13, 148, 136); border-color: rgba(13, 148, 136, 0.25);">
-                                <div class="class-materia" title="${mc.materia_nombre}">${mc.materia_nombre}</div>
-                                <div>
-                                    <span class="class-grupo" style="color: rgb(13, 148, 136);">${mc.grupo_clave} ${mc.nivel_nombre ? `(${mc.nivel_nombre})` : ''}</span>
-                                    <span class="class-aula"><i class="fa-solid fa-location-dot me-1"></i>${mc.aula}</span>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    htmlBgne += `<td>${cellHtml}</td>`;
-                } else {
-                    htmlBgne += `<td></td>`;
-                }
+                const clases = bgneClasses.filter(c => parseInt(c.diaSemana) === day && c.horaInicioFormatted === start);
+                row += `<td class="${CELL.day}">${clases.map(mc => bloqueClase(mc, 'bgne')).join('')}</td>`;
             }
-            htmlBgne += `</tr>`;
-        });
-        document.getElementById("bgne-tbody").innerHTML = htmlBgne;
+            return row + `</tr>`;
+        }).join('');
     } else {
-        document.getElementById("bgne-tbody").innerHTML = "";
-        document.querySelector("#bgne-tbody").closest("table").style.display = "none";
+        bgneBody.innerHTML = "";
+        bgneBody.closest("table").style.display = "none";
         document.getElementById("bgne-no-schedule").style.display = "block";
     }
 }
@@ -852,7 +506,7 @@ function imprimirReporteHorario() {
                         width: 50px;
                         height: 50px;
                         margin-right: 15px;
-                        border-radius: 50%;
+                        border-radius:0;
                         background: #f1f5f9;
                         display: flex;
                         align-items: center;
@@ -877,7 +531,7 @@ function imprimirReporteHorario() {
                     .info-card {
                         background: #f8fafc;
                         border: 1px solid #e2e8f0;
-                        border-radius: 8px;
+                        border-radius: 0;
                         padding: 8px 12px;
                         margin-bottom: 12px;
                         display: grid;
@@ -984,7 +638,7 @@ function imprimirReporteHorario() {
                         padding: 8px;
                         background: #f8fafc;
                         border: 1px dashed #cbd5e1;
-                        border-radius: 6px;
+                        border-radius: 0;
                         text-align: center;
                     }
                     /* Signatures Section */

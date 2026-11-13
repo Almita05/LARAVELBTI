@@ -15,7 +15,7 @@
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
 
-    border-radius: 20px;
+    border-radius: 0;
     overflow: hidden;
 
     border: none;
@@ -85,7 +85,7 @@
 
 .materia-info {
     padding: 15px;
-    border-radius: 15px;
+    border-radius: 0;
     background: rgb(49, 125, 146);
 }
 
@@ -100,7 +100,7 @@
 =========================== */
 
 .tabla-calificaciones {
-    border-radius: 15px;
+    border-radius: 0;
     overflow: hidden;
 }
 
@@ -132,7 +132,7 @@
 =========================== */
 
 .tabla-calificaciones input {
-    border-radius: 10px;
+    border-radius: 0;
     text-align: center;
 
     border: 1px solid #cfd8dc;
@@ -160,7 +160,7 @@
 
     padding: 10px 24px;
 
-    border-radius: 10px;
+    border-radius: 0;
 
     font-weight: 600;
 }
@@ -179,7 +179,7 @@
 
     padding: 10px 24px;
 
-    border-radius: 10px;
+    border-radius: 0;
 }
 
 .btn-cancelar:hover {

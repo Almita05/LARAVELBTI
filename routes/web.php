@@ -6,6 +6,7 @@ use App\Http\Controllers\GeneracionController;
 use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\MateriaController;
 use App\Http\Controllers\AlumnoController;
+use App\Http\Controllers\ConstanciaEstudiosController;
 use App\Http\Controllers\PlanEstudioController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\EquivalenciaController;
@@ -15,11 +16,9 @@ use App\Http\Controllers\ListasAsistenciasController;
 use App\Http\Controllers\BoletasBtiController;
 use App\Http\Controllers\KardexBgneController;
 use App\Http\Controllers\BoletasBGNEExtraController;
-use App\Http\Controllers\TestController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CalificacionesController;
 use App\Http\Controllers\HorariosController;
-use App\Http\Controllers\KardexCBgneController;
 use App\Http\Controllers\AsistenciaDocenteController;
 use App\Http\Controllers\PermisosCapturaController;
 use App\Http\Controllers\PersonalController;
@@ -27,28 +26,38 @@ use App\Http\Controllers\QrpController;
 use App\Http\Controllers\ReporteIndisciplinaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AlumnoOnlineController;
+use App\Http\Controllers\NotificacionController;
+use App\Http\Controllers\AsistenciaAlumnoController;
+use App\Http\Controllers\ReporteAsistenciaController;
 
+/*
+|--------------------------------------------------------------------------
+| Control de acceso
+|--------------------------------------------------------------------------
+| auth.session  → exige sesión iniciada (TODAS las rutas salvo login/logout).
+| permiso:mod   → permiso de la matriz de personal; acción por método HTTP
+|                 (GET=ver, POST/PUT=crear, DELETE=eliminar). ADMIN y DOCENTE pasan.
+| sin.docente   → bloquea a docentes en operaciones administrativas.
+| solo.admin    → solo ADMIN.
+| Los catálogos de solo lectura compartidos entre módulos solo piden sesión.
+*/
 
-
-
+// Permisos agrupados (deben coincidir con las condiciones del menú lateral)
+$FORMATOS = 'formatos_boletas_bti|formatos_kardex_bgne|formatos_actas_extraordinarios|formatos_listas_asistencia|formatos_actas_ordinarios';
 
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 
-Route::get('/login', [AuthController::class, 'showLogin'])
-    ->name('login');
+// Máx. 10 intentos por minuto por IP (frena ataques de fuerza bruta)
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
-Route::post('/login', [AuthController::class, 'login']);
-
-Route::post('/logout', [AuthController::class, 'logout'])
-    ->name('logout');
-Route::get('/materias-usuario', [CalificacionesController::class, 'materiasUsuario']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
-    
-Route::middleware('auth.session')->group(function () {
+Route::middleware('auth.session')->group(function () use ($FORMATOS) {
 
     Route::get('/refresh-csrf', function () {
         return response()->json([
@@ -60,231 +69,293 @@ Route::middleware('auth.session')->group(function () {
         ->header('Expires', '0');
     });
 
+    Route::get('/materias-usuario', [CalificacionesController::class, 'materiasUsuario']);
+
     Route::get('/home', [DashboardController::class, 'index'])->name('home');
     Route::get('/dashboard/stats', [DashboardController::class, 'stats'])->name('dashboard.stats');
 
     Route::get('/editarPerfil', [PerfilController::class, 'index']);
 
+    // Restablecer contraseña de usuarios administrativos (cuentas admin exigen correo maestro)
+    Route::post('/usuarios/restablecer-password', [AuthController::class, 'restablecerPassword'])
+        ->middleware(['solo.admin', 'throttle:5,1'])
+        ->name('usuarios.restablecer_password');
+
     // Planes
-    Route::get('/planesBTI', [PlanEstudioController::class, 'bti'])->name('planesBTI');
-    Route::get('/planesBGNE', [PlanEstudioController::class, 'bgne'])->name('planesBGNE');
+    Route::get('/planesBTI', [PlanEstudioController::class, 'bti'])->middleware('permiso:planes_bti')->name('planesBTI');
+    Route::get('/planesBGNE', [PlanEstudioController::class, 'bgne'])->middleware('permiso:planes_bgne')->name('planesBGNE');
 
-    // Notificaciones
-    Route::get('/notificaciones', [\App\Http\Controllers\NotificacionController::class, 'index'])->name('notificaciones');
-    Route::get('/notificaciones/count', [\App\Http\Controllers\NotificacionController::class, 'count']);
-    Route::post('/notificaciones/resolver', [\App\Http\Controllers\NotificacionController::class, 'resolver'])->name('notificaciones.resolver');
-    Route::post('/notificaciones/reactivar', [\App\Http\Controllers\NotificacionController::class, 'reactivar'])->name('notificaciones.reactivar');
-    Route::post('/notificaciones/limpiar', [\App\Http\Controllers\NotificacionController::class, 'limpiar'])->name('notificaciones.limpiar');
+    // Notificaciones (el contador lo consulta el layout para cualquier usuario)
+    Route::get('/notificaciones/count', [NotificacionController::class, 'count']);
+    Route::middleware('permiso:notificaciones')->group(function () {
+        Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('notificaciones');
+        Route::post('/notificaciones/resolver', [NotificacionController::class, 'resolver'])->name('notificaciones.resolver');
+        Route::post('/notificaciones/reactivar', [NotificacionController::class, 'reactivar'])->name('notificaciones.reactivar');
+        Route::post('/notificaciones/limpiar', [NotificacionController::class, 'limpiar'])->name('notificaciones.limpiar');
+    });
 
-   // Analizador de Estados de Cuenta QRP
-Route::get('/analizar-estado-cuenta',[QrpController::class, 'index'])->name('analizar-estado-cuenta');
-    Route::post('/analizar-estado-cuenta',[QrpController::class, 'analizar'])->name('estado_cuenta.analizar');
-
+    // Analizador de Estados de Cuenta QRP (el POST solo analiza un archivo: requiere "ver")
+    Route::middleware(['sin.docente', 'permiso:planes_bti,ver'])->group(function () {
+        Route::get('/analizar-estado-cuenta', [QrpController::class, 'index'])->name('analizar-estado-cuenta');
+        Route::post('/analizar-estado-cuenta', [QrpController::class, 'analizar'])->name('estado_cuenta.analizar');
+    });
 });
 
-Route::middleware(['auth.session', 'docente.admin'])->group(function () {
- // Actas
-    Route::get('/actas_calificaciones', [ActasCalificacionesController::class, 'index'])->name('actas_calificaciones');
-    Route::get('/actas_calificacionesBTI', [ActasCalificacionesController::class, 'bti'])->name('actas_calificacionesBTI');
-    Route::get('/actas_calificacionesBGNES', [ActasCalificacionesController::class, 'bgneS'])->name('actas_calificacionesBGNES');
-    Route::get('/actas_calificacionesBGNED', [ActasCalificacionesController::class, 'bgneD'])->name('actas_calificacionesBGNED');
+
+Route::middleware(['auth.session', 'docente.admin'])->group(function () use ($FORMATOS) {
+    // Actas
+    Route::middleware('permiso:formatos_actas_ordinarios')->group(function () {
+        Route::get('/actas_calificaciones', [ActasCalificacionesController::class, 'index'])->name('actas_calificaciones');
+        Route::get('/actas_calificacionesBTI', [ActasCalificacionesController::class, 'bti'])->name('actas_calificacionesBTI');
+        Route::get('/actas_calificacionesBGNES', [ActasCalificacionesController::class, 'bgneS'])->name('actas_calificacionesBGNES');
+        Route::get('/actas_calificacionesBGNED', [ActasCalificacionesController::class, 'bgneD'])->name('actas_calificacionesBGNED');
+    });
 
     // Listas
-    Route::get('/listas_asistencias', [ListasAsistenciasController::class, 'index'])->name('listas_asistencias');
-    Route::get('/listas_asistenciasBTI', [ListasAsistenciasController::class, 'bti'])->name('listas_asistenciasBTI');
-    Route::get('/listas_asistenciasBGNES', [ListasAsistenciasController::class, 'bgneS'])->name('listas_asistenciasBGNES');
-    Route::get('/listas_asistenciasBGNED', [ListasAsistenciasController::class, 'bgneD'])->name('listas_asistenciasBGNED');
-    Route::get('/modulo-imprimir', [ListasAsistenciasController::class, 'moduloImprimir'])->name('reportes.imprimir');
-    Route::get('/reportes/asistencia-pdf', [ListasAsistenciasController::class, 'generarPdfAsistencia'])->name('reportes.asistencia_pdf');
+    Route::middleware('permiso:formatos_listas_asistencia')->group(function () {
+        Route::get('/listas_asistencias', [ListasAsistenciasController::class, 'index'])->name('listas_asistencias');
+        Route::get('/listas_asistenciasBTI', [ListasAsistenciasController::class, 'bti'])->name('listas_asistenciasBTI');
+        Route::get('/listas_asistenciasBGNES', [ListasAsistenciasController::class, 'bgneS'])->name('listas_asistenciasBGNES');
+        Route::get('/listas_asistenciasBGNED', [ListasAsistenciasController::class, 'bgneD'])->name('listas_asistenciasBGNED');
+        Route::get('/reportes/asistencia-pdf', [ListasAsistenciasController::class, 'generarPdfAsistencia'])->name('reportes.asistencia_pdf');
+    });
+
+    // Módulo de impresión: cualquier permiso de formatos
+    Route::get('/modulo-imprimir', [ListasAsistenciasController::class, 'moduloImprimir'])
+        ->middleware("permiso:{$FORMATOS},ver")->name('reportes.imprimir');
     Route::get('/reportes/grupo/{id}/alumnos', [ListasAsistenciasController::class, 'getAlumnosGrupo'])->name('reportes.grupo_alumnos');
+    Route::middleware("permiso:{$FORMATOS},ver")->group(function () {
+        Route::get('/reportes/constancia-estudios-bti/{id}/datos', [ConstanciaEstudiosController::class, 'datosBti'])
+            ->where('id', '[0-9]+')->name('reportes.constancia_bti_datos');
+        Route::get('/reportes/constancia-estudios-bti-pdf', [ConstanciaEstudiosController::class, 'pdfBti'])->name('reportes.constancia_bti_pdf');
+    });
+    Route::middleware('permiso:formatos_actas_ordinarios,ver')->group(function () {
+        Route::get('/reportes/acta-ordinario-pdf', [ListasAsistenciasController::class, 'generarPdfActaOrdinario'])->name('reportes.acta_ordinario_pdf');
+        Route::get('/reportes/acta-ordinario-bgne-pdf', [ListasAsistenciasController::class, 'generarPdfActaOrdinarioBgne'])->name('reportes.acta_ordinario_bgne_pdf');
+    });
 
-    // Extraordinarios
+    // Extraordinarios / Boletas
     Route::get('/boleta_calificaciones_extraordinarios', [BoletasBGNEExtraController::class, 'index'])
-        ->name('boleta_calificaciones_extraordinarios');
+        ->middleware('permiso:formatos_actas_extraordinarios')->name('boleta_calificaciones_extraordinarios');
     Route::get('/boletas_bti', [BoletasBtiController::class, 'boletasBTI'])
-        ->name('boletas_bti');
+        ->middleware('permiso:alumnos_calificaciones')->name('boletas_bti');
 
-    // Horarios
-    Route::get('/horarios', [HorariosController::class, 'index'])->name('horarios');
-    Route::get('/horarios/escolarizado', [HorariosController::class, 'escolarizado'])->name('horarios.escolarizado');
-    Route::get('/horarios/sabado', [HorariosController::class, 'sabado'])->name('horarios.sabado');
-    Route::get('/horarios/domingo', [HorariosController::class, 'domingo'])->name('horarios.domingo');
+    // Horarios (armado)
+    Route::middleware('permiso:grupos_horarios')->group(function () {
+        Route::get('/horarios', [HorariosController::class, 'index'])->name('horarios');
+        Route::get('/horarios/escolarizado', [HorariosController::class, 'escolarizado'])->name('horarios.escolarizado');
+        Route::get('/horarios/sabado', [HorariosController::class, 'sabado'])->name('horarios.sabado');
+        Route::get('/horarios/domingo', [HorariosController::class, 'domingo'])->name('horarios.domingo');
+    });
 
-    // Asistencias Docentes
-    Route::get('/asistencias_docentes', [AsistenciaDocenteController::class, 'index'])->name('asistencias_docentes');
-    Route::get('/asistencias_docentes/datos', [AsistenciaDocenteController::class, 'getHorasDocentes']);
-    Route::get('/asistencias_docentes/detalle', [AsistenciaDocenteController::class, 'getDetalleHorasDocente']);
-    Route::post('/asistencias/upload', [AsistenciaDocenteController::class, 'uploadBiometrico']);
-    Route::get('/asistencias', [AsistenciaDocenteController::class, 'getAsistencias']);
-    Route::delete('/asistencias/clear', [AsistenciaDocenteController::class, 'clearAsistencias']);
+    // Asistencias Docentes (biométrico)
+    Route::middleware('permiso:docentes_asistencias')->group(function () {
+        Route::get('/asistencias_docentes', [AsistenciaDocenteController::class, 'index'])->name('asistencias_docentes');
+        Route::get('/asistencias_docentes/datos', [AsistenciaDocenteController::class, 'getHorasDocentes']);
+        Route::get('/asistencias_docentes/detalle', [AsistenciaDocenteController::class, 'getDetalleHorasDocente']);
+        Route::get('/asistencias', [AsistenciaDocenteController::class, 'getAsistencias']);
+        Route::post('/asistencias/upload', [AsistenciaDocenteController::class, 'uploadBiometrico'])->middleware('sin.docente');
+        Route::delete('/asistencias/clear', [AsistenciaDocenteController::class, 'clearAsistencias'])->middleware('sin.docente');
+    });
 
-    // Horarios Docentes
-    Route::get('/horarios_docentes', [DocenteController::class, 'horarioDocente'])->name('horarios_docentes');
+    // Horarios Docentes (el docente ve el suyo)
+    Route::get('/horarios_docentes', [DocenteController::class, 'horarioDocente'])->middleware('permiso:docentes_horarios')->name('horarios_docentes');
     Route::get('/docentes/{id}/horario', [DocenteController::class, 'getHorarioDocente']);
 
     // Pendientes Docente
     Route::get('/docentes/pendientes', [DocenteController::class, 'pendientes'])->name('docentes.pendientes');
     Route::get('/docentes/pendientes/datos', [DocenteController::class, 'getPendingItems']);
 
-    // Asistencias Alumnos
-    Route::get('/asistencias_alumnos', [\App\Http\Controllers\AsistenciaAlumnoController::class, 'index'])->name('asistencias_alumnos');
-    Route::get('/asistencias_alumnos/grupo/{id_grupo}', [\App\Http\Controllers\AsistenciaAlumnoController::class, 'grupoGrid'])->name('asistencias_alumnos.grupo');
-    Route::post('/asistencias_alumnos/guardar', [\App\Http\Controllers\AsistenciaAlumnoController::class, 'guardar'])->name('asistencias_alumnos.guardar');
-    Route::post('/asistencias_alumnos/justificar', [\App\Http\Controllers\AsistenciaAlumnoController::class, 'justificar'])->name('asistencias_alumnos.justificar');
-    Route::post('/asistencias_alumnos/reabrir', [\App\Http\Controllers\AsistenciaAlumnoController::class, 'reabrirPase'])->name('asistencias_alumnos.reabrir');
+    // Asistencias Alumnos (docentes pasan lista)
+    Route::middleware('permiso:alumnos_asistencias')->group(function () {
+        Route::get('/asistencias_alumnos', [AsistenciaAlumnoController::class, 'index'])->name('asistencias_alumnos');
+        Route::get('/asistencias_alumnos/grupo/{id_grupo}', [AsistenciaAlumnoController::class, 'grupoGrid'])->name('asistencias_alumnos.grupo');
+        Route::post('/asistencias_alumnos/guardar', [AsistenciaAlumnoController::class, 'guardar'])->name('asistencias_alumnos.guardar');
+        Route::post('/asistencias_alumnos/justificar', [AsistenciaAlumnoController::class, 'justificar'])->name('asistencias_alumnos.justificar');
+        Route::post('/asistencias_alumnos/reabrir', [AsistenciaAlumnoController::class, 'reabrirPase'])->name('asistencias_alumnos.reabrir');
+    });
 
     // Reportes de Asistencias
-    Route::get('/reportes/asistencias', [\App\Http\Controllers\ReporteAsistenciaController::class, 'index'])->name('reportes.asistencias');
-    Route::get('/reportes/asistencias/grupo/{id_grupo}', [\App\Http\Controllers\ReporteAsistenciaController::class, 'getGrupoReport'])->name('reportes.asistencias.grupo');
-    Route::get('/reportes/asistencias/grupo/{id_grupo}/alumno/{id_alumno}', [\App\Http\Controllers\ReporteAsistenciaController::class, 'getAlumnoHistorial'])->name('reportes.asistencias.alumno_historial');
+    Route::middleware('permiso:alumnos_reporte_asistencias')->group(function () {
+        Route::get('/reportes/asistencias', [ReporteAsistenciaController::class, 'index'])->name('reportes.asistencias');
+        Route::get('/reportes/asistencias/grupo/{id_grupo}', [ReporteAsistenciaController::class, 'getGrupoReport'])->name('reportes.asistencias.grupo');
+        Route::get('/reportes/asistencias/grupo/{id_grupo}/alumno/{id_alumno}', [ReporteAsistenciaController::class, 'getAlumnoHistorial'])->name('reportes.asistencias.alumno_historial');
+    });
 
     // Permisos de Captura Docentes
-    Route::get('/permisos-captura', [PermisosCapturaController::class, 'index'])->name('permisos_captura');
-    Route::get('/permisos-captura/lista', [PermisosCapturaController::class, 'lista']);
-    Route::get('/permisos-captura/matriz', [PermisosCapturaController::class, 'getMatrizAvance']);
-    Route::get('/permisos-captura/docentes', [PermisosCapturaController::class, 'getDocentes']);
-    Route::get('/permisos-captura/grupos', [PermisosCapturaController::class, 'getGrupos']);
-    Route::post('/permisos-captura', [PermisosCapturaController::class, 'store']);
-    Route::put('/permisos-captura/{id}', [PermisosCapturaController::class, 'update']);
-    Route::delete('/permisos-captura/{id}', [PermisosCapturaController::class, 'destroy']);
-    Route::get('/permisos-captura/ccts', [PermisosCapturaController::class, 'getCcts']);
-    Route::get('/permisos-captura/cct/{cct_id}/grupos', [PermisosCapturaController::class, 'getGruposPorCct']);
-    Route::get('/permisos-captura/grupo-config/{grupo_id}', [PermisosCapturaController::class, 'getGrupoConfig']);
-    Route::post('/permisos-captura/grupo-config/{grupo_id}', [PermisosCapturaController::class, 'saveGrupoConfig']);
+    Route::middleware(['sin.docente', 'permiso:docentes_permisos_captura'])->group(function () {
+        Route::get('/permisos-captura', [PermisosCapturaController::class, 'index'])->name('permisos_captura');
+        Route::get('/permisos-captura/lista', [PermisosCapturaController::class, 'lista']);
+        Route::get('/permisos-captura/matriz', [PermisosCapturaController::class, 'getMatrizAvance']);
+        Route::get('/permisos-captura/docentes', [PermisosCapturaController::class, 'getDocentes']);
+        Route::get('/permisos-captura/grupos', [PermisosCapturaController::class, 'getGrupos']);
+        Route::post('/permisos-captura', [PermisosCapturaController::class, 'store']);
+        Route::put('/permisos-captura/{id}', [PermisosCapturaController::class, 'update']);
+        Route::delete('/permisos-captura/{id}', [PermisosCapturaController::class, 'destroy']);
+        Route::get('/permisos-captura/ccts', [PermisosCapturaController::class, 'getCcts']);
+        Route::get('/permisos-captura/cct/{cct_id}/grupos', [PermisosCapturaController::class, 'getGruposPorCct']);
+        Route::get('/permisos-captura/grupo-config/{grupo_id}', [PermisosCapturaController::class, 'getGrupoConfig']);
+        Route::post('/permisos-captura/grupo-config/{grupo_id}', [PermisosCapturaController::class, 'saveGrupoConfig']);
+    });
 
-    // Reportes de Indisciplina
-    Route::get('/reportes-indisciplina-view', [ReporteIndisciplinaController::class, 'indexView'])->name('reportes_indisciplina.index_view');
-    Route::get('/reportes-indisciplina', [ReporteIndisciplinaController::class, 'index'])->name('reportes_indisciplina.index');
-    Route::post('/reportes-indisciplina', [ReporteIndisciplinaController::class, 'store'])->name('reportes_indisciplina.store');
-    Route::delete('/reportes-indisciplina/{id}', [ReporteIndisciplinaController::class, 'destroy'])->name('reportes_indisciplina.destroy');
+    // Reportes de Indisciplina (en el menú dependen de "alumnos_list")
+    Route::middleware('permiso:alumnos_list')->group(function () {
+        Route::get('/reportes-indisciplina-view', [ReporteIndisciplinaController::class, 'indexView'])->name('reportes_indisciplina.index_view');
+        Route::get('/reportes-indisciplina', [ReporteIndisciplinaController::class, 'index'])->name('reportes_indisciplina.index');
+        Route::post('/reportes-indisciplina', [ReporteIndisciplinaController::class, 'store'])->middleware('sin.docente')->name('reportes_indisciplina.store');
+        Route::delete('/reportes-indisciplina/{id}', [ReporteIndisciplinaController::class, 'destroy'])->middleware('sin.docente')->name('reportes_indisciplina.destroy');
+    });
     Route::get('/alumnos/{id}/reportes-conteo', [ReporteIndisciplinaController::class, 'getStudentReportsCount']);
 });
 
 
+/*
+| Estas rutas estaban FUERA de cualquier grupo: no pedían sesión (cualquiera podía
+| crear/editar/borrar alumnos, grupos, docentes…). Ahora exigen sesión y permisos.
+*/
+Route::middleware('auth.session')->group(function () use ($FORMATOS) {
+
     // Alumnos
-    Route::get('/alumnos', [AlumnoController::class, 'index'])->name('alumnos');
-    Route::get('/alumnos/lista', [AlumnoController::class, 'lista']);
-    Route::post('/alumnos', [AlumnoController::class, 'store']);
-    Route::get('/alumnos/modalAlta', [AlumnoController::class, 'modalAlta']);
-    Route::delete('/alumnos/{id}', [AlumnoController::class, 'destroy'])->name('alumnos.destroy');
+    Route::get('/alumnos', [AlumnoController::class, 'index'])->middleware('permiso:alumnos_list')->name('alumnos');
+    Route::get('/alumnos/lista', [AlumnoController::class, 'lista']); // búsqueda compartida (imprimir, actas, boletas…)
+    Route::middleware(['sin.docente', 'permiso:alumnos_list'])->group(function () {
+        Route::post('/alumnos', [AlumnoController::class, 'store']);
+        Route::get('/alumnos/modalAlta', [AlumnoController::class, 'modalAlta']);
+        Route::delete('/alumnos/{id}', [AlumnoController::class, 'destroy'])->name('alumnos.destroy');
+        Route::put('/alumnos/{id}', [AlumnoController::class, 'update'])->where('id', '[0-9]+');
+        Route::get('/alumnos/{id}/historial', [AlumnoController::class, 'historial'])->where('id', '[0-9]+')->name('alumnos.historial');
+        Route::post('/alumnos/{id}/modalidad-online', [AlumnoController::class, 'cambiarModalidadOnline'])->where('id', '[0-9]+');
+        Route::post('/alumnos/{id}/modalidad-presencial', [AlumnoController::class, 'cambiarModalidadPresencial'])->where('id', '[0-9]+');
+        Route::post('/alumnos/{id}/pagos', [AlumnoController::class, 'registrarPago'])->where('id', '[0-9]+');
+    });
     Route::get('/alumnos/{id}', [AlumnoController::class, 'show'])->where('id', '[0-9]+');
-    Route::put('/alumnos/{id}', [AlumnoController::class, 'update'])->where('id', '[0-9]+');
     Route::get('/alumnos/{id}/kardex', [AlumnoController::class, 'getKardex'])->where('id', '[0-9]+');
-    Route::post('/alumnos/{id}/calificaciones', [AlumnoController::class, 'guardarCalificaciones'])->where('id', '[0-9]+');
-    Route::post('/alumnos/{id}/modalidad-online', [AlumnoController::class, 'cambiarModalidadOnline'])->where('id', '[0-9]+');
-    Route::post('/alumnos/{id}/modalidad-presencial', [AlumnoController::class, 'cambiarModalidadPresencial'])->where('id', '[0-9]+');
-    Route::post('/alumnos/{id}/pagos', [AlumnoController::class, 'registrarPago'])->where('id', '[0-9]+');
+    Route::post('/alumnos/{id}/calificaciones', [AlumnoController::class, 'guardarCalificaciones'])
+        ->where('id', '[0-9]+')->middleware(['sin.docente', 'permiso:alumnos_calificaciones|alumnos_list,crear']);
     Route::get('/alumnos/{id}/pagos', [AlumnoController::class, 'getPagos'])->where('id', '[0-9]+');
 
-    // Módulo Alumnos Modalidad Online
-    Route::get('/alumnos/online', [AlumnoOnlineController::class, 'index'])->name('alumnos.online');
-    Route::get('/alumnos/online/data', [AlumnoOnlineController::class, 'getAlumnos']);
-    Route::post('/alumnos/{id}/trimestre-inicio', [AlumnoOnlineController::class, 'actualizarTrimestreInicio'])->where('id', '[0-9]+');
-    Route::post('/alumnos/{id}/dia-pago', [AlumnoOnlineController::class, 'actualizarDiaPago'])->where('id', '[0-9]+');
-    Route::post('/alumnos/{id}/registrar-pago-online', [AlumnoOnlineController::class, 'registrarPago'])->where('id', '[0-9]+');
-    Route::get('/alumnos/{id}/detalle-online', [AlumnoOnlineController::class, 'getDetalleAlumno'])->where('id', '[0-9]+');
-    Route::get('/online/distribucion-materias', [AlumnoOnlineController::class, 'getDistribucionMaterias']);
-    Route::get('/online/buscar-presenciales', [AlumnoOnlineController::class, 'buscarPresenciales']);
-    Route::post('/alumnos/{id}/activar-online', [AlumnoOnlineController::class, 'activarModalidadOnline'])->where('id', '[0-9]+');
-    Route::post('/alumnos/{id}/sincronizar-moodle', [AlumnoOnlineController::class, 'sincronizarMoodleAlumno'])->where('id', '[0-9]+');
-    Route::post('/alumnos/{id}/toggle-suspension-moodle', [AlumnoOnlineController::class, 'toggleSuspensionMoodle'])->where('id', '[0-9]+');
-    Route::post('/online/materias/{id}/moodle-curso', [AlumnoOnlineController::class, 'guardarMoodleCourseId'])->where('id', '[0-9]+');
-    Route::post('/alumnos/{id}/actividades/actualizar', [AlumnoOnlineController::class, 'actualizarEstatusActividad'])->where('id', '[0-9]+');
+    // Módulo Alumnos Modalidad Online (en el menú depende de "alumnos_list")
+    Route::middleware('permiso:alumnos_list')->group(function () {
+        Route::get('/alumnos/online', [AlumnoOnlineController::class, 'index'])->name('alumnos.online');
+        Route::get('/alumnos/online/data', [AlumnoOnlineController::class, 'getAlumnos']);
+        Route::get('/alumnos/{id}/detalle-online', [AlumnoOnlineController::class, 'getDetalleAlumno'])->where('id', '[0-9]+');
+        Route::get('/online/distribucion-materias', [AlumnoOnlineController::class, 'getDistribucionMaterias']);
+        Route::get('/online/buscar-presenciales', [AlumnoOnlineController::class, 'buscarPresenciales']);
+        Route::middleware('sin.docente')->group(function () {
+            Route::post('/alumnos/{id}/trimestre-inicio', [AlumnoOnlineController::class, 'actualizarTrimestreInicio'])->where('id', '[0-9]+');
+            Route::post('/alumnos/{id}/dia-pago', [AlumnoOnlineController::class, 'actualizarDiaPago'])->where('id', '[0-9]+');
+            Route::post('/alumnos/{id}/registrar-pago-online', [AlumnoOnlineController::class, 'registrarPago'])->where('id', '[0-9]+');
+            Route::post('/alumnos/{id}/activar-online', [AlumnoOnlineController::class, 'activarModalidadOnline'])->where('id', '[0-9]+');
+            Route::post('/alumnos/{id}/sincronizar-moodle', [AlumnoOnlineController::class, 'sincronizarMoodleAlumno'])->where('id', '[0-9]+');
+            Route::post('/alumnos/{id}/toggle-suspension-moodle', [AlumnoOnlineController::class, 'toggleSuspensionMoodle'])->where('id', '[0-9]+');
+            Route::post('/online/materias/{id}/moodle-curso', [AlumnoOnlineController::class, 'guardarMoodleCourseId'])->where('id', '[0-9]+');
+            Route::post('/alumnos/{id}/actividades/actualizar', [AlumnoOnlineController::class, 'actualizarEstatusActividad'])->where('id', '[0-9]+');
+        });
+    });
 
     Route::get('/grupos/{id_grupo}/alumnos', [AlumnoController::class, 'alumnosGrupo'])->where('id_grupo', '[0-9]+');
     Route::get('/alumnos/grupo/{id_grupo}', [AlumnoController::class, 'alumnosPorGrupo'])->where('id_grupo', '[0-9]+');
 
-    // Catálogos en Cascada para Formulario Dinámico
+    // Catálogos en Cascada para Formulario Dinámico (lectura compartida)
     Route::get('/catalogos/centros-trabajo', [AlumnoController::class, 'getCentrosTrabajo']);
     Route::get('/catalogos/niveles-academicos', [AlumnoController::class, 'getNivelesAcademicos']);
     Route::get('/catalogos/generaciones', [AlumnoController::class, 'getGeneraciones']);
     Route::get('/catalogos/grupos', [AlumnoController::class, 'getGrupos']);
 
     // Docentes
-    Route::get('/docentes', [DocenteController::class, 'index'])->name('docentes');
+    Route::get('/docentes', [DocenteController::class, 'index'])->middleware('permiso:docentes_list')->name('docentes');
     Route::get('/docentes/lista', [DocenteController::class, 'lista']);
-    Route::post('/docentes', [DocenteController::class, 'store']);
-    Route::post('/docentes/{id}/credenciales', [DocenteController::class, 'guardarCredenciales']);
+    Route::middleware(['sin.docente', 'permiso:docentes_list'])->group(function () {
+        Route::post('/docentes', [DocenteController::class, 'store']);
+        Route::post('/docentes/{id}/credenciales', [DocenteController::class, 'guardarCredenciales']);
+        Route::put('/docentes/{id}', [DocenteController::class, 'update']);
+        Route::delete('/docentes/{id}', [DocenteController::class, 'destroy']);
+    });
     Route::get('/docentes/{id}', [DocenteController::class, 'show']);
-    Route::put('/docentes/{id}', [DocenteController::class, 'update']);
-    Route::delete('/docentes/{id}', [DocenteController::class, 'destroy']);
 
-    // Personal (Administración de Cuentas de Personal)
-    Route::get('/personal', [PersonalController::class, 'index'])->name('personal');
-    Route::get('/personal/lista', [PersonalController::class, 'lista']);
-    Route::post('/personal', [PersonalController::class, 'store']);
-    Route::get('/personal/{id}', [PersonalController::class, 'show']);
-    Route::put('/personal/{id}', [PersonalController::class, 'update']);
-    Route::delete('/personal/{id}', [PersonalController::class, 'destroy']);
+    // Personal (Administración de Cuentas de Personal) — solo ADMIN
+    Route::middleware('solo.admin')->group(function () {
+        Route::get('/personal', [PersonalController::class, 'index'])->name('personal');
+        Route::get('/personal/lista', [PersonalController::class, 'lista']);
+        Route::post('/personal', [PersonalController::class, 'store']);
+        Route::get('/personal/{id}', [PersonalController::class, 'show']);
+        Route::put('/personal/{id}', [PersonalController::class, 'update']);
+        Route::delete('/personal/{id}', [PersonalController::class, 'destroy']);
+    });
 
     // Materias
-    Route::get('/materias', [MateriaController::class, 'index'])->name('materias');
+    Route::get('/materias', [MateriaController::class, 'index'])->middleware('permiso:materias')->name('materias');
     Route::get('/materias/lista', [MateriaController::class, 'lista']);
-    Route::post('/materias', [MateriaController::class, 'store']);
+    Route::middleware(['sin.docente', 'permiso:materias'])->group(function () {
+        Route::post('/materias', [MateriaController::class, 'store']);
+        Route::put('/materias/{id}', [MateriaController::class, 'update']);
+        Route::delete('/materias/{id}', [MateriaController::class, 'destroy']);
+    });
     Route::get('/materias/{id}', [MateriaController::class, 'show']);
-    Route::put('/materias/{id}', [MateriaController::class, 'update']);
-    Route::delete('/materias/{id}', [MateriaController::class, 'destroy']);
 
     // Grupos
-    Route::get('/grupos', [GrupoController::class, 'index'])->name('grupos');
-    Route::get('/busqueda-grupos', [GrupoController::class, 'busqueda'])->name('busqueda_grupos');
-    Route::get('/grupos/captura_calificaciones', [GrupoController::class, 'capturaCalificaciones'])->name('grupos.captura_calificaciones');
-    Route::get('/grupos/{id_grupo}/calificaciones-materia', [GrupoController::class, 'getCalificacionesGrupoMateria']);
-    Route::post('/grupos/{id_grupo}/calificaciones-materia/{id_materia}', [GrupoController::class, 'saveCalificacionesGrupoMateria']);
-    Route::get('/grupos/{id_grupo}/asistencias-semestre', [GrupoController::class, 'getAsistenciasSemestre']);
-    Route::post('/grupos/{id_grupo}/asistencias-semestre', [GrupoController::class, 'saveAsistenciasSemestre']);
+    Route::get('/grupos', [GrupoController::class, 'index'])->middleware('permiso:grupos_list')->name('grupos');
+    Route::get('/busqueda-grupos', [GrupoController::class, 'busqueda'])->middleware('permiso:busqueda_grupos')->name('busqueda_grupos');
+    Route::middleware('permiso:grupos_calificaciones')->group(function () {
+        Route::get('/grupos/captura_calificaciones', [GrupoController::class, 'capturaCalificaciones'])->name('grupos.captura_calificaciones');
+        Route::get('/grupos/{id_grupo}/calificaciones-materia', [GrupoController::class, 'getCalificacionesGrupoMateria']);
+        Route::post('/grupos/{id_grupo}/calificaciones-materia/{id_materia}', [GrupoController::class, 'saveCalificacionesGrupoMateria']);
+        Route::get('/grupos/{id_grupo}/asistencias-semestre', [GrupoController::class, 'getAsistenciasSemestre']);
+        Route::post('/grupos/{id_grupo}/asistencias-semestre', [GrupoController::class, 'saveAsistenciasSemestre']);
+    });
     Route::get('/grupos/lista', [GrupoController::class, 'lista']);
-    Route::post('/grupos', [GrupoController::class, 'store']);
-    Route::get('/grupos/modalAlta', [GrupoController::class, 'modalAlta']);
+    Route::middleware(['sin.docente', 'permiso:grupos_list'])->group(function () {
+        Route::post('/grupos', [GrupoController::class, 'store']);
+        Route::get('/grupos/modalAlta', [GrupoController::class, 'modalAlta']);
+        Route::put('/grupos/{id}', [GrupoController::class, 'update'])->where('id', '[0-9]+');
+        Route::delete('/grupos/{id}', [GrupoController::class, 'destroy'])->where('id', '[0-9]+');
+    });
     Route::get('/grupos/{id}', [GrupoController::class, 'show'])->where('id', '[0-9]+');
-    Route::put('/grupos/{id}', [GrupoController::class, 'update'])->where('id', '[0-9]+');
-    Route::delete('/grupos/{id}', [GrupoController::class, 'destroy'])->where('id', '[0-9]+');
 
-    // Equivalencias
-    Route::get('/equivalencias', [EquivalenciaController::class, 'index'])->name('equivalencias');
-    Route::get('/equivalencias/lista', [EquivalenciaController::class, 'lista']);
-    Route::post('/equivalencias', [EquivalenciaController::class, 'store']);
-    Route::get('/equivalencias/modalAlta', [EquivalenciaController::class, 'modalAlta']);
+    // Equivalencias (sin permiso propio en la matriz: se asocian a alumnos)
+    Route::middleware(['sin.docente', 'permiso:alumnos_list'])->group(function () {
+        Route::get('/equivalencias', [EquivalenciaController::class, 'index'])->name('equivalencias');
+        Route::get('/equivalencias/lista', [EquivalenciaController::class, 'lista']);
+        Route::post('/equivalencias', [EquivalenciaController::class, 'store']);
+        Route::get('/equivalencias/modalAlta', [EquivalenciaController::class, 'modalAlta']);
+    });
 
     // Boletas
     Route::get('/boleta_calificaciones_bti', [BoletasBtiController::class, 'index'])
-        ->name('boleta_calificaciones_bti');
+        ->middleware('permiso:formatos_boletas_bti')->name('boleta_calificaciones_bti');
 
     // Kardex
-    Route::get('/kardex_no_escolarizado', [KardexBgneController::class, 'index'])
-        ->name('kardex_no_escolarizado');
+    Route::middleware('permiso:formatos_kardex_bgne')->group(function () {
+        Route::get('/kardex_no_escolarizado', [KardexBgneController::class, 'index'])->name('kardex_no_escolarizado');
+        Route::get('/kardex_bgneS', [KardexBgneController::class, 'bgneS'])->name('kardex_bgneS');
+        Route::get('/kardex_bgneD', [KardexBgneController::class, 'bgneD'])->name('kardex_bgneD');
+    });
 
-    Route::get('/kardex_bgneS', [KardexBgneController::class, 'bgneS'])
-        ->name('kardex_bgneS');
+    // Calificaciones (Google Sheets) usadas por boletas BTI y kardex BGNE
+    Route::get('/calificaciones/alumnos/{grado}/{grupo}/{materia}', [CalificacionesController::class, 'alumnos']);
+    Route::get('/calificaciones/materias/{grado}', [CalificacionesController::class, 'materias']);
+    Route::post('/calificaciones/guardar', [CalificacionesController::class, 'guardar'])
+        ->middleware(['sin.docente', 'permiso:formatos_boletas_bti|formatos_kardex_bgne,crear'])
+        ->name('calificaciones.guardar');
 
-    Route::get('/kardex_bgneD', [KardexBgneController::class, 'bgneD'])
-        ->name('kardex_bgneD');
-
-        Route::get(
-    '/calificaciones/alumnos/{grado}/{grupo}/{materia}',
-    [CalificacionesController::class, 'alumnos']
-);
-
-Route::get(
-    '/calificaciones/materias/{grado}',
-    [CalificacionesController::class,'materias']
-);
-
-Route::post('/calificaciones/guardar', 
-[CalificacionesController::class,'guardar'])
-->name('calificaciones.guardar');
     // API de Horarios
     Route::get('/horarios/grupo/{id_grupo}', [HorariosController::class, 'getHorariosGrupo']);
-    Route::post('/horarios', [HorariosController::class, 'store']);
-    Route::post('/horarios/validar', [HorariosController::class, 'validar']);
-    Route::delete('/horarios/{id_horario}', [HorariosController::class, 'destroy']);
+    Route::middleware(['sin.docente', 'permiso:grupos_horarios'])->group(function () {
+        Route::post('/horarios', [HorariosController::class, 'store']);
+        Route::post('/horarios/validar', [HorariosController::class, 'validar']);
+        Route::delete('/horarios/{id_horario}', [HorariosController::class, 'destroy']);
+    });
 
     // Generaciones CRUD
-    Route::get('/generaciones', [GeneracionController::class, 'index'])->name('generaciones');
+    Route::get('/generaciones', [GeneracionController::class, 'index'])->middleware('permiso:generaciones')->name('generaciones');
     Route::get('/generaciones/lista', [GeneracionController::class, 'lista'])->name('generaciones.lista');
     Route::get('/generaciones/ultima', [GeneracionController::class, 'getUltima'])->name('generaciones.ultima');
-    Route::post('/generaciones', [GeneracionController::class, 'store'])->name('generaciones.store');
-    Route::put('/generaciones/{id}', [GeneracionController::class, 'update'])->name('generaciones.update');
-    Route::delete('/generaciones/{id}', [GeneracionController::class, 'destroy'])->name('generaciones.destroy');
+    Route::middleware(['sin.docente', 'permiso:generaciones'])->group(function () {
+        Route::post('/generaciones', [GeneracionController::class, 'store'])->name('generaciones.store');
+        Route::put('/generaciones/{id}', [GeneracionController::class, 'update'])->name('generaciones.update');
+        Route::delete('/generaciones/{id}', [GeneracionController::class, 'destroy'])->name('generaciones.destroy');
+    });
 
-Route::get('/reportes/lista-asistencia-test', [App\Http\Controllers\ListasAsistenciasController::class, 'generarPdfAttendance'])->name('reporte.asistencia.test');
+    Route::get('/reportes/lista-asistencia-test', [ListasAsistenciasController::class, 'generarPdfAttendance'])
+        ->middleware('solo.admin')->name('reporte.asistencia.test');
+});

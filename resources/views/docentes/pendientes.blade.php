@@ -8,7 +8,7 @@
     background: #ffffff;
     border: 1px solid rgba(0, 0, 0, 0.08);
     border-left: 5px solid #cbd5e1;
-    border-radius: 14px;
+    border-radius: 0;
     padding: 20px;
     margin-bottom: 16px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
@@ -30,7 +30,7 @@
 .stat-icon-wrapper {
     width: 48px;
     height: 48px;
-    border-radius: 12px;
+    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -44,7 +44,7 @@
     background: rgb(49, 125, 146);
     color: white;
     font-weight: 600;
-    border-radius: 8px;
+    border-radius: 0;
     padding: 8px 16px;
     border: none;
     font-size: 0.86rem;
@@ -62,7 +62,7 @@
     background: #e2e8f0;
     color: #475569;
     font-weight: 600;
-    border-radius: 8px;
+    border-radius: 0;
     padding: 8px 16px;
     border: none;
     font-size: 0.86rem;

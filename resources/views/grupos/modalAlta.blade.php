@@ -2,7 +2,7 @@
 .glass-modal {
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
-    border-radius: 14px !important;
+    border-radius: 0!important;
     overflow: hidden;
     color: #0f172a;
     box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08) !important;
@@ -41,7 +41,7 @@
 .form-select-premium {
     background: #ffffff;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border-radius: 0;
     color: #0f172a;
     font-size: 0.875rem;
     padding: 0.5rem 0.875rem;
@@ -56,8 +56,8 @@
 
 .form-control-premium:focus,
 .form-select-premium:focus {
-    border-color: #1E5B66 !important;
-    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12) !important;
+    border-color: #26687B !important;
+    box-shadow: 0 0 0 3px rgba(38, 104, 123, 0.12) !important;
     outline: none;
 }
 
@@ -74,7 +74,7 @@
     background: #ffffff;
     color: #475569 !important;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    border-radius: 0;
     padding: 0 16px;
     height: 38px;
     font-weight: 500;
@@ -88,10 +88,10 @@
 }
 
 .btn-premium-save {
-    background: #1E5B66 !important;
+    background: #26687B !important;
     color: white !important;
     border: none;
-    border-radius: 6px;
+    border-radius: 0;
     padding: 0 18px;
     height: 38px;
     font-weight: 500;
@@ -104,7 +104,7 @@
 }
 
 .btn-premium-save:hover {
-    background: #16464F !important;
+    background: #1F5565 !important;
 }
 </style>
 <div class="modal fade" id="modalGrupo" tabindex="-1">
@@ -113,7 +113,7 @@
 
             <div class="modal-header glass-header">
                 <h5 class="modal-title">
-                    <i class="ti ti-users" style="color: #1E5B66; font-size: 20px;"></i>
+                    <i class="ti ti-users" style="color: #26687B; font-size: 20px;"></i>
                     Nuevo Grupo
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

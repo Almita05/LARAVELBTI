@@ -69,7 +69,7 @@
 
                 <div class="modal-header">
                     <div class="d-flex align-items-center gap-2">
-                        <div style="width: 34px; height: 34px; border-radius: 8px; background: #F0F7F8; border: 1px solid #CBE4E8; color: #1E5B66; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                        <div style="width: 34px; height: 34px; border-radius: 0; background: #EFF6F7; border: 1px solid #BBDBE1; color: #26687B; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
                             <i class="ti ti-book"></i>
                         </div>
                         <h5 class="modal-title fw-bold" style="font-size: 1.05rem; color: #0F172A; margin: 0;">
@@ -486,7 +486,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         icon: 'error',
                         title: 'Error',
                         text: 'Error al cargar detalles de la materia.',
-                        confirmButtonColor: '#1E5B66'
+                        confirmButtonColor: '#26687B'
                     });
                 }
             })
@@ -495,7 +495,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     icon: 'error',
                     title: 'Error',
                     text: 'Error al cargar detalles de la materia.',
-                    confirmButtonColor: '#1E5B66'
+                    confirmButtonColor: '#26687B'
                 });
             });
     }
@@ -572,7 +572,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         icon: 'error',
                         title: 'Error',
                         text: 'Error al cargar detalles de la materia.',
-                        confirmButtonColor: '#1E5B66'
+                        confirmButtonColor: '#26687B'
                     });
                 }
             })
@@ -581,7 +581,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     icon: 'error',
                     title: 'Error',
                     text: 'Error al cargar detalles de la materia.',
-                    confirmButtonColor: '#1E5B66'
+                    confirmButtonColor: '#26687B'
                 });
             });
     }
@@ -593,7 +593,7 @@ document.addEventListener("DOMContentLoaded", function() {
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
-            cancelButtonColor: '#1E5B66',
+            cancelButtonColor: '#26687B',
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
@@ -613,7 +613,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 title: '¡Eliminado!',
                                 text: data.message ||
                                     'Materia eliminada correctamente.',
-                                confirmButtonColor: '#1E5B66'
+                                confirmButtonColor: '#26687B'
                             });
                             cargarMaterias();
                         } else {
@@ -621,7 +621,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 icon: 'error',
                                 title: 'Error',
                                 text: data.message || 'Error al eliminar.',
-                                confirmButtonColor: '#1E5B66'
+                                confirmButtonColor: '#26687B'
                             });
                         }
                     })
@@ -630,7 +630,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             icon: 'error',
                             title: 'Error',
                             text: 'Error al eliminar materia.',
-                            confirmButtonColor: '#1E5B66'
+                            confirmButtonColor: '#26687B'
                         });
                     });
             }
@@ -746,7 +746,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 icon: 'warning',
                 title: 'Faltan Semestres / Periodos',
                 text: 'Debes seleccionar al menos un semestre o periodo.',
-                confirmButtonColor: '#1E5B66'
+                confirmButtonColor: '#26687B'
             });
             return;
         }
@@ -783,7 +783,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             icon: 'success',
                             title: '¡Éxito!',
                             text: "Materias guardadas correctamente para todos los periodos seleccionados.",
-                            confirmButtonColor: '#1E5B66'
+                            confirmButtonColor: '#26687B'
                         });
                         bootstrap.Modal.getInstance(document.getElementById('modalMateria')).hide();
                         this.reset();
@@ -794,7 +794,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             icon: 'error',
                             title: 'Error',
                             text: 'Error al guardar algunas materias.',
-                            confirmButtonColor: '#1E5B66'
+                            confirmButtonColor: '#26687B'
                         });
                     }
                 })
@@ -804,7 +804,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         icon: 'error',
                         title: 'Error',
                         text: 'Ocurrió un error inesperado al guardar.',
-                        confirmButtonColor: '#1E5B66'
+                        confirmButtonColor: '#26687B'
                     });
                 });
             return;
@@ -850,7 +850,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             icon: 'success',
                             title: '¡Éxito!',
                             text: "Materia actualizada y nuevos periodos agregados correctamente.",
-                            confirmButtonColor: '#1E5B66'
+                            confirmButtonColor: '#26687B'
                         });
                         bootstrap.Modal.getInstance(document.getElementById('modalMateria')).hide();
                         this.reset();
@@ -861,7 +861,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             icon: 'error',
                             title: 'Error',
                             text: 'Error al actualizar la materia o agregar nuevos periodos.',
-                            confirmButtonColor: '#1E5B66'
+                            confirmButtonColor: '#26687B'
                         });
                     }
                 })
@@ -871,7 +871,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         icon: 'error',
                         title: 'Error',
                         text: 'Ocurrió un error inesperado al guardar.',
-                        confirmButtonColor: '#1E5B66'
+                        confirmButtonColor: '#26687B'
                     });
                 });
             return;
@@ -898,7 +898,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         text: modoMateria === 'editar' ?
                             "Materia actualizada correctamente." :
                             "Materia guardada correctamente.",
-                        confirmButtonColor: '#1E5B66'
+                        confirmButtonColor: '#26687B'
                     });
 
                     bootstrap.Modal.getInstance(document.getElementById('modalMateria')).hide();
@@ -910,7 +910,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         icon: 'error',
                         title: 'Error',
                         text: 'Error al guardar materia.',
-                        confirmButtonColor: '#1E5B66'
+                        confirmButtonColor: '#26687B'
                     });
                 }
             });

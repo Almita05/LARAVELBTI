@@ -1,12 +1,164 @@
-@import 'tailwindcss';
-@import 'bootstrap/dist/css/bootstrap.min.css';
+/* ==========================================================================
+   SIS Control Escolar BTI — Tailwind CSS v4
+   --------------------------------------------------------------------------
+   ESTRATEGIA DE MIGRACIÓN (Bootstrap → Tailwind)
+   Bootstrap 5 sigue cargándose desde el CDN en layouts/app.blade.php porque
+   la mayoría de las vistas aún dependen de él (grid, modales, collapse, JS).
+   Para que ambos convivan sin romperse:
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+   1. prefix(tw)   → todas las utilidades llevan el prefijo `tw:`
+                     (tw:flex, tw:hover:bg-brand-700, tw:md:grid-cols-2).
+                     Evita choques de nombres con Bootstrap (p-4, w-100,
+                     top-50, collapse, border, shadow, rounded...).
+   2. important    → las utilidades de Tailwind ganan siempre a Bootstrap y
+                     a las hojas legacy de /public/css. Consecuencia: no usar
+                     `el.style.display = ...` en elementos con utilidades de
+                     display; usar el atributo `hidden` o alternar clases.
+   3. Sin preflight → el reset de Bootstrap (reboot) se mantiene para no
+                     alterar las vistas aún no migradas.
 
+   Al terminar la migración: quitar Bootstrap, importar "tailwindcss"
+   completo y eliminar el prefijo `tw:` con un reemplazo global.
+   ========================================================================== */
+
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme) prefix(tw);
+@import 'tailwindcss/utilities.css' layer(utilities) important;
+
+@source '../views/**/*.blade.php';
+@source '../js/**/*.js';
+@source '../../app/View/**/*.php';
+
+/* Variante `tw:sb-collapsed:*` → aplica cuando el sidebar está colapsado
+   (la clase `sidebar-hidden` se coloca en <body> y en #sidebar). */
+@custom-variant sb-collapsed (.sidebar-hidden &);
+
+/* ==========================================================================
+   PALETA INSTITUCIONAL (extraída de layouts/app.blade.php, sidebar.css y
+   las hojas de módulo en /public/css). Valores marcados (*) son exactos del
+   sistema actual; el resto interpola la escala.
+   ========================================================================== */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    /* Tipografía institucional: Public Sans (diseñada para sitios de gobierno e instituciones)
+       en toda la interfaz, títulos incluidos. Sin variantes condensadas ni display. */
+    --font-sans: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    /* Verde azulado institucional BTI. Primario: #26687B */
+    --color-brand-50: #EFF6F7;
+    --color-brand-100: #DDEDF0;
+    --color-brand-200: #BBDBE1;
+    --color-brand-300: #8EC1CB;
+    --color-brand-400: #5C9FAD;
+    --color-brand-500: #3D8494;
+    --color-brand-600: #307587;
+    --color-brand-700: #26687B;  /* primario de vistas y modales */
+    --color-brand-800: #1F5565;  /* hover primario */
+    --color-brand-900: #194652;
+    --color-brand-950: #0F2D35;
+
+    /* Acento (cian del logotipo) */
+    --color-accent-100: #E3F5FB;
+    --color-accent-400: #6BC7E8; /* * --brand-accent */
+    --color-accent-600: #1E6FA8; /* * gradiente de acordeones legacy */
+
+    /* Fondo general de la app: un tono más oscuro que el blanco de tablas y paneles */
+    --color-canvas: #E6ECEE;
+
+    /* Neutros (escala Slate exacta usada en el sistema) */
+    --color-slate-50: #F8FAFC;   /* * --bg-canvas */
+    --color-slate-100: #F1F5F9;  /* * --bg-muted  */
+    --color-slate-200: #E2E8F0;  /* * --border-subtle */
+    --color-slate-300: #CBD5E1;  /* * */
+    --color-slate-400: #94A3B8;  /* * --text-muted */
+    --color-slate-500: #64748B;  /* * */
+    --color-slate-600: #475569;  /* * --text-secondary */
+    --color-slate-700: #334155;  /* * --neutral-text */
+    --color-slate-800: #1E293B;  /* * */
+    --color-slate-900: #0F172A;  /* * --text-primary */
+
+    /* Estados semánticos */
+    --color-success-50: #F0FDF4;
+    --color-success-100: #DCFCE7; /* * --success-bg */
+    --color-success-200: #BBF7D0; /* * --success-border */
+    --color-success-500: #1F8A4C;
+    --color-success-700: #0E6B33; /* verde del globo del logo */
+
+    --color-info-100: #E0F2FE;    /* * --info-bg */
+    --color-info-200: #BAE6FD;    /* * --info-border */
+    --color-info-600: #0284C7;    /* * */
+    --color-info-700: #0369A1;    /* * --info-text */
+
+    --color-warning-50: #FFFBEB;
+    --color-warning-100: #FEF3C7;
+    --color-warning-600: #D97706; /* * */
+
+    --color-danger-50: #FEF2F2;   /* * --danger-hover-bg */
+    --color-danger-100: #FEE2E2;  /* * */
+    --color-danger-200: #FECACA;  /* * */
+    --color-danger-500: #EF4444;  /* * */
+    --color-danger-600: #C8102E;
+    --color-danger-800: #991B1B;  /* * */
+
+    /* Geometría: diseño formal, sin esquinas redondeadas (decisión del cliente).
+       Solo tw:rounded-full se conserva, para círculos reales (avatar, puntos de estado, spinners). */
+    --radius-xs: 0;
+    --radius-sm: 0;
+    --radius-md: 0;
+    --radius-lg: 0;
+    --radius-xl: 0;
+    --radius-2xl: 0;
+    --radius-3xl: 0;
+    --radius-4xl: 0;
+
+    /* Elevación suave (tinte slate-900) */
+    --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+    --shadow-card: 0 1px 3px 0 rgb(15 23 42 / 0.05), 0 1px 2px -1px rgb(15 23 42 / 0.04);
+    --shadow-raised: 0 10px 24px -8px rgb(15 23 42 / 0.12), 0 4px 8px -4px rgb(15 23 42 / 0.06);
+    --shadow-brand: 0 1px 2px 0 rgb(38 104 123 / 0.25);
+
+    /* Animaciones */
+    --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
+    --animate-shimmer: shimmer 1.4s ease-in-out infinite;
+
+    @keyframes pulse-dot {
+        0%, 100% { box-shadow: 0 0 0 0 rgb(14 107 51 / 0.45); }
+        50% { box-shadow: 0 0 0 5px rgb(14 107 51 / 0); }
+    }
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+}
+
+/* SweetAlert2 siempre por encima de los modales (1200), del drawer de historial (1250)
+   y de la navbar. Las vistas migradas ya no cargan las hojas legacy que lo hacían. */
+.swal2-container {
+    z-index: 1300 !important;
+}
+
+/* Movimiento: solo como respuesta a acciones. Quien pide menos movimiento no recibe ninguno. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Sin esquinas redondeadas también en Bootstrap y SweetAlert2 (vistas aún no migradas). */
+:root {
+    --bs-border-radius: 0;
+    --bs-border-radius-sm: 0;
+    --bs-border-radius-lg: 0;
+    --bs-border-radius-xl: 0;
+    --bs-border-radius-xxl: 0;
+    --bs-border-radius-2xl: 0;
+    --bs-border-radius-pill: 0;
+}
+.swal2-popup, .swal2-styled, .swal2-input, .swal2-select, .swal2-textarea, .swal2-validation-message,
+.dropdown-menu, .dropdown-item, .badge, .btn, .form-control, .form-select, .input-group-text,
+.modal-content, .card, .list-group, .list-group-item, .nav-pills .nav-link, .toast, .alert, .progress {
+    border-radius: 0 !important;
 }

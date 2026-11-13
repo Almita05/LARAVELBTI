@@ -45,7 +45,7 @@
     color: var(--text-secondary, #475569) !important;
     height: 36px;
     padding: 0 14px;
-    border-radius: 6px !important;
+    border-radius: 0!important;
     font-size: 0.875rem;
     font-weight: 500;
     display: inline-flex;
@@ -66,12 +66,12 @@
 }
 
 .btn-primary-saas {
-    background: var(--brand-primary, #1E5B66) !important;
+    background: var(--brand-primary, #26687B) !important;
     border: none !important;
     color: #FFFFFF !important;
     height: 36px;
     padding: 0 16px;
-    border-radius: 6px !important;
+    border-radius: 0!important;
     font-size: 0.875rem;
     font-weight: 500;
     display: inline-flex;
@@ -84,7 +84,7 @@
 }
 
 .btn-primary-saas:hover {
-    background: var(--brand-primary-hover, #16464F) !important;
+    background: var(--brand-primary-hover, #1F5565) !important;
     color: #FFFFFF !important;
 }
 
@@ -92,7 +92,7 @@
 .saas-card-surface {
     background: #FFFFFF;
     border: 1px solid var(--border-subtle, #E2E8F0);
-    border-radius: 12px;
+    border-radius: 0;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
     overflow: hidden;
 }
@@ -144,7 +144,7 @@
     height: 38px;
     padding: 0 12px 0 36px;
     border: 1px solid var(--border-subtle, #E2E8F0);
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     color: var(--text-primary, #0F172A);
     background-color: #FFFFFF;
@@ -153,8 +153,8 @@
 
 .form-control-saas-input:focus {
     outline: none;
-    border-color: var(--brand-primary, #1E5B66);
-    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12);
+    border-color: var(--brand-primary, #26687B);
+    box-shadow: 0 0 0 3px rgba(38, 104, 123, 0.12);
 }
 
 .form-select-saas-select {
@@ -162,7 +162,7 @@
     height: 38px;
     padding: 0 32px 0 12px;
     border: 1px solid var(--border-subtle, #E2E8F0);
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     color: var(--text-primary, #0F172A);
     background-color: #FFFFFF;
@@ -178,8 +178,8 @@
 
 .form-select-saas-select:focus {
     outline: none;
-    border-color: var(--brand-primary, #1E5B66);
-    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12);
+    border-color: var(--brand-primary, #26687B);
+    box-shadow: 0 0 0 3px rgba(38, 104, 123, 0.12);
 }
 
 /* Tabla de Datos Moderna */
@@ -219,42 +219,36 @@
     border-bottom: none !important;
 }
 
-/* Soft Badges */
+/* Badges de estado: sobrios, esquinas ligeramente redondeadas (no circulares) */
 .badge-soft-tipo {
     display: inline-flex;
     align-items: center;
-    height: 22px;
+    height: 24px;
     padding: 0 8px;
-    border-radius: 9999px;
-    font-size: 0.75rem;
+    border-radius: 6px !important;
+    font-size: 0.7rem;
     font-weight: 600;
     border: 1px solid transparent;
-    letter-spacing: 0.02em;
     white-space: nowrap;
 }
 
 .badge-tipo-activo {
-    background: #DCFCE7 !important;
+    background: #F0FDF4 !important;
     color: #15803D !important;
     border-color: #BBF7D0 !important;
 }
 
 .badge-tipo-certificado {
-    background: #E0F2FE !important;
-    color: #0369A1 !important;
-    border-color: #BAE6FD !important;
+    background: #F0F7F8 !important;
+    color: #1E5B66 !important;
+    border-color: #CBE4E8 !important;
 }
 
-.badge-tipo-inactivo {
-    background: #F1F5F9 !important;
-    color: #475569 !important;
-    border-color: #E2E8F0 !important;
-}
-
+.badge-tipo-inactivo,
 .badge-tipo-baja {
-    background: #FEE2E2 !important;
-    color: #991B1B !important;
-    border-color: #FECACA !important;
+    background: #F8FAFC !important;
+    color: #64748B !important;
+    border-color: #E2E8F0 !important;
 }
 
 .badge-tipo-reinscripcion {
@@ -263,11 +257,38 @@
     border-color: #BBF7D0 !important;
 }
 
+/* Columna Grupo / Modalidad */
+.badge-modalidad {
+    display: inline-flex;
+    align-items: center;
+    background: #F8FAFC;
+    color: #475569;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px !important;
+    border: 1px solid #E2E8F0;
+    white-space: nowrap;
+}
+
+.meta-semestre {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #64748B;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.meta-semestre .ti {
+    font-size: 13px;
+}
+
 /* Ghost Action Buttons */
 .btn-ghost-action {
     width: 32px;
     height: 32px;
-    border-radius: 6px;
+    border-radius: 0;
     border: none;
     background: transparent;
     color: #64748B;
@@ -288,6 +309,169 @@
 .btn-ghost-action.btn-ghost-delete:hover {
     background: #FEE2E2 !important;
     color: #DC2626 !important;
+}
+
+.btn-ghost-action[aria-expanded="true"] {
+    background: #F1F5F9;
+    color: #0F172A;
+}
+
+/* ===== Menú de acciones por alumno =====
+   Se monta en <body> con position: fixed para que el overflow de .table-responsive no lo recorte. */
+.acciones-menu {
+    position: fixed;
+    z-index: 1100;
+    min-width: 188px;
+    padding: 4px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 0;
+    box-shadow: 0 10px 24px -8px rgb(15 23 42 / 0.18), 0 4px 8px -4px rgb(15 23 42 / 0.08);
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.acciones-menu.is-open { opacity: 1; transform: translateY(0); }
+.acciones-menu[hidden] { display: none; }
+
+.acciones-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #334155;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+}
+.acciones-menu__item i { font-size: 16px; color: #64748B; }
+.acciones-menu__item:hover,
+.acciones-menu__item:focus-visible { background: #F1F5F9; color: #0F172A; outline: none; }
+.acciones-menu__item:hover i,
+.acciones-menu__item:focus-visible i { color: #0F172A; }
+.acciones-menu__item--danger,
+.acciones-menu__item--danger i { color: #DC2626; }
+.acciones-menu__item--danger:hover,
+.acciones-menu__item--danger:focus-visible { background: #FEF2F2; color: #B91C1C; }
+.acciones-menu__item--danger:hover i,
+.acciones-menu__item--danger:focus-visible i { color: #B91C1C; }
+.acciones-menu__divider { height: 1px; margin: 4px 2px; background: #E2E8F0; }
+
+/* ===== Drawer: línea del tiempo del alumno ===== */
+.historial-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1240;                 /* por encima de la navbar fija y de los modales (1200) */
+    background: rgb(15 23 42 / 0.35);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.historial-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1250;
+    display: flex;
+    flex-direction: column;
+    width: 400px;
+    max-width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: #FFFFFF;
+    box-shadow: -12px 0 32px -12px rgb(15 23 42 / 0.25);
+    transform: translateX(100%);
+    transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.historial-backdrop[hidden], .historial-drawer[hidden] { display: none; }
+.historial-drawer.is-open { transform: translateX(0); }
+.historial-backdrop.is-open { opacity: 1; }
+
+.historial-drawer__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid #E2E8F0;
+}
+.historial-drawer__title { margin: 0; font-size: 1rem; font-weight: 600; color: #0F172A; }
+.historial-drawer__subtitle {
+    margin: 4px 0 0;
+    font-size: 0.8125rem;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+}
+.historial-drawer__body { flex: 1; overflow-y: auto; padding: 20px 20px 28px; }
+
+.timeline { position: relative; margin: 0; padding: 0; list-style: none; }
+.timeline::before {                 /* línea conectora */
+    content: '';
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 7px;
+    width: 2px;
+    background: #E2E8F0;
+}
+.timeline__item { position: relative; padding: 0 0 22px 30px; }
+.timeline__item:last-child { padding-bottom: 0; }
+.timeline__dot {
+    position: absolute;
+    top: 3px;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    border-radius:0;
+    background: #FFFFFF;
+    border: 3px solid #3B82F6;      /* PERFIL (azul) por defecto */
+}
+.timeline__item--alta .timeline__dot { border-color: #10B981; }
+.timeline__item--cambio .timeline__dot { border-color: #F59E0B; }
+
+.timeline__fecha {
+    display: block;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.6875rem;
+    color: #94A3B8;
+}
+.timeline__titulo { margin: 2px 0 0; font-size: 0.875rem; font-weight: 600; color: #0F172A; }
+.timeline__detalle {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 0;
+    font-size: 0.75rem;
+    color: #334155;
+}
+.timeline__cambio + .timeline__cambio { margin-top: 6px; padding-top: 6px; border-top: 1px dashed #E2E8F0; }
+.timeline__campo { display: block; font-size: 0.6875rem; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.04em; }
+.timeline__valores { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 2px; word-break: break-word; }
+.timeline__antes { color: #94A3B8; text-decoration: line-through; }
+.timeline__flecha { color: #94A3B8; font-size: 13px; }
+.timeline__despues { color: #0F172A; font-weight: 600; }
+.timeline__autor {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: #64748B;
+}
+.timeline__autor i { font-size: 15px; }
+
+.historial-estado { padding: 48px 12px; text-align: center; color: #64748B; font-size: 0.8125rem; }
+.historial-estado i { display: block; margin-bottom: 8px; font-size: 28px; color: #CBD5E1; }
+
+@media (prefers-reduced-motion: reduce) {
+    .acciones-menu, .historial-drawer, .historial-backdrop { transition: none; }
 }
 
 .saas-table-footer {
@@ -321,7 +505,7 @@
             @if(isset($grupoId))
                 <div class="p-3 px-4 d-flex justify-content-between align-items-center border-bottom">
                     <h5 class="mb-0" id="tituloListaAlumnos" style="font-size: 1rem; font-weight: 600; color: #0F172A;">
-                        Alumnos del Grupo: <strong style="font-family: 'JetBrains Mono', monospace; color: var(--brand-primary, #1E5B66);">{{ $grupoClave }}</strong>
+                        Alumnos del Grupo: <strong style="font-family: 'JetBrains Mono', monospace; color: var(--brand-primary, #26687B);">{{ $grupoClave }}</strong>
                     </h5>
                 </div>
             @else
@@ -392,7 +576,7 @@
         <div class="table-responsive">
 
             <div id="loading" class="text-center py-5" style="display:none;">
-                <div class="spinner-border text-primary" style="color: var(--brand-primary, #1E5B66) !important; width: 2.2rem; height: 2.2rem;"></div>
+                <div class="spinner-border text-primary" style="color: var(--brand-primary, #26687B) !important; width: 2.2rem; height: 2.2rem;"></div>
                 <div class="text-muted mt-2" style="font-size: 0.8125rem;">Cargando alumnos...</div>
             </div>
 
@@ -439,11 +623,11 @@
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background: #ffffff;">
                 <div class="modal-header py-3 px-4 d-flex justify-content-between align-items-center">
                     <h5 class="modal-title fw-bold mb-0" id="modalKardexLabel">
-                        <i class="ti ti-certificate me-2" style="color: #1E5B66;"></i> Kárdex Oficial y Calificaciones
+                        <i class="ti ti-certificate me-2" style="color: #26687B;"></i> Kárdex Oficial y Calificaciones
                     </h5>
                     <div class="d-flex align-items-center gap-2">
                         <button type="button" class="btn btn-secondary btn-sm fw-semibold shadow-sm px-3" onclick="imprimirKardex()">
-                            <i class="ti ti-printer me-1" style="color: #1E5B66;"></i> Imprimir Kárdex
+                            <i class="ti ti-printer me-1" style="color: #26687B;"></i> Imprimir Kárdex
                         </button>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -459,7 +643,7 @@
                             </div>
 
                             <!-- Banner Bicolor Oficial -->
-                            <div class="flex-grow-1 border" style="border-color: #10599a !important; overflow: hidden; border-radius: 4px;">
+                            <div class="flex-grow-1 border" style="border-color: #10599a !important; overflow: hidden; border-radius: 0;">
                                 <div class="py-1 px-3 text-center text-white fw-bold text-uppercase" style="background: #10599a; font-size: 1.15rem; letter-spacing: 1px;">
                                     BACHILLERATO INTERAMERICANO
                                 </div>
@@ -518,6 +702,24 @@
 
 
 </div>
+
+{{-- ===== Menú de acciones (uno solo, se reposiciona junto al botón de 3 puntos) ===== --}}
+<div id="accionesMenu" class="acciones-menu" role="menu" aria-label="Acciones del alumno" hidden></div>
+
+{{-- ===== Drawer: historial del alumno ===== --}}
+<div id="historialBackdrop" class="historial-backdrop" hidden onclick="cerrarHistorialAlumno()"></div>
+<aside id="historialDrawer" class="historial-drawer" role="dialog" aria-modal="true" aria-labelledby="historialTitulo" hidden>
+    <header class="historial-drawer__header">
+        <div style="min-width: 0;">
+            <h2 id="historialTitulo" class="historial-drawer__title">Historial del alumno</h2>
+            <p id="historialSubtitulo" class="historial-drawer__subtitle"></p>
+        </div>
+        <button type="button" class="btn-ghost-action" onclick="cerrarHistorialAlumno()" aria-label="Cerrar historial">
+            <i class="ti ti-x" style="font-size: 18px;"></i>
+        </button>
+    </header>
+    <div id="historialBody" class="historial-drawer__body"></div>
+</aside>
 @endsection
 
 <script>
@@ -1466,7 +1668,7 @@ document.addEventListener('change', function(e) {
                 icon: 'warning',
                 title: 'Restricción de Edad SEP (BGNE)',
                 text: 'El alumno tiene menos de 16 años y medio. Puede cursar y asistir a BGNE, pero su estatus oficial ante SEP debe permanecer como PENDIENTE hasta cumplir la edad reglamentaria (16.5 años).',
-                confirmButtonColor: '#317D92'
+                confirmButtonColor: '#3D8494'
             });
             e.target.value = 'PENDIENTE';
         }
@@ -1891,7 +2093,7 @@ document.addEventListener('click', function(e) {
                         icon: 'warning',
                         title: 'Campo Requerido',
                         text: 'Por favor, introduce el nombre de la materia.',
-                        confirmButtonColor: '#317D92'
+                        confirmButtonColor: '#3D8494'
                     });
                     return;
                 }
@@ -1906,7 +2108,7 @@ document.addEventListener('click', function(e) {
                         <input type="hidden" name="materiasPendientesPeriodo[]" value="${periodoVal}">
                     </td>
                     <td>
-                        <span class="badge bg-secondary" style="font-size: 0.8rem; padding: 4px 8px; border-radius: 6px;">${califVal || '—'}</span>
+                        <span class="badge bg-secondary" style="font-size: 0.8rem; padding: 4px 8px; border-radius: 0;">${califVal || '—'}</span>
                         <input type="hidden" name="materiasPendientesCalif[]" value="${califVal}">
                     </td>
                     <td class="text-center">
@@ -2226,9 +2428,9 @@ window.editarAlumno = function(id) {
 
                         if (badgeModalidad) {
                             badgeModalidad.textContent = isOnline ? 'ONLINE (MOODLE)' : 'PRESENCIAL';
-                            badgeModalidad.style.backgroundColor = isOnline ? '#1E5B66' : '#F0F7F8';
-                            badgeModalidad.style.color = isOnline ? '#FFFFFF' : '#1E5B66';
-                            badgeModalidad.style.border = isOnline ? 'none' : '1px solid #CBE4E8';
+                            badgeModalidad.style.backgroundColor = isOnline ? '#26687B' : '#EFF6F7';
+                            badgeModalidad.style.color = isOnline ? '#FFFFFF' : '#26687B';
+                            badgeModalidad.style.border = isOnline ? 'none' : '1px solid #BBDBE1';
                         }
                         if (boxDiaPago) boxDiaPago.style.display = isOnline ? 'block' : 'none';
                         if (boxAccionRapida) boxAccionRapida.style.display = isOnline ? 'block' : 'none';
@@ -2541,12 +2743,12 @@ document.addEventListener("DOMContentLoaded", function() {
             const isOnline = alumno.modalidad_estudio === 'ONLINE';
             const modalidadBadge = isOnline 
                 ? `<div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 0.75rem; color: #64748B;">
-                     <span class="badge" style="background: #F3E8FF; color: #7E22CE; font-weight: 600; font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; border: 1px solid #E9D5FF;" title="Cobro cada ${alumno.dia_pago || 'SÁBADO'}">ONLINE • ${alumno.dia_pago || 'SÁBADO'}</span>
-                     <span>•</span>
-                     <span style="color: #10B981; font-weight: 600;"><i class="ti ti-circle-check" style="font-size: 13px; margin-right: 2px; vertical-align: -1px;"></i>Sem. ${alumno.semana_actual_pagada || 0}/4</span>
+                     <span class="badge-modalidad" title="Cobro cada ${alumno.dia_pago || 'SÁBADO'}">ONLINE, ${alumno.dia_pago || 'SÁBADO'}</span>
+
+                     <span class="meta-semestre" title="Semanas pagadas del mes"><i class="ti ti-calendar-stats" aria-hidden="true"></i>Sem. ${alumno.semana_actual_pagada || 0}/4</span>
                    </div>`
                 : `<div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 0.75rem; color: #64748B;">
-                     <span class="badge" style="background: #F1F5F9; color: #475569; font-weight: 500; font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; border: 1px solid #E2E8F0;">PRESENCIAL</span>
+                     <span class="badge-modalidad">PRESENCIAL</span>
                    </div>`;
 
             const groupBadge = alumno.nombreGrupoTexto 
@@ -2576,26 +2778,11 @@ document.addEventListener("DOMContentLoaded", function() {
             <td>${genText}</td>
             <td>${getStatusBadge(alumno.statusAlumno)}</td>
             <td class="text-center">
-                <div style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
-                    ${canConsultAlumno ? `
-                    <button type="button" class="btn-ghost-action" onclick="abrirKardexAlumno(${alumno.idAlumno})" title="Ver Kárdex / Calificaciones">
-                        <i class="ti ti-school" style="font-size: 16px;"></i>
-                    </button>
-                    <button type="button" class="btn-ghost-action" onclick="verAlumno(${alumno.idAlumno})" title="Ver detalles">
-                        <i class="ti ti-eye" style="font-size: 16px;"></i>
-                    </button>
-                    ` : ''}
-                    ${canEditAlumno ? `
-                    <button type="button" class="btn-ghost-action" onclick="editarAlumno(${alumno.idAlumno})" title="Editar">
-                        <i class="ti ti-edit" style="font-size: 16px;"></i>
-                    </button>
-                    ` : ''}
-                    ${canDeleteAlumno ? `
-                    <button type="button" class="btn-ghost-action btn-ghost-delete btnEliminar" data-id="${alumno.idAlumno}" title="Eliminar">
-                        <i class="ti ti-trash" style="font-size: 16px;"></i>
-                    </button>
-                    ` : ''}
-                </div>
+                ${(canConsultAlumno || canEditAlumno || canDeleteAlumno) ? `
+                <button type="button" class="btn-ghost-action btn-acciones-alumno" data-id="${alumno.idAlumno}" data-nombre="${escAttrAlumno(fullName)}"
+                    aria-haspopup="menu" aria-expanded="false" aria-label="Acciones de ${escAttrAlumno(fullName)}" title="Acciones">
+                    <i class="ti ti-dots-vertical" style="font-size: 18px;"></i>
+                </button>` : ''}
             </td>
         </tr>
         `;
@@ -2603,6 +2790,198 @@ document.addEventListener("DOMContentLoaded", function() {
 
         document.getElementById('tablaAlumnos').innerHTML = html;
     }
+
+    // ==========================================================
+    // MENÚ DE ACCIONES (3 puntos) — un solo menú en <body>, reposicionado por fila
+    // ==========================================================
+    window.escAttrAlumno = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    let accionesTrigger = null;
+
+    function abrirMenuAcciones(trigger) {
+        const menu = document.getElementById('accionesMenu');
+        const id = Number(trigger.dataset.id);
+        const items = [];
+        if (canEditAlumno)    items.push(`<button type="button" role="menuitem" class="acciones-menu__item" data-accion="editar"><i class="ti ti-edit"></i> Editar</button>`);
+        if (canConsultAlumno) items.push(
+            `<button type="button" role="menuitem" class="acciones-menu__item" data-accion="ver"><i class="ti ti-eye"></i> Ver detalles</button>`,
+            `<button type="button" role="menuitem" class="acciones-menu__item" data-accion="kardex"><i class="ti ti-school"></i> Kárdex</button>`,
+            `<button type="button" role="menuitem" class="acciones-menu__item" data-accion="historial"><i class="ti ti-history"></i> Histórico</button>`);
+        if (canDeleteAlumno) {
+            if (items.length) items.push('<div class="acciones-menu__divider" role="separator"></div>');
+            // Conserva .btnEliminar + data-id: lo atiende el listener de eliminación existente
+            items.push(`<button type="button" role="menuitem" class="acciones-menu__item acciones-menu__item--danger btnEliminar" data-id="${id}"><i class="ti ti-trash"></i> Eliminar</button>`);
+        }
+        menu.innerHTML = items.join('');
+        menu.dataset.id = id;
+        menu.dataset.nombre = trigger.dataset.nombre || '';
+
+        // Posición: bajo el botón, alineado a su derecha; si no cabe abajo, se abre hacia arriba
+        menu.hidden = false;
+        const r = trigger.getBoundingClientRect();
+        const m = menu.getBoundingClientRect();
+        const abajo = r.bottom + 4 + m.height <= window.innerHeight - 8;
+        menu.style.top = `${abajo ? r.bottom + 4 : Math.max(8, r.top - 4 - m.height)}px`;
+        menu.style.left = `${Math.max(8, Math.min(r.right - m.width, window.innerWidth - m.width - 8))}px`;
+        requestAnimationFrame(() => menu.classList.add('is-open'));
+
+        accionesTrigger = trigger;
+        trigger.setAttribute('aria-expanded', 'true');
+        menu.querySelector('.acciones-menu__item')?.focus();
+    }
+
+    function cerrarMenuAcciones(devolverFoco = false) {
+        const menu = document.getElementById('accionesMenu');
+        if (!menu || menu.hidden) return;
+        menu.classList.remove('is-open');
+        menu.hidden = true;
+        if (accionesTrigger) {
+            accionesTrigger.setAttribute('aria-expanded', 'false');
+            if (devolverFoco) accionesTrigger.focus();
+        }
+        accionesTrigger = null;
+    }
+
+    document.addEventListener('click', (e) => {
+        const trigger = e.target.closest('.btn-acciones-alumno');
+        if (trigger) {
+            const yaAbierto = accionesTrigger === trigger;
+            cerrarMenuAcciones();
+            if (!yaAbierto) abrirMenuAcciones(trigger);
+            return;
+        }
+
+        const item = e.target.closest('#accionesMenu .acciones-menu__item');
+        if (item) {
+            const menu = document.getElementById('accionesMenu');
+            const id = Number(menu.dataset.id);
+            const nombre = menu.dataset.nombre;
+            cerrarMenuAcciones();
+            switch (item.dataset.accion) {
+                case 'editar':    editarAlumno(id); break;
+                case 'ver':       verAlumno(id); break;
+                case 'kardex':    abrirKardexAlumno(id); break;
+                case 'historial': abrirHistorialAlumno(id, nombre); break;
+                // Eliminar: lo maneja el listener de .btnEliminar (el clic sigue propagándose)
+            }
+            return;
+        }
+
+        if (!e.target.closest('#accionesMenu')) cerrarMenuAcciones();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        const menu = document.getElementById('accionesMenu');
+        if (e.key === 'Escape') {
+            if (menu && !menu.hidden) return cerrarMenuAcciones(true);
+            if (!document.getElementById('historialDrawer')?.hidden) return cerrarHistorialAlumno();
+        }
+        if (menu && !menu.hidden && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+            e.preventDefault();
+            const items = [...menu.querySelectorAll('.acciones-menu__item')];
+            const i = items.indexOf(document.activeElement);
+            const sig = e.key === 'ArrowDown' ? (i + 1) % items.length : (i <= 0 ? items.length - 1 : i - 1);
+            items[sig]?.focus();
+        }
+    });
+    // El menú es fixed: al desplazar o redimensionar se cierra para no quedar desfasado
+    window.addEventListener('scroll', () => cerrarMenuAcciones(), true);
+    window.addEventListener('resize', () => cerrarMenuAcciones());
+
+    // ==========================================================
+    // DRAWER: LÍNEA DEL TIEMPO DEL ALUMNO
+    // ==========================================================
+    const TIPOS_HISTORIAL = {
+        ALTA:      { clase: 'timeline__item--alta' },    // verde
+        GRUPO:     { clase: 'timeline__item--cambio' },  // naranja
+        ESTATUS:   { clase: 'timeline__item--cambio' },
+        MODALIDAD: { clase: 'timeline__item--cambio' },
+        PERFIL:    { clase: '' },                         // azul
+    };
+    let historialFocoPrevio = null;
+    let historialReq = 0;
+    let historialCierreTimer = null;
+
+    function fmtFechaHistorial(iso) {
+        const d = new Date(iso);
+        if (isNaN(d)) return '—';
+        const fecha = d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+        const hora = d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
+        return `${fecha}, ${hora}`;
+    }
+
+    function renderEventoHistorial(ev) {
+        const esc = escAttrAlumno;
+        const tipo = TIPOS_HISTORIAL[ev.tipo] || TIPOS_HISTORIAL.PERFIL;
+        const cambios = Array.isArray(ev.cambios) ? ev.cambios : [];
+        const detalle = cambios.length ? `
+            <div class="timeline__detalle">
+                ${cambios.map(c => `
+                    <div class="timeline__cambio">
+                        ${cambios.length > 1 || ev.tipo === 'PERFIL' ? `<span class="timeline__campo">${esc(c.campo)}</span>` : ''}
+                        <span class="timeline__valores">
+                            <span class="timeline__antes">${esc(c.antes)}</span>
+                            <i class="ti ti-arrow-right timeline__flecha" aria-label="cambió a"></i>
+                            <span class="timeline__despues">${esc(c.despues)}</span>
+                        </span>
+                    </div>`).join('')}
+            </div>` : '';
+
+        return `
+            <li class="timeline__item ${tipo.clase}">
+                <span class="timeline__dot" aria-hidden="true"></span>
+                <time class="timeline__fecha" datetime="${esc(ev.fecha)}">${fmtFechaHistorial(ev.fecha)}</time>
+                <p class="timeline__titulo">${esc(ev.titulo)}</p>
+                ${detalle}
+                <div class="timeline__autor"><i class="ti ti-user-circle"></i> ${esc(ev.usuario || 'Usuario no registrado')}</div>
+            </li>`;
+    }
+
+    window.abrirHistorialAlumno = function(idAlumno, nombre) {
+        const drawer = document.getElementById('historialDrawer');
+        const backdrop = document.getElementById('historialBackdrop');
+        const body = document.getElementById('historialBody');
+
+        clearTimeout(historialCierreTimer); // reabrir durante la animación de cierre
+        historialFocoPrevio = document.activeElement;
+        document.getElementById('historialSubtitulo').textContent = nombre || `Alumno #${idAlumno}`;
+        body.innerHTML = `<div class="historial-estado"><div class="spinner-border spinner-border-sm" style="color: #26687B;"></div><p style="margin: 8px 0 0;">Cargando historial…</p></div>`;
+
+        drawer.hidden = false;
+        backdrop.hidden = false;
+        document.body.style.overflow = 'hidden';
+        requestAnimationFrame(() => { drawer.classList.add('is-open'); backdrop.classList.add('is-open'); });
+        drawer.querySelector('button')?.focus();
+
+        const req = ++historialReq;
+        fetch(`/alumnos/${encodeURIComponent(idAlumno)}/historial`, { headers: { Accept: 'application/json' } })
+            .then(r => r.json())
+            .then(resp => {
+                if (req !== historialReq) return;
+                if (!resp?.success) throw new Error(resp?.message);
+                const eventos = resp.data || [];
+                body.innerHTML = eventos.length
+                    ? `<ol class="timeline">${eventos.map(renderEventoHistorial).join('')}</ol>`
+                    : `<div class="historial-estado"><i class="ti ti-history"></i>Aún no hay cambios registrados para este alumno.</div>`;
+            })
+            .catch(() => {
+                if (req !== historialReq) return;
+                body.innerHTML = `<div class="historial-estado"><i class="ti ti-alert-circle" style="color: #F87171;"></i>No se pudo cargar el historial.
+                    <div style="margin-top: 10px;"><button type="button" class="btn btn-sm btn-light border" onclick="abrirHistorialAlumno(${Number(idAlumno)}, ${escAttrAlumno(JSON.stringify(nombre || ''))})">Reintentar</button></div></div>`;
+            });
+    };
+
+    window.cerrarHistorialAlumno = function() {
+        const drawer = document.getElementById('historialDrawer');
+        const backdrop = document.getElementById('historialBackdrop');
+        if (!drawer || drawer.hidden) return;
+        historialReq++;
+        drawer.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        document.body.style.overflow = '';
+        historialCierreTimer = setTimeout(() => { drawer.hidden = true; backdrop.hidden = true; }, 250);
+        historialFocoPrevio?.focus?.();
+    };
 
     document.addEventListener('click', async function(e) {
         const boton = e.target.closest('.btnEliminar');
@@ -3114,7 +3493,7 @@ function mostrarKardexConDatos(data) {
             if (totalReportes > 0) {
                 boxReportesHtml = `
                     <!-- Box Reportes de Indisciplina (Con reportes) -->
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
                         <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">CONDUCTA Y DISCIPLINA</span>
                         <span style="font-size: 8.5pt; font-weight: 900; padding: 6px 5px 2px 5px; color: #dc2626; display: block;">
                             ${totalReportes} REPORTE${totalReportes > 1 ? 'S' : ''} ACUMULADO${totalReportes > 1 ? 'S' : ''}
@@ -3129,7 +3508,7 @@ function mostrarKardexConDatos(data) {
             } else {
                 boxReportesHtml = `
                     <!-- Box Reportes de Indisciplina (Sin reportes) -->
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
                         <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">CONDUCTA Y DISCIPLINA</span>
                         <span style="font-size: 8pt; font-weight: 800; padding: 8px 5px; color: #0f172a; display: flex; align-items: center; justify-content: center; gap: 4px;">
                             0 REPORTES DE INDISCIPLINA
@@ -3266,13 +3645,13 @@ function mostrarKardexConDatos(data) {
         if (incAsist) {
             badgesHtml = `
                 <div style="display: flex; gap: 15px; width: 100%; justify-content: center;">
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
                         <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block;">ASISTENCIAS</span>
                         <span style="font-size: 11pt; font-weight: 800; padding: 6px 5px 2px 5px; color: #0f172a; display: block;">${displayAsist} / ${displayTotAsist}</span>
                         <span style="font-size: 6.8pt; font-weight: 700; color: #2563eb; padding-bottom: 2px; display: block;">${pctAsist}% ASISTENCIA</span>
                         <span style="font-size: 6pt; color: #64748b; padding-bottom: 4px; display: block;">(Detalle en Hoja 2)</span>
                     </div>
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
                         <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; line-height: 1.1;">PROMEDIO FINAL<br>DEL SEMESTRE</span>
                         <span style="font-size: 13pt; font-weight: 900; padding: 10px 5px; color: ${badgeFinalColor}; display: block;">${finalAvg}</span>
                     </div>
@@ -3281,7 +3660,7 @@ function mostrarKardexConDatos(data) {
         } else {
             badgesHtml = `
                 <div style="display: flex; width: 100%; justify-content: center;">
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
                         <span style="font-size: 7.2pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 5px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">PROMEDIO FINAL DEL SEMESTRE</span>
                         <span style="font-size: 15pt; font-weight: 900; padding: 12px 5px; color: ${badgeFinalColor}; display: block;">${finalAvg}</span>
                     </div>
@@ -3432,24 +3811,24 @@ function mostrarKardexConDatos(data) {
                         </div>
 
                         <!-- Periodos de Evaluacion Parcial -->
-                        <div style="border: 1.5px solid #000; background: #ffffff; margin-bottom: 18px; border-radius: 4px; overflow: hidden;">
+                        <div style="border: 1.5px solid #000; background: #ffffff; margin-bottom: 18px; border-radius: 0; overflow: hidden;">
                             <div style="background: #2e596b; color: #ffffff; font-size: 7.2pt; font-weight: 800; text-align: center; padding: 3px 0; text-transform: uppercase; letter-spacing: 0.5px;">
                                 PERIODOS DE EVALUACIÓN PARCIAL (FECHAS)
                             </div>
                             <div style="display: flex; justify-content: space-around; align-items: center; background: #f8fafc; padding: 6px 12px; font-size: 7.8pt;">
                                 <div style="display: flex; align-items: center; gap: 6px;">
                                     <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">1ER. PARCIAL:</span>
-                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">${p1RangoText}</span>
+                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 0;">${p1RangoText}</span>
                                 </div>
                                 <div style="height: 14px; border-left: 1.5px solid #cbd5e1;"></div>
                                 <div style="display: flex; align-items: center; gap: 6px;">
                                     <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">2DO. PARCIAL:</span>
-                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">${p2RangoText}</span>
+                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 0;">${p2RangoText}</span>
                                 </div>
                                 <div style="height: 14px; border-left: 1.5px solid #cbd5e1;"></div>
                                 <div style="display: flex; align-items: center; gap: 6px;">
                                     <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">3ER. PARCIAL:</span>
-                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">${p3RangoText}</span>
+                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 0;">${p3RangoText}</span>
                                 </div>
                             </div>
                         </div>
@@ -3504,7 +3883,7 @@ function mostrarKardexConDatos(data) {
                                 </div>
 
                                 <!-- Date info -->
-                                <div style="font-size: 7.5pt; font-weight: bold; color: #1e293b; margin-top: 5px; text-transform: uppercase; text-align: center; border: 1px dashed #cbd5e1; padding: 4px 8px; border-radius: 4px;">
+                                <div style="font-size: 7.5pt; font-weight: bold; color: #1e293b; margin-top: 5px; text-transform: uppercase; text-align: center; border: 1px dashed #cbd5e1; padding: 4px 8px; border-radius: 0;">
                                     TEZIUTLÁN PUEBLA A ${new Date().toLocaleDateString('es-MX', {day: 'numeric', month: 'long', year: 'numeric'}).toUpperCase()}
                                 </div>
 
@@ -3590,7 +3969,7 @@ function mostrarKardexConDatos(data) {
                                     <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                             <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• FALTAS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[1]?.faltas?.length || 0}</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[1]?.faltas?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[1]?.faltas, 'faltas')}
                                     </div>
@@ -3598,7 +3977,7 @@ function mostrarKardexConDatos(data) {
                                     <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                             <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• RETARDOS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[1]?.retardos?.length || 0}</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[1]?.retardos?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[1]?.retardos, 'retardos')}
                                     </div>
@@ -3606,7 +3985,7 @@ function mostrarKardexConDatos(data) {
                                     <div style="padding: 10px 12px; flex: 1;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                             <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• JUSTIFICANTES:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[1]?.justificantes?.length || 0}</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[1]?.justificantes?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[1]?.justificantes, 'justificantes')}
                                     </div>
@@ -3628,7 +4007,7 @@ function mostrarKardexConDatos(data) {
                                     <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                             <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• FALTAS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[2]?.faltas?.length || 0}</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[2]?.faltas?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[2]?.faltas, 'faltas')}
                                     </div>
@@ -3636,7 +4015,7 @@ function mostrarKardexConDatos(data) {
                                     <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                             <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• RETARDOS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[2]?.retardos?.length || 0}</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[2]?.retardos?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[2]?.retardos, 'retardos')}
                                     </div>
@@ -3644,7 +4023,7 @@ function mostrarKardexConDatos(data) {
                                     <div style="padding: 10px 12px; flex: 1;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                             <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• JUSTIFICANTES:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[2]?.justificantes?.length || 0}</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[2]?.justificantes?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[2]?.justificantes, 'justificantes')}
                                     </div>
@@ -3666,7 +4045,7 @@ function mostrarKardexConDatos(data) {
                                     <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                             <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• FALTAS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[3]?.faltas?.length || 0}</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[3]?.faltas?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[3]?.faltas, 'faltas')}
                                     </div>
@@ -3674,7 +4053,7 @@ function mostrarKardexConDatos(data) {
                                     <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                             <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• RETARDOS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[3]?.retardos?.length || 0}</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[3]?.retardos?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[3]?.retardos, 'retardos')}
                                     </div>
@@ -3682,7 +4061,7 @@ function mostrarKardexConDatos(data) {
                                     <div style="padding: 10px 12px; flex: 1;">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                                             <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• JUSTIFICANTES:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[3]?.justificantes?.length || 0}</span>
+                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[3]?.justificantes?.length || 0}</span>
                                         </div>
                                         ${renderListaFechas(incidenciasAsistencia[3]?.justificantes, 'justificantes')}
                                     </div>
@@ -3699,7 +4078,7 @@ function mostrarKardexConDatos(data) {
                                 </div>
 
                                 <div style="text-align: center; width: 140px;">
-                                    <div style="border: 1px dashed #64748b; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 4px;">
+                                    <div style="border: 1px dashed #64748b; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 0;">
                                         <span style="font-size: 7pt; color: #64748b; font-weight: bold; text-transform: uppercase;">SELLO ESCOLAR</span>
                                     </div>
                                 </div>
@@ -3825,7 +4204,7 @@ window.imprimirFichaInscripcion = function() {
                         padding: 12px;
                         background-color: #fafafb;
                         font-size: 9pt;
-                        border-radius: 4px;
+                        border-radius: 0;
                         line-height: 1.5;
                     }
                     .footer-doc {
@@ -3931,10 +4310,10 @@ window.imprimirFichaInscripcion = function() {
 <!-- ======================================================== -->
 <div class="modal fade" id="modalConfigurarOnline" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 0; overflow: hidden;">
             <div class="modal-header">
                 <h5 class="modal-title fw-bold fs-6">
-                    <i class="ti ti-device-laptop me-2" style="color: #1E5B66;"></i> Configurar Modalidad de Estudio
+                    <i class="ti ti-device-laptop me-2" style="color: #26687B;"></i> Configurar Modalidad de Estudio
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -3946,7 +4325,7 @@ window.imprimirFichaInscripcion = function() {
                 </div>
 
                 <!-- ALERTA DE REGLA ESTRICTA DE GRUPO -->
-                <div id="alertaGrupoRequerido" class="alert alert-danger d-flex align-items-center mb-3" style="display: none !important; border-radius: 10px; font-size: 0.85rem;">
+                <div id="alertaGrupoRequerido" class="alert alert-danger d-flex align-items-center mb-3" style="display: none !important; border-radius: 0; font-size: 0.85rem;">
                     <i class="fa-solid fa-triangle-exclamation fs-4 me-3"></i>
                     <div>
                         <strong>Grupo Obligatorio:</strong> El alumno debe estar asignado sí o sí a un grupo antes de poder pasar a la Modalidad en Línea. Por favor asigna un grupo primero.
@@ -4015,10 +4394,10 @@ window.imprimirFichaInscripcion = function() {
 <!-- ======================================================== -->
 <div class="modal fade" id="modalRegistrarPagoOnline" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 0; overflow: hidden;">
             <div class="modal-header">
                 <h5 class="modal-title fw-bold fs-6">
-                    <i class="ti ti-receipt me-2" style="color: #1E5B66;"></i> Registrar Pago de Colegiatura Online
+                    <i class="ti ti-receipt me-2" style="color: #26687B;"></i> Registrar Pago de Colegiatura Online
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -4485,7 +4864,7 @@ window.toggleModalidadForm = function(val) {
         if (boxAccionRapida) boxAccionRapida.style.display = 'block';
         if (badgeModalidad) {
             badgeModalidad.textContent = 'ONLINE (MOODLE)';
-            badgeModalidad.style.backgroundColor = '#1E5B66';
+            badgeModalidad.style.backgroundColor = '#26687B';
             badgeModalidad.style.color = '#FFFFFF';
             badgeModalidad.style.border = 'none';
         }
@@ -4504,9 +4883,9 @@ window.toggleModalidadForm = function(val) {
         if (alertaGrupo) alertaGrupo.style.display = 'none';
         if (badgeModalidad) {
             badgeModalidad.textContent = 'PRESENCIAL';
-            badgeModalidad.style.backgroundColor = '#F0F7F8';
-            badgeModalidad.style.color = '#1E5B66';
-            badgeModalidad.style.border = '1px solid #CBE4E8';
+            badgeModalidad.style.backgroundColor = '#EFF6F7';
+            badgeModalidad.style.color = '#26687B';
+            badgeModalidad.style.border = '1px solid #BBDBE1';
         }
     }
 };

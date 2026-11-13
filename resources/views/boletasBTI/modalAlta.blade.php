@@ -1,9 +1,9 @@
 <div class="modal fade" id="modalCalificaciones" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content" style="border-radius: 14px; overflow: hidden;">
+        <div class="modal-content" style="border-radius: 0; overflow: hidden;">
             <div class="modal-header">
                 <div class="d-flex align-items-center gap-3">
-                    <div style="width: 36px; height: 36px; border-radius: 8px; background: #F0F7F8; border: 1px solid #CBE4E8; color: #1E5B66; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                    <div style="width: 36px; height: 36px; border-radius: 0; background: #EFF6F7; border: 1px solid #BBDBE1; color: #26687B; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
                         <i class="ti ti-checklist"></i>
                     </div>
                     <div>
@@ -31,12 +31,12 @@
                     @else
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <h5 id="tituloMateria" class="mb-0 fw-bold text-slate-800 fs-6"></h5>
-                        <span class="badge" id="contadorMateria" style="background: #F0F7F8; color: #1E5B66; border: 1px solid #CBE4E8; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem;"></span>
+                        <span class="badge" id="contadorMateria" style="background: #EFF6F7; color: #26687B; border: 1px solid #BBDBE1; padding: 4px 10px; border-radius: 0; font-size: 0.75rem;"></span>
                     </div>
                     @endif
 
                 </div>
-                <div class="card border shadow-xs" style="border-radius: 8px; overflow: hidden; border-color: #E2E8F0 !important;">
+                <div class="card border shadow-xs" style="border-radius: 0; overflow: hidden; border-color: #E2E8F0 !important;">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle text-center tabla-calificaciones mb-0">
                             <thead style="background: #F8FAFC;">
@@ -60,7 +60,7 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     Cerrar
                 </button>
-                <button type="button" class="btn btn-primary" id="guardarCalificaciones" style="background: #1E5B66; border-color: #1E5B66;">
+                <button type="button" class="btn btn-primary" id="guardarCalificaciones" style="background: #26687B; border-color: #26687B;">
                     <i class="ti ti-device-floppy me-1"></i> Guardar
                 </button>
             </div>

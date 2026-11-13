@@ -2,1074 +2,519 @@
 
 @section('content')
 
-<head>
-    <link rel="stylesheet" href="{{ asset('css/estilosDocentes.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        .modulo-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            border-radius: 4px;
-            margin-right: 4px;
-            margin-bottom: 4px;
-        }
-    </style>
-</head>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<div class="page-container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{{ url()->previous() }}" class="btn btn-regresar">
-            <i class="fa-solid fa-arrow-left me-2"></i>
-            Regresar
-        </a>
+@php
+    /*
+     * NOTA: los elementos que el JS muestra/oculta usan el atributo `hidden`
+     * (las utilidades de display de Tailwind son !important).
+     */
+    $card      = ' tw:border tw:border-slate-200 tw:bg-white tw:shadow-card';
+    $label     = 'tw:mb-1.5 tw:block tw:text-[0.8125rem] tw:font-medium tw:text-slate-700';
+    $hint      = 'tw:m-0 tw:mt-1 tw:text-xs tw:text-slate-500';
+    $input     = 'tw:h-10 tw:w-full tw:border tw:border-slate-200 tw:bg-white tw:px-3 tw:text-sm tw:text-slate-900 tw:shadow-xs tw:outline-none tw:transition tw:placeholder:text-slate-400 tw:hover:border-slate-300 tw:focus:border-brand-500 tw:focus:ring-4 tw:focus:ring-brand-500/10 tw:aria-[invalid=true]:border-danger-500 tw:aria-[invalid=true]:ring-4 tw:aria-[invalid=true]:ring-danger-500/10';
+    $btnBase   = 'tw:inline-flex tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2 tw:text-sm tw:font-semibold tw:transition-all tw:duration-150 tw:focus-visible:outline-2 tw:focus-visible:outline-offset-2 tw:focus-visible:outline-brand-500 tw:active:scale-[0.98] tw:disabled:cursor-not-allowed tw:disabled:opacity-60';
+    $btnPrimary   = $btnBase . ' tw:h-10 tw:border-0 tw:bg-brand-700 tw:px-4 tw:text-white tw:shadow-brand tw:hover:bg-brand-800';
+    $btnSecondary = $btnBase . ' tw:h-10 tw:border tw:border-slate-200 tw:bg-white tw:px-4 tw:text-slate-700 tw:shadow-xs tw:hover:bg-slate-50';
+    $btnChip   = 'tw:inline-flex tw:h-7 tw:cursor-pointer tw:items-center tw:border tw:border-slate-200 tw:bg-white tw:px-2.5 tw:text-xs tw:font-medium tw:text-slate-600 tw:transition tw:hover:border-brand-200 tw:hover:bg-brand-50 tw:hover:text-brand-700';
+    $th   = 'tw:px-4 tw:py-2.5 tw:text-left tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-500';
+    $tab  = 'tw:inline-flex tw:cursor-pointer tw:items-center tw:gap-1.5 tw:border-0 tw:bg-transparent tw:px-3 tw:py-1.5 tw:text-[0.8125rem] tw:font-medium tw:text-slate-600 tw:transition tw:hover:text-slate-900 tw:aria-pressed:bg-white tw:aria-pressed:font-semibold tw:aria-pressed:text-slate-900 tw:aria-pressed:shadow-xs';
+    $sectionTitle = 'tw:m-0 tw:mb-4 tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.08em] tw:text-slate-400';
 
-        <h3 class="page-title mb-0">
-            <i class="fa-solid fa-user-gear me-2"></i>
-            Gestión de Personal
-        </h3>
+    $roles = ['Control Escolar', 'Administrativo', 'Subdirector', 'Director', 'Prefecto', 'Servicio Social'];
 
-        <button class="btn btn-azul" data-bs-toggle="modal" data-bs-target="#modalAltaPersonal">
-            <i class="fa-solid fa-plus me-2"></i>
-            Alta Personal
+    // Etiquetas legibles de cada módulo (para el resumen de permisos en la tabla)
+    $modulosCatalogo = collect(config('permisos.grupos'))->flatMap(fn ($g) => $g['modulos'])->all();
+@endphp
+
+<div class="tw:mx-auto tw:flex tw:max-w-[1600px] tw:flex-col tw:gap-6">
+
+    {{-- ===================== ENCABEZADO ===================== --}}
+    <header class="tw:flex tw:flex-col tw:gap-4 tw:lg:flex-row tw:lg:items-end tw:lg:justify-between">
+        <div>
+            <h1 class="tw:m-0 tw:text-[1.5rem] tw:font-bold tw:tracking-tight tw:text-slate-900">Gestión de personal</h1>
+            <p class="tw:m-0 tw:mt-1 tw:text-sm tw:text-slate-500">Cuentas de acceso del personal administrativo: usuario, rol, checador y permisos por módulo.</p>
+        </div>
+        <button type="button" class="{{ $btnPrimary }}" onclick="abrirModalPersonal()">
+            <i data-lucide="user-plus" class="tw:size-4"></i> Nueva cuenta
         </button>
-    </div>
+    </header>
 
-    <div class="glass-header p-3 d-flex justify-content-between align-items-center">
-        <h5 class="mb-0 textoDocentes">
-            Lista de Cuentas de Personal
-        </h5>
-        <input type="text" id="buscadorPersonal" class="form-control glass-input w-25" placeholder="Buscar personal...">
-    </div>
+    {{-- ===================== LISTA ===================== --}}
+    <section class="{{ $card }} tw:overflow-hidden">
+        <div class="tw:flex tw:flex-col tw:gap-3 tw:border-b tw:border-slate-100 tw:px-5 tw:py-4 tw:lg:flex-row tw:lg:items-center tw:lg:justify-between">
+            <div role="group" aria-label="Filtrar por estatus" class="tw:inline-flex tw:w-fit tw:gap-1 tw:bg-slate-100 tw:p-1">
+                <button type="button" class="{{ $tab }}" data-filtro="ACTIVO" aria-pressed="true">Activas <span class="js-conteo tw:tabular-nums tw:text-slate-400" data-conteo="ACTIVO">0</span></button>
+                <button type="button" class="{{ $tab }}" data-filtro="INACTIVO" aria-pressed="false">Inactivas <span class="js-conteo tw:tabular-nums tw:text-slate-400" data-conteo="INACTIVO">0</span></button>
+                <button type="button" class="{{ $tab }}" data-filtro="" aria-pressed="false">Todas <span class="js-conteo tw:tabular-nums tw:text-slate-400" data-conteo="">0</span></button>
+            </div>
+            <div class="tw:relative tw:w-full tw:sm:w-80">
+                <i data-lucide="search" class="tw:pointer-events-none tw:absolute tw:left-3 tw:top-1/2 tw:size-4 tw:-translate-y-1/2 tw:text-slate-400"></i>
+                <input type="search" id="buscadorPersonal" aria-label="Buscar personal"
+                    class="tw:h-9 tw:w-full tw:border tw:border-slate-200 tw:bg-white tw:pr-3 tw:pl-9 tw:text-[0.8125rem] tw:text-slate-900 tw:shadow-xs tw:outline-none tw:transition tw:placeholder:text-slate-400 tw:focus:border-brand-500 tw:focus:ring-4 tw:focus:ring-brand-500/10"
+                    placeholder="Nombre, usuario, rol o checador…">
+            </div>
+        </div>
 
-    <br>
-
-    <div class="glass-card">
-        <div class="table-responsive">
-            <table class="table glass-table align-middle mb-0">
-                <thead class="table-head">
-                    <tr>
-                        <th>ID</th>
-                        <th>NOMBRE</th>
-                        <th>USUARIO</th>
-                        <th>ROL</th>
-                        <th>MÓDULOS PERMITIDOS</th>
-                        <th>ESTATUS</th>
-                        <th class="text-center" style="width: 150px; min-width: 150px;">ACCIONES</th>
+        <div class="tw:overflow-x-auto">
+            <table class="tw:w-full tw:min-w-[900px] tw:border-collapse">
+                <thead class="tw:bg-slate-50">
+                    <tr class="tw:border-b tw:border-slate-200">
+                        <th class="{{ $th }} tw:pl-5">Persona</th>
+                        <th class="{{ $th }}">Usuario</th>
+                        <th class="{{ $th }}">Checador</th>
+                        <th class="{{ $th }}">Permisos</th>
+                        <th class="{{ $th }}">Estatus</th>
+                        <th class="{{ $th }} tw:pr-5 tw:text-right"><span class="tw:sr-only">Acciones</span></th>
                     </tr>
                 </thead>
-                <tbody id="tablaPersonal">
-                    <tr>
-                        <td colspan="7" class="text-center py-4">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Cargando...</span>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
+                <tbody id="tablaPersonal" class="tw:divide-y tw:divide-slate-100"></tbody>
             </table>
         </div>
-    </div>
+    </section>
 </div>
 
-{{-- MODAL ALTA PERSONAL --}}
-<div class="modal fade" id="modalAltaPersonal" tabindex="-1" aria-labelledby="modalAltaPersonalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content" style="border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+{{-- ===================== MODAL: ALTA / EDICIÓN ===================== --}}
+<div class="modal fade" id="modalPersonal" tabindex="-1" aria-labelledby="modalPersonalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title fw-bold" id="modalAltaPersonalLabel">
-                    <i class="ti ti-user-plus me-2" style="color: #1E5B66;"></i> Registrar Nueva Cuenta de Personal
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="modalPersonalLabel"><span id="modalPersonalIcono" class="tw:inline-flex"><i data-lucide="user-plus" class="tw:size-5"></i></span> <span id="modalPersonalTitulo">Nueva cuenta de personal</span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <form id="formAltaPersonal">
-                @csrf
-                <div class="modal-body text-dark bg-white">
-                    <div class="mb-3">
-                        <label class="form-label text-dark fw-bold">Nombre Completo *</label>
-                        <input type="text" class="form-control form-control-premium text-dark" name="nombre" required placeholder="Ej. Lic. Laura Elena Martínez" style="color: #000 !important; font-weight: 600;">
-                    </div>
+            <div class="modal-body">
+                <form id="formPersonal" novalidate class="tw:grid tw:grid-cols-1 tw:gap-8 tw:lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+                    <input type="hidden" id="personalId">
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label text-dark fw-bold">Nombre de Usuario *</label>
-                            <input type="text" class="form-control form-control-premium text-dark" name="usuario" required placeholder="Ej. laura.martinez" style="color: #000 !important; font-weight: 600;">
-                            <small class="text-muted">Se sugiere usar minúsculas sin espacios.</small>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label text-dark fw-bold">Contraseña *</label>
-                            <div class="input-group">
-                                <input type="password" class="form-control form-control-premium text-dark" id="altaPassword" name="password" required placeholder="Mínimo 4 caracteres" style="color: #000 !important; font-weight: 600;">
-                                <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('altaPassword')">
-                                    <i class="fa-solid fa-eye" id="toggleIcon_altaPassword"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    {{-- Datos de la cuenta --}}
+                    <div class="tw:flex tw:flex-col tw:gap-4">
+                        <h3 class="{{ $sectionTitle }} tw:mb-0">Datos de la cuenta</h3>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label text-dark fw-bold">Rol de Personal *</label>
-                            <select class="form-select form-control-premium text-dark" id="altaRol" name="rol" required style="color: #000 !important; font-weight: 600;">
-                                <option value="" disabled selected>Selecciona un rol...</option>
-                                <option value="Control Escolar">Control Escolar</option>
-                                <option value="Administrativo">Administrativo</option>
-                                <option value="Subdirector">Subdirector</option>
-                                <option value="Director">Director</option>
-                                <option value="Prefecto">Prefecto</option>
-                                <option value="Servicio Social">Servicio Social</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label text-dark fw-bold">ID en Reloj Checador (Biométrico)</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white"><i class="fa-solid fa-fingerprint text-primary"></i></span>
-                                <input type="text" class="form-control form-control-premium text-dark" name="idBiometrico" id="altaIdBiometrico" placeholder="Ej. 45" style="color: #000 !important; font-weight: 600;">
-                            </div>
-                            <small class="text-muted">Número con el que checa en el reloj biométrico.</small>
-                        </div>
-                    </div>
-
-                    <div class="mb-3 p-2 px-3 rounded border bg-light d-flex align-items-center justify-content-between" style="border-color: #cbd5e1 !important;">
                         <div>
-                            <span class="fw-bold text-dark fs-7"><i class="fa-solid fa-graduation-cap me-1 text-primary"></i> ¿Esta persona realiza Servicio Social?</span>
-                            <div class="text-muted" style="font-size: 0.75rem;">Sus horas se calcularán por tiempo efectivo (primer marcaje a último marcaje).</div>
+                            <label for="campoNombre" class="{{ $label }}">Nombre completo</label>
+                            <input type="text" id="campoNombre" name="nombre" class="{{ $input }}" required maxlength="255" autocomplete="off" placeholder="Ej. Lic. Laura Elena Martínez">
                         </div>
-                        <div class="form-check form-switch mb-0">
-                            <input class="form-check-input" type="checkbox" name="es_servicio_social" value="1" id="altaEsServicioSocial" style="cursor: pointer; width: 2.3em; height: 1.25em;">
+
+                        <div class="tw:grid tw:grid-cols-1 tw:gap-4 tw:sm:grid-cols-2">
+                            <div>
+                                <label for="campoUsuario" class="{{ $label }}">Usuario</label>
+                                <input type="text" id="campoUsuario" name="usuario" class="{{ $input }} tw:font-mono" required maxlength="100" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="laura.martinez"
+                                    pattern="[A-Za-z0-9._@ñÑ\-]+">
+                                <p class="{{ $hint }}">Sin espacios. Debe ser único en todo el sistema.</p>
+                            </div>
+                            <div>
+                                <label for="campoPassword" class="{{ $label }}" id="lblPassword">Contraseña</label>
+                                <div class="tw:relative">
+                                    <input type="password" id="campoPassword" name="password" class="{{ $input }} tw:pr-10" minlength="8" autocomplete="new-password" aria-describedby="hintPassword">
+                                    <button type="button" class="tw:absolute tw:right-1.5 tw:top-1/2 tw:inline-flex tw:size-7 tw:-translate-y-1/2 tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:bg-transparent tw:text-slate-400 tw:hover:bg-slate-100 tw:hover:text-slate-700"
+                                        onclick="alternarPassword()" aria-label="Mostrar contraseña" id="btnVerPassword">
+                                        <i data-lucide="eye" class="tw:size-4"></i>
+                                    </button>
+                                </div>
+                                <p class="{{ $hint }}" id="hintPassword">Mínimo 8 caracteres, con letras y números.</p>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="mb-3 border-top pt-3">
-                        <label class="form-label text-dark fw-bold">Módulos Habilitados (Permisos CRUD):</label>
-                        <div class="table-responsive border rounded bg-white" style="max-height: 400px; overflow-y: auto;">
-                            <table class="table table-sm table-hover align-middle mb-0 text-dark" style="font-size: 0.85rem; color: #000 !important;">
-                                <thead class="table-dark sticky-top">
-                                    <tr>
-                                        <th class="ps-3 text-white">Módulo / Submódulo</th>
-                                        <th class="text-center" style="width: 100px; color: white;">
-                                            <div class="form-check d-inline-block">
-                                                <input class="form-check-input col-check-all" type="checkbox" data-col="ver" id="allVer-crear" checked>
-                                                <label class="form-check-label text-white fw-bold fs-7" for="allVer-crear" style="cursor: pointer;">Ver</label>
-                                            </div>
-                                        </th>
-                                        <th class="text-center" style="width: 100px; color: white;">
-                                            <div class="form-check d-inline-block">
-                                                <input class="form-check-input col-check-all" type="checkbox" data-col="crear" id="allCrear-crear" checked>
-                                                <label class="form-check-label text-white fw-bold fs-7" for="allCrear-crear" style="cursor: pointer;">Crear/Editar</label>
-                                            </div>
-                                        </th>
-                                        <th class="text-center" style="width: 100px; color: white;">
-                                            <div class="form-check d-inline-block">
-                                                <input class="form-check-input col-check-all" type="checkbox" data-col="eliminar" id="allEliminar-crear" checked>
-                                                <label class="form-check-label text-white fw-bold fs-7" for="allEliminar-crear" style="cursor: pointer;">Eliminar</label>
-                                            </div>
-                                        </th>
-                                        <th class="text-center" style="width: 100px; color: white;">
-                                            <div class="form-check d-inline-block">
-                                                <input class="form-check-input col-check-all" type="checkbox" data-col="consultar" id="allConsultar-crear" checked>
-                                                <label class="form-check-label text-white fw-bold fs-7" for="allConsultar-crear" style="cursor: pointer;">Consultar</label>
-                                            </div>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Categoría: General -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-gear me-1"></i> GENERAL</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">Inicio (Dashboard)</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="inicio:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="inicio:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="inicio:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="inicio:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">Avisos y Pendientes</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="notificaciones:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="notificaciones:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="notificaciones:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="notificaciones:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">Búsqueda de Grupo</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="busqueda_grupos:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="busqueda_grupos:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="busqueda_grupos:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="busqueda_grupos:consultar" checked></td>
-                                    </tr>
+                        <div class="tw:grid tw:grid-cols-1 tw:gap-4 tw:sm:grid-cols-2">
+                            <div>
+                                <label for="campoRol" class="{{ $label }}">Rol</label>
+                                <select id="campoRol" name="rol" class="{{ $input }}" required>
+                                    <option value="" disabled selected>Selecciona…</option>
+                                    @foreach ($roles as $rol)
+                                        <option value="{{ $rol }}">{{ $rol }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label for="campoBiometrico" class="{{ $label }}">ID en reloj checador <span class="tw:font-normal tw:text-slate-400">(opcional)</span></label>
+                                <input type="text" id="campoBiometrico" name="idBiometrico" class="{{ $input }} tw:font-mono" maxlength="50" inputmode="numeric" placeholder="Ej. 45">
+                            </div>
+                        </div>
 
-                                    <!-- Categoría: Alumnos -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-graduation-cap me-1 text-success"></i> ALUMNOS</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Listado de Alumnos</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="alumnos_list:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="alumnos_list:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="alumnos_list:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="alumnos_list:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Captura de Calificaciones</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="alumnos_calificaciones:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="alumnos_calificaciones:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="alumnos_calificaciones:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="alumnos_calificaciones:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Asistencia Alumnos</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="alumnos_asistencias:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="alumnos_asistencias:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="alumnos_asistencias:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="alumnos_asistencias:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Reporte de Asistencias</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="alumnos_reporte_asistencias:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="alumnos_reporte_asistencias:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="alumnos_reporte_asistencias:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="alumnos_reporte_asistencias:consultar" checked></td>
-                                    </tr>
+                        <div id="bloqueEstatus" hidden>
+                            <span class="{{ $label }}" id="lblEstatus">Estatus</span>
+                            <div role="radiogroup" aria-labelledby="lblEstatus" class="tw:grid tw:grid-cols-2 tw:gap-1 tw:bg-slate-100 tw:p-1">
+                                @foreach (['ACTIVO' => 'Activa', 'INACTIVO' => 'Inactiva'] as $valor => $texto)
+                                    <label class="tw:cursor-pointer">
+                                        <input type="radio" name="status" value="{{ $valor }}" class="tw:peer tw:sr-only" @checked($valor === 'ACTIVO')>
+                                        <span class="tw:flex tw:h-8 tw:items-center tw:justify-center tw:text-[0.8125rem] tw:font-medium tw:text-slate-600 tw:transition tw:peer-checked:bg-white tw:peer-checked:font-semibold tw:peer-checked:shadow-xs tw:peer-focus-visible:ring-2 tw:peer-focus-visible:ring-brand-500 {{ $valor === 'ACTIVO' ? 'tw:peer-checked:text-success-700' : 'tw:peer-checked:text-danger-600' }}">{{ $texto }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            <p class="{{ $hint }}">Una cuenta inactiva no puede iniciar sesión; si tiene una sesión abierta se cierra en menos de un minuto.</p>
+                        </div>
 
-                                    <!-- Categoría: Docentes -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-person-chalkboard me-1 text-info"></i> DOCENTES</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Listado de Docentes</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="docentes_list:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="docentes_list:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="docentes_list:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="docentes_list:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Asistencia Docente</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="docentes_asistencias:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="docentes_asistencias:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="docentes_asistencias:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="docentes_asistencias:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Horario Docente</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="docentes_horarios:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="docentes_horarios:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="docentes_horarios:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="docentes_horarios:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Permisos de Captura</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="docentes_permisos_captura:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="docentes_permisos_captura:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="docentes_permisos_captura:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="docentes_permisos_captura:consultar" checked></td>
-                                    </tr>
-
-                                    <!-- Categoría: Grupos -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-users me-1 text-secondary"></i> GRUPOS</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Inicio Grupos</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="grupos_list:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="grupos_list:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="grupos_list:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="grupos_list:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Captura Calificaciones</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="grupos_calificaciones:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="grupos_calificaciones:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="grupos_calificaciones:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="grupos_calificaciones:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Horarios</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="grupos_horarios:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="grupos_horarios:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="grupos_horarios:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="grupos_horarios:consultar" checked></td>
-                                    </tr>
-
-                                    <!-- Categoría: Materias -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-book-bookmark me-1 text-danger"></i> MATERIAS</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">Materias</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="materias:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="materias:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="materias:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="materias:consultar" checked></td>
-                                    </tr>
-
-                                    <!-- Categoría: Planes -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-briefcase me-1" style="color: #6f42c1;"></i> PLANES DE ESTUDIO</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Planes BTI</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="planes_bti:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="planes_bti:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="planes_bti:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="planes_bti:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Planes BGNE</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="planes_bgne:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="planes_bgne:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="planes_bgne:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="planes_bgne:consultar" checked></td>
-                                    </tr>
-
-                                    <!-- Categoría: Formatos -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-print me-1 text-danger"></i> IMPRIMIR FORMATOS</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Boletas BTI</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="formatos_boletas_bti:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="formatos_boletas_bti:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="formatos_boletas_bti:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="formatos_boletas_bti:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Kardex BGNE</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="formatos_kardex_bgne:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="formatos_kardex_bgne:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="formatos_kardex_bgne:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="formatos_kardex_bgne:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Actas Extraordinarios</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="formatos_actas_extraordinarios:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="formatos_actas_extraordinarios:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="formatos_actas_extraordinarios:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="formatos_actas_extraordinarios:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Listas de Asistencia</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="formatos_listas_asistencia:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="formatos_listas_asistencia:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="formatos_listas_asistencia:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="formatos_listas_asistencia:consultar" checked></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Actas Calificaciones O.</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="formatos_actas_ordinarios:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="formatos_actas_ordinarios:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="formatos_actas_ordinarios:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="formatos_actas_ordinarios:consultar" checked></td>
-                                    </tr>
-
-                                    <!-- Categoría: Generaciones -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-graduation-cap me-1 text-dark"></i> GENERACIONES</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">Generaciones</td>
-                                        <td class="text-center"><input class="form-check-input check-crear-ver" type="checkbox" name="permisos_modulos[]" value="generaciones:ver" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-crear" type="checkbox" name="permisos_modulos[]" value="generaciones:crear" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-eliminar" type="checkbox" name="permisos_modulos[]" value="generaciones:eliminar" checked></td>
-                                        <td class="text-center"><input class="form-check-input check-crear-consultar" type="checkbox" name="permisos_modulos[]" value="generaciones:consultar" checked></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="tw:flex tw:items-start tw:justify-between tw:gap-4 tw:border tw:border-slate-200 tw:bg-slate-50/60 tw:p-3.5">
+                            <span>
+                                <span class="tw:block tw:text-[0.8125rem] tw:font-semibold tw:text-slate-800" id="lblServicioSocial">Realiza servicio social</span>
+                                <span class="tw:block tw:text-xs tw:text-slate-500">Sus horas se calculan por tiempo efectivo (primer a último marcaje).</span>
+                            </span>
+                            <x-ui.switch id="campoServicioSocial" name="es_servicio_social" value="1" aria-labelledby="lblServicioSocial" />
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-azul text-white fw-bold">
-                        <i class="ti ti-check me-1"></i> Guardar Personal
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
-{{-- MODAL EDITAR PERSONAL --}}
-<div class="modal fade" id="modalEditarPersonal" tabindex="-1" aria-labelledby="modalEditarPersonalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content" style="border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold" id="modalEditarPersonalLabel">
-                    <i class="ti ti-user-edit me-2" style="color: #1E5B66;"></i> Editar Cuenta de Personal
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    {{-- Permisos --}}
+                    <div class="tw:flex tw:min-w-0 tw:flex-col">
+                        <div class="tw:mb-3 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-2">
+                            <h3 class="{{ $sectionTitle }} tw:mb-0">Permisos por módulo</h3>
+                            <span id="conteoPermisos" class="tw:rounded-none tw:bg-slate-100 tw:px-2.5 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold tw:tabular-nums tw:text-slate-600">0 permisos</span>
+                        </div>
+                        <div class="tw:mb-3 tw:flex tw:flex-wrap tw:items-center tw:gap-1.5">
+                            <span class="tw:text-xs tw:text-slate-500">Atajos:</span>
+                            <button type="button" class="{{ $btnChip }}" data-preset="ninguno">Sin permisos</button>
+                            <button type="button" class="{{ $btnChip }}" data-preset="lectura">Solo consulta</button>
+                            <button type="button" class="{{ $btnChip }}" data-preset="todo">Acceso completo</button>
+                        </div>
+                        <div id="matrizPermisos" class="tw:max-h-[52vh] tw:overflow-auto tw:border tw:border-slate-200">
+                            @include('personal.partials.filas-permisos')
+                        </div>
+                        <p class="{{ $hint }} tw:mt-2">
+                            <strong class="tw:font-semibold tw:text-slate-600">Ver</strong> abre la pantalla, <strong class="tw:font-semibold tw:text-slate-600">Crear/Editar</strong> guarda cambios ·
+                            <strong class="tw:font-semibold tw:text-slate-600">Eliminar</strong> borra registros, <strong class="tw:font-semibold tw:text-slate-600">Consultar</strong> muestra detalles.
+                            "Listado de alumnos" incluye reportes de indisciplina y alumnos online; cualquier permiso de "Imprimir formatos" da acceso al módulo de impresión.
+                        </p>
+                    </div>
+                </form>
             </div>
-            <form id="formEditarPersonal">
-                @csrf
-                @method('PUT')
-                <input type="hidden" id="editPersonalId">
-                <div class="modal-body text-dark bg-white">
-                    <div class="mb-3">
-                        <label class="form-label text-dark fw-bold">Nombre Completo *</label>
-                        <input type="text" class="form-control form-control-premium text-dark" id="editNombre" name="nombre" required style="color: #000 !important; font-weight: 600;">
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label text-dark fw-bold">Nombre de Usuario *</label>
-                            <input type="text" class="form-control form-control-premium text-dark" id="editUsuario" name="usuario" required style="color: #000 !important; font-weight: 600;">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label text-dark fw-bold">Contraseña (Nueva)</label>
-                            <div class="input-group">
-                                <input type="password" class="form-control form-control-premium text-dark" id="editPassword" name="password" placeholder="Dejar en blanco para conservar" style="color: #000 !important; font-weight: 600;">
-                                <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('editPassword')">
-                                    <i class="fa-solid fa-eye" id="toggleIcon_editPassword"></i>
-                                </button>
-                            </div>
-                            <small class="text-muted">Ingresa solo si deseas actualizarla.</small>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label text-dark fw-bold">Rol de Personal *</label>
-                            <select class="form-select form-control-premium text-dark" id="editRol" name="rol" required style="color: #000 !important; font-weight: 600;">
-                                <option value="Control Escolar">Control Escolar</option>
-                                <option value="Administrativo">Administrativo</option>
-                                <option value="Subdirector">Subdirector</option>
-                                <option value="Director">Director</option>
-                                <option value="Prefecto">Prefecto</option>
-                                <option value="Servicio Social">Servicio Social</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label text-dark fw-bold">Estatus *</label>
-                            <select class="form-select form-control-premium text-dark" id="editStatus" name="status" required style="color: #000 !important; font-weight: 600;">
-                                <option value="ACTIVO">ACTIVO</option>
-                                <option value="INACTIVO">INACTIVO</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label text-dark fw-bold">ID Checador</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white"><i class="fa-solid fa-fingerprint text-primary"></i></span>
-                                <input type="text" class="form-control form-control-premium text-dark" name="idBiometrico" id="editIdBiometrico" placeholder="Ej. 45" style="color: #000 !important; font-weight: 600;">
-                            </div>
-                            <small class="text-muted" style="font-size: 0.72rem;">En reloj checador.</small>
-                        </div>
-                    </div>
-
-                    <div class="mb-3 p-2 px-3 rounded border bg-light d-flex align-items-center justify-content-between" style="border-color: #cbd5e1 !important;">
-                        <div>
-                            <span class="fw-bold text-dark fs-7"><i class="fa-solid fa-graduation-cap me-1 text-primary"></i> ¿Esta persona realiza Servicio Social?</span>
-                            <div class="text-muted" style="font-size: 0.75rem;">Sus horas se calcularán por tiempo efectivo (primer marcaje a último marcaje).</div>
-                        </div>
-                        <div class="form-check form-switch mb-0">
-                            <input class="form-check-input" type="checkbox" name="es_servicio_social" value="1" id="editEsServicioSocial" style="cursor: pointer; width: 2.3em; height: 1.25em;">
-                        </div>
-                    </div>
-
-                    <div class="mb-3 border-top pt-3">
-                        <label class="form-label text-dark fw-bold">Módulos Habilitados (Permisos CRUD):</label>
-                        <div class="table-responsive border rounded bg-white" style="max-height: 400px; overflow-y: auto;">
-                            <table class="table table-sm table-hover align-middle mb-0 text-dark" style="font-size: 0.85rem; color: #000 !important;">
-                                <thead class="table-dark sticky-top">
-                                    <tr>
-                                        <th class="ps-3 text-white">Módulo / Submódulo</th>
-                                        <th class="text-center" style="width: 100px; color: white;">
-                                            <div class="form-check d-inline-block">
-                                                <input class="form-check-input col-check-all" type="checkbox" data-col="ver" id="allVer-edit">
-                                                <label class="form-check-label text-white fw-bold fs-7" for="allVer-edit" style="cursor: pointer;">Ver</label>
-                                            </div>
-                                        </th>
-                                        <th class="text-center" style="width: 100px; color: white;">
-                                            <div class="form-check d-inline-block">
-                                                <input class="form-check-input col-check-all" type="checkbox" data-col="crear" id="allCrear-edit">
-                                                <label class="form-check-label text-white fw-bold fs-7" for="allCrear-edit" style="cursor: pointer;">Crear/Editar</label>
-                                            </div>
-                                        </th>
-                                        <th class="text-center" style="width: 100px; color: white;">
-                                            <div class="form-check d-inline-block">
-                                                <input class="form-check-input col-check-all" type="checkbox" data-col="eliminar" id="allEliminar-edit">
-                                                <label class="form-check-label text-white fw-bold fs-7" for="allEliminar-edit" style="cursor: pointer;">Eliminar</label>
-                                            </div>
-                                        </th>
-                                        <th class="text-center" style="width: 100px; color: white;">
-                                            <div class="form-check d-inline-block">
-                                                <input class="form-check-input col-check-all" type="checkbox" data-col="consultar" id="allConsultar-edit">
-                                                <label class="form-check-label text-white fw-bold fs-7" for="allConsultar-edit" style="cursor: pointer;">Consultar</label>
-                                            </div>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Categoría: General -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-gear me-1"></i> GENERAL</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">Inicio (Dashboard)</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="inicio:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="inicio:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="inicio:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="inicio:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">Avisos y Pendientes</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="notificaciones:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="notificaciones:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="notificaciones:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="notificaciones:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">Búsqueda de Grupo</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="busqueda_grupos:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="busqueda_grupos:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="busqueda_grupos:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="busqueda_grupos:consultar"></td>
-                                    </tr>
-
-                                    <!-- Categoría: Alumnos -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-graduation-cap me-1 text-success"></i> ALUMNOS</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Listado de Alumnos</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="alumnos_list:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="alumnos_list:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="alumnos_list:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="alumnos_list:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Captura de Calificaciones</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="alumnos_calificaciones:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="alumnos_calificaciones:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="alumnos_calificaciones:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="alumnos_calificaciones:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Asistencia Alumnos</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="alumnos_asistencias:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="alumnos_asistencias:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="alumnos_asistencias:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="alumnos_asistencias:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Reporte de Asistencias</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="alumnos_reporte_asistencias:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="alumnos_reporte_asistencias:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="alumnos_reporte_asistencias:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="alumnos_reporte_asistencias:consultar"></td>
-                                    </tr>
-
-                                    <!-- Categoría: Docentes -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-person-chalkboard me-1 text-info"></i> DOCENTES</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Listado de Docentes</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="docentes_list:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="docentes_list:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="docentes_list:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="docentes_list:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Asistencia Docente</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="docentes_asistencias:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="docentes_asistencias:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="docentes_asistencias:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="docentes_asistencias:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Horario Docente</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="docentes_horarios:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="docentes_horarios:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="docentes_horarios:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="docentes_horarios:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Permisos de Captura</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="docentes_permisos_captura:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="docentes_permisos_captura:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="docentes_permisos_captura:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="docentes_permisos_captura:consultar"></td>
-                                    </tr>
-
-                                    <!-- Categoría: Grupos -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-users me-1 text-secondary"></i> GRUPOS</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Inicio Grupos</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="grupos_list:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="grupos_list:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="grupos_list:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="grupos_list:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Captura Calificaciones</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="grupos_calificaciones:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="grupos_calificaciones:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="grupos_calificaciones:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="grupos_calificaciones:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Horarios</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="grupos_horarios:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="grupos_horarios:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="grupos_horarios:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="grupos_horarios:consultar"></td>
-                                    </tr>
-
-                                    <!-- Categoría: Materias -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-book-bookmark me-1 text-danger"></i> MATERIAS</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">Materias</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="materias:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="materias:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="materias:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="materias:consultar"></td>
-                                    </tr>
-
-                                    <!-- Categoría: Planes -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-briefcase me-1" style="color: #6f42c1;"></i> PLANES DE ESTUDIO</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Planes BTI</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="planes_bti:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="planes_bti:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="planes_bti:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="planes_bti:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Planes BGNE</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="planes_bgne:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="planes_bgne:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="planes_bgne:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="planes_bgne:consultar"></td>
-                                    </tr>
-
-                                    <!-- Categoría: Formatos -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-print me-1 text-danger"></i> IMPRIMIR FORMATOS</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Boletas BTI</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="formatos_boletas_bti:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="formatos_boletas_bti:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="formatos_boletas_bti:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="formatos_boletas_bti:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Kardex BGNE</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="formatos_kardex_bgne:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="formatos_kardex_bgne:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="formatos_kardex_bgne:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="formatos_kardex_bgne:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Actas Extraordinarios</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="formatos_actas_extraordinarios:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="formatos_actas_extraordinarios:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="formatos_actas_extraordinarios:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="formatos_actas_extraordinarios:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Listas de Asistencia</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="formatos_listas_asistencia:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="formatos_listas_asistencia:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="formatos_listas_asistencia:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="formatos_listas_asistencia:consultar"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">- Actas Calificaciones O.</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="formatos_actas_ordinarios:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="formatos_actas_ordinarios:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="formatos_actas_ordinarios:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="formatos_actas_ordinarios:consultar"></td>
-                                    </tr>
-
-                                    <!-- Categoría: Generaciones -->
-                                    <tr class="table-secondary fw-bold text-dark">
-                                        <td colspan="5" class="ps-2 py-1"><i class="fa-solid fa-graduation-cap me-1 text-dark"></i> GENERACIONES</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="ps-4">Generaciones</td>
-                                        <td class="text-center"><input class="form-check-input check-edit-ver" type="checkbox" name="permisos_modulos[]" value="generaciones:ver"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-crear" type="checkbox" name="permisos_modulos[]" value="generaciones:crear"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-eliminar" type="checkbox" name="permisos_modulos[]" value="generaciones:eliminar"></td>
-                                        <td class="text-center"><input class="form-check-input check-edit-consultar" type="checkbox" name="permisos_modulos[]" value="generaciones:consultar"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-azul text-white fw-bold">
-                        <i class="ti ti-check me-1"></i> Guardar Cambios
-                    </button>
-                </div>
-            </form>
+            <div class="modal-footer">
+                <button type="button" class="{{ $btnSecondary }}" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="formPersonal" class="{{ $btnPrimary }}" id="btnGuardarPersonal">
+                    <i data-lucide="check" class="tw:size-4"></i> <span id="btnGuardarTexto">Crear cuenta</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    let personalCompleto = [];
+document.addEventListener('DOMContentLoaded', function () {
+    const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const BRAND = '#26687B';
+    const MODULOS = @json($modulosCatalogo);
+    const HEADERS = { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF };
 
-    // Cargar Lista de Personal
-    window.cargarPersonal = function() {
-        fetch('/personal/lista')
-            .then(res => res.json())
-            .then(resp => {
-                personalCompleto = resp.data || [];
-                renderPersonal(personalCompleto);
-            })
-            .catch(err => {
-                console.error(err);
-                document.getElementById('tablaPersonal').innerHTML = `
-                    <tr>
-                        <td colspan="7" class="text-center text-danger py-4 fw-bold">
-                            <i class="fa-solid fa-triangle-exclamation me-1"></i> Error al cargar datos.
-                        </td>
-                    </tr>
-                `;
-            });
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const normalizar = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    const iniciales = (n) => String(n || '').replace(/^(lic|ing|mtro|mtra|dr|dra|prof)\.?\s+/i, '').trim().split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('') || '—';
+    const refrescarIconos = () => { if (window.lucide?.createIcons) lucide.createIcons(); };
+
+    /** Errores de validación de Laravel (422) o mensaje de la API. */
+    const mensajeError = (resp, fallback) => {
+        if (resp && resp.errors) return Object.values(resp.errors).flat().join(' ');
+        return (resp && resp.message) || fallback;
     };
 
-    function renderPersonal(personal) {
-        const tbody = document.getElementById('tablaPersonal');
-        tbody.innerHTML = '';
+    async function fetchJson(url, options = {}) {
+        const res = await fetch(url, { ...options, headers: { ...HEADERS, ...(options.headers || {}) } });
+        let data = null;
+        try { data = await res.json(); } catch (e) { /* respuesta no JSON */ }
+        if (!res.ok) {
+            const err = new Error(mensajeError(data, `HTTP ${res.status}`));
+            err.data = data;
+            throw err;
+        }
+        return data;
+    }
 
-        if (personal.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="7" class="text-center py-4 text-muted">
-                        No se encontraron cuentas de personal registradas.
+    // =====================================================================
+    // LISTA
+    // =====================================================================
+    let personal = [];
+    let filtroEstatus = 'ACTIVO';
+    const tbody = document.getElementById('tablaPersonal');
+
+    const fila = (contenido) => `<tr><td colspan="6">${contenido}</td></tr>`;
+    const estado = (icon, texto, tono = 'tw:text-slate-400', extra = '') => fila(`
+        <div class="tw:flex tw:flex-col tw:items-center tw:px-6 tw:py-14 tw:text-center">
+            <span class="tw:inline-flex tw:size-11 tw:items-center tw:justify-center tw:bg-slate-100 ${tono}"><i data-lucide="${icon}" class="tw:size-5"></i></span>
+            <p class="tw:m-0 tw:mt-3 tw:text-[0.8125rem] tw:text-slate-500">${texto}</p>${extra}
+        </div>`);
+
+    window.cargarPersonal = async function () {
+        tbody.innerHTML = fila(`<div class="tw:flex tw:flex-col tw:items-center tw:gap-3 tw:py-14 tw:text-[0.8125rem] tw:text-slate-500">
+            <span class="tw:inline-block tw:size-6 tw:animate-spin tw:rounded-full tw:border-2 tw:border-slate-200 tw:border-t-brand-700"></span>Cargando cuentas…</div>`);
+        try {
+            const resp = await fetchJson('/personal/lista');
+            personal = resp.data || [];
+            render();
+        } catch (e) {
+            tbody.innerHTML = estado('circle-alert', 'No se pudieron cargar las cuentas de personal.', 'tw:text-danger-600',
+                `<button type="button" class="tw:mt-3 tw:cursor-pointer tw:border-0 tw:bg-transparent tw:text-[0.8125rem] tw:font-semibold tw:text-brand-700 tw:hover:underline" onclick="cargarPersonal()">Reintentar</button>`);
+            refrescarIconos();
+        }
+    };
+
+    /** Resumen legible: "Listado de alumnos, Materias +5" a partir de "mod:accion,...". */
+    function resumenPermisos(texto) {
+        const pares = String(texto || '').split(',').map(s => s.trim()).filter(Boolean);
+        if (!pares.length) return `<span class="tw:text-xs tw:text-slate-400">Sin permisos</span>`;
+        const modulos = [...new Set(pares.map(p => p.split(':')[0]))];
+        const nombres = modulos.map(m => MODULOS[m] || m);
+        const visibles = nombres.slice(0, 2).map(n => `<span class="tw:inline-flex tw:max-w-[150px] tw:truncate tw:bg-slate-100 tw:px-2 tw:py-0.5 tw:text-[0.6875rem] tw:font-medium tw:text-slate-600">${esc(n)}</span>`).join('');
+        const resto = nombres.length > 2 ? `<span class="tw:text-[0.6875rem] tw:font-semibold tw:text-slate-500">+${nombres.length - 2}</span>` : '';
+        return `<div class="tw:flex tw:flex-wrap tw:items-center tw:gap-1" title="${esc(nombres.join(', '))}">${visibles}${resto}</div>`;
+    }
+
+    const accion = (icon, label, tono, onclick) => `
+        <button type="button" onclick="${onclick}" aria-label="${label}" title="${label}"
+            class="tw:inline-flex tw:size-8 tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:bg-transparent tw:transition ${tono}">
+            <i data-lucide="${icon}" class="tw:size-4"></i>
+        </button>`;
+
+    function render() {
+        // Conteos por estatus
+        const conteo = { ACTIVO: 0, INACTIVO: 0, '': personal.length };
+        personal.forEach(p => { if (p.status in conteo) conteo[p.status]++; });
+        document.querySelectorAll('[data-conteo]').forEach(el => el.textContent = conteo[el.dataset.conteo] ?? 0);
+
+        const q = normalizar(document.getElementById('buscadorPersonal').value.trim());
+        const lista = personal.filter(p =>
+            (!filtroEstatus || p.status === filtroEstatus) &&
+            (!q || normalizar(`${p.nombre} ${p.usuario} ${p.rol} ${p.idBiometrico ?? ''}`).includes(q)));
+
+        if (!personal.length) {
+            tbody.innerHTML = estado('users-round', 'Aún no hay cuentas de personal.', 'tw:text-slate-400',
+                `<button type="button" class="tw:mt-3 tw:cursor-pointer tw:border-0 tw:bg-transparent tw:text-[0.8125rem] tw:font-semibold tw:text-brand-700 tw:hover:underline" onclick="abrirModalPersonal()">Crear la primera cuenta</button>`);
+        } else if (!lista.length) {
+            tbody.innerHTML = estado('search-x', 'No hay cuentas que coincidan con el filtro.');
+        } else {
+            tbody.innerHTML = lista.map(p => {
+                const id = Number(p.idPersonal);
+                const activo = p.status === 'ACTIVO';
+                const ss = p.es_servicio_social == 1 || p.rol === 'Servicio Social';
+                return `
+                <tr class="tw:transition-colors tw:hover:bg-slate-50 ${activo ? '' : 'tw:bg-slate-50/50'}">
+                    <td class="tw:px-4 tw:py-3 tw:pl-5">
+                        <div class="tw:flex tw:items-center tw:gap-3">
+                            <span class="tw:inline-flex tw:size-9 tw:shrink-0 tw:items-center tw:justify-center tw:text-xs tw:font-semibold ${activo ? 'tw:bg-brand-50 tw:text-brand-700 tw:ring-1 tw:ring-brand-200' : 'tw:bg-slate-100 tw:text-slate-400'}">${esc(iniciales(p.nombre))}</span>
+                            <div class="tw:min-w-0">
+                                <p class="tw:m-0 tw:truncate tw:text-sm tw:font-semibold ${activo ? 'tw:text-slate-900' : 'tw:text-slate-500'}">${esc(p.nombre)}</p>
+                                <p class="tw:m-0 tw:flex tw:items-center tw:gap-1.5 tw:text-xs tw:text-slate-500">${esc(p.rol)}${ss ? '<span class="tw:rounded-none tw:bg-info-100 tw:px-1.5 tw:text-[0.625rem] tw:font-semibold tw:text-info-700">Servicio social</span>' : ''}</p>
+                            </div>
+                        </div>
                     </td>
-                </tr>
-            `;
+                    <td class="tw:px-4 tw:py-3 tw:font-mono tw:text-[0.8125rem] tw:text-slate-700">${esc(p.usuario)}</td>
+                    <td class="tw:px-4 tw:py-3 tw:text-[0.8125rem] tw:text-slate-600">${p.idBiometrico ? `<span class="tw:inline-flex tw:items-center tw:gap-1 tw:font-mono"><i data-lucide="fingerprint" class="tw:size-3.5 tw:text-slate-400"></i>${esc(p.idBiometrico)}</span>` : '<span class="tw:text-slate-400">—</span>'}</td>
+                    <td class="tw:px-4 tw:py-3">${resumenPermisos(p.permisos_modulos)}</td>
+                    <td class="tw:px-4 tw:py-3">
+                        <span class="tw:inline-flex tw:items-center tw:gap-1.5 tw:rounded-none tw:px-2.5 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold ${activo ? 'tw:bg-success-100 tw:text-success-700' : 'tw:bg-slate-100 tw:text-slate-500'}">
+                            <span class="tw:size-1.5 tw:rounded-full ${activo ? 'tw:bg-success-500' : 'tw:bg-slate-400'}"></span>${activo ? 'Activa' : 'Inactiva'}
+                        </span>
+                    </td>
+                    <td class="tw:px-4 tw:py-3 tw:pr-5 tw:text-right tw:whitespace-nowrap">
+                        ${accion('pencil', 'Editar cuenta y permisos', 'tw:text-slate-500 tw:hover:bg-slate-100 tw:hover:text-slate-900', `abrirModalPersonal(${id})`)}
+                        ${activo
+                            ? accion('user-x', 'Desactivar cuenta', 'tw:text-slate-500 tw:hover:bg-danger-50 tw:hover:text-danger-600', `desactivarPersonal(${id})`)
+                            : accion('user-check', 'Reactivar cuenta', 'tw:text-success-700 tw:hover:bg-success-50', `reactivarPersonal(${id})`)}
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+        refrescarIconos();
+    }
+
+    document.getElementById('buscadorPersonal').addEventListener('input', render);
+    document.querySelectorAll('[data-filtro]').forEach(btn => btn.addEventListener('click', () => {
+        filtroEstatus = btn.dataset.filtro;
+        document.querySelectorAll('[data-filtro]').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+        render();
+    }));
+
+    // =====================================================================
+    // MODAL ALTA / EDICIÓN
+    // =====================================================================
+    const modalEl = document.getElementById('modalPersonal');
+    const form = document.getElementById('formPersonal');
+    const permisos = () => [...form.querySelectorAll('.js-permiso')];
+    const campo = (id) => document.getElementById(id);
+    let cuentaEditada = null; // datos originales (conserva campos que el formulario no muestra, p. ej. horas objetivo)
+
+    /** Mantiene coherentes los "seleccionar todo" (columna y grupo) y el contador. */
+    function sincronizarMatriz() {
+        const marcados = permisos().filter(c => c.checked).length;
+        campo('conteoPermisos').textContent = `${marcados} ${marcados === 1 ? 'permiso' : 'permisos'}`;
+
+        const estadoDe = (casillas, toggle) => {
+            const n = casillas.filter(c => c.checked).length;
+            toggle.checked = n > 0 && n === casillas.length;
+            toggle.indeterminate = n > 0 && n < casillas.length;
+        };
+        form.querySelectorAll('[data-col-toggle]').forEach(t => estadoDe(permisos().filter(c => c.dataset.accion === t.dataset.colToggle), t));
+        form.querySelectorAll('[data-grupo-toggle]').forEach(t => estadoDe([...form.querySelectorAll(`tbody[data-grupo="${t.dataset.grupoToggle}"] .js-permiso`)], t));
+    }
+
+    form.addEventListener('change', (e) => {
+        const t = e.target;
+        if (t.dataset.colToggle) permisos().filter(c => c.dataset.accion === t.dataset.colToggle).forEach(c => c.checked = t.checked);
+        if (t.dataset.grupoToggle) form.querySelectorAll(`tbody[data-grupo="${t.dataset.grupoToggle}"] .js-permiso`).forEach(c => c.checked = t.checked);
+        if (t.id === 'campoRol') campo('campoServicioSocial').checked = t.value === 'Servicio Social';
+        if (t.matches('.js-permiso, [data-col-toggle], [data-grupo-toggle]')) sincronizarMatriz();
+    });
+
+    document.querySelectorAll('[data-preset]').forEach(btn => btn.addEventListener('click', () => {
+        const p = btn.dataset.preset;
+        permisos().forEach(c => c.checked = p === 'todo' || (p === 'lectura' && ['ver', 'consultar'].includes(c.dataset.accion)));
+        sincronizarMatriz();
+    }));
+
+    window.alternarPassword = function () {
+        const inp = campo('campoPassword');
+        const ver = inp.type === 'password';
+        inp.type = ver ? 'text' : 'password';
+        campo('btnVerPassword').setAttribute('aria-label', ver ? 'Ocultar contraseña' : 'Mostrar contraseña');
+        campo('btnVerPassword').innerHTML = `<i data-lucide="${ver ? 'eye-off' : 'eye'}" class="tw:size-4"></i>`;
+        refrescarIconos();
+    };
+
+    function prepararModal(cuenta) {
+        const editar = !!cuenta;
+        form.reset();
+        form.querySelectorAll('[aria-invalid]').forEach(el => el.removeAttribute('aria-invalid'));
+        campo('campoPassword').type = 'password';
+        campo('personalId').value = editar ? cuenta.idPersonal : '';
+        campo('modalPersonalTitulo').textContent = editar ? `Editar cuenta de ${cuenta.nombre}` : 'Nueva cuenta de personal';
+        campo('modalPersonalIcono').innerHTML = `<i data-lucide="${editar ? 'user-pen' : 'user-plus'}" class="tw:size-5"></i>`;
+        cuentaEditada = cuenta;
+        campo('btnGuardarTexto').textContent = editar ? 'Guardar cambios' : 'Crear cuenta';
+        campo('lblPassword').innerHTML = editar ? 'Nueva contraseña <span class="tw:font-normal tw:text-slate-400">(opcional)</span>' : 'Contraseña';
+        campo('campoPassword').placeholder = editar ? 'Vacía = sin cambios' : '';
+        campo('campoPassword').required = !editar;
+        campo('bloqueEstatus').hidden = !editar;
+
+        if (editar) {
+            campo('campoNombre').value = cuenta.nombre || '';
+            campo('campoUsuario').value = cuenta.usuario || '';
+            campo('campoRol').value = cuenta.rol || '';
+            campo('campoBiometrico').value = cuenta.idBiometrico || '';
+            campo('campoServicioSocial').checked = cuenta.es_servicio_social == 1 || cuenta.rol === 'Servicio Social';
+            form.querySelector(`input[name="status"][value="${cuenta.status === 'INACTIVO' ? 'INACTIVO' : 'ACTIVO'}"]`).checked = true;
+            const actuales = new Set(String(cuenta.permisos_modulos || '').split(',').map(s => s.trim()).filter(Boolean));
+            permisos().forEach(c => c.checked = actuales.has(c.value));
+        }
+        sincronizarMatriz();
+        refrescarIconos();
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    }
+
+    window.abrirModalPersonal = async function (id) {
+        if (!id) return prepararModal(null);
+        try {
+            const resp = await fetchJson(`/personal/${id}`);
+            prepararModal(resp.data);
+        } catch (e) {
+            Swal.fire({ icon: 'error', title: 'No se pudo abrir la cuenta', text: e.message, confirmButtonColor: BRAND });
+        }
+    };
+
+    modalEl.addEventListener('shown.bs.modal', () => campo('campoNombre').focus());
+
+    /** Validación en el navegador (la definitiva la hacen Laravel y la API). */
+    function validar(editar) {
+        const errores = [];
+        const marcar = (id, msj) => { campo(id).setAttribute('aria-invalid', 'true'); errores.push(msj); };
+        form.querySelectorAll('[aria-invalid]').forEach(el => el.removeAttribute('aria-invalid'));
+
+        if (!campo('campoNombre').value.trim()) marcar('campoNombre', 'Escribe el nombre completo.');
+        const usuario = campo('campoUsuario').value.trim();
+        if (!usuario) marcar('campoUsuario', 'Escribe el usuario.');
+        else if (!/^[A-Za-z0-9._@ñÑ-]+$/.test(usuario)) marcar('campoUsuario', 'El usuario no puede tener espacios ni caracteres especiales.');
+        const pw = campo('campoPassword').value;
+        if ((!editar || pw) && (pw.length < 8 || !/[A-Za-zñÑ]/.test(pw) || !/\d/.test(pw))) marcar('campoPassword', 'La contraseña debe tener al menos 8 caracteres, con letras y números.');
+        if (!campo('campoRol').value) marcar('campoRol', 'Selecciona un rol.');
+        return errores;
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = campo('personalId').value;
+        const editar = !!id;
+        const errores = validar(editar);
+        if (errores.length) {
+            Swal.fire({ icon: 'warning', title: 'Revisa los datos', html: errores.map(esc).join('<br>'), confirmButtonColor: BRAND });
+            form.querySelector('[aria-invalid="true"]')?.focus();
             return;
         }
 
-        const moduloColores = {
-            inicio: 'bg-primary text-white',
-            notificaciones: 'bg-warning text-dark',
-            alumnos: 'bg-success text-white',
-            docentes: 'bg-info text-dark',
-            grupos: 'bg-secondary text-white',
-            materias: 'bg-danger text-white',
-            planes: 'bg-dark text-white',
-            formatos: 'bg-danger text-white',
-            generaciones: 'bg-dark text-white'
+        const seleccion = permisos().filter(c => c.checked).map(c => c.value);
+        if (!seleccion.length) {
+            const { isConfirmed } = await Swal.fire({
+                icon: 'question', title: '¿Guardar sin permisos?',
+                text: 'La cuenta podrá iniciar sesión, pero no verá ningún módulo hasta que le asignes permisos.',
+                showCancelButton: true, confirmButtonText: 'Sí, guardar', cancelButtonText: 'Asignar permisos',
+                confirmButtonColor: BRAND, reverseButtons: true,
+            });
+            if (!isConfirmed) return;
+        }
+
+        const payload = {
+            nombre: campo('campoNombre').value.trim(),
+            usuario: campo('campoUsuario').value.trim(),
+            rol: campo('campoRol').value,
+            idBiometrico: campo('campoBiometrico').value.trim(),
+            es_servicio_social: campo('campoServicioSocial').checked ? 1 : 0,
+            permisos_modulos: seleccion,
         };
-
-        personal.forEach(item => {
-            const statusClass = item.status === 'ACTIVO' ? 'badge-activo' : 'badge-inactivo';
-            
-            // Render de módulos permitidos
-            let modulosBadges = '';
-            if (item.permisos_modulos) {
-                const modulos = item.permisos_modulos.split(',');
-                modulos.forEach(m => {
-                    const badgeClass = moduloColores[m.trim()] || 'bg-light text-dark';
-                    modulosBadges += `<span class="modulo-badge ${badgeClass}">${m.toUpperCase()}</span>`;
-                });
-            } else {
-                modulosBadges = '<span class="text-muted fs-7">Ninguno</span>';
-            }
-
-            const esSS = item.es_servicio_social == 1 || item.rol === 'Servicio Social';
-            const badgeSS = esSS ? `<div class="mt-1"><span class="badge text-white" style="background-color: #6366f1; font-size: 0.72rem;"><i class="fa-solid fa-graduation-cap me-1"></i>Servicio Social</span></div>` : '';
-            const badgeBio = item.idBiometrico ? `<div class="mt-1 text-muted" style="font-size: 0.72rem;"><i class="fa-solid fa-fingerprint text-primary me-1"></i>Checador: <strong>#${item.idBiometrico}</strong></div>` : '';
-
-            tbody.innerHTML += `
-                <tr>
-                    <td>${item.idPersonal}</td>
-                    <td class="fw-bold">${item.nombre}</td>
-                    <td><code class="text-dark fw-bold">${item.usuario}</code></td>
-                    <td>
-                        <span class="badge bg-light text-dark border fw-bold fs-7">${item.rol}</span>
-                        ${badgeSS}
-                        ${badgeBio}
-                    </td>
-                    <td style="max-width: 300px; overflow-wrap: break-word;">${modulosBadges}</td>
-                    <td><span class="badge ${statusClass}">${item.status}</span></td>
-                    <td class="text-center" style="white-space: nowrap;">
-                        <button class="btn btn-warning btn-sm btn-action me-1" onclick="editarPersonal(${item.idPersonal})" title="Editar datos y permisos">
-                            <i class="fa-solid fa-user-pen"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm btn-action" onclick="eliminarPersonal(${item.idPersonal})" title="Eliminar cuenta">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        });
-    }
-
-    // Buscador en tiempo real
-    document.getElementById('buscadorPersonal').addEventListener('input', function(e) {
-        const text = e.target.value.toLowerCase().trim();
-        const filtrados = personalCompleto.filter(p => 
-            p.nombre.toLowerCase().includes(text) || 
-            p.usuario.toLowerCase().includes(text) || 
-            p.rol.toLowerCase().includes(text) ||
-            (p.idBiometrico && p.idBiometrico.toString().toLowerCase().includes(text))
-        );
-        renderPersonal(filtrados);
-    });
-
-    // Alta de Personal
-    document.getElementById('formAltaPersonal').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const form = e.target;
-        const formData = new FormData(form);
-        const data = {};
-        
-        formData.forEach((value, key) => {
-            if (key.endsWith('[]')) {
-                const cleanKey = key.slice(0, -2);
-                if (!data[cleanKey]) data[cleanKey] = [];
-                data[cleanKey].push(value);
-            } else {
-                data[key] = value;
-            }
-        });
-
-        data['es_servicio_social'] = document.getElementById('altaEsServicioSocial')?.checked ? 1 : 0;
-
-        fetch('/personal', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(res => res.json())
-        .then(resp => {
-            if (resp.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Registrado!',
-                    text: 'La cuenta del personal se ha creado correctamente.',
-                    confirmButtonColor: '#0f172a'
-                });
-                form.reset();
-                bootstrap.Modal.getInstance(document.getElementById('modalAltaPersonal')).hide();
-                cargarPersonal();
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: resp.message || 'No se pudo crear la cuenta de personal.',
-                    confirmButtonColor: '#0f172a'
-                });
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error de red al guardar el personal.',
-                confirmButtonColor: '#0f172a'
-            });
-        });
-    });
-
-    // Cargar datos en Modal de Edición
-    window.editarPersonal = function(id) {
-        fetch(`/personal/${id}`)
-            .then(res => res.json())
-            .then(resp => {
-                if (resp.success) {
-                    const data = resp.data;
-                    document.getElementById('editPersonalId').value = data.idPersonal;
-                    document.getElementById('editNombre').value = data.nombre;
-                    document.getElementById('editUsuario').value = data.usuario;
-                    document.getElementById('editRol').value = data.rol;
-                    document.getElementById('editStatus').value = data.status;
-                    document.getElementById('editPassword').value = '';
-                    document.getElementById('editIdBiometrico').value = data.idBiometrico || '';
-                    document.getElementById('editEsServicioSocial').checked = (data.es_servicio_social == 1 || data.rol === 'Servicio Social');
-
-                    // Desmarcar todos los checkboxes de permisos
-                    const checkboxes = document.querySelectorAll('#formEditarPersonal input[type="checkbox"]');
-                    checkboxes.forEach(chk => chk.checked = false);
-
-                    // Marcar según permisos guardados
-                    if (data.permisos_modulos) {
-                        const modulos = data.permisos_modulos.split(',').map(m => m.trim());
-                        modulos.forEach(m => {
-                            const chk = document.querySelector(`#formEditarPersonal input[type="checkbox"][value="${m}"]`);
-                            if (chk) chk.checked = true;
-                        });
-                    }
-
-                    const modal = new bootstrap.Modal(document.getElementById('modalEditarPersonal'));
-                    modal.show();
-                }
-            })
-            .catch(err => console.error(err));
-    };
-
-    // Actualizar Personal
-    document.getElementById('formEditarPersonal').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const id = document.getElementById('editPersonalId').value;
-        const form = e.target;
-        const formData = new FormData(form);
-        const data = {};
-
-        formData.forEach((value, key) => {
-            if (key.endsWith('[]')) {
-                const cleanKey = key.slice(0, -2);
-                if (!data[cleanKey]) data[cleanKey] = [];
-                data[cleanKey].push(value);
-            } else {
-                data[key] = value;
-            }
-        });
-
-        // Asegurarnos de que enviamos permisos_modulos como array, incluso si está vacío
-        if (!data['permisos_modulos']) {
-            data['permisos_modulos'] = [];
+        if (campo('campoPassword').value) payload.password = campo('campoPassword').value;
+        if (editar) {
+            payload.status = form.querySelector('input[name="status"]:checked')?.value || 'ACTIVO';
+            payload.horas_objetivo = cuentaEditada?.horas_objetivo ?? '';
         }
 
-        data['es_servicio_social'] = document.getElementById('editEsServicioSocial')?.checked ? 1 : 0;
-
-        fetch(`/personal/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(res => res.json())
-        .then(resp => {
-            if (resp.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Actualizado!',
-                    text: 'La cuenta de personal se actualizó correctamente.',
-                    confirmButtonColor: '#0f172a'
-                });
-                bootstrap.Modal.getInstance(document.getElementById('modalEditarPersonal')).hide();
-                cargarPersonal();
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: resp.message || 'No se pudo actualizar la cuenta.',
-                    confirmButtonColor: '#0f172a'
-                });
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error de red al actualizar el personal.',
-                confirmButtonColor: '#0f172a'
-            });
-        });
+        const btn = campo('btnGuardarPersonal');
+        btn.disabled = true;
+        try {
+            await fetchJson(editar ? `/personal/${id}` : '/personal', { method: editar ? 'PUT' : 'POST', body: JSON.stringify(payload) });
+            bootstrap.Modal.getInstance(modalEl)?.hide();
+            Swal.fire({ icon: 'success', title: editar ? 'Cambios guardados' : 'Cuenta creada', timer: 1600, showConfirmButton: false });
+            cargarPersonal();
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'No se pudo guardar', text: err.message, confirmButtonColor: BRAND });
+        } finally {
+            btn.disabled = false;
+        }
     });
 
-    // Eliminar Personal
-    window.eliminarPersonal = function(id) {
-        Swal.fire({
-            title: '¿Estás seguro?',
-            text: "Esta acción no se puede deshacer y revocará el acceso permanentemente.",
+    // =====================================================================
+    // DESACTIVAR / REACTIVAR (baja lógica)
+    // =====================================================================
+    window.desactivarPersonal = async function (id) {
+        const p = personal.find(x => Number(x.idPersonal) === id);
+        const { isConfirmed } = await Swal.fire({
             icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Sí, eliminar cuenta',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch(`/personal/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
-                })
-                .then(res => res.json())
-                .then(resp => {
-                    if (resp.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: '¡Eliminado!',
-                            text: 'El registro de personal ha sido borrado.',
-                            confirmButtonColor: '#0f172a'
-                        });
-                        cargarPersonal();
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: resp.message || 'No se pudo eliminar la cuenta.',
-                            confirmButtonColor: '#0f172a'
-                        });
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Error de red al intentar eliminar.',
-                        confirmButtonColor: '#0f172a'
-                    });
-                });
-            }
+            title: '¿Desactivar esta cuenta?',
+            html: `<strong>${esc(p?.nombre || '')}</strong> perderá el acceso de inmediato. Su historial se conserva y puedes reactivarla cuando quieras.`,
+            showCancelButton: true, confirmButtonText: 'Sí, desactivar', cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#DC2626', cancelButtonColor: '#64748B', reverseButtons: true,
         });
-    };
-
-    window.togglePasswordVisibility = function(id) {
-        const inp = document.getElementById(id);
-        const icon = document.getElementById('toggleIcon_' + id);
-        if (inp.type === 'password') {
-            inp.type = 'text';
-            icon.className = 'fa-solid fa-eye-slash';
-        } else {
-            inp.type = 'password';
-            icon.className = 'fa-solid fa-eye';
+        if (!isConfirmed) return;
+        try {
+            await fetchJson(`/personal/${id}`, { method: 'DELETE' });
+            Swal.fire({ icon: 'success', title: 'Cuenta desactivada', timer: 1500, showConfirmButton: false });
+            cargarPersonal();
+        } catch (e) {
+            Swal.fire({ icon: 'error', title: 'No se pudo desactivar', text: e.message, confirmButtonColor: BRAND });
         }
     };
 
-    // Select all checkboxes in a column
-    document.querySelectorAll('.col-check-all').forEach(header => {
-        header.addEventListener('change', function() {
-            const col = this.getAttribute('data-col');
-            const prefix = this.id.includes('edit') ? 'edit' : 'crear';
-            document.querySelectorAll(`.check-${prefix}-${col}`).forEach(chk => {
-                chk.checked = this.checked;
+    window.reactivarPersonal = async function (id) {
+        try {
+            const c = (await fetchJson(`/personal/${id}`)).data;
+            await fetchJson(`/personal/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    nombre: c.nombre, usuario: c.usuario, rol: c.rol, status: 'ACTIVO',
+                    idBiometrico: c.idBiometrico || '', es_servicio_social: c.es_servicio_social ? 1 : 0,
+                    horas_objetivo: c.horas_objetivo ?? '',
+                    permisos_modulos: String(c.permisos_modulos || '').split(',').map(s => s.trim()).filter(Boolean),
+                }),
             });
-        });
-    });
+            Swal.fire({ icon: 'success', title: 'Cuenta reactivada', text: 'Conserva los permisos que tenía.', timer: 1800, showConfirmButton: false });
+            cargarPersonal();
+        } catch (e) {
+            Swal.fire({ icon: 'error', title: 'No se pudo reactivar', text: e.message, confirmButtonColor: BRAND });
+        }
+    };
 
-    // Auto-activar servicio social al seleccionar el rol
-    document.getElementById('altaRol')?.addEventListener('change', function() {
-        const chk = document.getElementById('altaEsServicioSocial');
-        if (chk) chk.checked = (this.value === 'Servicio Social');
-    });
-
-    document.getElementById('editRol')?.addEventListener('change', function() {
-        const chk = document.getElementById('editEsServicioSocial');
-        if (chk) chk.checked = (this.value === 'Servicio Social');
-    });
-
-    // Carga inicial
     cargarPersonal();
 });
 </script>

@@ -29,7 +29,7 @@
     color: white;
 
     padding: 10px 20px;
-    border-radius: 12px;
+    border-radius: 0;
 
     text-decoration: none;
     font-weight: 600;
@@ -51,7 +51,7 @@
 .portal-card {
     background: transparent;
     border: 2px solid #ffffff;
-    border-radius: 15px;
+    border-radius: 0;
     padding: 30px 20px;
     text-align: center;
     color: white;

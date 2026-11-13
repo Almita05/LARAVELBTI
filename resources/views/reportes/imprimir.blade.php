@@ -5,837 +5,892 @@
 <!-- SweetAlert2 para diálogos estéticos -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<div class="page-container py-3">
-    <!-- Encabezado de Página Estandarizado -->
-    <div class="page-header-standard">
-        <div class="page-header-left">
-            <a href="{{ url()->previous() }}" class="btn-regresar">
-                <i class="ti ti-arrow-left"></i>
-                <span>Regresar</span>
-            </a>
-            <h1 class="page-heading">Módulo de Impresión</h1>
-        </div>
-        <div></div>
-    </div>
+@php
+    /*
+     * Clases reutilizadas en la interfaz del módulo (las comunes viven en App\View\Ui).
+     * IMPORTANTE: los elementos que el JS muestra/oculta con style.display NO deben llevar
+     * utilidades de display de Tailwind (tw:flex, tw:block, tw:grid...), ya que son !important.
+     */
+    $card      = \App\View\Ui::PANEL;
+    $subcard   = ' tw:border tw:border-slate-200 tw:bg-white';
+    $label     = \App\View\Ui::LABEL;
+    $labelSm   = \App\View\Ui::LABEL;
+    $input     = \App\View\Ui::INPUT;
+    $inputSm   = \App\View\Ui::INPUT;
+    $inputIcon = \App\View\Ui::INPUT_ICON;
+    $fieldIcon = 'tw:pointer-events-none tw:absolute tw:left-3 tw:top-1/2 tw:size-[18px] tw:-translate-y-1/2 tw:text-slate-400';
+    $textarea  = 'tw:w-full tw:border tw:border-slate-300 tw:bg-white tw:px-3 tw:py-2.5 tw:text-[0.9375rem] tw:text-slate-900 tw:outline-none tw:placeholder:text-slate-400 tw:focus:border-brand-700 tw:focus:ring-2 tw:focus:ring-brand-700/20';
+    $btnBase   = 'tw:inline-flex tw:cursor-pointer tw:items-center tw:justify-center tw:gap-2 tw:text-sm tw:font-semibold tw:no-underline tw:transition-colors tw:duration-100 tw:focus-visible:outline-2 tw:focus-visible:outline-offset-2 tw:focus-visible:outline-brand-700';
+    $btnPrimary   = $btnBase . ' tw:h-10 tw:border-0 tw:bg-brand-700 tw:px-4 tw:text-white tw:hover:bg-brand-800';
+    $btnSecondary = $btnBase . ' tw:h-10 tw:border tw:border-slate-300 tw:bg-white tw:px-4 tw:text-slate-800 tw:hover:border-slate-400 tw:hover:bg-slate-50';
+    $iconBtn   = 'tw:absolute tw:right-1.5 tw:top-1/2 tw:size-7 tw:-translate-y-1/2 tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:bg-transparent tw:p-0 tw:text-slate-400 tw:hover:bg-slate-100 tw:hover:text-slate-700';
+    // Contenedor de sugerencias (Bootstrap .list-group, el JS controla su display)
+    $sugerencias = 'list-group tw:absolute tw:inset-x-0 tw:top-full tw:z-30 tw:mt-1 tw:max-h-64 tw:overflow-y-auto tw:border tw:border-slate-300 tw:bg-white tw:p-1 tw:shadow-raised';
+    $chip      = 'tw:inline-flex tw:items-center tw:gap-1 tw:px-2.5 tw:py-0.5 tw:text-[0.75rem] tw:font-semibold';
+    $sectionTitle = \App\View\Ui::SECTION_TITLE . ' tw:flex tw:items-center tw:gap-2';
+@endphp
 
-    <!-- Segmented Control Horizontal para CCT -->
-    <div class="d-flex align-items-center mb-3">
-        <div class="cct-segmented-control" role="tablist">
-            <button type="button" class="cct-card cct-tab selected-cct active" id="cct-bti" onclick="selectCCT('BTI')">
-                BTI
-            </button>
-            <button type="button" class="cct-card cct-tab" id="cct-bgne" onclick="selectCCT('BGNE')">
-                BGNE
-            </button>
-            <button type="button" class="cct-card cct-tab" id="cct-inf" onclick="selectCCT('INF')">
-                Informática y Computación
-            </button>
-        </div>
-    </div>
+<div class="tw:mx-auto tw:flex tw:max-w-[1600px] tw:flex-col tw:gap-6">
+
+    {{-- ===================== ENCABEZADO + PLANTEL ===================== --}}
+    <x-ui.page-header title="Módulo de impresión" :back="url()->previous()">
+        Elige el plantel y el formato; los datos del alumno o grupo se llenan solos.
+        <x-slot:actions>
+            {{-- Selector de plantel (CCT). El JS alterna la clase .active --}}
+            <div role="tablist" aria-label="Plantel" class="tw:inline-flex tw:gap-1 tw:self-start tw:border tw:border-slate-200 tw:bg-white tw:p-1 tw:lg:self-auto">
+                @foreach ([['cct-bti', 'BTI', 'BTI', 'Tecnológico'], ['cct-bgne', 'BGNE', 'BGNE', 'No escolarizado'], ['cct-inf', 'INF', 'Informática', 'Técnico']] as [$id, $val, $nombre, $sub])
+                <button type="button" id="{{ $id }}" onclick="selectCCT('{{ $val }}')"
+                    @class([
+                        'cct-tab tw:flex tw:cursor-pointer tw:flex-col tw:items-start tw:border-0 tw:bg-transparent tw:px-4 tw:py-1.5 tw:text-left tw:leading-tight tw:text-slate-500 tw:hover:bg-slate-100 tw:hover:text-slate-900 tw:focus-visible:outline-2 tw:focus-visible:outline-brand-700',
+                        'tw:[&.active]:bg-brand-700 tw:[&.active]:text-white tw:[&.active]:hover:bg-brand-700',
+                        'active' => $loop->first,
+                    ])>
+                    <span class="tw:text-[0.9375rem] tw:font-semibold">{{ $nombre }}</span>
+                    <span class="tw:text-[0.8125rem]">{{ $sub }}</span>
+                </button>
+                @endforeach
+            </div>
+        </x-slot:actions>
+    </x-ui.page-header>
 
     <!-- Elemento auxiliar para mantener compatibilidad con scripts existentes -->
     <div id="placeholder-select-cct" style="display: none;"></div>
 
-    <!-- SECCIÓN 2: SUBMÓDULOS DE IMPRESIÓN (MASTER-DETAIL GRID) -->
-    <div class="formatos-master-detail" id="formatos-container">
-        <!-- Menú Lateral de Submódulos (260px) -->
-        <div class="formatos-sidebar">
-            <div class="saas-card p-3">
-                <div class="d-flex align-items-center justify-content-between pb-2 mb-3 border-bottom border-light">
-                    <span class="fs-8 fw-bold text-secondary text-uppercase letter-spacing-1">
-                        <i class="ti ti-folder me-2"></i>Formatos
-                    </span>
-                    <span id="lbl-cct-activo" class="badge-soft badge-soft-bgne">BTI</span>
-                </div>
-                <div class="nav flex-column nav-pills" id="submodulos-nav" role="tablist" aria-orientation="vertical">
-                    <!-- Los enlaces de pestañas se generarán dinámicamente vía JS -->
-                </div>
-            </div>
-        </div>
+    {{-- ===================== MASTER / DETAIL ===================== --}}
+    {{-- El JS asigna style.display = 'grid' a este contenedor --}}
+    <div id="formatos-container" style="display: grid;"
+        class="tw:grid-cols-1 tw:items-start tw:gap-6 tw:lg:grid-cols-[264px_minmax(0,1fr)]">
 
-        <!-- Contenido de los Submódulos (Panel de Configuración) -->
-        <div class="formatos-content">
-            <div class="saas-card p-4">
-                <div class="tab-content" id="submodulos-tab-content">
-                    
-                    <!-- PANE: CONSTANCIA DE ESTUDIOS -->
-                    <div class="tab-pane fade" id="pane-constancia" role="tabpanel">
-                        <div class="glass-header mb-4">
-                            <div class="d-flex align-items-center gap-3 mb-1">
-                                <div style="width: 34px; height: 34px; border-radius: 8px; background: #F0F7F8; color: #1E5B66; border: 1px solid #CBE4E8; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                    <i class="ti ti-file-certificate" style="font-size: 18px; line-height: 1;"></i>
-                                </div>
-                                <h5 class="fw-bold mb-0 text-slate-800">Constancia de Estudios</h5>
+        {{-- Menú de formatos (generado por JS) --}}
+        <aside class="{{ $card }} tw:p-2 tw:lg:sticky tw:lg:top-[84px]">
+            <p class="tw:m-0 tw:mb-1 tw:px-3 tw:pt-1 tw:text-[0.875rem] tw:text-slate-500">Formatos de <span id="lbl-cct-activo" class="tw:font-semibold tw:text-slate-800">BTI</span></p>
+            <nav id="submodulos-nav" role="tablist" aria-orientation="vertical"
+                class="tw:flex tw:flex-col tw:gap-0.5">
+                <!-- Los enlaces de pestañas se generarán dinámicamente vía JS -->
+            </nav>
+        </aside>
+
+        {{-- Panel del formato seleccionado --}}
+        <section class="{{ $card }} tw:min-w-0 tw:p-6 tw:lg:p-7">
+            <div class="tab-content" id="submodulos-tab-content">
+
+                {{-- ============ CONSTANCIA DE ESTUDIOS ============ --}}
+                <div class="tab-pane fade" id="pane-constancia" role="tabpanel">
+                    <x-imprimir.pane-header title="Constancia de estudios">
+                        Oficio que acredita que el alumno está inscrito y cursando el semestre actual.
+                    </x-imprimir.pane-header>
+
+                    <div class="tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-3">
+                        <div class="tw:relative tw:md:col-span-2">
+                            <label for="constanciaAlumnoSearch" class="{{ $label }}">Alumno</label>
+                            <div class="tw:relative">
+                                <i data-lucide="search" class="{{ $fieldIcon }}" aria-hidden="true"></i>
+                                <input type="text" id="constanciaAlumnoSearch" class="{{ $inputIcon }}" autocomplete="off" placeholder="Matrícula o nombre del alumno" onkeyup="simularBusquedaAlumnoConstancia(this.value)">
                             </div>
-                            <p class="text-muted mb-0 ms-1">Emisión de constancia escolar con o sin historial de calificaciones.</p>
+                            <div id="constancia-alumno-sugerencia" class="{{ $sugerencias }}" style="display: none;"></div>
                         </div>
-                        <div class="row g-3">
-                            <div class="col-md-8">
-                                <label class="form-label fw-semibold">Buscar Alumno</label>
-                                <input type="text" id="constanciaAlumnoSearch" class="form-control" placeholder="Escriba matrícula o nombre del alumno..." onkeyup="simularBusquedaAlumnoConstancia(this.value)">
-                                <div id="constancia-alumno-sugerencia" class="list-group mt-2 shadow-sm" style="display: none;">
-                                    <!-- Cargado por JS -->
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Tipo de Constancia</label>
-                                <select class="form-select">
-                                    <option value="simple">Constancia Simple</option>
-                                    <option value="calif">Constancia con Calificaciones</option>
-                                    <option value="conducta">Constancia de Buena Conducta</option>
-                                </select>
-                            </div>
+                        <div id="constancia-tipo-wrapper">
+                            <label for="constanciaTipoSelect" class="{{ $label }}">Tipo de constancia</label>
+                            <select id="constanciaTipoSelect" class="{{ $input }}">
+                                <option value="simple">Constancia simple</option>
+                                <option value="calif">Con calificaciones</option>
+                                <option value="conducta">De buena conducta</option>
+                            </select>
+                        </div>
+                    </div>
 
-                            <!-- Placeholder para Visor / Previsualización -->
-                            <div class="col-12 mt-3" id="constancia-preview-placeholder">
-                                <div class="document-preview-placeholder">
-                                    <i class="ti ti-file-certificate mb-2" style="font-size: 32px; color: var(--text-muted);"></i>
-                                    <p class="mb-0 fw-medium">Busca y selecciona un alumno para previsualizar o descargar el formato oficial.</p>
-                                </div>
-                            </div>
+                    <p id="constancia-preview-placeholder" class="tw:m-0 tw:mt-6 tw:bg-brand-50 tw:px-4 tw:py-3 tw:text-[0.9375rem] tw:text-slate-700">
+                        Escribe al menos dos letras del nombre o dígitos de la matrícula y elige al alumno de la lista.
+                    </p>
 
-                            <div class="col-12 mt-3" id="constancia-info-alumno" style="display: none;">
-                                <div class="p-3 mb-3 border rounded-3" style="background: var(--bg-muted); border-color: var(--border-subtle) !important;">
-                                    <h6 class="fw-bold mb-1 text-slate-800" id="lbl-constancia-nombre"></h6>
-                                    <span class="text-secondary d-block fs-8" id="lbl-constancia-carrera"></span>
-                                    <span class="badge-soft badge-soft-success mt-2">
-                                        <span style="width:6px; height:6px; border-radius:50%; background:var(--success-text); margin-right:6px; display:inline-block;"></span>
-                                        Estatus: Alumno Regular
-                                    </span>
+                    <div id="constancia-info-alumno" class="tw:mt-6" style="display: none;">
+                        <div class="tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-4 tw:border-b tw:border-slate-200 tw:pb-4">
+                            <div class="tw:min-w-0">
+                                <p class="tw:m-0 tw:truncate tw:text-[1.125rem] tw:font-semibold tw:leading-tight tw:text-slate-900" id="lbl-constancia-nombre"></p>
+                                <p class="tw:m-0 tw:mt-0.5 tw:text-[0.875rem] tw:text-slate-600" id="lbl-constancia-carrera"></p>
+                            </div>
+                            <x-ui.button icon="printer" onclick="generarConstancia()">Generar constancia</x-ui.button>
+                        </div>
+
+                        {{-- Datos del oficio (solo BTI) a la izquierda; la hoja tal como saldrá impresa a la derecha --}}
+                        <div id="constancia-bti-campos" class="tw:mt-5" style="display: none;">
+                            <div class="tw:grid tw:grid-cols-1 tw:items-start tw:gap-6 tw:xl:grid-cols-[minmax(0,300px)_minmax(0,1fr)]">
+                                <div class="tw:flex tw:flex-col tw:gap-4">
+                                    <x-ui.field label="Número de oficio" for="constanciaOficio">
+                                        <input type="text" id="constanciaOficio" class="{{ $input }}" placeholder="2026/09/BTI/001" oninput="actualizarPreviewConstancia()">
+                                    </x-ui.field>
+                                    <x-ui.field label="Semestre que cursa" for="constanciaSemestre">
+                                        <select id="constanciaSemestre" class="{{ $input }}" onchange="actualizarPreviewConstancia()">
+                                            @foreach (['1ER', '2DO', '3ER', '4TO', '5TO', '6TO'] as $sem)
+                                                <option value="{{ $sem }} SEMESTRE">{{ $sem }} SEMESTRE</option>
+                                            @endforeach
+                                        </select>
+                                    </x-ui.field>
+                                    <div class="tw:grid tw:grid-cols-2 tw:gap-3">
+                                        <x-ui.field label="Inicio del periodo" for="constanciaFechaInicio">
+                                            <input type="date" id="constanciaFechaInicio" class="{{ $input }}" oninput="actualizarPreviewConstancia()">
+                                        </x-ui.field>
+                                        <x-ui.field label="Fin del periodo" for="constanciaFechaFin">
+                                            <input type="date" id="constanciaFechaFin" class="{{ $input }}" oninput="actualizarPreviewConstancia()">
+                                        </x-ui.field>
+                                    </div>
+                                    <x-ui.field label="Fecha de expedición" for="constanciaFechaExpedicion">
+                                        <input type="date" id="constanciaFechaExpedicion" class="{{ $input }}" oninput="actualizarPreviewConstancia()">
+                                    </x-ui.field>
+                                    <p id="constancia-aviso-matricula" class="tw:m-0 tw:border tw:border-warning-100 tw:bg-warning-50 tw:px-3 tw:py-2 tw:text-[0.875rem] tw:text-slate-800" style="display: none;">
+                                        Este alumno no tiene número de control, así que la constancia dirá S/N. Regístralo en su expediente si debe aparecer.
+                                    </p>
                                 </div>
-                                <button type="button" class="btn-primary-saas fw-bold" onclick="printDoc('Constancia de Estudios', document.getElementById('lbl-constancia-nombre').innerText)">
-                                    <i class="ti ti-printer me-2"></i> Generar Documento / Vista Previa
+
+                                {{-- Hoja carta a escala: es el elemento protagonista del formato --}}
+                                <figure class="tw:m-0 tw:bg-slate-100 tw:p-4 tw:sm:p-6">
+                                    <div id="constancia-preview-doc" role="img" aria-label="Vista previa de la constancia"
+                                         class="tw:mx-auto tw:aspect-[8.5/11] tw:w-full tw:max-w-[540px] tw:overflow-hidden tw:bg-white tw:px-[7%] tw:py-[5%] tw:font-[Helvetica,Arial,sans-serif] tw:leading-[1.75] tw:text-black tw:shadow-raised tw:@container">
+                                        {{-- Tamaños en cqw: el texto escala con el ancho de la hoja, como un PDF reducido --}}
+                                        <div class="tw:text-[2.7cqw]">
+                                        <div class="tw:flex tw:items-center tw:gap-[3%]">
+                                            <img src="{{ asset('img/logo.png') }}" alt="" class="tw:w-[15%] tw:shrink-0">
+                                            <div class="tw:flex-1">
+                                                <div class="tw:bg-[#1A56DB] tw:py-[1.5%] tw:whitespace-nowrap tw:text-center tw:text-[3cqw] tw:font-bold tw:leading-tight tw:text-white">BACHILLERATO TECNOLOGICO INTERAMERICANO</div>
+                                                <div class="tw:bg-[#6F9EEA] tw:py-[0.8%] tw:text-center tw:text-[1.9cqw] tw:leading-snug tw:text-white">{{ config('plantel.bti.direccion') }}<br>Clave SEP {{ config('plantel.bti.clave_sep') }} &nbsp;&nbsp;&nbsp; {{ config('plantel.bti.rvoe') }}</div>
+                                            </div>
+                                        </div>
+                                        <p class="tw:m-0 tw:mt-[5%] tw:text-right">OFICIO NO. <span id="cp-oficio"></span><br>ASUNTO: <b>CONSTANCIA DE ESTUDIO</b></p>
+                                        <p class="tw:m-0 tw:mt-[5%] tw:font-bold">A QUIEN CORRESPONDA.<br>PRESENTE.</p>
+                                        <p class="tw:m-0 tw:ml-[8%] tw:mt-[4%] tw:text-justify">EL QUE SUSCRIBE {{ config('plantel.bti.director') }}, {{ config('plantel.bti.director_cargo') }} DENOMINADO <b>{{ config('plantel.bti.nombre') }}</b>, CON CLAVE OPERATIVA <b>{{ config('plantel.bti.clave_operativa') }}</b> Y CLAVE DE CENTRO DE TRABAJO <b>{{ config('plantel.bti.cct') }}</b>, UBICADO EN {{ config('plantel.bti.direccion_texto') }}. HACE CONSTAR QUE EL C.</p>
+                                        <p class="tw:m-0 tw:my-[3%] tw:text-center tw:font-bold" id="cp-nombre"></p>
+                                        <p class="tw:m-0 tw:text-justify">CON NÚMERO DE CONTROL <b id="cp-matricula"></b> SE ENCUENTRA CURSANDO ACTUALMENTE EL <b id="cp-semestre"></b><span id="cp-periodo"></span>, CORRESPONDIENTE AL PLAN DE ESTUDIOS DEL {{ config('plantel.bti.sistema') }}, EN ESTA INSTITUCIÓN.</p>
+                                        <p class="tw:m-0 tw:mt-[3%] tw:text-center" id="cp-fecha"></p>
+                                        <div class="tw:mx-auto tw:mt-[7%] tw:w-[62%] tw:border-t tw:border-black tw:pt-[1%] tw:text-center tw:font-bold">{{ config('plantel.bti.director') }}<br>{{ config('plantel.bti.director_cargo') }}</div>
+                                        <div class="tw:mt-[4%] tw:bg-[#6F9EEA] tw:py-[1%] tw:text-center tw:text-[2.1cqw] tw:text-white">{{ config('plantel.bti.lema') }}</div>
+                                        </div>
+                                    </div>
+                                    <figcaption class="tw:mt-3 tw:text-center tw:text-[0.8125rem] tw:text-slate-600">Así saldrá la hoja. Al cambiar los datos de la izquierda se actualiza aquí.</figcaption>
+                                </figure>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ============ KÁRDEX ============ --}}
+                <div class="tab-pane fade" id="pane-kardex" role="tabpanel">
+                    <x-imprimir.pane-header icon="scroll-text" title="Kárdex académico">
+                        Historial completo de asignaturas, calificaciones oficiales y promedios por periodo.
+                    </x-imprimir.pane-header>
+
+                    <div class="tw:relative">
+                        <label for="kardexAlumnoSearch" class="{{ $label }}">Alumno</label>
+                        <div class="tw:relative">
+                            <i data-lucide="search" class="{{ $fieldIcon }}"></i>
+                            <input type="text" id="kardexAlumnoSearch" class="{{ $inputIcon }} tw:pr-10" autocomplete="off" placeholder="Matrícula o nombre del alumno…" onkeyup="simularBusquedaAlumnoKardex(this.value)">
+                            <button type="button" class="{{ $iconBtn }} tw:inline-flex" onclick="limpiarBusquedaKardex()" aria-label="Limpiar búsqueda" title="Limpiar búsqueda">
+                                <i data-lucide="x" class="tw:size-4"></i>
+                            </button>
+                        </div>
+                        <div id="kardex-alumno-sugerencia" class="{{ $sugerencias }}" style="display: none;"></div>
+                    </div>
+
+                    <div id="kardex-info-alumno" class="tw:mt-6" style="display: none;">
+                        {{-- Resumen del alumno --}}
+                        <div class="{{ $subcard }} tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-5 tw:bg-slate-50/60 tw:p-5">
+                            <div class="tw:min-w-0">
+                                <div class="tw:flex tw:flex-wrap tw:items-center tw:gap-2">
+                                    <p class="tw:m-0 tw:text-base tw:font-semibold tw:text-slate-900" id="lbl-kardex-nombre"></p>
+                                    <span class="{{ $chip }} tw:bg-brand-50 tw:text-brand-700 tw:ring-1 tw:ring-brand-200" id="lbl-kardex-badge-cct">BTI</span>
+                                    <span class="{{ $chip }} tw:bg-success-100 tw:text-success-700" id="lbl-kardex-status">ACTIVO</span>
+                                </div>
+                                <p class="tw:m-0 tw:mt-1 tw:text-xs tw:text-slate-500">
+                                    <span id="lbl-kardex-matricula"></span>
+                                    <span class="tw:-ml-1 tw:text-slate-500">, </span>
+                                    <span id="lbl-kardex-generacion-grupo"></span>
+                                </p>
+                            </div>
+                            <div class="tw:flex tw:flex-wrap tw:items-center tw:gap-3">
+                                <div class=" tw:border tw:border-slate-200 tw:bg-white tw:px-4 tw:py-2 tw:text-center">
+                                    <span class="tw:block tw:text-[0.625rem] tw:font-semibold tw:uppercase tw:tracking-[0.08em] tw:text-slate-400">Promedio</span>
+                                    <span class="tw:text-xl tw:font-bold tw:tabular-nums tw:text-brand-700" id="lbl-kardex-promedio">—</span>
+                                </div>
+                                <button type="button" class="{{ $btnSecondary }}" onclick="mostrarModalKardexManual()">
+                                    <i data-lucide="sliders-horizontal" class="tw:size-4"></i> Ajustar
+                                </button>
+                                <button type="button" class="{{ $btnPrimary }}" onclick="imprimirKardex()">
+                                    <i data-lucide="printer" class="tw:size-4"></i> Imprimir kárdex
                                 </button>
                             </div>
                         </div>
+
+                        {{-- Vista previa oficial --}}
+                        <div class="tw:mt-5 tw:border tw:border-slate-200 tw:bg-slate-100/70 tw:p-4 tw:sm:p-6" id="kardex-preview-wrapper">
+                            <div class="tw:mb-4 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-2">
+                                <p class="{{ $sectionTitle }} tw:mb-0"><i data-lucide="eye" class="tw:size-3.5"></i> Vista previa del formato oficial</p>
+                                <span class="tw:inline-flex tw:items-center tw:gap-1 tw:text-xs tw:text-success-700"><i data-lucide="circle-check" class="tw:size-3.5"></i> Listo para imprimir</span>
+                            </div>
+                            <div id="kardex-live-preview" class="tw:overflow-x-auto tw:bg-white tw:p-4 tw:shadow-card">
+                                <!-- Se renderiza dinámicamente con la estructura oficial del Kárdex -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ============ BOLETA (BTI) ============ --}}
+                <div class="tab-pane fade" id="pane-boleta" role="tabpanel">
+                    <x-imprimir.pane-header icon="file-spreadsheet" title="Boleta de calificaciones">
+                        Boleta por alumno y semestre (BTI).
+                    </x-imprimir.pane-header>
+
+                    <div class="tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-3">
+                        <div class="tw:relative tw:md:col-span-2">
+                            <label for="boletaAlumnoSearch" class="{{ $label }}">Alumno</label>
+                            <div class="tw:relative">
+                                <i data-lucide="search" class="{{ $fieldIcon }}"></i>
+                                <input type="text" id="boletaAlumnoSearch" class="{{ $inputIcon }}" autocomplete="off" placeholder="Matrícula o nombre del alumno…" onkeyup="simularBusquedaAlumnoBoleta(this.value)">
+                            </div>
+                            <div id="boleta-alumno-sugerencia" class="{{ $sugerencias }}" style="display: none;"></div>
+                        </div>
+                        <div>
+                            <label for="boletaSemestreSelect" class="{{ $label }}">Semestre</label>
+                            <select id="boletaSemestreSelect" class="{{ $input }}" onchange="document.getElementById('lbl-boleta-semestre-val').innerText = this.value">
+                                <option value="1er Semestre">1er semestre</option>
+                                <option value="2° Semestre">2° semestre</option>
+                                <option value="3er Semestre" selected>3er semestre</option>
+                                <option value="4° Semestre">4° semestre</option>
+                                <option value="5° Semestre">5° semestre</option>
+                                <option value="6° Semestre">6° semestre</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- PANE: KARDEX -->
-                    <div class="tab-pane fade" id="pane-kardex" role="tabpanel">
-                        <div class="glass-header mb-4">
-                            <h5 class="fw-bold mb-1 text-slate-800">
-                                <i class="ti ti-report me-2"></i>Kárdex Académico
-                            </h5>
-                            <p class="text-muted mb-0">Historial completo de asignaturas cursadas, calificaciones oficiales y promedios por periodo.</p>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-12 position-relative">
-                                <label class="form-label fw-semibold">Buscar Alumno para Kárdex</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0"><i class="ti ti-search text-muted"></i></span>
-                                    <input type="text" id="kardexAlumnoSearch" class="form-control border-start-0" placeholder="Escriba matrícula o nombre del alumno..." onkeyup="simularBusquedaAlumnoKardex(this.value)">
-                                    <button class="btn btn-outline-secondary" type="button" onclick="limpiarBusquedaKardex()"><i class="ti ti-x"></i></button>
+                    <div id="boleta-tabla-resultados" class="tw:mt-6" style="display: none;">
+                        <div class="{{ $subcard }} tw:bg-slate-50/60 tw:p-5">
+                            <div class="tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-4">
+                                <div class="tw:flex tw:min-w-0 tw:items-center tw:gap-3">
+                                    <span class="tw:inline-flex tw:size-11 tw:shrink-0 tw:items-center tw:justify-center tw:bg-brand-700 tw:text-white"><i data-lucide="graduation-cap" class="tw:size-5"></i></span>
+                                    <div class="tw:min-w-0">
+                                        <p class="tw:m-0 tw:truncate tw:text-[0.9375rem] tw:font-semibold tw:text-slate-900" id="lbl-boleta-alumno-nombre"></p>
+                                        <p class="tw:m-0 tw:mt-0.5 tw:text-xs tw:text-slate-500">
+                                            Matrícula <strong class="tw:font-mono tw:font-semibold tw:text-slate-700" id="lbl-boleta-alumno-matricula"></strong>
+                                            <span class="tw:-ml-1 tw:text-slate-500">, </span>
+                                            <strong class="tw:font-semibold tw:text-slate-700" id="lbl-boleta-semestre-val"></strong>
+                                        </p>
+                                    </div>
                                 </div>
-                                <div id="kardex-alumno-sugerencia" class="list-group mt-2 shadow-sm position-absolute w-100" style="display: none; z-index: 1050; max-height: 250px; overflow-y: auto;">
-                                    <!-- Cargado por JS -->
-                                </div>
+                                <button type="button" class="{{ $btnPrimary }}" onclick="generarBoletaBTIDesdeSelect()">
+                                    <i data-lucide="printer" class="tw:size-4"></i> Imprimir boleta
+                                </button>
                             </div>
+                            <div class="tw:mt-4 tw:flex tw:flex-wrap tw:gap-x-6 tw:gap-y-2 tw:border-t tw:border-slate-200 tw:pt-4">
+                                <label class="tw:inline-flex tw:cursor-pointer tw:items-center tw:gap-2 tw:text-[0.8125rem] tw:text-slate-700">
+                                    <input type="checkbox" id="chkBoletaIncluirAsistencias" class="tw:size-4 tw:cursor-pointer tw:accent-brand-700" checked>
+                                    Incluir asistencias
+                                </label>
+                                <label class="tw:inline-flex tw:cursor-pointer tw:items-center tw:gap-2 tw:text-[0.8125rem] tw:text-slate-700">
+                                    <input type="checkbox" id="chkBoletaIncluirReportes" class="tw:size-4 tw:cursor-pointer tw:accent-brand-700" checked>
+                                    Incluir reportes de conducta
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <div class="col-12 mt-3" id="kardex-info-alumno" style="display: none;">
-                                <!-- Tarjeta de Resumen y Acciones -->
-                                <div class="card p-3 border-0 shadow-sm mb-3" style="border-radius: 14px; background: linear-gradient(135deg, #f8fafc 0%, #eef2f6 100%); border-left: 5px solid #1e6fa8 !important;">
-                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                                        <div>
-                                            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                                                <h5 class="fw-bold mb-0 text-slate-800" id="lbl-kardex-nombre"></h5>
-                                                <span class="badge bg-primary-subtle text-primary px-2 py-1 fs-9" id="lbl-kardex-badge-cct">BTI</span>
-                                                <span class="badge bg-success-subtle text-success px-2 py-1 fs-9" id="lbl-kardex-status">ACTIVO</span>
-                                            </div>
-                                            <div class="text-muted fs-8">
-                                                <span id="lbl-kardex-matricula"></span>
-                                                <span class="mx-2">•</span>
-                                                <span id="lbl-kardex-generacion-grupo"></span>
-                                            </div>
-                                        </div>
-                                        <div class="text-end d-flex align-items-center gap-3">
-                                            <div class="bg-white px-3 py-2 rounded-3 border shadow-xs text-center">
-                                                <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.72rem;">Promedio General</small>
-                                                <span class="fs-5 fw-bold text-primary" id="lbl-kardex-promedio">—</span>
-                                            </div>
-                                            <div class="d-flex gap-2 flex-wrap">
-                                                <button type="button" class="btn btn-outline-primary fw-bold shadow-xs px-3" onclick="mostrarModalKardexManual()">
-                                                    <i class="ti ti-edit me-1"></i> Ver / Ajustar en Modal
-                                                </button>
-                                                <button type="button" class="btn btn-primary fw-bold shadow-sm px-3" onclick="imprimirKardex()">
-                                                    <i class="ti ti-printer me-1"></i> Imprimir Kárdex
-                                                </button>
-                                            </div>
-                                        </div>
+                {{-- ============ REPORTES DE INDISCIPLINA ============ --}}
+                <div class="tab-pane fade" id="pane-reporte_indisciplina" role="tabpanel">
+                    <x-imprimir.pane-header icon="shield-alert" title="Reportes de indisciplina">
+                        Registra incidencias y genera el formato oficial a doble talón (BTI).
+                    </x-imprimir.pane-header>
+
+                    <div class="tw:grid tw:grid-cols-1 tw:gap-6 tw:2xl:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+                        {{-- Registro --}}
+                        <div>
+                            <p class="{{ $sectionTitle }}"><i data-lucide="plus" class="tw:size-3.5"></i> Nuevo reporte</p>
+                            <form id="formCrearReporte" onsubmit="registrarReporteIndisciplina(event)" class="tw:flex tw:flex-col tw:gap-4">
+                                <div class="tw:relative">
+                                    <label for="reporteAlumnoSearch" class="{{ $label }}">Alumno</label>
+                                    <div class="tw:relative">
+                                        <i data-lucide="search" class="{{ $fieldIcon }}"></i>
+                                        <input type="text" id="reporteAlumnoSearch" class="{{ $inputIcon }}" autocomplete="off" placeholder="Nombre del alumno…" onkeyup="buscarAlumnoReporte(this.value)">
                                     </div>
+                                    <div id="reporte-alumno-sugerencia" class="{{ $sugerencias }}" style="display: none;"></div>
                                 </div>
 
-                                <!-- Vista previa oficial en pantalla del Kárdex (para poder verse antes de imprimir) -->
-                                <div class="card border shadow-sm p-4 mb-4 bg-white" style="border-radius: 12px;" id="kardex-preview-wrapper">
-                                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-wrap gap-2">
-                                        <h6 class="fw-bold text-dark mb-0">
-                                            <i class="ti ti-file-text me-2"></i>Vista Previa del Formato Oficial de Kárdex
-                                        </h6>
-                                        <div class="d-flex gap-2 align-items-center">
-                                            <span class="text-muted fs-8"><i class="ti ti-check text-success me-1"></i>Documento completo listo para imprimir</span>
-                                            <button type="button" class="btn btn-sm btn-primary fw-bold" onclick="imprimirKardex()">
-                                                <i class="ti ti-printer me-1"></i> Imprimir
-                                            </button>
+                                <div id="reporte-alumno-info-box" style="display: none;">
+                                    <input type="hidden" id="reporte_id_alumno">
+                                    <input type="hidden" id="reporte_alumno_nombre">
+                                    <div class="tw:flex tw:items-center tw:justify-between tw:gap-3 tw:border tw:border-brand-200 tw:bg-brand-50 tw:px-4 tw:py-3">
+                                        <div class="tw:min-w-0">
+                                            <span class="tw:block tw:truncate tw:text-sm tw:font-semibold tw:text-slate-900" id="lbl-reporte-alumno-nom"></span>
+                                            <small class="tw:text-xs tw:text-slate-500" id="lbl-reporte-alumno-mat"></small>
                                         </div>
-                                    </div>
-
-                                    <div id="kardex-live-preview">
-                                        <!-- Se renderiza dinámicamente con la estructura oficial del Kárdex -->
-                                    </div>
-
-                                    <div class="text-end mt-3 pt-3 border-top">
-                                        <button type="button" class="btn btn-primary fw-bold shadow-sm px-4" onclick="imprimirKardex()">
-                                            <i class="ti ti-printer me-2"></i> Imprimir Kárdex Oficial
+                                        <button type="button" onclick="deseleccionarAlumnoReporte()" aria-label="Quitar alumno" title="Quitar alumno"
+                                            class="tw:inline-flex tw:size-8 tw:shrink-0 tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:bg-transparent tw:text-slate-400 tw:transition-colors tw:hover:bg-white tw:hover:text-danger-600">
+                                            <i data-lucide="x" class="tw:size-4"></i>
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- PANE: BOLETA (BTI) -->
-                    <div class="tab-pane fade" id="pane-boleta" role="tabpanel">
-                        <div class="glass-header mb-4">
-                            <h5 class="fw-bold mb-1 text-slate-800">
-                                <i class="ti ti-file-analytics me-2"></i>Boletas de Calificaciones (BTI)
-                            </h5>
-                            <p class="text-muted mb-0">Impresión de boleta de calificaciones por alumno y semestre seleccionado.</p>
-                        </div>
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-7">
-                                <label class="form-label fw-semibold">Nombre del Alumno</label>
-                                <input type="text" id="boletaAlumnoSearch" class="form-control" placeholder="Escriba matrícula o nombre del alumno..." onkeyup="simularBusquedaAlumnoBoleta(this.value)">
-                                <div id="boleta-alumno-sugerencia" class="list-group mt-2 shadow-sm" style="display: none;">
-                                    <!-- Cargado por JS -->
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-semibold">Semestre</label>
-                                <select id="boletaSemestreSelect" class="form-select">
-                                    <option value="1er Semestre">1er Semestre</option>
-                                    <option value="2° Semestre">2° Semestre</option>
-                                    <option value="3er Semestre" selected>3er Semestre</option>
-                                    <option value="4° Semestre">4° Semestre</option>
-                                    <option value="5° Semestre">5° Semestre</option>
-                                    <option value="6° Semestre">6° Semestre</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button class="btn btn-info w-100 text-white fw-bold py-2 shadow-sm" onclick="simularFiltrarBoletas()"><i class="ti ti-search me-1"></i> Buscar</button>
-                            </div>
-                        </div>
-                                                <div id="boleta-tabla-resultados" style="display: none;">
-                            <div class="card p-3 border-0 bg-light shadow-sm" style="border-radius: 12px;">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                <div class="tw:grid tw:grid-cols-1 tw:gap-4 tw:sm:grid-cols-[minmax(0,1fr)_140px]">
                                     <div>
-                                        <h6 class="fw-bold mb-1 text-slate-800" id="lbl-boleta-alumno-nombre">Pérez López Juan</h6>
-                                        <small class="text-muted">Matrícula: <strong id="lbl-boleta-alumno-matricula">20260001</strong> | Semestre Seleccionado: <strong id="lbl-boleta-semestre-val">3er Semestre</strong></small>
-                                        <div class="d-flex align-items-center gap-4 mt-2">
-                                            <div class="form-check form-switch mb-0">
-                                                <input class="form-check-input" type="checkbox" id="chkBoletaIncluirAsistencias" checked>
-                                                <label class="form-check-label small fw-bold text-slate-700" for="chkBoletaIncluirAsistencias">Incluir Asistencias</label>
-                                            </div>
-                                            <div class="form-check form-switch mb-0">
-                                                <input class="form-check-input" type="checkbox" id="chkBoletaIncluirReportes" checked>
-                                                <label class="form-check-label small fw-bold text-slate-700" for="chkBoletaIncluirReportes">Incluir Reportes de Conducta</label>
-                                            </div>
-                                        </div>
+                                        <label for="reporte_tutor_nombre" class="{{ $label }}">Tutor</label>
+                                        <input type="text" id="reporte_tutor_nombre" class="{{ $input }}" placeholder="Nombre completo del tutor" required>
                                     </div>
-                                    <div class="text-end d-flex gap-2 flex-wrap">
-                                        <button class="btn btn-primary btn-sm fw-bold px-3 py-2 shadow-sm" onclick="generarBoletaBTIDesdeSelect()"><i class="ti ti-printer me-1"></i> Imprimir Boleta</button>
+                                    <div>
+                                        <label for="reporte_parcial" class="{{ $label }}">Parcial</label>
+                                        <select id="reporte_parcial" class="{{ $input }}" required>
+                                            <option value="1">Parcial 1</option>
+                                            <option value="2">Parcial 2</option>
+                                            <option value="3">Parcial 3</option>
+                                        </select>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- PANE: REPORTE INDISCIPLINA -->
-                    <div class="tab-pane fade" id="pane-reporte_indisciplina" role="tabpanel">
-                        <div class="glass-header mb-4">
-                            <h5 class="fw-bold mb-1 text-slate-800">
-                                <i class="ti ti-alert-triangle me-2"></i>Reportes de Indisciplina (BTI)
-                            </h5>
-                            <p class="text-muted fs-7 mb-0">Registre indisciplinas y genere el formato oficial a doble talón.</p>
-                        </div>
-
-                        <div class="row g-4">
-                            <!-- FORMULARIO DE CREACIÓN -->
-                            <div class="col-12 col-xl-5">
-                                <div class="card border-0 shadow-sm p-4" style="border-radius: 16px; background: #ffffff;">
-                                    <h6 class="fw-bold text-slate-800 mb-3 border-bottom pb-2">
-                                        <i class="ti ti-plus me-2"></i>Registrar Nuevo Reporte
-                                    </h6>
-                                    <form id="formCrearReporte" onsubmit="registrarReporteIndisciplina(event)">
-                                        <!-- Alumno Search -->
-                                        <div class="mb-3 position-relative">
-                                            <label class="form-label fw-bold text-slate-700 fs-7">Buscar Alumno</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text bg-white border-end-0"><i class="ti ti-search text-muted"></i></span>
-                                                <input type="text" id="reporteAlumnoSearch" class="form-control border-start-0" placeholder="Escriba el nombre del alumno..." onkeyup="buscarAlumnoReporte(this.value)">
-                                            </div>
-                                            <div id="reporte-alumno-sugerencia" class="list-group mt-2 shadow-sm position-absolute w-100" style="display: none; z-index: 1050; max-height: 200px; overflow-y: auto;">
-                                                <!-- Cargado por JS -->
-                                            </div>
-                                        </div>
-
-                                        <!-- Datos cargados del Alumno -->
-                                        <div class="mb-3 bg-light p-3 rounded-3" id="reporte-alumno-info-box" style="display: none;">
-                                            <input type="hidden" id="reporte_id_alumno">
-                                            <input type="hidden" id="reporte_alumno_nombre">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <span class="fw-bold d-block text-slate-800" id="lbl-reporte-alumno-nom"></span>
-                                                    <small class="text-muted" id="lbl-reporte-alumno-mat"></small>
-                                                </div>
-                                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="deseleccionarAlumnoReporte()"><i class="ti ti-x"></i></button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Tutor -->
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold text-slate-700 fs-7">Nombre del Tutor</label>
-                                            <input type="text" id="reporte_tutor_nombre" class="form-control" placeholder="Nombre completo del tutor o tutor legal" required>
-                                        </div>
-
-                                        <!-- Parcial -->
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold text-slate-700 fs-7">Parcial correspondiente</label>
-                                            <select id="reporte_parcial" class="form-select" required>
-                                                <option value="1">Parcial 1</option>
-                                                <option value="2">Parcial 2</option>
-                                                <option value="3">Parcial 3</option>
-                                            </select>
-                                        </div>
-
-                                        <!-- Descripción de la indisciplina -->
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold text-slate-700 fs-7">Descripción del incidente</label>
-                                            <textarea id="reporte_incidente" class="form-control" rows="4" placeholder="Describa la indisciplina cometida detalladamente..." required></textarea>
-                                        </div>
-
-                                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
-                                            <i class="ti ti-device-floppy me-2"></i>Registrar y Generar Reporte
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-
-                            <!-- HISTORIAL DE REPORTES -->
-                            <div class="col-12 col-xl-7">
-                                <div class="card border-0 shadow-sm p-4" style="border-radius: 16px; background: #ffffff;">
-                                    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                                        <h6 class="fw-bold text-slate-800 mb-0">
-                                            <i class="ti ti-history text-secondary me-2"></i>Historial de Reportes
-                                        </h6>
-                                        <div style="width: 250px;">
-                                            <div class="input-group input-group-sm">
-                                                <span class="input-group-text bg-white border-end-0"><i class="ti ti-filter text-muted"></i></span>
-                                                <input type="text" id="reportesHistorialSearch" class="form-control border-start-0" placeholder="Buscar por alumno o folio..." onkeyup="cargarHistorialReportes(this.value)">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="table-responsive" style="max-height: 500px;">
-                                        <table class="table table-hover align-middle">
-                                            <thead class="table-light">
-                                                <tr class="fs-8">
-                                                    <th>Folio</th>
-                                                    <th>Alumno</th>
-                                                    <th>Tutor</th>
-                                                    <th>Parcial</th>
-                                                    <th>Fecha</th>
-                                                    <th class="text-center">Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="tabla-reportes-historial">
-                                                <!-- Cargado por JS -->
-                                                <tr>
-                                                    <td colspan="6" class="text-center py-4 text-muted">Cargando historial...</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- PANE: CREDENCIAL ESCOLARIZADO BTI -->
-                    <div class="tab-pane fade" id="pane-credencial" role="tabpanel">
-                        <div class="glass-header mb-4">
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div>
-                                    <h5 class="fw-bold mb-1 text-slate-800">
-                                        <i class="ti ti-id-badge-2 me-2"></i>Credencial Escolar Oficial
-                                    </h5>
-                                    <p class="text-muted mb-0" id="cred-descripcion-subtitulo">Emisión de credenciales oficiales institucionales en formato estándar PVC / Opalina (Sistema Escolarizado).</p>
+                                    <label for="reporte_incidente" class="{{ $label }}">Descripción del incidente</label>
+                                    <textarea id="reporte_incidente" class="{{ $textarea }}" rows="4" placeholder="Describe la indisciplina con detalle…" required></textarea>
                                 </div>
-                                <span class="badge px-3 py-2 text-white fw-bold rounded-pill" style="background: #15285f; font-size: 0.82rem;" id="cred-tipo-formato-badge">
-                                    <i class="ti ti-award me-1"></i> Formato Oficial Escolarizado
-                                </span>
-                            </div>
+
+                                <button type="submit" class="{{ $btnPrimary }} tw:w-full">
+                                    <i data-lucide="save" class="tw:size-4"></i> Registrar y generar reporte
+                                </button>
+                            </form>
                         </div>
 
-                        <div class="row g-3">
-                            <div class="col-md-12">
-                                <label class="form-label fw-semibold text-slate-700">Buscar Alumno para Credencial</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0"><i class="ti ti-search text-muted"></i></span>
-                                    <input type="text" id="credencialAlumnoSearch" class="form-control border-start-0 shadow-sm" placeholder="Escriba matrícula o nombre del alumno..." onkeyup="simularBusquedaAlumnoCredencial(this.value)">
+                        {{-- Historial --}}
+                        <div class="tw:min-w-0">
+                            <div class="tw:mb-3 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-3">
+                                <p class="{{ $sectionTitle }} tw:mb-0"><i data-lucide="history" class="tw:size-3.5"></i> Historial</p>
+                                <div class="tw:relative tw:w-full tw:sm:w-64">
+                                    <i data-lucide="search" class="{{ $fieldIcon }} tw:size-4"></i>
+                                    <input type="text" id="reportesHistorialSearch" class="{{ $inputSm }} tw:pl-9" placeholder="Alumno o folio…" onkeyup="cargarHistorialReportes(this.value)">
                                 </div>
-                                <div id="credencial-alumno-sugerencia" class="list-group mt-2 shadow-sm" style="display: none;">
-                                    <!-- Cargado por JS -->
+                            </div>
+                            <div class="tw:max-h-[520px] tw:overflow-auto tw:border tw:border-slate-200">
+                                <table class="tw:w-full tw:border-collapse tw:text-left">
+                                    <thead class="tw:sticky tw:top-0 tw:z-10 tw:bg-slate-50">
+                                        <tr class="tw:border-b tw:border-slate-200">
+                                            @foreach (['Folio', 'Alumno', 'Tutor', 'Parcial', 'Fecha'] as $th)
+                                            <th class="tw:px-4 tw:py-2.5 tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-500">{{ $th }}</th>
+                                            @endforeach
+                                            <th class="tw:px-4 tw:py-2.5 tw:text-right tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-500"><span class="tw:sr-only">Acciones</span></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-reportes-historial" class="tw:divide-y tw:divide-slate-100">
+                                        <tr><td colspan="6" class="tw:px-4 tw:py-8 tw:text-center tw:text-[0.8125rem] tw:text-slate-500">Cargando historial…</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ============ CREDENCIAL ============ --}}
+                <div class="tab-pane fade" id="pane-credencial" role="tabpanel">
+                    <x-imprimir.pane-header icon="id-card" title="Credencial escolar" id="cred-descripcion-subtitulo">
+                        Emisión de credenciales oficiales institucionales en formato estándar PVC / Opalina (Sistema Escolarizado).
+                        <x-slot:aside>
+                            <span class="{{ $chip }} tw:bg-brand-700 tw:px-3 tw:py-1 tw:text-white" id="cred-tipo-formato-badge">
+                                <i class="ti ti-award me-1"></i> Formato Oficial Escolarizado
+                            </span>
+                        </x-slot:aside>
+                    </x-imprimir.pane-header>
+
+                    <div class="tw:relative">
+                        <label for="credencialAlumnoSearch" class="{{ $label }}">Alumno</label>
+                        <div class="tw:relative">
+                            <i data-lucide="search" class="{{ $fieldIcon }}"></i>
+                            <input type="text" id="credencialAlumnoSearch" class="{{ $inputIcon }}" autocomplete="off" placeholder="Matrícula o nombre del alumno para llenar los datos…" onkeyup="simularBusquedaAlumnoCredencial(this.value)">
+                        </div>
+                        <div id="credencial-alumno-sugerencia" class="{{ $sugerencias }}" style="display: none;"></div>
+                    </div>
+
+                    <div id="credencial-info-alumno" class="tw:mt-6" style="display: block;">
+                        <div class="tw:grid tw:grid-cols-1 tw:items-start tw:gap-6 tw:2xl:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+
+                            {{-- Vista previa (diseño oficial, no modificar clases bti-*) --}}
+                            <div class=" tw:border tw:border-slate-200 tw:bg-slate-100/70 tw:p-5">
+                                <div class="tw:mb-4 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-2">
+                                    <p class="{{ $sectionTitle }} tw:mb-0"><i data-lucide="eye" class="tw:size-3.5"></i> Vista previa en tiempo real</p>
+                                    <span class=" tw:bg-white tw:px-2 tw:py-0.5 tw:font-mono tw:text-[0.6875rem] tw:text-slate-500 tw:ring-1 tw:ring-slate-200">CR80, 54 × 85.6 mm</span>
+                                </div>
+
+                                <div class="tw:overflow-x-auto tw:pb-1">
+                                    <div class="tw:mx-auto tw:w-[500px]">
+                                        <div class="tw:mb-2 tw:grid tw:grid-cols-2 tw:text-center tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.08em] tw:text-slate-400">
+                                            <span>Anverso</span><span>Reverso</span>
+                                        </div>
+
+                                        <!-- Contenedor Unificado Dúplex (Ambas Caras Juntas) -->
+                                        <div class="bti-card-spread shadow-lg position-relative">
+                                            <!-- ANVERSO -->
+                                            <div class="bti-card bti-card-front bti-card-preview-left position-relative" id="cred-card-front-preview">
+                                                <div class="bti-front-stripes"></div>
+                                                <div class="bti-map-bg"></div>
+                                                <div class="bti-header-banner" id="cred-header-banner">
+                                                    <div class="bti-header-title" id="cred-header-title">BACHILLERATO TECNOLOGICO</div>
+                                                    <div class="bti-header-subtitle" id="cred-header-subtitle">INTERAMERICANO</div>
+                                                </div>
+                                                <div class="bti-sub-header">
+                                                    <div class="bti-cct-text" id="cred-cct-val">C.C.T. 21PCT0073R</div>
+                                                    <div class="bti-official-logos">
+                                                        <div class="bti-logos-row">
+                                                            <img src="/img/credencial/logo_puebla.png" class="bti-logo-puebla" alt="Puebla Gobierno">
+                                                            <img src="/img/credencial/logo_sep.png" class="bti-logo-sep" alt="Secretaría de Educación">
+                                                        </div>
+                                                        <div class="bti-sep-text">EDUCACIÓN PÚBLICA</div>
+                                                    </div>
+                                                </div>
+                                                <div class="bti-front-body">
+                                                    <img src="/img/credencial/logo_bti.png" class="bti-corner-logo" alt="Logo BTI">
+                                                    <div class="bti-field-group">
+                                                        <span class="bti-field-label">NOMBRE</span>
+                                                        <div class="bti-capsule bti-capsule-full" id="cred-nombre-val">DANIEL IGNACIO FERNÁNDEZ PARRA</div>
+                                                    </div>
+                                                    <div class="bti-field-group">
+                                                        <span class="bti-field-label">MODALIDAD</span>
+                                                        <div class="bti-capsule bti-capsule-sm" id="cred-modalidad-val">ESCOLARIZADO</div>
+                                                    </div>
+                                                    <div class="bti-field-group">
+                                                        <span class="bti-field-label">MATRICULA</span>
+                                                        <div class="bti-capsule bti-capsule-sm" id="cred-matricula-val">419012603</div>
+                                                    </div>
+                                                    <div class="bti-field-group">
+                                                        <span class="bti-field-label">VIGENCIA</span>
+                                                        <div class="bti-capsule bti-capsule-full" id="cred-vigencia-val">JULIO 2026 - SEPTIEMBRE 2026</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- REVERSO -->
+                                            <div class="bti-card bti-card-back bti-card-preview-right position-relative" id="cred-card-back-preview">
+                                                <div class="bti-back-stripes"></div>
+                                                <img src="/img/credencial/logo_bti.png" class="bti-back-watermark" alt="Watermark BTI">
+                                                <div class="bti-back-content">
+                                                    <div>
+                                                        <div class="bti-important-title">IMPORTANTE:</div>
+                                                        <div class="bti-important-text" id="cred-importante-institucion-texto">
+                                                            Esta credencial es personal y debe portarse en lugar visible mientras usted permanezca dentro de la institución.<br>
+                                                            Debe mostrarse al personal de seguridad, a la autoridad del BTI para fines de identificación. no es transferible y deberá devolverse al causar baja el usuario.
+                                                        </div>
+                                                        <div class="bti-accident-title">EN CASO DE ACCIDENTE LLAMAR A:</div>
+                                                        <div class="bti-accident-capsule">
+                                                            <span class="bti-accident-name" id="cred-accidente-nombre-val">Ignacio Fernández Neville</span>
+                                                            <span class="bti-accident-phone" id="cred-accidente-tel-val">231 108 9100</span>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <div class="bti-signature-section">
+                                                            <div class="bti-signature-line"></div>
+                                                            <div class="bti-director-title">DIRECTOR</div>
+                                                            <div class="bti-director-name" id="cred-director-val">ING. FAUSTO MAURO LEYVA FLORES</div>
+                                                        </div>
+                                                        <div class="bti-address-footer">
+                                                            AV. JUÁREZ 901 ESQ. LEÓN GUZMÁN<br>
+                                                            COL. CENTRO TEZIUTLÁN, PUEBLA.
+                                                        </div>
+                                                        <div class="bti-phone-footer">
+                                                            TEL: 01 231 31 2 39 79
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="col-12 mt-4" id="credencial-info-alumno" style="display: block;">
-                                <div class="row g-4 align-items-start">
-                                    
-                                    <!-- Vista Previa de Ambas Caras (Anverso y Reverso) -->
-                                    <div class="col-lg-7">
-                                        <div class="card border-0 shadow-sm rounded-4 p-4" style="background: rgba(248, 250, 252, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8) !important;">
-                                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                                <h6 class="fw-bold text-slate-800 mb-0">
-                                                    <i class="ti ti-eye me-1"></i> Vista Previa en Tiempo Real
-                                                </h6>
-                                                <span class="badge bg-light text-slate-600 border px-2 py-1 fs-9">Estándar CR80 Vertical (54 x 85.6 mm)</span>
-                                            </div>
-
-                                            <div class="d-flex flex-column align-items-center py-2">
-                                                <div class="d-flex justify-content-between align-items-center mb-2 px-1" style="width: 500px; max-width: 100%;">
-                                                    <span class="text-uppercase fw-bold text-slate-600 fs-9 letter-spacing-1">
-                                                        <i class="ti ti-id-badge-2 me-1"></i> Frente (Anverso)
-                                                    </span>
-                                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0.5 fs-10 fw-bold">
-                                                        <i class="ti ti-link me-1"></i>Formato Dúplex Continuo (Juntas)
-                                                    </span>
-                                                    <span class="text-uppercase fw-bold text-slate-600 fs-9 letter-spacing-1">
-                                                        <i class="ti ti-shield me-1"></i> Reverso (Atrás)
-                                                    </span>
-                                                </div>
-
-                                                <!-- Contenedor Unificado Dúplex (Ambas Caras Juntas) -->
-                                                <div class="bti-card-spread shadow-lg position-relative">
-                                                    <!-- ANVERSO -->
-                                                    <div class="bti-card bti-card-front bti-card-preview-left position-relative" id="cred-card-front-preview">
-                                                        <!-- Franja institucional izquierda -->
-                                                        <div class="bti-front-stripes"></div>
-
-                                                        <!-- Fondo mapa continental -->
-                                                        <div class="bti-map-bg"></div>
-
-                                                        <!-- Encabezado superior azul -->
-                                                        <div class="bti-header-banner" id="cred-header-banner">
-                                                            <div class="bti-header-title" id="cred-header-title">BACHILLERATO TECNOLOGICO</div>
-                                                            <div class="bti-header-subtitle" id="cred-header-subtitle">INTERAMERICANO</div>
-                                                        </div>
-
-                                                        <!-- CCT y Logos oficiales -->
-                                                        <div class="bti-sub-header">
-                                                            <div class="bti-cct-text" id="cred-cct-val">C.C.T. 21PCT0073R</div>
-                                                            <div class="bti-official-logos">
-                                                                <div class="bti-logos-row">
-                                                                    <img src="/img/credencial/logo_puebla.png" class="bti-logo-puebla" alt="Puebla Gobierno">
-                                                                    <img src="/img/credencial/logo_sep.png" class="bti-logo-sep" alt="Secretaría de Educación">
-                                                                </div>
-                                                                <div class="bti-sep-text">EDUCACIÓN PÚBLICA</div>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Cuerpo de Datos -->
-                                                        <div class="bti-front-body">
-                                                            <!-- Logo BTI en esquina inferior derecha -->
-                                                            <img src="/img/credencial/logo_bti.png" class="bti-corner-logo" alt="Logo BTI">
-
-                                                            <!-- Campo NOMBRE -->
-                                                            <div class="bti-field-group">
-                                                                <span class="bti-field-label">NOMBRE</span>
-                                                                <div class="bti-capsule bti-capsule-full" id="cred-nombre-val">DANIEL IGNACIO FERNÁNDEZ PARRA</div>
-                                                            </div>
-
-                                                            <!-- Campo MODALIDAD -->
-                                                            <div class="bti-field-group">
-                                                                <span class="bti-field-label">MODALIDAD</span>
-                                                                <div class="bti-capsule bti-capsule-sm" id="cred-modalidad-val">ESCOLARIZADO</div>
-                                                            </div>
-
-                                                            <!-- Campo MATRICULA -->
-                                                            <div class="bti-field-group">
-                                                                <span class="bti-field-label">MATRICULA</span>
-                                                                <div class="bti-capsule bti-capsule-sm" id="cred-matricula-val">419012603</div>
-                                                            </div>
-
-                                                            <!-- Campo VIGENCIA -->
-                                                            <div class="bti-field-group">
-                                                                <span class="bti-field-label">VIGENCIA</span>
-                                                                <div class="bti-capsule bti-capsule-full" id="cred-vigencia-val">JULIO 2026 - SEPTIEMBRE 2026</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- REVERSO -->
-                                                    <div class="bti-card bti-card-back bti-card-preview-right position-relative" id="cred-card-back-preview">
-                                                        <!-- Franja institucional derecha -->
-                                                        <div class="bti-back-stripes"></div>
-
-                                                        <!-- Marca de agua BTI central -->
-                                                        <img src="/img/credencial/logo_bti.png" class="bti-back-watermark" alt="Watermark BTI">
-
-                                                        <!-- Contenido Reverso -->
-                                                        <div class="bti-back-content">
-                                                            <div>
-                                                                <div class="bti-important-title">IMPORTANTE:</div>
-                                                                <div class="bti-important-text" id="cred-importante-institucion-texto">
-                                                                    Esta credencial es personal y debe portarse en lugar visible mientras usted permanezca dentro de la institución.<br>
-                                                                    Debe mostrarse al personal de seguridad, a la autoridad del BTI para fines de identificación. no es transferible y deberá devolverse al causar baja el usuario.
-                                                                </div>
-
-                                                                <div class="bti-accident-title">EN CASO DE ACCIDENTE LLAMAR A:</div>
-                                                                <div class="bti-accident-capsule">
-                                                                    <span class="bti-accident-name" id="cred-accidente-nombre-val">Ignacio Fernández Neville</span>
-                                                                    <span class="bti-accident-phone" id="cred-accidente-tel-val">231 108 9100</span>
-                                                                </div>
-                                                            </div>
-
-                                                            <div>
-                                                                <div class="bti-signature-section">
-                                                                    <div class="bti-signature-line"></div>
-                                                                    <div class="bti-director-title">DIRECTOR</div>
-                                                                    <div class="bti-director-name" id="cred-director-val">ING. FAUSTO MAURO LEYVA FLORES</div>
-                                                                </div>
-
-                                                                <div class="bti-address-footer">
-                                                                    AV. JUÁREZ 901 ESQ. LEÓN GUZMÁN<br>
-                                                                    COL. CENTRO TEZIUTLÁN, PUEBLA.
-                                                                </div>
-                                                                <div class="bti-phone-footer">
-                                                                    TEL: 01 231 31 2 39 79
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                            {{-- Ajustes + impresión --}}
+                            <div class="tw:flex tw:flex-col tw:gap-5">
+                                <div>
+                                    <p class="{{ $sectionTitle }}"><i data-lucide="user-round" class="tw:size-3.5"></i> Datos del alumno</p>
+                                    <div class="tw:grid tw:grid-cols-1 tw:gap-3 tw:sm:grid-cols-3">
+                                        <div class="tw:sm:col-span-3">
+                                            <label for="inputCredNombre" class="{{ $labelSm }}">Nombre completo</label>
+                                            <input type="text" id="inputCredNombre" class="{{ $inputSm }}" value="DANIEL IGNACIO FERNÁNDEZ PARRA" oninput="actualizarCamposCredencialDinamicos()" placeholder="Nombre completo del alumno">
+                                        </div>
+                                        <div>
+                                            <label for="inputCredMatricula" class="{{ $labelSm }}">Matrícula</label>
+                                            <input type="text" id="inputCredMatricula" class="{{ $inputSm }} tw:font-mono" value="419012603" oninput="actualizarCamposCredencialDinamicos()" placeholder="419012603">
+                                        </div>
+                                        <div>
+                                            <label for="inputCredCCT" class="{{ $labelSm }}">C.C.T.</label>
+                                            <input type="text" id="inputCredCCT" class="{{ $inputSm }} tw:font-mono" value="21PCT0073R" oninput="actualizarCamposCredencialDinamicos()" placeholder="C.C.T.">
+                                        </div>
+                                        <div>
+                                            <label for="inputCredModalidad" class="{{ $labelSm }}">Modalidad</label>
+                                            <input type="text" id="inputCredModalidad" class="{{ $inputSm }}" value="ESCOLARIZADO" oninput="actualizarCamposCredencialDinamicos()">
                                         </div>
                                     </div>
+                                </div>
 
-                                    <!-- Panel de Ajustes y Acciones de Impresión -->
-                                    <div class="col-lg-5">
-                                        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
-                                            <h6 class="fw-bold text-slate-800 mb-3 d-flex align-items-center">
-                                                <i class="ti ti-adjustments me-2"></i> Personalización y Ajustes
-                                            </h6>
-                                            
-                                            <div class="mb-3">
-                                                <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">
-                                                    <i class="ti ti-user me-1"></i> Nombre del Alumno
-                                                </label>
-                                                <input type="text" id="inputCredNombre" class="form-control form-control-sm shadow-sm" value="DANIEL IGNACIO FERNÁNDEZ PARRA" oninput="actualizarCamposCredencialDinamicos()" placeholder="Nombre completo del alumno">
-                                            </div>
+                                <div>
+                                    <label for="inputCredVigencia" class="{{ $sectionTitle }}"><i data-lucide="calendar-range" class="tw:size-3.5"></i> Vigencia</label>
+                                    <input type="text" id="inputCredVigencia" class="{{ $inputSm }}" value="JULIO 2026 - SEPTIEMBRE 2026" oninput="actualizarCamposCredencialDinamicos()">
+                                    <div class="tw:mt-2 tw:flex tw:flex-wrap tw:gap-1.5">
+                                        @foreach (['JULIO 2026 - SEPTIEMBRE 2026' => 'Jul – Sep 2026', 'AGOSTO 2026 - ENERO 2027' => 'Ago 2026 – Ene 2027', 'FEBRERO 2027 - JULIO 2027' => 'Feb – Jul 2027'] as $valor => $texto)
+                                        <button type="button" onclick="setCredVigencia('{{ $valor }}')"
+                                            class="tw:cursor-pointer tw:border tw:border-slate-200 tw:bg-white tw:px-2.5 tw:py-1 tw:text-[0.6875rem] tw:font-medium tw:text-slate-600 tw:transition-colors tw:hover:border-brand-200 tw:hover:bg-brand-50 tw:hover:text-brand-700">{{ $texto }}</button>
+                                        @endforeach
+                                    </div>
+                                </div>
 
-                                            <div class="row g-2 mb-3">
-                                                <div class="col-sm-4">
-                                                    <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">
-                                                        <i class="ti ti-id-badge-2 me-1"></i> Matrícula
-                                                    </label>
-                                                    <input type="text" id="inputCredMatricula" class="form-control form-control-sm shadow-sm" value="419012603" oninput="actualizarCamposCredencialDinamicos()" placeholder="Ej. 419012603">
-                                                </div>
-                                                <div class="col-sm-4">
-                                                    <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">
-                                                        <i class="ti ti-fingerprint me-1"></i> C.C.T.
-                                                    </label>
-                                                    <input type="text" id="inputCredCCT" class="form-control form-control-sm shadow-sm" value="21PCT0073R" oninput="actualizarCamposCredencialDinamicos()" placeholder="C.C.T.">
-                                                </div>
-                                                <div class="col-sm-4">
-                                                    <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">
-                                                        <i class="ti ti-school me-1"></i> Modalidad
-                                                    </label>
-                                                    <input type="text" id="inputCredModalidad" class="form-control form-control-sm shadow-sm" value="ESCOLARIZADO" oninput="actualizarCamposCredencialDinamicos()">
-                                                </div>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">Periodo de Vigencia</label>
-                                                <input type="text" id="inputCredVigencia" class="form-control form-control-sm shadow-sm mb-1" value="JULIO 2026 - SEPTIEMBRE 2026" oninput="actualizarCamposCredencialDinamicos()">
-                                                <div class="d-flex gap-1 flex-wrap">
-                                                    <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2 fs-9 rounded-pill" onclick="setCredVigencia('JULIO 2026 - SEPTIEMBRE 2026')">Jul - Sep 2026</button>
-                                                    <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2 fs-9 rounded-pill" onclick="setCredVigencia('AGOSTO 2026 - ENERO 2027')">Ago 2026 - Ene 2027</button>
-                                                    <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2 fs-9 rounded-pill" onclick="setCredVigencia('FEBRERO 2027 - JULIO 2027')">Feb 2027 - Jul 2027</button>
-                                                </div>
-                                            </div>
-
-                                            <div class="row g-2 mb-3">
-                                                <div class="col-sm-7">
-                                                    <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">Contacto Emergencia</label>
-                                                    <input type="text" id="inputCredAccidenteNombre" class="form-control form-control-sm shadow-sm" value="Ignacio Fernández Neville" oninput="actualizarCamposCredencialDinamicos()">
-                                                </div>
-                                                <div class="col-sm-5">
-                                                    <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">Tel. Emergencia</label>
-                                                    <input type="text" id="inputCredAccidenteTel" class="form-control form-control-sm shadow-sm" value="231 108 9100" oninput="actualizarCamposCredencialDinamicos()">
-                                                </div>
-                                            </div>
-
-                                            <div class="mb-4">
-                                                <label class="form-label fs-9 fw-semibold text-slate-600 mb-1">Director del Plantel</label>
-                                                <input type="text" id="inputCredDirector" class="form-control form-control-sm shadow-sm" value="ING. FAUSTO MAURO LEYVA FLORES" oninput="actualizarCamposCredencialDinamicos()">
-                                            </div>
-
-                                            <hr class="my-3 text-slate-200">
-
-                                            <h6 class="fw-bold text-slate-800 mb-2">
-                                                <i class="ti ti-printer me-1"></i> Opciones de Impresión
-                                            </h6>
-                                            <p class="text-muted fs-9 mb-3">Formato listo para impresión física en alta definición (resolución vectorial para tarjetas PVC o papel opalina con marcas de corte).</p>
-
-                                            <div class="d-grid gap-2">
-                                                <button type="button" class="btn btn-success fw-bold py-2.5 shadow-sm rounded-3" onclick="imprimirCredencialOficialBTI('ambas')">
-                                                    <i class="ti ti-printer me-2"></i> Imprimir Ambas Caras (Frente y Reverso)
-                                                </button>
-                                                <div class="row g-2">
-                                                    <div class="col-6">
-                                                        <button type="button" class="btn btn-outline-primary fw-semibold py-2 w-100 fs-9 rounded-3" onclick="imprimirCredencialOficialBTI('frente')">
-                                                            <i class="ti ti-id-badge-2 me-1"></i> Solo Frente (PVC)
-                                                        </button>
-                                                    </div>
-                                                    <div class="col-6">
-                                                        <button type="button" class="btn btn-outline-secondary fw-semibold py-2 w-100 fs-9 rounded-3" onclick="imprimirCredencialOficialBTI('reverso')">
-                                                            <i class="ti ti-shield me-1"></i> Solo Reverso (PVC)
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                <div>
+                                    <p class="{{ $sectionTitle }}"><i data-lucide="phone" class="tw:size-3.5"></i> Contacto de emergencia</p>
+                                    <div class="tw:grid tw:grid-cols-1 tw:gap-3 tw:sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+                                        <div>
+                                            <label for="inputCredAccidenteNombre" class="{{ $labelSm }}">Nombre</label>
+                                            <input type="text" id="inputCredAccidenteNombre" class="{{ $inputSm }}" value="Ignacio Fernández Neville" oninput="actualizarCamposCredencialDinamicos()">
+                                        </div>
+                                        <div>
+                                            <label for="inputCredAccidenteTel" class="{{ $labelSm }}">Teléfono</label>
+                                            <input type="text" id="inputCredAccidenteTel" class="{{ $inputSm }} tw:font-mono" value="231 108 9100" oninput="actualizarCamposCredencialDinamicos()">
                                         </div>
                                     </div>
+                                </div>
 
+                                <div>
+                                    <label for="inputCredDirector" class="{{ $sectionTitle }}"><i data-lucide="pen-line" class="tw:size-3.5"></i> Director del plantel</label>
+                                    <input type="text" id="inputCredDirector" class="{{ $inputSm }}" value="ING. FAUSTO MAURO LEYVA FLORES" oninput="actualizarCamposCredencialDinamicos()">
+                                </div>
+
+                                <div class=" tw:border tw:border-slate-200 tw:bg-slate-50/60 tw:p-4">
+                                    <p class="tw:m-0 tw:mb-3 tw:text-xs tw:text-slate-500">Impresión en alta definición para tarjeta PVC o papel opalina con marcas de corte.</p>
+                                    <button type="button" class="{{ $btnPrimary }} tw:w-full" onclick="imprimirCredencialOficialBTI('ambas')">
+                                        <i data-lucide="printer" class="tw:size-4"></i> Imprimir ambas caras
+                                    </button>
+                                    <div class="tw:mt-2 tw:grid tw:grid-cols-2 tw:gap-2">
+                                        <button type="button" class="{{ $btnSecondary }} tw:h-9 tw:px-3 tw:text-[0.8125rem]" onclick="imprimirCredencialOficialBTI('frente')">Solo anverso</button>
+                                        <button type="button" class="{{ $btnSecondary }} tw:h-9 tw:px-3 tw:text-[0.8125rem]" onclick="imprimirCredencialOficialBTI('reverso')">Solo reverso</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- PANE: FORMATO EXTRAORDINARIO -->
-                    <div class="tab-pane fade" id="pane-extraordinario" role="tabpanel">
-                        <div class="glass-header mb-4">
-                            <h5 class="fw-bold mb-1 text-slate-800">
-                                <i class="ti ti-file-text me-2"></i>Formato Examen Extraordinario
-                            </h5>
-                            <p class="text-muted mb-0">Emisión de actas y recibos de derecho a exámenes extraordinarios.</p>
+                {{-- ============ EXAMEN EXTRAORDINARIO ============ --}}
+                <div class="tab-pane fade" id="pane-extraordinario" role="tabpanel">
+                    <x-imprimir.pane-header icon="file-pen" title="Examen extraordinario">
+                        Acta de examen y recibo de derecho a examen extraordinario.
+                    </x-imprimir.pane-header>
+
+                    <div class="tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-6">
+                        <div class="tw:relative tw:md:col-span-3">
+                            <label for="extraordinarioAlumnoSearch" class="{{ $label }}">Alumno</label>
+                            <div class="tw:relative">
+                                <i data-lucide="graduation-cap" class="{{ $fieldIcon }}"></i>
+                                <input type="text" id="extraordinarioAlumnoSearch" class="{{ $inputIcon }}" placeholder="Matrícula o nombre del alumno…" autocomplete="off" onkeyup="simularBusquedaAlumnoExtraordinario(this.value)">
+                            </div>
+                            <div id="extraordinario-alumno-sugerencia" class="{{ $sugerencias }}" style="display: none;"></div>
                         </div>
-                        <div class="row g-3">
-                            <!-- Alumno con búsqueda predictiva -->
-                            <div class="col-md-6 position-relative">
-                                <label class="form-label fw-semibold text-slate-700">Nombre del Alumno</label>
-                                <div class="input-group shadow-sm">
-                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="ti ti-school"></i></span>
-                                    <input type="text" id="extraordinarioAlumnoSearch" class="form-control border-start-0" placeholder="Escriba matrícula o nombre del alumno..." autocomplete="off" onkeyup="simularBusquedaAlumnoExtraordinario(this.value)">
-                                </div>
-                                <div id="extraordinario-alumno-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 220px; overflow-y: auto;">
-                                    <!-- Cargado por JS -->
-                                </div>
-                            </div>
 
-                            <!-- Grupo: escritura y sugerencias dinámicas -->
-                            <div class="col-md-6 position-relative">
-                                <label class="form-label fw-semibold text-slate-700">Grupo</label>
-                                <div class="input-group shadow-sm">
-                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="ti ti-users-group"></i></span>
-                                    <input type="text" id="extraordinarioGrupoInput" class="form-control border-start-0" placeholder="Escriba o busque grupo (ej. 101, BTI...)" autocomplete="off" oninput="buscarGruposExtraordinario(this.value)" onfocus="buscarGruposExtraordinario(this.value)">
-                                </div>
-                                <div id="extraordinario-grupo-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 220px; overflow-y: auto;">
-                                    <!-- Cargado por JS -->
-                                </div>
+                        <div class="tw:relative tw:md:col-span-3">
+                            <label for="extraordinarioGrupoInput" class="{{ $label }}">Grupo</label>
+                            <div class="tw:relative">
+                                <i data-lucide="users" class="{{ $fieldIcon }}"></i>
+                                <input type="text" id="extraordinarioGrupoInput" class="{{ $inputIcon }}" placeholder="Busca un grupo (ej. 101, BTI…)" autocomplete="off" oninput="buscarGruposExtraordinario(this.value)" onfocus="buscarGruposExtraordinario(this.value)">
                             </div>
+                            <div id="extraordinario-grupo-sugerencia" class="{{ $sugerencias }}" style="display: none;"></div>
+                        </div>
 
-                            <!-- Semestre Select para desglosar materias -->
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold text-slate-700" id="lbl-extraordinario-semestre-label">Semestre</label>
-                                <select id="extraordinarioSemestreSelect" class="form-select shadow-sm" onchange="onExtraordinarioSemestreChange()">
-                                    <option value="">Seleccione Semestre</option>
-                                    <option value="1">1º Semestre</option>
-                                    <option value="2">2º Semestre</option>
-                                    <option value="3">3º Semestre</option>
-                                    <option value="4">4º Semestre</option>
-                                    <option value="5">5º Semestre</option>
-                                    <option value="6">6º Semestre</option>
-                                </select>
+                        <div class="tw:md:col-span-2">
+                            <label for="extraordinarioSemestreSelect" class="{{ $label }}" id="lbl-extraordinario-semestre-label">Semestre</label>
+                            {{-- Opciones según plantel (BTI: semestres, BGNE: trimestres) — ver configurarPeriodoExtraordinario() --}}
+                            <select id="extraordinarioSemestreSelect" class="{{ $input }}" onchange="onExtraordinarioSemestreChange()">
+                                <option value="">Selecciona…</option>
+                            </select>
+                        </div>
+
+                        <div class="tw:relative tw:md:col-span-2">
+                            <label for="extraordinarioMateriaInput" class="{{ $label }}">Materia</label>
+                            <div class="tw:relative">
+                                <i data-lucide="book-open" class="{{ $fieldIcon }}"></i>
+                                <input type="text" id="extraordinarioMateriaInput" class="{{ $inputIcon }}" placeholder="Busca la materia…" autocomplete="off" oninput="buscarMateriasExtraordinario(this.value)" onfocus="buscarMateriasExtraordinario(this.value)">
                             </div>
+                            <div id="extraordinario-materia-sugerencia" class="{{ $sugerencias }}" style="display: none;"></div>
+                        </div>
 
-                            <!-- Materia: escritura y sugerencias filtradas por el semestre seleccionado -->
-                            <div class="col-md-4 position-relative">
-                                <label class="form-label fw-semibold text-slate-700">Materia</label>
-                                <div class="input-group shadow-sm">
-                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="ti ti-books"></i></span>
-                                    <input type="text" id="extraordinarioMateriaInput" class="form-control border-start-0" placeholder="Escriba o seleccione materia..." autocomplete="off" oninput="buscarMateriasExtraordinario(this.value)" onfocus="buscarMateriasExtraordinario(this.value)">
-                                </div>
-                                <div id="extraordinario-materia-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 220px; overflow-y: auto;">
-                                    <!-- Cargado por JS -->
-                                </div>
+                        <div class="tw:relative tw:md:col-span-2">
+                            <label for="extraordinarioDocenteInput" class="{{ $label }}">Docente</label>
+                            <div class="tw:relative">
+                                <i data-lucide="presentation" class="{{ $fieldIcon }}"></i>
+                                <input type="text" id="extraordinarioDocenteInput" class="{{ $inputIcon }}" placeholder="Busca al docente…" autocomplete="off" oninput="buscarDocentesExtraordinario(this.value)" onfocus="buscarDocentesExtraordinario(this.value)">
                             </div>
+                            <div id="extraordinario-docente-sugerencia" class="{{ $sugerencias }}" style="display: none;"></div>
+                        </div>
+                    </div>
 
-                            <!-- Docente: escritura y sugerencias predictivas -->
-                            <div class="col-md-4 position-relative">
-                                <label class="form-label fw-semibold text-slate-700">Docente</label>
-                                <div class="input-group shadow-sm">
-                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="ti ti-chalkboard"></i></span>
-                                    <input type="text" id="extraordinarioDocenteInput" class="form-control border-start-0" placeholder="Escriba o seleccione docente..." autocomplete="off" oninput="buscarDocentesExtraordinario(this.value)" onfocus="buscarDocentesExtraordinario(this.value)">
-                                </div>
-                                <div id="extraordinario-docente-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 220px; overflow-y: auto;">
-                                    <!-- Cargado por JS -->
-                                </div>
-                            </div>
-
-                            <!-- Resumen y botón para generar acta -->
-                            <div class="col-12 mt-4" id="extraordinario-info-alumno" style="display: none;">
-                                <div class="alert alert-warning border-0 p-3 shadow-sm" style="border-radius: 12px; background: rgba(245, 158, 11, 0.1);">
-                                    <h6 class="fw-bold mb-1 text-slate-800" id="lbl-extraordinario-nombre"></h6>
-                                    <div class="fs-8 mt-2 text-slate-700">
-                                        <span class="d-block">Grupo: <strong id="lbl-extraordinario-grupo"></strong></span>
-                                        <span class="d-block">Periodo: <strong id="lbl-extraordinario-semestre-val"></strong></span>
-                                        <span class="d-block">Materia: <strong id="lbl-extraordinario-materia" class="text-primary"></strong></span>
-                                        <span class="d-block">Docente: <strong id="lbl-extraordinario-docente"></strong></span>
-                                    </div>
-                                </div>
-                                <button type="button" class="btn btn-primary fw-bold py-2.5 px-4 shadow-sm" onclick="abrirPrevisualizacionExtraordinario()">
-                                    <i class="ti ti-eye me-2"></i> Previsualizar e Imprimir Formato
+                    <div id="extraordinario-info-alumno" class="tw:mt-6" style="display: none;">
+                        <div class="{{ $subcard }} tw:bg-slate-50/60 tw:p-5">
+                            <p class="tw:m-0 tw:text-[0.9375rem] tw:font-semibold tw:text-slate-900" id="lbl-extraordinario-nombre"></p>
+                            <dl class="tw:m-0 tw:mt-3 tw:grid tw:grid-cols-1 tw:gap-x-6 tw:gap-y-2 tw:text-[0.8125rem] tw:sm:grid-cols-2">
+                                <div class="tw:flex tw:gap-2"><dt class="tw:w-16 tw:shrink-0 tw:text-slate-500">Grupo</dt><dd class="tw:m-0 tw:font-semibold tw:text-slate-800" id="lbl-extraordinario-grupo"></dd></div>
+                                <div class="tw:flex tw:gap-2"><dt class="tw:w-16 tw:shrink-0 tw:text-slate-500">Periodo</dt><dd class="tw:m-0 tw:font-semibold tw:text-slate-800" id="lbl-extraordinario-semestre-val"></dd></div>
+                                <div class="tw:flex tw:gap-2"><dt class="tw:w-16 tw:shrink-0 tw:text-slate-500">Materia</dt><dd class="tw:m-0 tw:font-semibold tw:text-brand-700" id="lbl-extraordinario-materia"></dd></div>
+                                <div class="tw:flex tw:gap-2"><dt class="tw:w-16 tw:shrink-0 tw:text-slate-500">Docente</dt><dd class="tw:m-0 tw:font-semibold tw:text-slate-800" id="lbl-extraordinario-docente"></dd></div>
+                            </dl>
+                            <div class="tw:mt-4 tw:flex tw:justify-end tw:border-t tw:border-slate-200 tw:pt-4">
+                                <button type="button" class="{{ $btnPrimary }}" onclick="abrirPrevisualizacionExtraordinario()">
+                                    <i data-lucide="eye" class="tw:size-4"></i> Previsualizar e imprimir
                                 </button>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- PANE: FORMATO ASISTENCIAS -->
-                    <div class="tab-pane fade" id="pane-asistencias" role="tabpanel">
-                        <div class="glass-header mb-4">
-                            <h5 class="fw-bold mb-1" style="color: #334155;">
-                                <i class="ti ti-calendar-stats me-2"></i> Formato de Asistencias por Grupo
-                            </h5>
-                            <p class="text-muted mb-0">Seleccione los criterios para generar la lista de asistencia del trimestre/semestre correspondiente.</p>
-                        </div>
+                {{-- ============ ACTAS ORDINARIO (BTI) ============ --}}
+                <div class="tab-pane fade" id="pane-actas_ordinario" role="tabpanel">
+                    <x-imprimir.pane-header icon="clipboard-list" title="Actas ordinario">
+                        Genera el acta de calificaciones del grupo con la lista de sus alumnos. Las fechas son opcionales: si no las capturas, quedan en blanco para llenarlas a mano.
+                    </x-imprimir.pane-header>
 
-                        <!-- Selección de Grupo, Docente, Asignatura y Trimestre/Semestre -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-3">
-                                <label class="form-label fw-semibold text-slate-700">Grupo</label>
-                                <select id="asistenciaGrupoSelect" class="form-select shadow-sm" onchange="onAsistenciaGrupoChange()">
-                                    <option value="">Seleccione Grupo</option>
-                                    <!-- Se puebla según el CCT seleccionado -->
-                                </select>
-                            </div>
-                            <div class="col-md-4 position-relative">
-                                <label class="form-label fw-semibold text-slate-700">Docente</label>
-                                <div class="input-group shadow-sm">
-                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="ti ti-chalkboard"></i></span>
-                                    <input type="text" id="asistenciaDocenteInput" class="form-control border-start-0" placeholder="Escriba o busque docente..." autocomplete="off" oninput="buscarDocentesAsistencia(this.value)" onfocus="buscarDocentesAsistencia(this.value)">
-                                    <button class="btn btn-outline-secondary border-start-0 bg-white text-muted" type="button" id="btn-limpiar-asistencia-docente" onclick="limpiarDocenteAsistencia()" style="display: none;" title="Limpiar docente">
-                                        <i class="ti ti-x"></i>
+                    <div class="tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-3">
+                        @foreach ([
+                            ['id' => 'actaGrupo',   'label' => 'Grupo',      'icon' => 'users-round',  'ph' => 'Clave del grupo o nombre del alumno…'],
+                            ['id' => 'actaDocente', 'label' => 'Docente',    'icon' => 'presentation', 'ph' => 'Busca al docente…'],
+                            ['id' => 'actaMateria', 'label' => 'Asignatura', 'icon' => 'book-open',    'ph' => 'Busca o escribe la asignatura…'],
+                        ] as $c)
+                            <div class="tw:relative">
+                                <label for="{{ $c['id'] }}Input" class="{{ $label }}">{{ $c['label'] }}</label>
+                                <div class="tw:relative">
+                                    <i data-lucide="{{ $c['icon'] }}" class="{{ $fieldIcon }}"></i>
+                                    <input type="text" id="{{ $c['id'] }}Input" class="{{ $inputIcon }} tw:pr-10 {{ !empty($c['mono']) ? 'tw:font-mono' : '' }}" placeholder="{{ $c['ph'] }}" autocomplete="off"
+                                        role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="{{ $c['id'] }}Lista">
+                                    <button type="button" id="{{ $c['id'] }}Limpiar" class="{{ $iconBtn }}" style="display: none;" aria-label="Limpiar {{ mb_strtolower($c['label']) }}" title="Limpiar">
+                                        <i data-lucide="x" class="tw:mx-auto tw:size-4"></i>
                                     </button>
                                 </div>
-                                <div id="asistencia-docente-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 240px; overflow-y: auto;">
-                                    <!-- Cargado por JS -->
-                                </div>
-                                <select id="asistenciaDocenteSelect" style="display: none;" onchange="onAsistenciaDocenteChange()">
-                                    <option value="">Seleccione Docente</option>
-                                    @if(isset($docentes))
-                                        @foreach($docentes as $d)
-                                             @php
-                                                $dId = is_array($d) ? ($d['idDocente'] ?? $d['id'] ?? '') : ($d->idDocente ?? $d->id ?? '');
-                                                $dNom = is_array($d) ? ($d['nombreDocente'] ?? $d['nombre'] ?? '') : ($d->nombreDocente ?? $d->nombre ?? '');
-                                                $dPat = is_array($d) ? ($d['apPaternoDocente'] ?? $d['apPaterno'] ?? '') : ($d->apPaternoDocente ?? $d->apPaterno ?? '');
-                                                $dMat = is_array($d) ? ($d['apMaternoDocente'] ?? $d['apMaterno'] ?? '') : ($d->apMaternoDocente ?? $d->apMaterno ?? '');
-                                            @endphp
-                                            <option value="{{ $dId }}">
-                                                {{ trim("$dNom $dPat $dMat") }}
-                                            </option>
-                                        @endforeach
-                                    @endif
-                                </select>
+                                <div id="{{ $c['id'] }}Lista" role="listbox" class="{{ $sugerencias }}" style="display: none;"></div>
                             </div>
-                            <div class="col-md-3 position-relative">
-                                <label class="form-label fw-semibold text-slate-700">Asignatura</label>
-                                <div class="input-group shadow-sm">
-                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="ti ti-books"></i></span>
-                                    <input type="text" id="asistenciaMateriaInput" class="form-control border-start-0" placeholder="Escriba o seleccione materia..." autocomplete="off" oninput="buscarMateriasAsistencia(this.value)" onfocus="buscarMateriasAsistencia(this.value)">
-                                    <button class="btn btn-outline-secondary border-start-0 bg-white text-muted" type="button" id="btn-limpiar-asistencia-materia" onclick="limpiarMateriaAsistencia()" style="display: none;" title="Limpiar materia">
-                                        <i class="ti ti-x"></i>
+                        @endforeach
+                    </div>
+
+                    <div class="tw:mt-4 tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-3">
+                        <div>
+                            <label for="actaExamenInput" class="{{ $label }}">Examen <span class="tw:font-normal tw:text-slate-400">(opcional)</span></label>
+                            <input type="text" id="actaExamenInput" class="{{ $input }}" placeholder="Ej. Ordinario" autocomplete="off" maxlength="60">
+                        </div>
+                        <div>
+                            <label for="actaFechaExamenInput" class="{{ $label }}">Fecha de examen <span class="tw:font-normal tw:text-slate-400">(opcional)</span></label>
+                            <input type="date" id="actaFechaExamenInput" class="{{ $input }}">
+                        </div>
+                        <div>
+                            <label for="actaFechaEntregaInput" class="{{ $label }}">Fecha de entrega <span class="tw:font-normal tw:text-slate-400">(opcional)</span></label>
+                            <input type="date" id="actaFechaEntregaInput" class="{{ $input }}">
+                        </div>
+                    </div>
+
+                    <div class="tw:mt-6 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-4 tw:border-t tw:border-slate-100 tw:pt-5">
+                        <p id="actaResumen" class="tw:m-0 tw:flex tw:items-center tw:gap-2 tw:text-[0.8125rem] tw:text-slate-500">
+                            <i data-lucide="info" class="tw:size-4 tw:shrink-0"></i> Elige un grupo para ver cuántos alumnos aparecerán en el acta.
+                        </p>
+                        <button type="button" id="btnGenerarActa" class="{{ $btnPrimary }}" onclick="generarActaOrdinarioPdf()">
+                            <i data-lucide="printer" class="tw:size-4"></i> Generar acta (PDF)
+                        </button>
+                    </div>
+                </div>
+
+                {{-- ============ ACTAS ORDINARIO (BGNE) ============ --}}
+                <div class="tab-pane fade" id="pane-actas_bgne" role="tabpanel">
+                    <x-imprimir.pane-header icon="clipboard-list" title="Actas ordinario">
+                        Control de calificaciones finales por trimestre (módulo). Las fechas de inicio y fin se calculan con el inicio del grupo y puedes corregirlas; la fecha de entrega es opcional.
+                    </x-imprimir.pane-header>
+
+                    <div class="tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+                        <div class="tw:relative">
+                            <label for="actaBgneGrupoInput" class="{{ $label }}">Grupo</label>
+                            <div class="tw:relative">
+                                <i data-lucide="users-round" class="{{ $fieldIcon }}"></i>
+                                <input type="text" id="actaBgneGrupoInput" class="{{ $inputIcon }} tw:pr-10" placeholder="Clave del grupo o nombre del alumno…" autocomplete="off"
+                                    role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="actaBgneGrupoLista">
+                                <button type="button" id="actaBgneGrupoLimpiar" class="{{ $iconBtn }}" style="display: none;" aria-label="Limpiar grupo" title="Limpiar">
+                                    <i data-lucide="x" class="tw:mx-auto tw:size-4"></i>
+                                </button>
+                            </div>
+                            <div id="actaBgneGrupoLista" role="listbox" class="{{ $sugerencias }}" style="display: none;"></div>
+                        </div>
+                        <div>
+                            <label for="actaBgneTrimestreSelect" class="{{ $label }}">Trimestre (módulo)</label>
+                            <select id="actaBgneTrimestreSelect" class="{{ $input }}" onchange="onActaBgneTrimestreChange()">
+                                <option value="">Selecciona…</option>
+                                @foreach (['1er', '2do', '3er', '4to', '5to', '6to'] as $i => $ord)
+                                    <option value="{{ $i + 1 }}">{{ $ord }} trimestre</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="tw:mt-4 tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-2">
+                        @foreach ([
+                            ['id' => 'actaBgneMateria', 'label' => 'Asignatura', 'icon' => 'book-open',    'ph' => 'Busca o escribe la asignatura…'],
+                            ['id' => 'actaBgneDocente', 'label' => 'Docente',    'icon' => 'presentation', 'ph' => 'Busca o escribe al docente…'],
+                        ] as $c)
+                            <div class="tw:relative">
+                                <label for="{{ $c['id'] }}Input" class="{{ $label }}">{{ $c['label'] }}</label>
+                                <div class="tw:relative">
+                                    <i data-lucide="{{ $c['icon'] }}" class="{{ $fieldIcon }}"></i>
+                                    <input type="text" id="{{ $c['id'] }}Input" class="{{ $inputIcon }} tw:pr-10" placeholder="{{ $c['ph'] }}" autocomplete="off"
+                                        role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="{{ $c['id'] }}Lista">
+                                    <button type="button" id="{{ $c['id'] }}Limpiar" class="{{ $iconBtn }}" style="display: none;" aria-label="Limpiar {{ mb_strtolower($c['label']) }}" title="Limpiar">
+                                        <i data-lucide="x" class="tw:mx-auto tw:size-4"></i>
                                     </button>
                                 </div>
-                                <div id="asistencia-materia-sugerencia" class="list-group mt-1 shadow position-absolute w-100" style="display: none; z-index: 1050; max-height: 240px; overflow-y: auto;">
-                                    <!-- Cargado por JS -->
-                                </div>
+                                <div id="{{ $c['id'] }}Lista" role="listbox" class="{{ $sugerencias }}" style="display: none;"></div>
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label fw-semibold text-slate-700" id="lbl-asistencia-ciclo-label">Trimestre</label>
-                                <select id="asistenciaCicloSelect" class="form-select shadow-sm" onchange="onAsistenciaCicloChange()">
-                                    <!-- Cargado dinámicamente por JS (Semestres para BTI, Trimestres para BGNE) -->
-                                </select>
+                        @endforeach
+                    </div>
+
+                    <div class="tw:mt-4 tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-3">
+                        <div>
+                            <label for="actaBgneFechaInicioInput" class="{{ $label }}">Fecha de inicio</label>
+                            <input type="date" id="actaBgneFechaInicioInput" class="{{ $input }}">
+                        </div>
+                        <div>
+                            <label for="actaBgneFechaFinInput" class="{{ $label }}">Fecha de fin</label>
+                            <input type="date" id="actaBgneFechaFinInput" class="{{ $input }}">
+                        </div>
+                        <div>
+                            <label for="actaBgneFechaEntregaInput" class="{{ $label }}">Fecha de entrega <span class="tw:font-normal tw:text-slate-400">(opcional)</span></label>
+                            <input type="date" id="actaBgneFechaEntregaInput" class="{{ $input }}">
+                        </div>
+                    </div>
+
+                    <div class="tw:mt-6 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-4 tw:border-t tw:border-slate-100 tw:pt-5">
+                        <p id="actaBgneResumen" class="tw:m-0 tw:flex tw:items-center tw:gap-2 tw:text-[0.8125rem] tw:text-slate-500">
+                            <i data-lucide="info" class="tw:size-4 tw:shrink-0"></i> Elige un grupo para ver cuántos alumnos aparecerán en el acta.
+                        </p>
+                        <button type="button" class="{{ $btnPrimary }}" onclick="generarActaBgnePdf()">
+                            <i data-lucide="printer" class="tw:size-4"></i> Generar acta (PDF)
+                        </button>
+                    </div>
+                </div>
+
+                {{-- ============ LISTA DE ASISTENCIAS ============ --}}
+                <div class="tab-pane fade" id="pane-asistencias" role="tabpanel">
+                    <x-imprimir.pane-header icon="calendar-check" title="Lista de asistencias">
+                        Genera la lista de asistencia del grupo para el periodo correspondiente.
+                    </x-imprimir.pane-header>
+
+                    <div class="tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-2 tw:xl:grid-cols-[minmax(0,3fr)_minmax(0,3fr)_minmax(0,3fr)_minmax(0,2fr)]">
+                        <div class="tw:relative">
+                            <label for="asistenciaGrupoInput" class="{{ $label }}">Grupo</label>
+                            <div class="tw:relative">
+                                <i data-lucide="users-round" class="{{ $fieldIcon }}"></i>
+                                <input type="text" id="asistenciaGrupoInput" class="{{ $inputIcon }} tw:pr-10 tw:font-mono" placeholder="Escribe la clave o elige…" autocomplete="off"
+                                    role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="asistencia-grupo-sugerencia"
+                                    oninput="onGrupoAsistenciaInput(this.value)" onfocus="buscarGruposAsistencia(this.value)" onkeydown="onGrupoAsistenciaKeydown(event)" onblur="onGrupoAsistenciaBlur()">
+                                <button type="button" id="btn-limpiar-asistencia-grupo" class="{{ $iconBtn }}" onclick="limpiarGrupoAsistencia()" style="display: none;" aria-label="Limpiar grupo" title="Limpiar grupo">
+                                    <i data-lucide="x" class="tw:mx-auto tw:size-4"></i>
+                                </button>
                             </div>
+                            <div id="asistencia-grupo-sugerencia" role="listbox" class="{{ $sugerencias }}" style="display: none;"></div>
+                            {{-- Fuente de verdad del grupo elegido (el resto del módulo lee su .value) --}}
+                            <select id="asistenciaGrupoSelect" style="display: none;" onchange="onAsistenciaGrupoChange()" aria-hidden="true" tabindex="-1">
+                                <option value="">Selecciona…</option>
+                                <!-- Se puebla según el CCT seleccionado -->
+                            </select>
                         </div>
 
-                        <!-- Selector de Periodo y Rango de Fechas para Sistema Escolarizado -->
-                        <div class="card p-3 border-0 bg-white shadow-sm mb-4 rounded-3" id="asistencia-periodo-escolarizado-row" style="display: none; border-left: 4px solid #0284c7 !important;">
-                            <div class="row g-3 align-items-center">
-                                <div class="col-md-5">
-                                    <label class="form-label fw-semibold text-slate-700 mb-1">
-                                        <i class="ti ti-calendar me-1"></i> Periodo de Asistencias (Escolarizado)
-                                    </label>
-                                    <select id="asistenciaPeriodoSelect" class="form-select shadow-sm" onchange="onAsistenciaPeriodoSelectChange()">
-                                        <option value="1">1° Periodo: 31 Ago - 30 Oct (45 días hábiles)</option>
-                                        <option value="2">2° Periodo: 02 Nov - 18 Dic (35 días hábiles)</option>
-                                        <option value="custom">📅 Rango Personalizado en Calendario...</option>
+                        <div class="tw:relative">
+                            <label for="asistenciaDocenteInput" class="{{ $label }}">Docente <span class="tw:font-normal tw:text-slate-400">(opcional)</span></label>
+                            <div class="tw:relative">
+                                <i data-lucide="presentation" class="{{ $fieldIcon }}"></i>
+                                <input type="text" id="asistenciaDocenteInput" class="{{ $inputIcon }} tw:pr-10" placeholder="Busca al docente…" autocomplete="off" oninput="buscarDocentesAsistencia(this.value)" onfocus="buscarDocentesAsistencia(this.value)">
+                                <button type="button" id="btn-limpiar-asistencia-docente" class="{{ $iconBtn }}" onclick="limpiarDocenteAsistencia()" style="display: none;" aria-label="Limpiar docente" title="Limpiar docente">
+                                    <i data-lucide="x" class="tw:mx-auto tw:size-4"></i>
+                                </button>
+                            </div>
+                            <div id="asistencia-docente-sugerencia" class="{{ $sugerencias }}" style="display: none;"></div>
+                            <select id="asistenciaDocenteSelect" style="display: none;" onchange="onAsistenciaDocenteChange()">
+                                <option value="">Seleccione Docente</option>
+                                @if(isset($docentes))
+                                    @foreach($docentes as $d)
+                                        @php
+                                            $dId = is_array($d) ? ($d['idDocente'] ?? $d['id'] ?? '') : ($d->idDocente ?? $d->id ?? '');
+                                            $dNom = is_array($d) ? ($d['nombreDocente'] ?? $d['nombre'] ?? '') : ($d->nombreDocente ?? $d->nombre ?? '');
+                                            $dPat = is_array($d) ? ($d['apPaternoDocente'] ?? $d['apPaterno'] ?? '') : ($d->apPaternoDocente ?? $d->apPaterno ?? '');
+                                            $dMat = is_array($d) ? ($d['apMaternoDocente'] ?? $d['apMaterno'] ?? '') : ($d->apMaternoDocente ?? $d->apMaterno ?? '');
+                                        @endphp
+                                        <option value="{{ $dId }}">{{ trim("$dNom $dPat $dMat") }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+
+                        <div class="tw:relative">
+                            <label for="asistenciaMateriaInput" class="{{ $label }}">Asignatura</label>
+                            <div class="tw:relative">
+                                <i data-lucide="book-open" class="{{ $fieldIcon }}"></i>
+                                <input type="text" id="asistenciaMateriaInput" class="{{ $inputIcon }} tw:pr-10" placeholder="Busca la materia…" autocomplete="off" oninput="buscarMateriasAsistencia(this.value)" onfocus="buscarMateriasAsistencia(this.value)">
+                                <button type="button" id="btn-limpiar-asistencia-materia" class="{{ $iconBtn }}" onclick="limpiarMateriaAsistencia()" style="display: none;" aria-label="Limpiar materia" title="Limpiar materia">
+                                    <i data-lucide="x" class="tw:mx-auto tw:size-4"></i>
+                                </button>
+                            </div>
+                            <div id="asistencia-materia-sugerencia" class="{{ $sugerencias }}" style="display: none;"></div>
+                        </div>
+
+                        <div>
+                            <label for="asistenciaCicloSelect" class="{{ $label }}" id="lbl-asistencia-ciclo-label">Trimestre</label>
+                            <select id="asistenciaCicloSelect" class="{{ $input }}" onchange="onAsistenciaCicloChange()">
+                                <!-- Cargado dinámicamente por JS (Semestres para BTI, Trimestres para BGNE) -->
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- Periodo (solo BTI escolarizado) --}}
+                    <div id="asistencia-periodo-escolarizado-row" class="tw:mt-5" style="display: none;">
+                        <div class="{{ $subcard }} tw:bg-slate-50/60 tw:p-4">
+                            <div class="tw:grid tw:grid-cols-1 tw:items-end tw:gap-4 tw:lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+                                <div>
+                                    <label for="asistenciaPeriodoSelect" class="{{ $label }}">Periodo de asistencias</label>
+                                    <select id="asistenciaPeriodoSelect" class="{{ $input }}" onchange="onAsistenciaPeriodoSelectChange()">
+                                        <option value="1">1° Periodo: 31 Ago – 30 Oct (45 días hábiles)</option>
+                                        <option value="2">2° Periodo: 02 Nov – 18 Dic (35 días hábiles)</option>
+                                        <option value="custom">Rango personalizado…</option>
                                     </select>
                                 </div>
-                                <div class="col-md-7" id="asistencia-custom-fechas-container" style="display: none;">
-                                    <div class="row g-2 align-items-end">
-                                        <div class="col-sm-5">
-                                            <label class="form-label fw-semibold text-slate-600 fs-9 mb-1">Desde (Fecha Inicio)</label>
-                                            <input type="date" id="asistenciaFechaInicioInput" class="form-control form-control-sm shadow-sm" value="2026-08-31" onchange="onAsistenciaCustomFechasChange()">
+                                <div id="asistencia-custom-fechas-container" style="display: none;">
+                                    <div class="tw:grid tw:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] tw:items-end tw:gap-3">
+                                        <div>
+                                            <label for="asistenciaFechaInicioInput" class="{{ $labelSm }}">Desde</label>
+                                            <input type="date" id="asistenciaFechaInicioInput" class="{{ $input }}" value="2026-08-31" onchange="onAsistenciaCustomFechasChange()">
                                         </div>
-                                        <div class="col-sm-5">
-                                            <label class="form-label fw-semibold text-slate-600 fs-9 mb-1">Hasta (Fecha Fin)</label>
-                                            <input type="date" id="asistenciaFechaFinInput" class="form-control form-control-sm shadow-sm" value="2026-10-30" onchange="onAsistenciaCustomFechasChange()">
+                                        <div>
+                                            <label for="asistenciaFechaFinInput" class="{{ $labelSm }}">Hasta</label>
+                                            <input type="date" id="asistenciaFechaFinInput" class="{{ $input }}" value="2026-10-30" onchange="onAsistenciaCustomFechasChange()">
                                         </div>
-                                        <div class="col-sm-2 text-center text-sm-start">
-                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-2 w-100 fs-9" id="asistencia-dias-badge" title="Días hábiles de lunes a viernes">
-                                                45 días
-                                            </span>
-                                        </div>
+                                        <span id="asistencia-dias-badge" title="Días hábiles de lunes a viernes"
+                                            class="{{ $chip }} tw:h-10 tw:bg-success-100 tw:px-3 tw:text-success-700">45 días</span>
                                     </div>
                                 </div>
                             </div>
-                            <div id="asistencia-exceso-alerta" class="alert alert-warning py-1.5 px-3 mt-2 mb-0 fs-8 d-flex align-items-center rounded-2" style="display: none;">
-                                <i class="ti ti-alert-triangle text-warning me-2 fs-7"></i>
-                                <div>
-                                    <strong id="asistencia-exceso-titulo">Rango excede el límite de 1 hoja.</strong> 
-                                    <span id="asistencia-exceso-mensaje">Se abarcarán un máximo de 45 días hábiles para garantizar que quepa en 1 sola página.</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-12 mt-4" id="asistencia-preview-card" style="display: none;">
-                            <div class="card p-4 border-0 bg-light shadow-sm" style="border-radius: 16px; border-left: 5px solid #0284c7 !important;">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                                    <div>
-                                        <h5 class="fw-bold mb-1 text-slate-800" id="lbl-asistencia-preview-docente"></h5>
-                                        <div class="fs-8 mt-2 text-slate-700">
-                                            <span class="d-block">Asignatura: <strong id="lbl-asistencia-preview-materia" class="text-primary"></strong></span>
-                                            <span class="d-block">Grupo: <strong id="lbl-asistencia-preview-grupo"></strong></span>
-                                            <span class="d-block" id="lbl-asistencia-preview-ciclo-texto">Periodo: <strong id="lbl-asistencia-preview-term"></strong></span>
-                                            <span class="d-block text-muted" id="lbl-asistencia-preview-fechas-line">Fechas estimadas: <strong id="lbl-asistencia-preview-fechas-val" class="text-dark"></strong></span>
-                                            <div class="mt-2">
-                                                <span class="badge bg-success-subtle text-success fw-bold px-2 py-1" id="lbl-asistencia-preview-alumnos">0 alumnos inscritos</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="text-end">
-                                        <button type="button" class="btn btn-primary fw-bold py-2.5 px-4 shadow-sm" onclick="generarListaAsistenciaOficialPdf()">
-                                            <i class="ti ti-printer me-2"></i> Generar Lista (PDF)
-                                        </button>
-                                    </div>
-                                </div>
+                            {{-- El JS alterna su display: no usar utilidades de display aquí --}}
+                            <div id="asistencia-exceso-alerta" class="tw:mt-3 tw:border tw:border-warning-600/30 tw:bg-warning-50 tw:px-3 tw:py-2.5 tw:text-[0.8125rem] tw:text-slate-700" style="display: none;">
+                                <i data-lucide="triangle-alert" class="tw:mr-1.5 tw:inline tw:size-4 tw:align-[-3px] tw:text-warning-600"></i>
+                                <strong id="asistencia-exceso-titulo" class="tw:font-semibold">Rango excede el límite de 1 hoja.</strong>
+                                <span id="asistencia-exceso-mensaje">Se abarcarán un máximo de 45 días hábiles para garantizar que quepa en 1 sola página.</span>
                             </div>
                         </div>
                     </div>
 
+                    <div id="asistencia-preview-card" class="tw:mt-6" style="display: none;">
+                        <div class="{{ $subcard }} tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-5 tw:bg-slate-50/60 tw:p-5">
+                            <div class="tw:min-w-0">
+                                <p class="tw:m-0 tw:text-[0.9375rem] tw:font-semibold tw:text-slate-900" id="lbl-asistencia-preview-docente"></p>
+                                <dl class="tw:m-0 tw:mt-3 tw:grid tw:grid-cols-1 tw:gap-x-6 tw:gap-y-1.5 tw:text-[0.8125rem] tw:sm:grid-cols-2">
+                                    <div class="tw:flex tw:gap-2"><dt class="tw:w-20 tw:shrink-0 tw:text-slate-500">Asignatura</dt><dd class="tw:m-0 tw:font-semibold tw:text-brand-700" id="lbl-asistencia-preview-materia"></dd></div>
+                                    <div class="tw:flex tw:gap-2"><dt class="tw:w-20 tw:shrink-0 tw:text-slate-500">Grupo</dt><dd class="tw:m-0 tw:font-semibold tw:text-slate-800" id="lbl-asistencia-preview-grupo"></dd></div>
+                                    <div id="lbl-asistencia-preview-ciclo-texto" class="tw:text-slate-500">Periodo: <strong class="tw:font-semibold tw:text-slate-800" id="lbl-asistencia-preview-term"></strong></div>
+                                    <div id="lbl-asistencia-preview-fechas-line" class="tw:text-slate-500">Fechas: <strong class="tw:font-semibold tw:text-slate-800" id="lbl-asistencia-preview-fechas-val"></strong></div>
+                                </dl>
+                                <span class="{{ $chip }} tw:mt-3 tw:bg-success-100 tw:text-success-700" id="lbl-asistencia-preview-alumnos">0 alumnos inscritos</span>
+                            </div>
+                            <button type="button" class="{{ $btnPrimary }}" onclick="generarListaAsistenciaOficialPdf()">
+                                <i data-lucide="printer" class="tw:size-4"></i> Generar lista (PDF)
+                            </button>
+                        </div>
+                    </div>
                 </div>
+
             </div>
-        </div>
+        </section>
     </div>
 </div>
 
@@ -843,29 +898,22 @@
     <!-- MODAL DE PREVISUALIZACIÓN Y IMPRESIÓN DE EXAMEN EXTRAORDINARIO -->
     <div class="modal fade" id="modalExtraordinarioPreview" tabindex="-1" aria-labelledby="modalExtraordinarioLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-scrollable">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background: #f1f5f9;">
-                <div class="modal-header py-3 px-4 d-flex justify-content-between align-items-center">
-                    <h5 class="modal-title fw-bold mb-0" id="modalExtraordinarioLabel">
-                        <i class="ti ti-file-certificate me-2" style="color: #1E5B66;"></i> Vista Previa - Acta y Recibo de Examen Extraordinario
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalExtraordinarioLabel">
+                        <i data-lucide="file-pen" class="tw:size-5"></i> Vista previa del acta y recibo de examen extraordinario
                     </h5>
-                    <div class="d-flex align-items-center gap-2">
-                        <button type="button" class="btn btn-secondary btn-sm fw-semibold shadow-sm px-3" onclick="ejecutarImpresionExtraordinario()">
-                            <i class="ti ti-printer me-1" style="color: #1E5B66;"></i> Imprimir Documento
-                        </button>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-                <div class="modal-body p-4 d-flex justify-content-center" style="max-height: calc(85vh - 120px); overflow-y: auto;">
+                <div class="modal-body tw:flex tw:justify-center tw:bg-slate-100 tw:p-6" style="max-height: calc(85vh - 120px); overflow-y: auto;">
                     <div id="extraordinarioHojaImpresion" style="width: 100%; max-width: 760px; background: #ffffff; padding: 28px 32px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); border: 1px solid #cbd5e1; font-family: Arial, Helvetica, sans-serif; color: #000000;">
                         <!-- Se puebla dinámicamente con renderFormatoExtraordinario() -->
                     </div>
                 </div>
-                <div class="modal-footer bg-white py-2.5 px-4 d-flex justify-content-between border-top">
-                    <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">
-                        <i class="ti ti-x me-1"></i> Cerrar
-                    </button>
-                    <button type="button" class="btn btn-primary fw-bold px-4 shadow-sm" onclick="ejecutarImpresionExtraordinario()">
-                        <i class="ti ti-printer me-2"></i> Imprimir Formato
+                <div class="modal-footer">
+                    <button type="button" class="{{ $btnSecondary }}" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="{{ $btnPrimary }}" onclick="ejecutarImpresionExtraordinario()">
+                        <i data-lucide="printer" class="tw:size-4"></i> Imprimir formato
                     </button>
                 </div>
             </div>
@@ -890,155 +938,29 @@
 
 <!-- ESTILOS SAAS MODERNO PARA MÓDULO IMPRIMIR -->
 <style>
-    /* Segmented Control Horizontal CCT */
-    .cct-segmented-control {
-        display: inline-flex;
-        background: var(--bg-muted);
-        padding: 4px;
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border-subtle);
-        margin-bottom: 20px;
-        gap: 4px;
-    }
-
-    .cct-tab {
-        padding: 8px 16px;
-        border-radius: var(--radius-sm);
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: all 0.15s ease;
-        border: none;
-        background: transparent;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .cct-tab:hover {
-        color: var(--text-primary);
-    }
-
-    .cct-tab.selected-cct,
-    .cct-tab.active {
-        background: var(--bg-surface) !important;
-        color: var(--text-primary) !important;
-        font-weight: 600 !important;
-        box-shadow: var(--shadow-card) !important;
-    }
-
-    /* Master-Detail Layout (260px Submenú + 1fr Panel) */
-    .formatos-master-detail {
-        display: grid !important;
-        grid-template-columns: 260px 1fr;
-        gap: 24px;
-        align-items: start;
-    }
-
-    @media (max-width: 991px) {
-        .formatos-master-detail {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .saas-card {
-        background: var(--bg-surface);
-        border: 1px solid var(--border-subtle);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-card);
-    }
-
-    /* Submenú de Formatos (Izquierda) */
-    #submodulos-nav .nav-link {
-        color: var(--text-secondary);
-        background: transparent;
-        border-radius: var(--radius-sm);
-        font-size: 0.875rem;
-        font-weight: 500;
+    /* Ítems de sugerencias generados por JS (buscadores de alumno, grupo, materia, docente) */
+    #submodulos-tab-content .list-group > .list-group-item {
+        border: 0;
+        border-radius: 8px;
+        margin: 0;
         padding: 9px 12px;
-        transition: all 0.15s ease;
-        border: none;
-        text-align: left;
-        margin-bottom: 3px;
+        font-size: 0.8125rem;
+        color: #0F172A;
+        background: transparent;
+        transition: background-color .15s ease;
     }
-
-    #submodulos-nav .nav-link:hover {
-        color: var(--text-primary);
-        background: var(--bg-muted);
+    #submodulos-tab-content .list-group > .list-group-item + .list-group-item { border-top: 0; }
+    #submodulos-tab-content .list-group > .list-group-item:hover,
+    #submodulos-tab-content .list-group > .list-group-item:focus-visible {
+        background: #EFF6F7;
+        color: #0F172A;
+        outline: none;
     }
-
-    #submodulos-nav .nav-link.active {
-        color: var(--brand-primary) !important;
-        background: var(--brand-primary-subtle) !important;
-        font-weight: 600 !important;
-        box-shadow: none !important;
-    }
-
-    /* Placeholder Visor / Estado Vacío */
-    .document-preview-placeholder {
-        margin-top: 20px;
-        border: 1px dashed #CBD5E1;
-        border-radius: var(--radius-md);
-        background: var(--bg-canvas);
-        padding: 36px 24px;
-        text-align: center;
-        color: var(--text-secondary);
-    }
-
-    /* Tabla Estilizada */
-    .glass-table {
-        border-collapse: separate;
-        border-spacing: 0 8px;
-    }
-
-    .glass-table thead th {
-        border: none;
-        color: #64748b;
-        font-weight: 700;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        padding: 12px 16px;
-    }
-
-    .glass-table tbody tr {
-        background: rgba(255, 255, 255, 0.45);
-        border-radius: 12px;
-        transition: all 0.2s ease;
-    }
-
-    .glass-table tbody tr:hover {
-        transform: translateY(-2px);
-        background: #ffffff;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    }
-
-    .glass-table tbody td {
-        border: none;
-        padding: 12px 16px;
-    }
-
-    .glass-table tbody tr td:first-child {
-        border-top-left-radius: 12px;
-        border-bottom-left-radius: 12px;
-    }
-
-    .glass-table tbody tr td:last-child {
-        border-top-right-radius: 12px;
-        border-bottom-right-radius: 12px;
-    }
-
-    /* Avatar */
-    .avatar-sm {
-        width: 34px;
-        height: 34px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 0.85rem;
-        background: linear-gradient(135deg, #38bdf8, #0284c7) !important;
+    #submodulos-tab-content .list-group > .list-group-item .badge {
+        background: #F1F5F9 !important;
+        color: #475569 !important;
+        font-weight: 600;
+        border-radius: 999px;
     }
 
     /* DISEÑO OFICIAL DE CREDENCIAL ESCOLARIZADO BTI */
@@ -1409,11 +1331,11 @@
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background: #ffffff;">
                 <div class="modal-header py-3 px-4 d-flex justify-content-between align-items-center">
                     <h5 class="modal-title fw-bold mb-0" id="modalKardexLabel">
-                        <i class="ti ti-school me-2" style="color: #1E5B66;"></i> Kárdex Oficial y Calificaciones
+                        <i class="ti ti-school me-2" style="color: #26687B;"></i> Kárdex Oficial y Calificaciones
                     </h5>
                     <div class="d-flex align-items-center gap-2">
                         <button type="button" class="btn btn-secondary btn-sm fw-semibold shadow-sm px-3" onclick="imprimirKardex()">
-                            <i class="ti ti-printer me-1" style="color: #1E5B66;"></i> Imprimir Kárdex
+                            <i class="ti ti-printer me-1" style="color: #26687B;"></i> Imprimir Kárdex
                         </button>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -1485,33 +1407,194 @@
         </div>
     </div>
 
+<!-- ESTILO COMPARTIDO DE DOCUMENTOS IMPRESOS (mismo lenguaje visual que la lista de asistencia PDF) -->
+<script>
+    window.RP = (function () {
+        const css = `
+            .rp, .rp * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .rp { font-family: Helvetica, Arial, sans-serif; color: #1f2a2c; font-size: 8pt; line-height: 1.3; text-align: left; }
+            .rp table { border-collapse: collapse; }
+
+            /* Encabezado */
+            .rp-head { width: 100%; display: flex; align-items: center; gap: 4mm; }
+            .rp-logo { width: 16mm; height: 16mm; object-fit: contain; flex-shrink: 0; }
+            .rp-head-main { flex: 1; min-width: 0; }
+            .rp-inst { font-size: 12.5pt; font-weight: bold; letter-spacing: .5px; text-transform: uppercase; color: #12393f; margin: 0; line-height: 1.15; }
+            .rp-title { font-size: 9pt; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #26687B; margin-top: 1.2mm; }
+            .rp-sub { font-size: 6.8pt; color: #5b6b6e; margin-top: .8mm; }
+            .rp-head-side { text-align: right; flex-shrink: 0; }
+            .rp-tag { display: inline-block; background: #26687B; color: #fff; font-size: 6.8pt; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; padding: 1.2mm 3mm; border-radius: 2px; white-space: nowrap; }
+            .rp-tag-sub { margin-top: 1.2mm; font-size: 6.6pt; color: #5b6b6e; text-transform: uppercase; letter-spacing: .5px; }
+            .rp-folio { font-size: 6.2pt; font-weight: bold; letter-spacing: 1.2px; color: #5b6b6e; text-transform: uppercase; }
+            .rp-folio-val { font-size: 10pt; font-weight: bold; color: #9a2a1f; letter-spacing: .4px; }
+            .rp-rule { height: .9mm; background: #26687B; margin-top: 2.2mm; }
+            .rp-rule-thin { height: .3mm; background: #c9a24b; margin-top: .5mm; margin-bottom: 3mm; }
+
+            /* Tarjetas de datos */
+            .rp-meta { display: flex; gap: 2.5mm; margin-bottom: 3mm; }
+            .rp-card { flex: 1; min-width: 0; border: .6pt solid #b9c9cc; border-left: 1.4mm solid #26687B; background: #f4f8f8; padding: 1.3mm 2.5mm 1.5mm; }
+            .rp-label { display: block; font-size: 5.8pt; font-weight: bold; letter-spacing: 1.1px; text-transform: uppercase; color: #5b6b6e; }
+            .rp-value { display: block; margin-top: .6mm; font-size: 8.4pt; font-weight: bold; text-transform: uppercase; color: #12393f; }
+            .rp-value.lg { font-size: 10pt; }
+
+            /* Títulos de sección */
+            .rp-section { display: flex; align-items: center; gap: 2mm; font-size: 7pt; font-weight: bold; letter-spacing: 1.4px; text-transform: uppercase; color: #12393f; margin: 0 0 1.4mm; }
+            .rp-section::before { content: ""; width: 1.2mm; height: 3.2mm; background: #c9a24b; display: inline-block; }
+
+            /* Tablas */
+            .rp-table { width: 100%; border: 1pt solid #26687B; }
+            .rp-table th, .rp-table td { border: .5pt solid #a9bcc0; padding: 1.2mm 1.8mm; vertical-align: middle; }
+            .rp-table thead th { background: #26687B; color: #fff; font-size: 6.6pt; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; text-align: center; border-color: #26687B; line-height: 1.2; }
+            .rp-table thead tr.sub th { background: #dceaec; color: #12393f; border-color: #a9bcc0; font-size: 6.3pt; }
+            .rp-table thead th.l { text-align: left; }
+            .rp-table tbody tr:nth-child(even) td { background: #f5f9f9; }
+            .rp-table td.c { text-align: center; }
+            .rp-table td.r { text-align: right; }
+            .rp-table td.mat { text-transform: uppercase; font-size: 7.2pt; }
+            .rp-table td.n { text-align: center; font-weight: bold; font-size: 8pt; }
+            .rp-table td.fin { background: #fbf3df !important; }
+            .rp-table tr.tot td { background: #dceaec !important; font-weight: bold; color: #12393f; border-top: 1pt solid #26687B; }
+            .rp-table tr.tot td.lbl { text-align: right; font-size: 6.6pt; letter-spacing: 1.1px; text-transform: uppercase; }
+            .rp-table tr.gran td { background: #26687B !important; color: #fff; font-weight: bold; border-color: #26687B; }
+            .rp-table tr.gran td.lbl { text-align: right; font-size: 6.8pt; letter-spacing: 1.2px; text-transform: uppercase; }
+            .rp-fail { color: #b42318 !important; font-weight: bold; }
+            .rp-equiv { color: #8a6514 !important; font-weight: bold; font-size: 6.6pt; letter-spacing: .8px; }
+            .rp-gran .rp-fail { color: #ffd2cc !important; }
+
+            /* Paneles e indicadores */
+            .rp-box { border: .6pt solid #b9c9cc; background: #fff; }
+            .rp-box-h { background: #26687B; color: #fff; font-size: 6.5pt; font-weight: bold; letter-spacing: 1.1px; text-transform: uppercase; text-align: center; padding: 1.2mm 2mm; }
+            .rp-box-b { padding: 2mm 2.5mm; }
+            .rp-stat { text-align: center; }
+            .rp-stat .v { font-size: 15pt; font-weight: bold; color: #12393f; line-height: 1.1; }
+            .rp-stat .v.sm { font-size: 11pt; }
+            .rp-stat .s { font-size: 6.4pt; font-weight: bold; color: #26687B; letter-spacing: .6px; text-transform: uppercase; margin-top: .6mm; }
+            .rp-stat .h { font-size: 6pt; color: #7a8a8d; margin-top: .4mm; }
+            .rp-chip { display: inline-block; background: #dceaec; color: #12393f; font-weight: bold; padding: .3mm 2mm; border-radius: 2px; font-size: 7pt; }
+            .rp-chip.alert { background: #fbe3df; color: #9a2a1f; }
+
+            .rp-note { font-size: 7pt; color: #4c5d60; text-align: justify; line-height: 1.45; }
+            .rp-fill { border-bottom: .8pt solid #12393f; padding: 0 2mm; font-weight: bold; text-transform: uppercase; color: #12393f; }
+
+            /* Firmas */
+            .rp-firmas { display: flex; justify-content: space-between; align-items: flex-end; gap: 6mm; }
+            .rp-firma { flex: 1; text-align: center; }
+            .rp-firma .ln { border-top: .8pt solid #12393f; margin: 0 6% 1.2mm; padding-top: 0; }
+            .rp-firma .nm { font-size: 7.2pt; font-weight: bold; text-transform: uppercase; color: #12393f; margin-bottom: .8mm; }
+            .rp-firma .rl { font-size: 6.6pt; font-weight: bold; letter-spacing: .9px; text-transform: uppercase; color: #26687B; }
+            .rp-firma .dt { font-size: 6.4pt; color: #5b6b6e; margin-top: .3mm; }
+            .rp-sello { width: 26mm; height: 20mm; flex: 0 0 26mm; border: .8pt dashed #9fb3b7; border-radius: 2mm; display: flex; align-items: center; justify-content: center; font-size: 6.2pt; font-weight: bold; letter-spacing: 1.2px; color: #9fb3b7; text-transform: uppercase; }
+
+            /* Pie */
+            .rp-foot { margin-top: 4mm; border-top: .3mm solid #c9a24b; padding-top: 1.4mm; display: flex; justify-content: space-between; font-size: 6.4pt; color: #5b6b6e; letter-spacing: .6px; text-transform: uppercase; }
+            .rp-foot b { color: #26687B; }
+            .rp-cut { display: flex; align-items: center; gap: 3mm; margin: 4mm 0; font-size: 6.2pt; font-weight: bold; letter-spacing: 1.2px; color: #7a8a8d; text-transform: uppercase; }
+            .rp-cut::before, .rp-cut::after { content: ""; flex: 1; border-top: .8pt dashed #9fb3b7; }
+            .rp-page-break { page-break-before: always; break-before: page; height: 0; }
+        `;
+
+        const esc = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+        /** Encabezado: { titulo, subtitulo?, lineas?: [], tag?, tagSub?, folio? } */
+        function head(o) {
+            const lineas = (o.lineas || []).filter(Boolean).map(l => `<div class="rp-sub">${l}</div>`).join('');
+            let side = '';
+            if (o.folio) {
+                side = `<div class="rp-folio">Folio</div><div class="rp-folio-val">${o.folio}</div>${o.tagSub ? `<div class="rp-tag-sub">${o.tagSub}</div>` : ''}`;
+            } else if (o.tag) {
+                side = `<span class="rp-tag">${o.tag}</span>${o.tagSub ? `<div class="rp-tag-sub">${o.tagSub}</div>` : ''}`;
+            }
+            return `
+                <div class="rp-head">
+                    <img class="rp-logo" src="/img/logo.png" alt="Logo">
+                    <div class="rp-head-main">
+                        <div class="rp-inst">${o.institucion || 'Bachillerato Tecnológico Interamericano'}</div>
+                        ${o.titulo ? `<div class="rp-title">${o.titulo}</div>` : ''}
+                        ${lineas}
+                    </div>
+                    ${side ? `<div class="rp-head-side">${side}</div>` : ''}
+                </div>
+                <div class="rp-rule"></div><div class="rp-rule-thin"></div>`;
+        }
+
+        /** Tarjetas: [{ label, value, flex?, lg? }] */
+        function meta(items) {
+            return `<div class="rp-meta">${items.map(i => `
+                <div class="rp-card" style="flex: ${i.flex || 1};">
+                    <span class="rp-label">${i.label}</span>
+                    <span class="rp-value${i.lg ? ' lg' : ''}">${i.value ?? '—'}</span>
+                </div>`).join('')}</div>`;
+        }
+
+        /** Firmas: [{ nombre?, rol, detalle? } | 'sello'] */
+        function firmas(items, alto = '12mm') {
+            return `<div class="rp-firmas">${items.map(i => (typeof i === 'string' && i.startsWith('sello'))
+                ? `<div class="rp-sello">${i.split(':')[1] || 'Sello'}</div>`
+                : `<div class="rp-firma">
+                        <div style="height: ${alto};"></div>
+                        ${i.nombre ? `<div class="nm">${i.nombre}</div>` : ''}
+                        <div class="ln"></div>
+                        <div class="rl">${i.rol}</div>
+                        ${i.detalle ? `<div class="dt">${i.detalle}</div>` : ''}
+                   </div>`).join('')}</div>`;
+        }
+
+        function foot(izq, der) {
+            if (!der) return `<div class="rp-foot" style="justify-content: center;"><b>${izq || ''}</b></div>`;
+            return `<div class="rp-foot"><span>${izq || ''}</span><span>${der}</span></div>`;
+        }
+
+        /** Documento completo para window.open */
+        function documento(titulo, cuerpo, opts = {}) {
+            return `<!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${titulo}</title>
+                    <style>
+                        @page { size: ${opts.size || 'letter portrait'}; margin: ${opts.margin || '10mm 11mm'}; }
+                        html, body { margin: 0; padding: 0; background: #fff; }
+                        ${css}
+                    </style>
+                </head>
+                <body><div class="rp">${cuerpo}</div></body>
+                </html>`;
+        }
+
+        return { css, esc, head, meta, firmas, foot, documento };
+    })();
+</script>
+
 <!-- LÓGICA DE NEGOCIO PARA SELECCIÓN DE CCT Y FORMATOS CONDICIONALES -->
 <script>
     // Configuración de Submódulos autorizados por CCT
     const submodulosPorCCT = {
         'BTI': [
-            { id: 'constancia', nombre: 'Constancia de Estudios', icon: 'ti-file-certificate' },
-            { id: 'kardex', nombre: 'Kardex Académico', icon: 'ti-report' },
-            { id: 'boleta', nombre: 'Boleta de Calificaciones', icon: 'ti-file-analytics' },
-            { id: 'reporte_indisciplina', nombre: 'Reportes de Indisciplina', icon: 'ti-alert-triangle' },
-            { id: 'credencial', nombre: 'Credencial Escolar', icon: 'ti-id-badge-2' },
-            { id: 'extraordinario', nombre: 'Formato Extraordinario', icon: 'ti-file-text' },
-            { id: 'asistencias', nombre: 'Formato de Asistencias', icon: 'ti-calendar-stats' }
+            { id: 'constancia', nombre: 'Constancia de estudios', icon: 'file-badge' },
+            { id: 'kardex', nombre: 'Kárdex académico', icon: 'scroll-text' },
+            { id: 'boleta', nombre: 'Boleta de calificaciones', icon: 'file-spreadsheet' },
+            { id: 'reporte_indisciplina', nombre: 'Reportes de indisciplina', icon: 'shield-alert' },
+            { id: 'credencial', nombre: 'Credencial escolar', icon: 'id-card' },
+            { id: 'extraordinario', nombre: 'Examen extraordinario', icon: 'file-pen' },
+            { id: 'asistencias', nombre: 'Lista de asistencias', icon: 'calendar-check' },
+            { id: 'actas_ordinario', nombre: 'Actas ordinario', icon: 'clipboard-list' }
         ],
         'BGNE': [
-            { id: 'constancia', nombre: 'Constancia de Estudios', icon: 'ti-file-certificate' },
-            { id: 'kardex', nombre: 'Kardex Académico', icon: 'ti-report' },
-            { id: 'credencial', nombre: 'Credencial Escolar', icon: 'ti-id-badge-2' },
-            { id: 'extraordinario', nombre: 'Formato Extraordinario', icon: 'ti-file-text' },
-            { id: 'asistencias', nombre: 'Formato de Asistencias', icon: 'ti-calendar-stats' }
+            { id: 'constancia', nombre: 'Constancia de estudios', icon: 'file-badge' },
+            { id: 'kardex', nombre: 'Kárdex académico', icon: 'scroll-text' },
+            { id: 'credencial', nombre: 'Credencial escolar', icon: 'id-card' },
+            { id: 'extraordinario', nombre: 'Examen extraordinario', icon: 'file-pen' },
+            { id: 'asistencias', nombre: 'Lista de asistencias', icon: 'calendar-check' },
+            { id: 'actas_bgne', nombre: 'Actas ordinario', icon: 'clipboard-list' }
         ],
         'INF': [
-            { id: 'credencial', nombre: 'Credencial Escolar', icon: 'ti-id-badge-2' },
-            { id: 'constancia', nombre: 'Constancia de Estudios', icon: 'ti-file-certificate' }
+            { id: 'credencial', nombre: 'Credencial escolar', icon: 'id-card' },
+            { id: 'constancia', nombre: 'Constancia de estudios', icon: 'file-badge' }
         ]
     };
 
     let cctSeleccionado = '';
+    let alumnoConstanciaId = null; // alumno elegido en "Constancia de estudios"
 
     // Función principal para la selección del CCT
     function selectCCT(cct) {
@@ -1539,6 +1622,9 @@
 
         // Sincronizar plantilla de credenciales escolares según CCT
         actualizarCredencialPorCCT(cct);
+
+        // Semestre (BTI) / Trimestre (BGNE) en Examen extraordinario
+        configurarPeriodoExtraordinario(cct);
 
         // Actualizar etiqueta de ciclo en Asistencia
         const label = document.getElementById('lbl-asistencia-ciclo-label');
@@ -1594,6 +1680,7 @@
 
         const previewCard = document.getElementById('asistencia-preview-card');
         if (previewCard) previewCard.style.display = 'none';
+        sincronizarInputGrupoAsistencia();
 
         asegurarCatalogosAsistencia();
     }
@@ -1662,6 +1749,11 @@
         // Ocultar e inhabilitar búsquedas anteriores
         document.getElementById('constancia-info-alumno').style.display = 'none';
         const constPl = document.getElementById('constancia-preview-placeholder'); if (constPl) constPl.style.display = 'block';
+        document.getElementById('constancia-bti-campos').style.display = 'none';
+        document.getElementById('constanciaAlumnoSearch').value = '';
+        alumnoConstanciaId = null;
+        // El BTI tiene un único formato de constancia (oficio); el selector de tipo aplica a los demás planteles
+        document.getElementById('constancia-tipo-wrapper').style.display = cctSeleccionado === 'BTI' ? 'none' : 'block';
         document.getElementById('kardex-info-alumno').style.display = 'none';
         document.getElementById('boleta-tabla-resultados').style.display = 'none';
         document.getElementById('credencial-info-alumno').style.display = 'none';
@@ -1679,6 +1771,7 @@
         if (docenteInput) docenteInput.value = '';
         if (grupoSelect) grupoSelect.value = '';
         if (materiaInput) materiaInput.value = '';
+        sincronizarInputGrupoAsistencia();
 
         const btnClearDoc = document.getElementById('btn-limpiar-asistencia-docente');
         if (btnClearDoc) btnClearDoc.style.display = 'none';
@@ -1700,13 +1793,14 @@
         
         submodulos.forEach((sub, index) => {
             const button = document.createElement('button');
-            button.className = `nav-link py-2.5 px-3 fw-bold d-flex align-items-center gap-2 w-100 ${index === 0 ? 'active' : ''}`;
+            // El formato activo se marca con fondo verde azulado claro
+            button.className = `tw:flex tw:w-full tw:cursor-pointer tw:items-center tw:gap-2.5 tw:border-0 tw:bg-transparent tw:px-3 tw:py-2 tw:hover:bg-slate-100 tw:text-left tw:text-[0.9375rem] tw:text-slate-600 tw:hover:text-slate-900 tw:focus-visible:outline-2 tw:focus-visible:outline-brand-700 tw:[&.active]:bg-brand-50 tw:[&.active]:font-semibold tw:[&.active]:text-brand-800 ${index === 0 ? 'active' : ''}`;
             button.id = `tab-${sub.id}`;
             button.setAttribute('data-bs-toggle', 'pill');
             button.setAttribute('data-bs-target', `#pane-${sub.id}`);
             button.setAttribute('type', 'button');
             button.setAttribute('role', 'tab');
-            button.innerHTML = `<i class="ti ${sub.icon}"></i> ${sub.nombre}`;
+            button.innerHTML = `<i data-lucide="${sub.icon}" class="tw:size-[18px] tw:shrink-0"></i><span class="tw:truncate">${sub.nombre}</span>`;
             
             button.addEventListener('click', (e) => {
                 if (window.bootstrap && bootstrap.Tab) {
@@ -1728,15 +1822,11 @@
 
             nav.appendChild(button);
         });
+        if (window.lucide?.createIcons) lucide.createIcons();
 
-        // Activar el primer panel y desactivar los demás
-        const contentPanes = ['constancia', 'kardex', 'boleta', 'reporte_indisciplina', 'credencial', 'extraordinario', 'asistencias'];
-        contentPanes.forEach(pane => {
-            const el = document.getElementById(`pane-${pane}`);
-            if (el) {
-                el.classList.remove('show', 'active');
-            }
-        });
+        // Activar el primer panel y desactivar TODOS los demás (incluidos los de otro CCT).
+        // Antes se usaba una lista fija de ids y los apartados nuevos quedaban visibles al cambiar de plantel.
+        document.querySelectorAll('[id^="pane-"].tab-pane').forEach(el => el.classList.remove('show', 'active'));
 
         // Activar el primero que pertenezca al CCT seleccionado
         const primerSubmoduloId = submodulos[0].id;
@@ -1796,7 +1886,6 @@
                         const btn = document.createElement('button');
                         btn.type = 'button';
                         btn.className = 'list-group-item list-group-item-action py-2 text-start';
-                        btn.style.borderLeft = '3px solid #0284c7';
                         btn.innerHTML = `
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
@@ -1865,10 +1954,106 @@
             const fullName = `${alumno.nombre} ${alumno.apPaterno} ${alumno.apMaterno || ''}`.trim();
             document.getElementById('constanciaAlumnoSearch').value = fullName;
             document.getElementById('lbl-constancia-nombre').innerText = fullName;
-            document.getElementById('lbl-constancia-carrera').innerText = `${alumno.nombreNivelIngreso || 'Carrera general'} | CCT: ${alumno.claveCentroTrabajo || cctSeleccionado}`;
+            const detalle = [
+                alumno.numeroControl ? `Matrícula ${alumno.numeroControl}` : 'Sin matrícula',
+                alumno.nombreGrupoTexto ? `grupo ${alumno.nombreGrupoTexto}` : null,
+                `plantel ${alumno.nombreCentroTrabajo || cctSeleccionado}`,
+            ].filter(Boolean).join(', ');
+            document.getElementById('lbl-constancia-carrera').innerText = detalle;
             document.getElementById('constancia-info-alumno').style.display = 'block';
             const constPl = document.getElementById('constancia-preview-placeholder'); if (constPl) constPl.style.display = 'none';
+
+            alumnoConstanciaId = alumno.idAlumno;
+            constanciaPreviewBase = { nombre: fullName.toUpperCase(), matricula: alumno.numeroControl || '' };
+            document.getElementById('constancia-bti-campos').style.display = 'none';
+            if (cctSeleccionado === 'BTI') cargarDatosConstanciaBti(alumno.idAlumno);
         });
+    }
+
+    // ---------- Constancia de estudios BTI (PDF generado en el servidor) ----------
+    function cargarDatosConstanciaBti(idAlumno) {
+        fetch(`/reportes/constancia-estudios-bti/${idAlumno}/datos`, { headers: { Accept: 'application/json' } })
+            .then(r => r.json())
+            .then(resp => {
+                if (alumnoConstanciaId !== idAlumno) return; // se eligió otro alumno mientras cargaba
+                if (!resp.success) throw new Error(resp.message);
+                const d = resp.data;
+                const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+                set('constanciaOficio', d.oficio);
+                set('constanciaFechaExpedicion', d.fecha_expedicion);
+                set('constanciaFechaInicio', d.fecha_inicio);
+                set('constanciaFechaFin', d.fecha_fin);
+
+                // "1er Semestre" → "1ER SEMESTRE"; si no coincide con el catálogo se agrega como opción
+                const sel = document.getElementById('constanciaSemestre');
+                const sem = (d.semestre || '').toUpperCase().trim();
+                if (sem && ![...sel.options].some(o => o.value === sem)) sel.add(new Option(sem, sem));
+                if (sem) sel.value = sem;
+
+                constanciaPreviewBase = { nombre: d.nombre_completo, matricula: d.numero_control };
+                document.getElementById('constancia-aviso-matricula').style.display = d.numero_control ? 'none' : 'block';
+                document.getElementById('constancia-bti-campos').style.display = 'block';
+                actualizarPreviewConstancia();
+            })
+            .catch(err => {
+                console.error('Error al cargar datos de la constancia:', err);
+                document.getElementById('constancia-bti-campos').style.display = 'block';
+                actualizarPreviewConstancia();
+                Swal.fire({ icon: 'warning', title: 'Falta el grupo del alumno', text: 'No se encontró su grupo, así que el semestre y el periodo no se llenaron. Captúralos a mano antes de generar la constancia.', confirmButtonColor: '#26687B' });
+            });
+    }
+
+    // Vista previa de la hoja: mismos textos que el PDF (ConstanciaEstudiosController@pdfBti)
+    let constanciaPreviewBase = { nombre: '', matricula: '' };
+    const MESES_CONSTANCIA = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+
+    function fechaConstancia(iso) {
+        const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+        return m ? { dia: +m[3], mes: MESES_CONSTANCIA[+m[2] - 1], anio: m[1] } : null;
+    }
+
+    function actualizarPreviewConstancia() {
+        const v = id => (document.getElementById(id)?.value || '').trim();
+        const txt = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+        const ini = fechaConstancia(v('constanciaFechaInicio'));
+        const fin = fechaConstancia(v('constanciaFechaFin'));
+        const exp = fechaConstancia(v('constanciaFechaExpedicion'));
+
+        txt('cp-oficio', v('constanciaOficio').toUpperCase());
+        txt('cp-nombre', constanciaPreviewBase.nombre);
+        txt('cp-matricula', constanciaPreviewBase.matricula || 'S/N');
+        txt('cp-semestre', v('constanciaSemestre'));
+        txt('cp-periodo', ini && fin ? ` EN UN PERIODO COMPRENDIDO DEL ${ini.dia} DE ${ini.mes} DEL ${ini.anio} AL ${fin.dia} DE ${fin.mes} DE ${fin.anio}` : '');
+        txt('cp-fecha', exp ? `TEZIUTLÁN, PUEBLA A ${exp.dia} DE ${exp.mes} DE ${exp.anio}` : '');
+    }
+
+    function generarConstancia() {
+        if (cctSeleccionado !== 'BTI') {
+            printDoc('Constancia de Estudios', document.getElementById('lbl-constancia-nombre').innerText);
+            return;
+        }
+        if (!alumnoConstanciaId) {
+            Swal.fire({ icon: 'info', title: 'Selecciona un alumno', confirmButtonColor: '#26687B' });
+            return;
+        }
+        const v = id => (document.getElementById(id)?.value || '').trim();
+        if (!v('constanciaFechaInicio') || !v('constanciaFechaFin')) {
+            Swal.fire({ icon: 'warning', title: 'Periodo incompleto', text: 'Indica las fechas de inicio y fin del periodo.', confirmButtonColor: '#26687B' });
+            return;
+        }
+        if (v('constanciaFechaInicio') > v('constanciaFechaFin')) {
+            Swal.fire({ icon: 'warning', title: 'Periodo inválido', text: 'La fecha de inicio no puede ser posterior a la de fin.', confirmButtonColor: '#26687B' });
+            return;
+        }
+        const params = new URLSearchParams({
+            id_alumno: alumnoConstanciaId,
+            oficio: v('constanciaOficio'),
+            semestre: v('constanciaSemestre'),
+            fecha_inicio: v('constanciaFechaInicio'),
+            fecha_fin: v('constanciaFechaFin'),
+            fecha_expedicion: v('constanciaFechaExpedicion'),
+        });
+        window.open(`/reportes/constancia-estudios-bti-pdf?${params}`, '_blank');
     }
 
     function limpiarBusquedaKardex() {
@@ -1906,9 +2091,9 @@
                 if (badgeStatus) {
                     badgeStatus.innerText = al.statusAlumno || 'ACTIVO';
                     if ((al.statusAlumno || '').toUpperCase() === 'INACTIVO' || (al.statusAlumno || '').toUpperCase() === 'BAJA') {
-                        badgeStatus.className = 'badge bg-danger-subtle text-danger px-2 py-1 fs-9';
+                        badgeStatus.className = 'tw:inline-flex tw:items-center tw:bg-danger-100 tw:px-2.5 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold tw:text-danger-600';
                     } else {
-                        badgeStatus.className = 'badge bg-success-subtle text-success px-2 py-1 fs-9';
+                        badgeStatus.className = 'tw:inline-flex tw:items-center tw:bg-success-100 tw:px-2.5 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold tw:text-success-700';
                     }
                 }
 
@@ -2289,7 +2474,7 @@
                 icon: 'warning',
                 title: 'Ventana emergente bloqueada',
                 text: 'Por favor, permite ventanas emergentes en tu navegador para ver la impresión.',
-                confirmButtonColor: '#0284c7'
+                confirmButtonColor: '#26687B'
             });
             return;
         }
@@ -2788,7 +2973,7 @@
                 icon: 'warning',
                 title: 'Campo incompleto',
                 text: 'Por favor, busque y seleccione un alumno.',
-                confirmButtonColor: '#0284c7'
+                confirmButtonColor: '#26687B'
             });
             return;
         }
@@ -3101,7 +3286,7 @@ window.imprimirKardex = function() {
             icon: 'warning',
             title: 'Sin datos de alumno',
             text: 'Por favor, busque y seleccione un alumno primero para generar el kárdex.',
-            confirmButtonColor: '#0284c7'
+            confirmButtonColor: '#26687B'
         });
         return;
     }
@@ -3179,105 +3364,74 @@ window.imprimirKardex = function() {
     function renderTablaPeriodo(p, is5to, is6to) {
         if (!p) return '';
         let filasHtml = '';
-        
+
         p.materias.forEach(m => {
             if (m.isEquiv) {
                 filasHtml += `
                     <tr>
-                        <td style="border: 1px solid #000; padding: 2px 4px; font-size: 7.2pt; text-align: left; text-transform: uppercase;">
-                            ${m.materia}
-                        </td>
-                        <td style="border: 1px solid #000; padding: 2px 4px; font-size: 7.2pt; text-align: center; font-weight: bold; color: #d97706;">
-                            EQUIV.
-                        </td>
-                    </tr>
-                `;
+                        <td class="mat">${m.materia}</td>
+                        <td class="c rp-equiv">EQUIV.</td>
+                    </tr>`;
             } else {
-                const styleColor = m.esReprobatoria ? 'color: #dc2626 !important; font-weight: bold;' : 'color: #000;';
                 filasHtml += `
                     <tr>
-                        <td style="border: 1px solid #000; padding: 2px 4px; font-size: 7.2pt; text-align: left; text-transform: uppercase;">
-                            ${m.materia}
-                        </td>
-                        <td style="border: 1px solid #000; padding: 2px 4px; font-size: 7.8pt; text-align: center; ${styleColor}">
-                            ${m.calificacion}
-                        </td>
-                    </tr>
-                `;
+                        <td class="mat">${m.materia}</td>
+                        <td class="n ${m.esReprobatoria ? 'rp-fail' : ''}">${m.calificacion}</td>
+                    </tr>`;
             }
         });
 
         let footerExtra = '';
         if (is5to) {
-            const finalColor = promFinal !== '—' && !isNaN(promFinal) && parseFloat(promFinal) < 6.0 ? 'color: #dc2626 !important;' : 'color: #1e6fa8;';
+            const finalFail = promFinal !== '—' && !isNaN(promFinal) && parseFloat(promFinal) < 6.0;
             footerExtra = `
-                <tr style="font-weight: bold; background: #e8ecf2;">
-                    <td style="border: 1.5px solid #000; padding: 2.2px 4px; font-size: 7.6pt; text-align: right;">
-                        PROMEDIO FINAL
-                    </td>
-                    <td style="border: 1.5px solid #000; padding: 2.2px 4px; font-size: 8.2pt; font-weight: bold; text-align: center; background: #e8ecf2; ${finalColor}">
-                        ${promFinal}
-                    </td>
-                </tr>
-            `;
+                <tr class="gran rp-gran">
+                    <td class="lbl">Promedio final</td>
+                    <td class="n ${finalFail ? 'rp-fail' : ''}" style="font-size: 9pt;">${promFinal}</td>
+                </tr>`;
         } else if (is6to) {
+            // Fila vacía para equilibrar visualmente con la columna izquierda (promedio final)
             footerExtra = `
-                <tr>
-                    <td colspan="2" style="border: 1px solid #000; height: 19px; background: #f8fafc;"></td>
-                </tr>
-            `;
+                <tr class="kx-spacer">
+                    <td colspan="2"></td>
+                </tr>`;
         }
 
-        const promColor = p.promReprobatorio ? 'color: #dc2626 !important;' : 'color: #000;';
-
         return `
-            <div style="margin-bottom: 6px;">
-                <div style="font-size: 8pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; color: #000;">
-                    ${p.titulo}
-                </div>
-                <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; font-family: Arial, sans-serif;">
+            <div class="kx-periodo">
+                <div class="rp-section">${p.titulo}</div>
+                <table class="rp-table kx-table">
                     <thead>
-                        <tr style="background: #ffffff;">
-                            <th style="border: 1px solid #000; padding: 2.2px 4px; font-size: 7.4pt; text-align: left; font-weight: bold; width: 280px;">MATERIA</th>
-                            <th style="border: 1px solid #000; padding: 2.2px 2px; font-size: 7pt; text-align: center; font-weight: bold; width: 70px; line-height: 1.1;">${isBti ? 'CALIFICACIÓN<br>FINAL' : 'EVALUACIÓN<br>OBTENIDA'}</th>
+                        <tr>
+                            <th class="l">Materia</th>
+                            <th style="width: 19mm;">${isBti ? 'Calificación final' : 'Evaluación obtenida'}</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${filasHtml}
-                        <tr>
-                            <td style="border: 1px solid #000; padding: 2px 4px; font-size: 7.6pt; font-weight: bold; text-align: right;">
-                                PROMEDIO
-                            </td>
-                            <td style="border: 1px solid #000; padding: 2px 4px; font-size: 8pt; font-weight: bold; text-align: center; ${promColor}">
-                                ${p.promedio}
-                            </td>
+                        <tr class="tot">
+                            <td class="lbl">Promedio</td>
+                            <td class="n ${p.promReprobatorio ? 'rp-fail' : ''}">${p.promedio}</td>
                         </tr>
                         ${footerExtra}
                     </tbody>
                 </table>
-            </div>
-        `;
+            </div>`;
     }
 
-    const pageContainerWidth = '720px';
-    const pageColWidth = '350px';
-    const pageSize = 'letter portrait';
-
     const colIzqHtml = `
-        <div style="width: ${pageColWidth}; flex-shrink: 0;">
+        <div class="kx-col">
             ${renderTablaPeriodo(periodosData[0], false, false)}
             ${renderTablaPeriodo(periodosData[2], false, false)}
             ${renderTablaPeriodo(periodosData[4], true, false)}
-        </div>
-    `;
+        </div>`;
 
     const colDerHtml = `
-        <div style="width: ${pageColWidth}; flex-shrink: 0;">
+        <div class="kx-col">
             ${renderTablaPeriodo(periodosData[1], false, false)}
             ${renderTablaPeriodo(periodosData[3], false, false)}
             ${renderTablaPeriodo(periodosData[5], false, true)}
-        </div>
-    `;
+        </div>`;
 
     const fechaHoy = new Date();
     const meses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
@@ -3286,17 +3440,10 @@ window.imprimirKardex = function() {
     let signaturesHtml = '';
     if (isBti) {
         signaturesHtml = `
-            <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: flex-end; width: ${pageContainerWidth}; font-family: Arial, sans-serif;">
-                <div style="width: 280px; text-align: center;">
-                    <div style="border-bottom: 1px solid #000; width: 200px; margin: 0 auto 5px auto; height: 30px;"></div>
-                    <div style="font-size: 7.8pt; font-weight: bold;">ING. FAUSTO LEYVA FLORES</div>
-                    <div style="font-size: 7.2pt; color: #444; text-transform: uppercase;">DIRECTOR</div>
-                </div>
-                <div style="width: 280px; text-align: center; font-size: 8pt; font-weight: bold; padding-bottom: 10px;">
-                    ${fechaTexto}
-                </div>
-            </div>
-        `;
+            <div class="kx-firmas">
+                ${RP.firmas([{ nombre: 'Ing. Fausto Leyva Flores', rol: 'Director' }], '9mm')}
+                <div class="kx-fecha">${fechaTexto}</div>
+            </div>`;
     }
 
     const win = window.open('', '', 'height=850,width=850');
@@ -3305,83 +3452,51 @@ window.imprimirKardex = function() {
             icon: 'warning',
             title: 'Ventana emergente bloqueada',
             text: 'Por favor, habilite las ventanas emergentes en su navegador para imprimir el kárdex.',
-            confirmButtonColor: '#0284c7'
+            confirmButtonColor: '#26687B'
         });
         return;
     }
 
-    win.document.write(`
-        <html>
-            <head>
-                <title>Kárdex de Calificaciones - ${alumnoNombre}</title>
-                <style>
-                    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-                    @page {
-                        size: ${pageSize};
-                        margin: 5mm 8mm 4mm 8mm;
-                    }
-                    html, body {
-                        font-family: Arial, Helvetica, sans-serif;
-                        background: #fff;
-                        color: #000;
-                        padding: 0;
-                        margin: 0;
-                        height: 100%;
-                    }
-                    .kardex-hoja {
-                        width: ${pageContainerWidth};
-                        margin: 0 auto;
-                        text-align: center;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="kardex-hoja">
-                    <!-- MEMBRETE OFICIAL -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                        <div style="width: 75px; text-align: left;">
-                            <img src="/img/logo.png" alt="Logo" style="height: 58px; object-fit: contain;">
-                        </div>
-                        <div style="width: 635px; border: 1.5px solid #10599a; overflow: hidden; border-radius: 3px;">
-                            <div style="background: #10599a; color: #ffffff; font-weight: bold; font-size: 11.5pt; padding: 2.5px 6px; text-align: center; letter-spacing: 0.8px;">
-                                BACHILLERATO INTERAMERICANO
-                            </div>
-                            <div style="background: #d4ebf9; color: #000000; font-size: 7.2pt; padding: 2px 6px; text-align: center; line-height: 1.35;">
-                                <div>Avenida Benito Juárez 901, Colonia Centro Teziutlán Puebla. Tel: 231-3123979</div>
-                                <div style="font-weight: bold;">${cctClave}</div>
-                            </div>
-                        </div>
-                    </div>
+    const cuerpoKardex = `
+        <style>
+            .kx-intro { font-size: 7.8pt; color: #4c5d60; margin-bottom: 2mm; }
+            .kx-intro strong { color: #12393f; }
+            .kx-cols { display: flex; gap: 5mm; align-items: flex-start; }
+            .kx-col { flex: 1; min-width: 0; }
+            .kx-periodo { margin-bottom: 2.4mm; }
+            .kx-table th, .kx-table td { padding: .55mm 1.8mm; }
+            .kx-table thead th { padding: .9mm 1.8mm; }
+            .kx-table td.mat { font-size: 6.9pt; }
+            .kx-spacer td { border: none !important; background: transparent !important; height: 5mm; }
+            .kx-firmas { display: flex; align-items: flex-end; justify-content: space-between; gap: 10mm; margin-top: 1mm; }
+            .kx-firmas .rp-firmas { width: 75mm; }
+            .kx-fecha { font-size: 7.4pt; font-weight: bold; letter-spacing: .6px; color: #12393f; border: .6pt solid #b9c9cc; border-left: 1.4mm solid #c9a24b; background: #fbf8ef; padding: 1.6mm 3mm; }
+        </style>
 
-                    <!-- TEXTO DIRECCIÓN Y NOMBRE ALUMNO -->
-                    <div style="margin-bottom: 6px;">
-                        <div style="font-size: 8.5pt; color: #000;">
-                            La Dirección de la escuela <strong>${cctNombre}</strong>
-                        </div>
-                        <div style="font-size: 7.8pt; color: #333; font-style: italic;">
-                            Reporta las siguientes calificaciones obtenidas hasta el momento del alumno(a):
-                        </div>
-                        <div style="display: inline-block; background: #e8ecf2; border: 1.5px solid #1e293b; border-radius: 20px; padding: 2px 25px; margin: 3px 0 6px 0; font-size: 11pt; font-weight: bold; text-decoration: underline; text-transform: uppercase;">
-                            ${alumnoNombre}
-                        </div>
-                    </div>
+        ${RP.head({
+            institucion: 'Bachillerato Interamericano',
+            titulo: 'Kárdex de calificaciones',
+            lineas: ['Avenida Benito Juárez 901, Colonia Centro, Teziutlán, Puebla · Tel. 231-312-3979'],
+            tag: cctClave.replace('CLAVE CT: ', 'CCT '),
+            tagSub: isBti ? 'Bachillerato Tecnológico' : 'Bachillerato General'
+        })}
 
-                    <!-- TABLAS DE LOS 6 PERIODOS (2 COLUMNAS) -->
-                    <div style="display: flex; justify-content: space-between; width: ${pageContainerWidth}; margin: 0 auto; text-align: left;">
-                        ${colIzqHtml}
-                        ${colDerHtml}
-                    </div>
+        <div class="kx-intro">
+            La Dirección de la escuela <strong>${cctNombre}</strong> reporta las siguientes calificaciones obtenidas hasta el momento por el alumno(a):
+        </div>
+        ${RP.meta([{ label: 'Alumno(a)', value: alumnoNombre, lg: true }])}
 
-                    ${signaturesHtml}
+        <div class="kx-cols">
+            ${colIzqHtml}
+            ${colDerHtml}
+        </div>
 
-                    <!-- LEMA INFERIOR -->
-                    <div style="width: ${pageContainerWidth}; margin: 6px auto 0 auto; background: #4a90e2; color: #ffffff; font-weight: bold; font-size: 7.8pt; padding: 2.5px 0; text-align: center; border-radius: 2px; letter-spacing: 0.5px;">
-                        ¡ Excelencia educativa a su servicio !
-                    </div>
-                </div>
-            </body>
-        </html>
-    `);
+        ${signaturesHtml}
+
+        ${RP.foot('¡ Excelencia educativa a su servicio !')}
+    `;
+
+    win.document.write(RP.documento(`Kárdex de Calificaciones - ${alumnoNombre}`, cuerpoKardex, { margin: '8mm 10mm 7mm 10mm' }));
     win.document.close();
     win.focus();
     setTimeout(() => {
@@ -3401,27 +3516,27 @@ window.imprimirKardex = function() {
         if (incRep) {
             if (totalReportes > 0) {
                 boxReportesHtml = `
-                    <!-- Box Reportes de Indisciplina (Con reportes) -->
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">CONDUCTA Y DISCIPLINA</span>
-                        <span style="font-size: 8.5pt; font-weight: 900; padding: 6px 5px 2px 5px; color: #dc2626; display: block;">
-                            ${totalReportes} REPORTE${totalReportes > 1 ? 'S' : ''} ACUMULADO${totalReportes > 1 ? 'S' : ''}
-                        </span>
-                        <span style="font-size: 7.5pt; font-weight: 700; padding: 2px 5px 6px 5px; color: #475569; display: block; word-spacing: 3px;">
-                            P1: <strong style="color: #dc2626; font-size: 8.5pt;">${repCounts[1] || 0}</strong> &nbsp;|&nbsp; 
-                            P2: <strong style="color: #dc2626; font-size: 8.5pt;">${repCounts[2] || 0}</strong> &nbsp;|&nbsp; 
-                            P3: <strong style="color: #dc2626; font-size: 8.5pt;">${repCounts[3] || 0}</strong>
-                        </span>
+                    <div class="rp-box bo-side-box">
+                        <div class="rp-box-h">Conducta y disciplina</div>
+                        <div class="rp-box-b rp-stat">
+                            <div class="v sm rp-fail">${totalReportes} reporte${totalReportes > 1 ? 's' : ''}</div>
+                            <div class="s" style="color: #9a2a1f;">Acumulado${totalReportes > 1 ? 's' : ''} en el semestre</div>
+                            <div class="bo-rep-parciales">
+                                <span class="rp-chip ${(repCounts[1] || 0) > 0 ? 'alert' : ''}">P1: ${repCounts[1] || 0}</span>
+                                <span class="rp-chip ${(repCounts[2] || 0) > 0 ? 'alert' : ''}">P2: ${repCounts[2] || 0}</span>
+                                <span class="rp-chip ${(repCounts[3] || 0) > 0 ? 'alert' : ''}">P3: ${repCounts[3] || 0}</span>
+                            </div>
+                        </div>
                     </div>
                 `;
             } else {
                 boxReportesHtml = `
-                    <!-- Box Reportes de Indisciplina (Sin reportes) -->
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">CONDUCTA Y DISCIPLINA</span>
-                        <span style="font-size: 8pt; font-weight: 800; padding: 8px 5px; color: #0f172a; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                            0 REPORTES DE INDISCIPLINA
-                        </span>
+                    <div class="rp-box bo-side-box">
+                        <div class="rp-box-h">Conducta y disciplina</div>
+                        <div class="rp-box-b rp-stat">
+                            <div class="v sm">0</div>
+                            <div class="s">Reportes de indisciplina</div>
+                        </div>
                     </div>
                 `;
             }
@@ -3451,12 +3566,12 @@ window.imprimirKardex = function() {
             if (val === null || val === undefined || isNaN(val)) {
                 return {
                     text: isExtra ? '0.0' : '—',
-                    style: 'color: #000;'
+                    style: ''
                 };
             }
             const num = parseFloat(val);
             const text = num.toFixed(1);
-            const style = num <= 5.0 ? 'color: #dc2626; font-weight: bold;' : 'color: #000;';
+            const style = num <= 5.0 ? 'color: #b42318; font-weight: bold;' : '';
             return { text, style, num };
         };
 
@@ -3464,10 +3579,10 @@ window.imprimirKardex = function() {
             const isEquiv = m.es_equivalencia === true;
             if (isEquiv) {
                 filasMateriasHtml += `
-                    <tr style="text-align: center; height: 32px;">
-                        <td style="border: 1px solid #000; padding: 6px; text-align: left; text-transform: uppercase; font-weight: bold; font-size: 8.5pt;">${m.nombreMateria}</td>
-                        <td colspan="5" style="border: 1px solid #000; padding: 6px; font-weight: bold; color: #d97706; font-size: 8.5pt;">EQUIVALENCIA</td>
-                        <td style="border: 1px solid #000; padding: 6px; font-weight: bold; font-size: 8.5pt;">—</td>
+                    <tr>
+                        <td class="mat">${m.nombreMateria}</td>
+                        <td colspan="5" class="c rp-equiv">EQUIVALENCIA</td>
+                        <td class="n fin">—</td>
                     </tr>
                 `;
                 return;
@@ -3507,14 +3622,14 @@ window.imprimirKardex = function() {
             const cFinal = formatNota(finalVal);
 
             filasMateriasHtml += `
-                <tr style="text-align: center; height: 32px;">
-                    <td style="border: 1px solid #000; padding: 6px 8px; text-align: left; text-transform: uppercase; font-weight: 700; font-size: 8.5pt;">${m.nombreMateria}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${c1.style}">${c1.text}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${c2.style}">${c2.text}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${c3.style}">${c3.text}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${cSem.style}">${cSem.text}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${cExt.style}">${cExt.text}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; background: #f8fafc; ${cFinal.style}">${cFinal.text}</td>
+                <tr>
+                    <td class="mat">${m.nombreMateria}</td>
+                    <td class="n" style="${c1.style}">${c1.text}</td>
+                    <td class="n" style="${c2.style}">${c2.text}</td>
+                    <td class="n" style="${c3.style}">${c3.text}</td>
+                    <td class="n" style="${cSem.style}">${cSem.text}</td>
+                    <td class="n bo-sep" style="${cExt.style}">${cExt.text}</td>
+                    <td class="n fin bo-sep" style="${cFinal.style}">${cFinal.text}</td>
                 </tr>
             `;
         });
@@ -3528,10 +3643,10 @@ window.imprimirKardex = function() {
         const extAvg = getAvg(extVals);
         const finalAvg = getAvg(finalVals);
 
-        const formatAvgStyle = (avgStr, defaultColor = '#000') => {
+        const formatAvgStyle = (avgStr, defaultColor = '#12393f') => {
             if (avgStr === '—' || isNaN(avgStr)) return `color: ${defaultColor};`;
             const n = parseFloat(avgStr);
-            return n <= 5.0 ? 'color: #dc2626; font-weight: bold;' : `color: ${defaultColor};`;
+            return n <= 5.0 ? 'color: #b42318; font-weight: bold;' : `color: ${defaultColor};`;
         };
 
         const p1AvgStyle = formatAvgStyle(p1Avg);
@@ -3539,9 +3654,9 @@ window.imprimirKardex = function() {
         const p3AvgStyle = formatAvgStyle(p3Avg);
         const semAvgStyle = formatAvgStyle(semAvg);
         const extAvgStyle = formatAvgStyle(extAvg);
-        const finalAvgStyle = formatAvgStyle(finalAvg, '#1e293b');
+        const finalAvgStyle = formatAvgStyle(finalAvg, '#12393f');
 
-        const badgeFinalColor = (finalAvg !== '—' && !isNaN(finalAvg) && parseFloat(finalAvg) <= 5.0) ? '#dc2626' : '#2e596b';
+        const badgeFinalColor = (finalAvg !== '—' && !isNaN(finalAvg) && parseFloat(finalAvg) <= 5.0) ? '#b42318' : '#12393f';
 
         const allSameTot = allTotVals.length > 0 && allTotVals.every(v => v === allTotVals[0]);
         const allSameAsist = allAsistVals.length > 0 && allAsistVals.every(v => v === allAsistVals[0]);
@@ -3553,25 +3668,30 @@ window.imprimirKardex = function() {
         let badgesHtml = '';
         if (incAsist) {
             badgesHtml = `
-                <div style="display: flex; gap: 15px; width: 100%; justify-content: center;">
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block;">ASISTENCIAS</span>
-                        <span style="font-size: 11pt; font-weight: 800; padding: 6px 5px 2px 5px; color: #0f172a; display: block;">${displayAsist} / ${displayTotAsist}</span>
-                        <span style="font-size: 6.8pt; font-weight: 700; color: #2563eb; padding-bottom: 2px; display: block;">${pctAsist}% ASISTENCIA</span>
-                        <span style="font-size: 6pt; color: #64748b; padding-bottom: 4px; display: block;">(Detalle en Hoja 2)</span>
+                <div class="bo-stats">
+                    <div class="rp-box">
+                        <div class="rp-box-h">Asistencias</div>
+                        <div class="rp-box-b rp-stat">
+                            <div class="v sm">${displayAsist} / ${displayTotAsist}</div>
+                            <div class="s">${pctAsist}% asistencia</div>
+                            <div class="h">(Detalle en hoja 2)</div>
+                        </div>
                     </div>
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; line-height: 1.1;">PROMEDIO FINAL<br>DEL SEMESTRE</span>
-                        <span style="font-size: 13pt; font-weight: 900; padding: 10px 5px; color: ${badgeFinalColor}; display: block;">${finalAvg}</span>
+                    <div class="rp-box">
+                        <div class="rp-box-h">Promedio final</div>
+                        <div class="rp-box-b rp-stat">
+                            <div class="v" style="color: ${badgeFinalColor};">${finalAvg}</div>
+                            <div class="s">Del semestre</div>
+                        </div>
                     </div>
                 </div>
             `;
         } else {
             badgesHtml = `
-                <div style="display: flex; width: 100%; justify-content: center;">
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <span style="font-size: 7.2pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 5px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">PROMEDIO FINAL DEL SEMESTRE</span>
-                        <span style="font-size: 15pt; font-weight: 900; padding: 12px 5px; color: ${badgeFinalColor}; display: block;">${finalAvg}</span>
+                <div class="rp-box bo-side-box">
+                    <div class="rp-box-h">Promedio final del semestre</div>
+                    <div class="rp-box-b rp-stat">
+                        <div class="v" style="font-size: 18pt; color: ${badgeFinalColor};">${finalAvg}</div>
                     </div>
                 </div>
             `;
@@ -3616,16 +3736,16 @@ window.imprimirKardex = function() {
             }
         };
 
-                const renderListaFechas = (items, tipo) => {
+        const renderListaFechas = (items, tipo) => {
             if (!items || items.length === 0) {
                 const txt = (tipo === 'retardos' || tipo === 'justificantes') ? `Sin ${tipo} registrados` : `Sin ${tipo} registradas`;
-                return `<div style="font-size: 7.2pt; color: #64748b; font-style: italic; padding-left: 8px;">${txt}</div>`;
+                return `<div class="bo-vacio">${txt}</div>`;
             }
             return items.map(item => {
                 if (typeof item === 'object') {
-                    return `<div style="font-size: 7.2pt; color: #000000; padding-left: 8px; line-height: 1.4;">• ${item.fecha} <span style="font-size: 6.8pt; color: #475569;">(${item.motivo})</span></div>`;
+                    return `<div class="bo-fecha">${item.fecha} <span>(${item.motivo})</span></div>`;
                 }
-                return `<div style="font-size: 7.2pt; color: #000000; padding-left: 8px; line-height: 1.4;">• ${item}</div>`;
+                return `<div class="bo-fecha">${item}</div>`;
             }).join('');
         };
 
@@ -3636,380 +3756,187 @@ window.imprimirKardex = function() {
         const totTotalAsist = (incidenciasAsistencia[1]?.total || 0) + (incidenciasAsistencia[2]?.total || 0) + (incidenciasAsistencia[3]?.total || 0);
         const pctGlobal = totTotalAsist > 0 ? ((totAsist / totTotalAsist) * 100).toFixed(1) : '100.0';
 
-        const win = window.open('', '', 'height=850,width=1100');
-        win.document.write(`
-            <html>
-                <head>
-                    <title>Boleta de Calificaciones - ${semestreNombreLargo} Semestre - ${al.nombre}</title>
-                    <style>
-                        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-                        @page {
-                            size: letter portrait;
-                            margin: 10mm 12mm;
-                        }
-                        html, body {
-                            font-family: Arial, Helvetica, sans-serif;
-                            background: #fff;
-                            color: #000;
-                            padding: 0;
-                            margin: 0;
-                        }
-                        .boleta-container {
-                            width: 100%;
-                            max-width: 800px;
-                            margin: 0 auto;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="boleta-container">
-                        
-                        <!-- Header -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 20px;">
-                            <div style="width: 100px; text-align: left;">
-                                <img src="/img/logo.png" style="height: 60px; width: auto; object-fit: contain;">
-                            </div>
-                            <div style="text-align: center; flex: 1;">
-                                <div style="font-size: 10pt; font-weight: bold; color: #000; letter-spacing: 0.5px; text-transform: uppercase;">Dirección General de Educación Tecnológica Industrial y de Servicios</div>
-                                <div style="font-size: 9pt; font-weight: 700; color: #334155; margin-top: 3px; text-transform: uppercase;">Educación Media Superior</div>
-                                <div style="font-size: 11pt; font-weight: 800; color: #0f172a; margin-top: 6px; text-transform: uppercase;">BOLETA DE CALIFICACIONES DEL ${semestreNombreLargo} SEMESTRE</div>
-                                <div style="font-size: 8.5pt; font-weight: bold; color: #475569; margin-top: 3px; text-transform: uppercase;">Ciclo Escolar 2025-2026</div>
-                            </div>
-                            <div style="width: 100px;"></div>
-                        </div>
+        const nombreAlumno = `${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}`;
+        const fechaLarga = new Date().toLocaleDateString('es-MX', {day: 'numeric', month: 'long', year: 'numeric'}).toUpperCase();
 
-                        <!-- Details Row 1 -->
-                        <div style="display: flex; gap: 30px; font-size: 8.5pt; margin-bottom: 12px;">
-                            <div style="flex: 2; display: flex; flex-direction: column;">
-                                <div style="display: flex; align-items: flex-end; margin-bottom: 2px;">
-                                    <span style="font-weight: bold; color: #475569; width: 150px; text-transform: uppercase;">DATOS DEL ALUMNO (A):</span>
-                                    <span style="flex: 1; border-bottom: 1.2px solid #000; font-weight: 700; font-size: 9.5pt; text-align: center; padding-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px;">
-                                        ${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}
-                                    </span>
-                                </div>
-                                <div style="display: flex; justify-content: space-around; font-size: 7.2pt; color: #64748b; padding-left: 150px; margin-top: 1px;">
-                                    <span>Apellido Paterno</span>
-                                    <span>Apellido Materno</span>
-                                    <span>Nombre</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Details Row 2 -->
-                        <div style="display: flex; gap: 20px; font-size: 8.5pt; margin-bottom: 20px; align-items: flex-end;">
-                            <div style="flex: 2; display: flex; align-items: flex-end;">
-                                <span style="font-weight: bold; color: #475569; width: 150px; text-transform: uppercase;">DATOS DE LA ESCUELA:</span>
-                                <span style="flex: 1; border-bottom: 1.2px solid #000; font-weight: 700; text-align: center; padding-bottom: 2px; text-transform: uppercase; font-size: 9pt;">
-                                    ${al.nombreCentroTrabajo || 'BACHILLERATO TECNOLÓGICO INTERAMERICANO'}
-                                </span>
-                            </div>
-                            <div style="display: flex; gap: 15px; font-size: 8pt; text-align: center;">
-                                <div style="display: flex; flex-direction: column; width: 60px;">
-                                    <span style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 2px; text-transform: uppercase;">${al.nombreGrupoTexto || '—'}</span>
-                                    <span style="font-size: 7pt; color: #475569; font-weight: bold; margin-top: 2px;">GRUPO</span>
-                                </div>
-                                <div style="display: flex; flex-direction: column; width: 90px;">
-                                    <span style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 2px; text-transform: uppercase;">${al.modalidadHorario || 'MATUTINO'}</span>
-                                    <span style="font-size: 7pt; color: #475569; font-weight: bold; margin-top: 2px;">TURNO</span>
-                                </div>
-                                <div style="display: flex; flex-direction: column; width: 90px;">
-                                    <span style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 2px; text-transform: uppercase;">${al.claveCentroTrabajo || '21PCT0073R'}</span>
-                                    <span style="font-size: 7pt; color: #475569; font-weight: bold; margin-top: 2px;">CCT</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Periodos de Evaluacion Parcial -->
-                        <div style="border: 1.5px solid #000; background: #ffffff; margin-bottom: 18px; border-radius: 4px; overflow: hidden;">
-                            <div style="background: #2e596b; color: #ffffff; font-size: 7.2pt; font-weight: 800; text-align: center; padding: 3px 0; text-transform: uppercase; letter-spacing: 0.5px;">
-                                PERIODOS DE EVALUACIÓN PARCIAL (FECHAS)
-                            </div>
-                            <div style="display: flex; justify-content: space-around; align-items: center; background: #f8fafc; padding: 6px 12px; font-size: 7.8pt;">
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">1ER. PARCIAL:</span>
-                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">${p1RangoText}</span>
-                                </div>
-                                <div style="height: 14px; border-left: 1.5px solid #cbd5e1;"></div>
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">2DO. PARCIAL:</span>
-                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">${p2RangoText}</span>
-                                </div>
-                                <div style="height: 14px; border-left: 1.5px solid #cbd5e1;"></div>
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">3ER. PARCIAL:</span>
-                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 3px;">${p3RangoText}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Grades Table and Info blocks -->
-                        <div style="display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; margin-bottom: 25px;">
-                            
-                            <!-- Main Grades Table -->
-                            <div style="flex: 1;">
-                                <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 8pt;">
-                                    <thead>
-                                        <tr style="background: #e2e8f0; color: #000; text-align: center; border-bottom: 1.5px solid #000;">
-                                            <th rowspan="2" style="border: 1px solid #000; padding: 6px; text-align: left; width: 220px; font-size: 7.8pt; text-transform: uppercase; font-weight: 800;">ASIGNATURAS / ÁREAS</th>
-                                            <th colspan="4" style="border: 1px solid #000; padding: 4px; font-size: 7.8pt; font-weight: 800;">PERIODOS DE EVALUACIÓN ORDINARIA</th>
-                                            <th rowspan="2" style="border: 1px solid #000; padding: 6px; width: 50px; font-size: 7.2pt; font-weight: 800; border-left: 1.5px solid #000;">EXTRAORDINARIO</th>
-                                            <th rowspan="2" style="border: 1px solid #000; padding: 6px; width: 65px; font-size: 7.2pt; font-weight: 800; border-left: 1.5px solid #000;">PROMEDIO FINAL/<br>MATERIA</th>
-                                        </tr>
-                                        <tr style="background: #f8fafc; color: #000; text-align: center; font-size: 7.2pt; border-bottom: 1.5px solid #000;">
-                                            <th style="border: 1px solid #000; padding: 4px; width: 45px;">1ER. PARCIAL</th>
-                                            <th style="border: 1px solid #000; padding: 4px; width: 45px;">2DO. PARCIAL</th>
-                                            <th style="border: 1px solid #000; padding: 4px; width: 45px;">3ER. PARCIAL</th>
-                                            <th style="border: 1px solid #000; padding: 4px; width: 55px;">SEMESTRAL</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${filasMateriasHtml}
-                                        <tr style="font-weight: bold; background: #e2e8f0; text-align: center; font-size: 8pt; border-top: 1.5px solid #000; height: 32px;">
-                                            <td style="border: 1px solid #000; padding: 6px; text-align: right; text-transform: uppercase; font-weight: 800;">PROMEDIO</td>
-                                            <td style="border: 1px solid #000; padding: 5px; ${p1AvgStyle}">${p1Avg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; ${p2AvgStyle}">${p2Avg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; ${p3AvgStyle}">${p3Avg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; ${semAvgStyle}">${semAvg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; ${extAvgStyle} border-left: 1.5px solid #000;">${extAvg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; background: #cbd5e1; ${finalAvgStyle} border-left: 1.5px solid #000;">${finalAvg}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- Sidebar details -->
-                            <div style="width: 250px; display: flex; flex-direction: column; gap: 20px; align-items: center;">
-                                
-                                ${badgesHtml}
-
-                                ${boxReportesHtml}
-
-                                <!-- Director Signature -->
-                                <div style="margin-top: 10px; width: 100%; text-align: center;">
-                                    <div style="border-bottom: 1px solid #000; width: 160px; margin: 0 auto 5px auto; height: 45px;"></div>
-                                    <div style="font-size: 7.8pt; font-weight: 800; text-transform: uppercase; color: #0f172a;">ING. FAUSTO LEYVA FLORES</div>
-                                    <div style="font-size: 7.2pt; font-weight: 700; color: #475569; text-transform: uppercase; margin-top: 1px;">DIRECTOR</div>
-                                </div>
-
-                                <!-- Date info -->
-                                <div style="font-size: 7.5pt; font-weight: bold; color: #1e293b; margin-top: 5px; text-transform: uppercase; text-align: center; border: 1px dashed #cbd5e1; padding: 4px 8px; border-radius: 4px;">
-                                    TEZIUTLÁN PUEBLA A ${new Date().toLocaleDateString('es-MX', {day: 'numeric', month: 'long', year: 'numeric'}).toUpperCase()}
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <!-- Recommendations Table -->
-                        <div style="margin-top: 25px;">
-                            <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 8pt;">
-                                <thead>
-                                    <tr style="background: #2e596b; color: #ffffff; font-weight: 800; text-transform: uppercase; text-align: center;">
-                                        <th style="border: 1px solid #000; padding: 6px; font-size: 7.8pt; letter-spacing: 0.5px;">OBSERVACIONES O RECOMENDACIONES DE LA DOCENTE O DEL DOCENTE</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td style="border: 1px solid #000; height: 40px;"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                                                ${incAsist ? `
-                        <!-- ==================== SALTO DE PÁGINA OBLIGATORIO ==================== -->
-                        <div style="page-break-before: always; break-before: page; height: 1px;"></div>
-
-                        <!-- ==================== PÁGINA 2: ANEXO DE ASISTENCIA Y PUNTUALIDAD ==================== -->
-                        <div style="padding-top: 15px;">
-                            <!-- Header Hoja 2 -->
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000000; padding-bottom: 12px; margin-bottom: 16px;">
-                                <div style="width: 100px; text-align: left;">
-                                    <img src="/img/logo.png" style="height: 55px; width: auto; object-fit: contain;">
-                                </div>
-                                <div style="text-align: center; flex: 1;">
-                                    <div style="font-size: 9.5pt; font-weight: bold; color: #000000; letter-spacing: 0.5px; text-transform: uppercase;">BACHILLERATO TECNOLÓGICO INTERAMERICANO</div>
-                                    <div style="font-size: 11pt; font-weight: 800; color: #000000; margin-top: 4px; text-transform: uppercase;">REPORTE DETALLADO DE ASISTENCIA, PUNTUALIDAD E INCIDENCIAS</div>
-                                    <div style="font-size: 8.5pt; font-weight: bold; color: #334155; margin-top: 3px; text-transform: uppercase;">ANEXO A LA BOLETA DE CALIFICACIONES — ${semestreNombreLargo} SEMESTRE</div>
-                                </div>
-                                <div style="width: 100px;"></div>
-                            </div>
-
-                            <!-- Datos Resumidos del Alumno en Hoja 2 -->
-                            <div style="display: flex; justify-content: space-between; background: #f8fafc; border: 1px solid #000000; padding: 7px 14px; font-size: 8pt; margin-bottom: 18px;">
-                                <div>
-                                    <span style="font-weight: bold; color: #334155;">ALUMNO:</span>
-                                    <strong style="color: #000000; text-transform: uppercase; margin-left: 4px;">${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}</strong>
-                                </div>
-                                <div>
-                                    <span style="font-weight: bold; color: #334155;">MATRÍCULA:</span>
-                                    <strong style="color: #000000; margin-left: 4px;">${al.numeroControl || al.idAlumno || '—'}</strong>
-                                </div>
-                                <div>
-                                    <span style="font-weight: bold; color: #334155;">GRUPO:</span>
-                                    <strong style="color: #000000; margin-left: 4px;">${al.nombreGrupoTexto || '—'} (${al.modalidadHorario || 'MATUTINO'})</strong>
-                                </div>
-                                <div>
-                                    <span style="font-weight: bold; color: #334155;">CICLO:</span>
-                                    <strong style="color: #000000; margin-left: 4px;">2025-2026</strong>
-                                </div>
-                            </div>
-
-                            <!-- Encabezado Institucional de Sección -->
-                            <div style="background: #2e596b; color: #ffffff; padding: 6px 12px; font-size: 8pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; border: 1px solid #000000; border-bottom: none;">
-                                DESGLOSE DE INCIDENCIAS POR PERIODO PARCIAL
-                            </div>
-
-                            <!-- 3 Columnas por Periodo Parcial (Estilo Institucional y Proporcional) -->
-                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; border: 1px solid #000000; margin-bottom: 45px; font-size: 8pt; background: #ffffff;">
-                                
-                                <!-- Columna 1: 1er Parcial -->
-                                <div style="border-right: 1px solid #000000; display: flex; flex-direction: column;">
-                                    <div style="background: #e2e8f0; font-weight: 800; text-align: center; padding: 7px 6px; font-size: 8.5pt; border-bottom: 1px solid #000000; text-transform: uppercase; color: #000000;">
-                                        1ER. PARCIAL
-                                        <div style="font-size: 6.8pt; font-weight: 600; color: #334155; margin-top: 1px;">${incidenciasAsistencia[1]?.inicio || '01/09/2025'} AL ${incidenciasAsistencia[1]?.fin || '10/10/2025'}</div>
-                                    </div>
-                                    
-                                    <div style="padding: 7px 10px; background: #f8fafc; border-bottom: 1px solid #000000; text-align: center; font-size: 7.5pt;">
-                                        <span style="font-weight: bold; color: #334155;">ASISTENCIA DEL PERIODO:</span>
-                                        <strong style="font-size: 9.5pt; color: #000000; margin-left: 4px;">${incidenciasAsistencia[1]?.asistencias || 0} / ${incidenciasAsistencia[1]?.total || 0}</strong>
-                                        <span style="font-weight: bold; color: #334155; margin-left: 3px;">(${incidenciasAsistencia[1]?.pct || 0}%)</span>
-                                    </div>
-
-                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• FALTAS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[1]?.faltas?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[1]?.faltas, 'faltas')}
-                                    </div>
-
-                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• RETARDOS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[1]?.retardos?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[1]?.retardos, 'retardos')}
-                                    </div>
-
-                                    <div style="padding: 10px 12px; flex: 1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• JUSTIFICANTES:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[1]?.justificantes?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[1]?.justificantes, 'justificantes')}
-                                    </div>
-                                </div>
-
-                                <!-- Columna 2: 2do Parcial -->
-                                <div style="border-right: 1px solid #000000; display: flex; flex-direction: column;">
-                                    <div style="background: #e2e8f0; font-weight: 800; text-align: center; padding: 7px 6px; font-size: 8.5pt; border-bottom: 1px solid #000000; text-transform: uppercase; color: #000000;">
-                                        2DO. PARCIAL
-                                        <div style="font-size: 6.8pt; font-weight: 600; color: #334155; margin-top: 1px;">${incidenciasAsistencia[2]?.inicio || '13/10/2025'} AL ${incidenciasAsistencia[2]?.fin || '21/11/2025'}</div>
-                                    </div>
-                                    
-                                    <div style="padding: 7px 10px; background: #f8fafc; border-bottom: 1px solid #000000; text-align: center; font-size: 7.5pt;">
-                                        <span style="font-weight: bold; color: #334155;">ASISTENCIA DEL PERIODO:</span>
-                                        <strong style="font-size: 9.5pt; color: #000000; margin-left: 4px;">${incidenciasAsistencia[2]?.asistencias || 0} / ${incidenciasAsistencia[2]?.total || 0}</strong>
-                                        <span style="font-weight: bold; color: #334155; margin-left: 3px;">(${incidenciasAsistencia[2]?.pct || 0}%)</span>
-                                    </div>
-
-                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• FALTAS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[2]?.faltas?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[2]?.faltas, 'faltas')}
-                                    </div>
-
-                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• RETARDOS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[2]?.retardos?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[2]?.retardos, 'retardos')}
-                                    </div>
-
-                                    <div style="padding: 10px 12px; flex: 1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• JUSTIFICANTES:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[2]?.justificantes?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[2]?.justificantes, 'justificantes')}
-                                    </div>
-                                </div>
-
-                                <!-- Columna 3: 3er Parcial -->
-                                <div style="display: flex; flex-direction: column;">
-                                    <div style="background: #e2e8f0; font-weight: 800; text-align: center; padding: 7px 6px; font-size: 8.5pt; border-bottom: 1px solid #000000; text-transform: uppercase; color: #000000;">
-                                        3ER. PARCIAL
-                                        <div style="font-size: 6.8pt; font-weight: 600; color: #334155; margin-top: 1px;">${incidenciasAsistencia[3]?.inicio || '24/11/2025'} AL ${incidenciasAsistencia[3]?.fin || '16/01/2026'}</div>
-                                    </div>
-                                    
-                                    <div style="padding: 7px 10px; background: #f8fafc; border-bottom: 1px solid #000000; text-align: center; font-size: 7.5pt;">
-                                        <span style="font-weight: bold; color: #334155;">ASISTENCIA DEL PERIODO:</span>
-                                        <strong style="font-size: 9.5pt; color: #000000; margin-left: 4px;">${incidenciasAsistencia[3]?.asistencias || 0} / ${incidenciasAsistencia[3]?.total || 0}</strong>
-                                        <span style="font-weight: bold; color: #334155; margin-left: 3px;">(${incidenciasAsistencia[3]?.pct || 0}%)</span>
-                                    </div>
-
-                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• FALTAS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[3]?.faltas?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[3]?.faltas, 'faltas')}
-                                    </div>
-
-                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• RETARDOS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[3]?.retardos?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[3]?.retardos, 'retardos')}
-                                    </div>
-
-                                    <div style="padding: 10px 12px; flex: 1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• JUSTIFICANTES:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 3px; font-size: 7.5pt;">${incidenciasAsistencia[3]?.justificantes?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[3]?.justificantes, 'justificantes')}
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <!-- Firmas Hoja 2 -->
-                            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 55px; padding: 0 30px;">
-                                <div style="text-align: center; width: 220px;">
-                                    <div style="border-bottom: 1px solid #000000; margin-bottom: 6px; height: 50px;"></div>
-                                    <div style="font-size: 7.8pt; font-weight: 800; text-transform: uppercase; color: #000000;">PREFECTURA / CONTROL ESCOLAR</div>
-                                    <div style="font-size: 7pt; color: #475569; text-transform: uppercase;">RESPONSABLE DE ASISTENCIA</div>
-                                </div>
-
-                                <div style="text-align: center; width: 140px;">
-                                    <div style="border: 1px dashed #64748b; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 4px;">
-                                        <span style="font-size: 7pt; color: #64748b; font-weight: bold; text-transform: uppercase;">SELLO ESCOLAR</span>
-                                    </div>
-                                </div>
-
-                                <div style="text-align: center; width: 220px;">
-                                    <div style="border-bottom: 1px solid #000000; margin-bottom: 6px; height: 50px;"></div>
-                                    <div style="font-size: 7.8pt; font-weight: 800; text-transform: uppercase; color: #000000;">PADRE DE FAMILIA O TUTOR</div>
-                                    <div style="font-size: 7pt; color: #475569; text-transform: uppercase;">FIRMA DE ENTERADO</div>
-                                </div>
-                            </div>
-
-                            <!-- Pie con fecha -->
-                            <div style="text-align: center; font-size: 7pt; color: #64748b; margin-top: 40px; text-transform: uppercase; letter-spacing: 0.5px;">
-                                DOCUMENTO OFICIAL ANEXO — TEZIUTLÁN, PUEBLA A ${new Date().toLocaleDateString('es-MX', {day: 'numeric', month: 'long', year: 'numeric'}).toUpperCase()}
-                            </div>
-                        </div>
-                        ` : ''}
-
+        // Columna de un parcial en el anexo de asistencia (hoja 2)
+        const renderParcialAnexo = (n, titulo, iniDef, finDef) => {
+            const inc = incidenciasAsistencia[n] || {};
+            const bloque = (label, lista, tipo) => `
+                <div class="bo-inc">
+                    <div class="bo-inc-h">
+                        <span>${label}</span>
+                        <span class="rp-chip ${(lista?.length || 0) > 0 && tipo !== 'justificantes' ? 'alert' : ''}">${lista?.length || 0}</span>
                     </div>
-                </body>
-            </html>
-        `);
+                    ${renderListaFechas(lista, tipo)}
+                </div>`;
+            return `
+                <div class="bo-parcial">
+                    <div class="bo-parcial-h">
+                        ${titulo}
+                        <div>${inc.inicio || iniDef} al ${inc.fin || finDef}</div>
+                    </div>
+                    <div class="bo-parcial-asist">
+                        <span class="rp-label">Asistencia del periodo</span>
+                        <strong>${inc.asistencias || 0} / ${inc.total || 0}</strong>
+                        <span class="bo-pct">${inc.pct || 0}%</span>
+                    </div>
+                    ${bloque('Faltas', inc.faltas, 'faltas')}
+                    ${bloque('Retardos', inc.retardos, 'retardos')}
+                    ${bloque('Justificantes', inc.justificantes, 'justificantes')}
+                </div>`;
+        };
+
+        const cuerpoBoleta = `
+            <style>
+                .bo-periodos { display: flex; border: .6pt solid #b9c9cc; background: #f4f8f8; margin-bottom: 3.5mm; }
+                .bo-periodos > div { flex: 1; padding: 1.4mm 2.5mm; border-left: .6pt solid #b9c9cc; }
+                .bo-periodos > div:first-child { border-left: 1.4mm solid #c9a24b; }
+                .bo-periodos .v { display: block; margin-top: .5mm; font-size: 7.8pt; font-weight: bold; color: #12393f; }
+                .bo-main { display: flex; gap: 4mm; align-items: flex-start; }
+                .bo-main > .bo-grades { flex: 1; min-width: 0; }
+                .bo-main > .bo-side { width: 56mm; display: flex; flex-direction: column; gap: 3mm; }
+                .bo-table td { padding: 1.6mm 1.6mm; }
+                .bo-table td.mat { font-weight: bold; font-size: 7pt; }
+                .bo-table td.n { font-size: 8.4pt; }
+                .bo-table .bo-sep { border-left: 1pt solid #26687B !important; }
+                .bo-stats { display: flex; gap: 2mm; }
+                .bo-stats .rp-box { flex: 1; }
+                .bo-rep-parciales { display: flex; justify-content: center; gap: 1.2mm; margin-top: 1.6mm; }
+                .bo-fecha-doc { font-size: 6.8pt; font-weight: bold; letter-spacing: .5px; color: #12393f; text-align: center; border: .6pt solid #b9c9cc; border-left: 1.4mm solid #c9a24b; background: #fbf8ef; padding: 1.4mm 2mm; }
+                .bo-obs { margin-top: 5mm; }
+                .bo-obs-area { border: 1pt solid #26687B; border-top: none; height: 16mm; background: repeating-linear-gradient(to bottom, transparent 0, transparent 5.2mm, #dfe8ea 5.2mm, #dfe8ea 5.4mm); }
+                .bo-anexo-grid { display: flex; border: 1pt solid #26687B; }
+                .bo-parcial { flex: 1; border-left: .6pt solid #a9bcc0; display: flex; flex-direction: column; }
+                .bo-parcial:first-child { border-left: none; }
+                .bo-parcial-h { background: #dceaec; color: #12393f; text-align: center; font-size: 8.4pt; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; padding: 1.8mm 1mm; border-bottom: .6pt solid #a9bcc0; }
+                .bo-parcial-h div { font-size: 6.4pt; font-weight: bold; letter-spacing: .4px; color: #4c6266; margin-top: .4mm; }
+                .bo-parcial-asist { text-align: center; padding: 2mm 1mm; border-bottom: .6pt solid #a9bcc0; background: #f4f8f8; }
+                .bo-parcial-asist strong { display: block; font-size: 12pt; color: #12393f; margin-top: .5mm; }
+                .bo-pct { font-size: 6.6pt; font-weight: bold; color: #26687B; }
+                .bo-inc { padding: 2mm 3mm; border-bottom: .5pt solid #e1eaec; }
+                .bo-inc:last-child { border-bottom: none; flex: 1; }
+                .bo-inc-h { display: flex; justify-content: space-between; align-items: center; font-size: 6.8pt; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; color: #12393f; margin-bottom: 1mm; }
+                .bo-fecha { font-size: 7.2pt; padding-left: 2.6mm; position: relative; line-height: 1.5; }
+                .bo-fecha::before { content: ""; position: absolute; left: 0; top: 1.5mm; width: 1.1mm; height: 1.1mm; background: #c9a24b; }
+                .bo-fecha span { font-size: 6.6pt; color: #5b6b6e; }
+                .bo-vacio { font-size: 6.8pt; color: #7a8a8d; font-style: italic; }
+            </style>
+
+            ${RP.head({
+                institucion: 'Dirección General de Educación Tecnológica Industrial y de Servicios',
+                titulo: `Boleta de calificaciones del ${semestreNombreLargo} semestre`,
+                lineas: ['Educación Media Superior · Ciclo escolar 2025-2026'],
+                tag: al.claveCentroTrabajo || '21PCT0073R',
+                tagSub: 'Ciclo 2025-2026'
+            })}
+
+            ${RP.meta([
+                { label: 'Datos del alumno(a), Apellido paterno, materno y nombre', value: nombreAlumno, flex: 1, lg: true }
+            ])}
+            ${RP.meta([
+                { label: 'Datos de la escuela', value: al.nombreCentroTrabajo || 'BACHILLERATO TECNOLÓGICO INTERAMERICANO', flex: 3 },
+                { label: 'Grupo', value: al.nombreGrupoTexto || '—', flex: .8 },
+                { label: 'Turno', value: al.modalidadHorario || 'MATUTINO', flex: 1.1 },
+                { label: 'CCT', value: al.claveCentroTrabajo || '21PCT0073R', flex: 1.1 }
+            ])}
+
+            <div class="bo-periodos">
+                <div><span class="rp-label">Periodos de evaluación parcial</span><span class="v">Fechas</span></div>
+                <div><span class="rp-label">1er. parcial</span><span class="v">${p1RangoText}</span></div>
+                <div><span class="rp-label">2do. parcial</span><span class="v">${p2RangoText}</span></div>
+                <div><span class="rp-label">3er. parcial</span><span class="v">${p3RangoText}</span></div>
+            </div>
+
+            <div class="bo-main">
+                <div class="bo-grades">
+                    <table class="rp-table bo-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" class="l">Asignaturas / áreas</th>
+                                <th colspan="4">Periodos de evaluación ordinaria</th>
+                                <th rowspan="2" class="bo-sep" style="width: 15mm;">Extra&shy;ordinario</th>
+                                <th rowspan="2" class="bo-sep" style="width: 16mm;">Promedio final / materia</th>
+                            </tr>
+                            <tr class="sub">
+                                <th style="width: 11mm;">1er. parcial</th>
+                                <th style="width: 11mm;">2do. parcial</th>
+                                <th style="width: 11mm;">3er. parcial</th>
+                                <th style="width: 14mm;">Semestral</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filasMateriasHtml}
+                            <tr class="tot">
+                                <td class="lbl">Promedio</td>
+                                <td class="n" style="${p1AvgStyle}">${p1Avg}</td>
+                                <td class="n" style="${p2AvgStyle}">${p2Avg}</td>
+                                <td class="n" style="${p3AvgStyle}">${p3Avg}</td>
+                                <td class="n" style="${semAvgStyle}">${semAvg}</td>
+                                <td class="n bo-sep" style="${extAvgStyle}">${extAvg}</td>
+                                <td class="n bo-sep" style="background: #f3e4bb !important; ${finalAvgStyle}">${finalAvg}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bo-side">
+                    ${badgesHtml}
+                    ${boxReportesHtml}
+                    <div style="margin-top: 2mm;">
+                        ${RP.firmas([{ nombre: 'Ing. Fausto Leyva Flores', rol: 'Director' }], '12mm')}
+                    </div>
+                    <div class="bo-fecha-doc">TEZIUTLÁN PUEBLA A ${fechaLarga}</div>
+                </div>
+            </div>
+
+            <div class="bo-obs">
+                <table class="rp-table" style="border-bottom: none;">
+                    <thead><tr><th>Observaciones o recomendaciones de la docente o del docente</th></tr></thead>
+                </table>
+                <div class="bo-obs-area"></div>
+            </div>
+
+            ${incAsist ? `
+                <div class="rp-page-break"></div>
+
+                ${RP.head({
+                    titulo: 'Reporte detallado de asistencia, puntualidad e incidencias',
+                    lineas: [`Anexo a la boleta de calificaciones — ${semestreNombreLargo} semestre`],
+                    tag: 'Hoja 2 · Anexo',
+                    tagSub: 'Ciclo 2025-2026'
+                })}
+
+                ${RP.meta([
+                    { label: 'Alumno', value: nombreAlumno, flex: 2.6 },
+                    { label: 'Matrícula', value: al.numeroControl || al.idAlumno || '—', flex: 1 },
+                    { label: 'Grupo', value: `${al.nombreGrupoTexto || '—'} (${al.modalidadHorario || 'MATUTINO'})`, flex: 1.3 },
+                    { label: 'Ciclo', value: '2025-2026', flex: .9 }
+                ])}
+
+                <table class="rp-table" style="border-bottom: none;">
+                    <thead><tr><th>Desglose de incidencias por periodo parcial</th></tr></thead>
+                </table>
+                <div class="bo-anexo-grid">
+                    ${renderParcialAnexo(1, '1er. parcial', '01/09/2025', '10/10/2025')}
+                    ${renderParcialAnexo(2, '2do. parcial', '13/10/2025', '21/11/2025')}
+                    ${renderParcialAnexo(3, '3er. parcial', '24/11/2025', '16/01/2026')}
+                </div>
+
+                <div style="margin-top: 18mm; padding: 0 6mm;">
+                    ${RP.firmas([
+                        { rol: 'Prefectura / Control escolar', detalle: 'Responsable de asistencia' },
+                        'sello:Sello escolar',
+                        { rol: 'Padre de familia o tutor', detalle: 'Firma de enterado' }
+                    ], '14mm')}
+                </div>
+
+                ${RP.foot('Documento oficial anexo', `Teziutlán, Puebla a ${fechaLarga}`)}
+            ` : ''}
+        `;
+
+        const win = window.open('', '', 'height=850,width=1100');
+        win.document.write(RP.documento(`Boleta de Calificaciones - ${semestreNombreLargo} Semestre - ${al.nombre}`, cuerpoBoleta, { margin: '10mm 11mm' }));
         win.document.close();
         win.focus();
         setTimeout(() => {
@@ -4024,7 +3951,7 @@ window.imprimirKardex = function() {
                 icon: 'warning',
                 title: 'No hay datos cargados',
                 text: 'Por favor, busque un alumno primero.',
-                confirmButtonColor: '#0284c7'
+                confirmButtonColor: '#26687B'
             });
             return;
         }
@@ -4086,7 +4013,7 @@ window.imprimirKardex = function() {
                 icon: 'warning',
                 title: 'No hay datos cargados',
                 text: 'Por favor, busque un alumno primero.',
-                confirmButtonColor: '#0284c7'
+                confirmButtonColor: '#26687B'
             });
             return;
         }
@@ -4139,7 +4066,7 @@ window.imprimirKardex = function() {
                 icon: 'warning',
                 title: 'No hay datos cargados',
                 text: 'Por favor, busque un alumno primero.',
-                confirmButtonColor: '#0284c7'
+                confirmButtonColor: '#26687B'
             });
             return;
         }
@@ -4181,7 +4108,6 @@ window.imprimirKardex = function() {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'list-group-item list-group-item-action py-2 text-start d-flex justify-content-between align-items-center';
-            btn.style.borderLeft = '3px solid #0284c7';
 
             const cctName = (g.id_centroTrabajo == 2) ? 'BTI' : ((g.id_centroTrabajo == 3) ? 'BGNE' : '');
             btn.innerHTML = `
@@ -4205,11 +4131,10 @@ window.imprimirKardex = function() {
         const input = document.getElementById('extraordinarioGrupoInput');
         if (input) input.value = grupo.clave;
 
-        // Auto-seleccionar semestre en base al nivel académico del grupo
+        // Auto-seleccionar semestre/trimestre en base al nivel académico del grupo
         if (grupo.id_nivel_academico) {
-            const isBti = (grupo.id_centroTrabajo == 2) || (cctSeleccionado === 'BTI');
-            let semNum = isBti ? (grupo.id_nivel_academico - 6) : grupo.id_nivel_academico;
-            if (semNum >= 1 && semNum <= 6) {
+            const semNum = periodoDeNivel(grupo.id_nivel_academico);
+            if (semNum) {
                 const semSelect = document.getElementById('extraordinarioSemestreSelect');
                 if (semSelect) {
                     semSelect.value = String(semNum);
@@ -4234,6 +4159,36 @@ window.imprimirKardex = function() {
         }
 
         actualizarExtraordinarioPreview();
+    }
+
+    /*
+     * Periodos por plantel. En tb_nivel_academico:
+     *   BGNE → trimestres, id_nivel_academico 1–6
+     *   BTI  → semestres,  id_nivel_academico 7–12
+     * El select guarda el número de periodo (1–6); nivelDePeriodo() lo traduce al id del catálogo.
+     */
+    const ORDINALES_PERIODO = ['1er', '2do', '3er', '4to', '5to', '6to'];
+    const periodoExtraordinario = () => (cctSeleccionado === 'BGNE')
+        ? { nombre: 'Trimestre', offset: 0 }
+        : { nombre: 'Semestre', offset: 6 };
+    const nivelDePeriodo = (num) => parseInt(num) + periodoExtraordinario().offset;
+    const periodoDeNivel = (nivel) => {
+        const n = parseInt(nivel) - periodoExtraordinario().offset;
+        return n >= 1 && n <= 6 ? n : null;
+    };
+
+    function configurarPeriodoExtraordinario(cct) {
+        const select = document.getElementById('extraordinarioSemestreSelect');
+        const label = document.getElementById('lbl-extraordinario-semestre-label');
+        if (!select) return;
+        const { nombre } = periodoExtraordinario();
+        if (label) label.textContent = nombre;
+        select.innerHTML = '<option value="">Selecciona…</option>' +
+            ORDINALES_PERIODO.map((o, i) => `<option value="${i + 1}">${o} ${nombre.toLowerCase()}</option>`).join('');
+
+        // La materia elegida pertenecía al plantel anterior
+        const mat = document.getElementById('extraordinarioMateriaInput');
+        if (mat) mat.value = '';
     }
 
     function onExtraordinarioSemestreChange() {
@@ -4267,17 +4222,8 @@ window.imprimirKardex = function() {
                 if (cid && cid != targetCentroId) return false;
             }
 
-            if (semVal) {
-                const sNum = parseInt(semVal);
-                const nivel = parseInt(m.id_nivel_academico);
-                if (cctSeleccionado === 'BTI') {
-                    if (nivel !== (sNum + 6) && nivel !== sNum) return false;
-                } else if (cctSeleccionado === 'BGNE') {
-                    if (nivel !== sNum) return false;
-                } else {
-                    if (nivel !== sNum && nivel !== (sNum + 6)) return false;
-                }
-            }
+            // Solo materias del semestre/trimestre elegido (nivel exacto del plantel)
+            if (semVal && parseInt(m.id_nivel_academico) !== nivelDePeriodo(semVal)) return false;
 
             if (!normQ) return true;
             const nomNorm = (m.nombreMateria || '').normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -4312,12 +4258,12 @@ window.imprimirKardex = function() {
         if (!semVal && filtered.length > 0) {
             const notice = document.createElement('div');
             notice.className = 'p-2 bg-light text-muted fs-9 border-bottom text-center';
-            notice.innerHTML = '<i class="ti ti-info-circle me-1"></i> Selecciona un semestre arriba para desglosar materias de ese periodo';
+            notice.innerHTML = `<i class="ti ti-info-circle me-1"></i> Elige un ${periodoExtraordinario().nombre.toLowerCase()} para ver solo sus materias`;
             div.appendChild(notice);
         }
 
         if (filtered.length === 0) {
-            div.innerHTML = `<div class="p-3 text-muted fs-8 text-center">${semVal ? 'No hay materias para este semestre' : 'No se encontraron materias'}</div>`;
+            div.innerHTML = `<div class="p-3 text-muted fs-8 text-center">${semVal ? `No hay materias para este ${periodoExtraordinario().nombre.toLowerCase()}` : 'No se encontraron materias'}</div>`;
             return;
         }
 
@@ -4325,13 +4271,9 @@ window.imprimirKardex = function() {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'list-group-item list-group-item-action py-2 text-start d-flex justify-content-between align-items-center';
-            btn.style.borderLeft = '3px solid #0284c7';
 
-            let semBadge = '';
-            if (m.id_nivel_academico) {
-                const num = m.id_nivel_academico >= 7 ? (m.id_nivel_academico - 6) : m.id_nivel_academico;
-                semBadge = `${num}º Sem/Trim`;
-            }
+            const numPeriodo = periodoDeNivel(m.id_nivel_academico);
+            const semBadge = numPeriodo ? `${ORDINALES_PERIODO[numPeriodo - 1]} ${periodoExtraordinario().nombre.slice(0, 4).toLowerCase()}.` : '';
 
             btn.innerHTML = `
                 <div>
@@ -4354,12 +4296,12 @@ window.imprimirKardex = function() {
         const input = document.getElementById('extraordinarioMateriaInput');
         if (input) input.value = materia.nombreMateria;
 
-        // Auto-seleccionar semestre si no estaba seleccionado
+        // Auto-seleccionar semestre/trimestre si no estaba seleccionado
         if (materia.id_nivel_academico) {
             const semSelect = document.getElementById('extraordinarioSemestreSelect');
             if (semSelect && !semSelect.value) {
-                const num = materia.id_nivel_academico >= 7 ? (materia.id_nivel_academico - 6) : materia.id_nivel_academico;
-                if (num >= 1 && num <= 6) {
+                const num = periodoDeNivel(materia.id_nivel_academico);
+                if (num) {
                     semSelect.value = String(num);
                     onExtraordinarioSemestreChange();
                 }
@@ -4411,7 +4353,6 @@ window.imprimirKardex = function() {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'list-group-item list-group-item-action py-2 text-start';
-            btn.style.borderLeft = '3px solid #0284c7';
             btn.innerHTML = `<span class="fw-semibold text-slate-800 fs-8">${fullName}</span>`;
 
             btn.onclick = (e) => {
@@ -4471,7 +4412,7 @@ window.imprimirKardex = function() {
                 icon: 'warning',
                 title: 'Campo Requerido',
                 text: 'Por favor, busque y seleccione o escriba el nombre del alumno.',
-                confirmButtonColor: '#0284c7'
+                confirmButtonColor: '#26687B'
             });
             return;
         }
@@ -4481,7 +4422,7 @@ window.imprimirKardex = function() {
                 icon: 'warning',
                 title: 'Campo Requerido',
                 text: 'Por favor, seleccione o escriba la materia para el examen extraordinario.',
-                confirmButtonColor: '#0284c7'
+                confirmButtonColor: '#26687B'
             });
             return;
         }
@@ -4502,190 +4443,121 @@ window.imprimirKardex = function() {
         const isBti = (cctSeleccionado === 'BTI') || (!cctSeleccionado && true);
         const cctNombre = isBti ? 'BACHILLERATO TECNOLÓGICO INTERAMERICANO' : 'BACHILLERATO GENERAL NO ESCOLARIZADO';
         const cctClave = isBti ? '21PCT0073R' : '21PBH0353G';
-        
+
         const fechaObj = new Date();
         const fechaFormateada = fechaObj.toLocaleDateString('es-MX', {
-            day: '2-digit', 
-            month: 'long', 
+            day: '2-digit',
+            month: 'long',
             year: 'numeric'
         }).toUpperCase();
 
         const randFolio = String(Math.floor(1000 + Math.random() * 9000));
         const folio = `EXT-${fechaObj.getFullYear()}-${randFolio}`;
 
+        // Los estilos viajan dentro del HTML: se usa tanto en la vista previa como en la impresión
         const html = `
-            <div style="font-family: Arial, Helvetica, sans-serif; color: #000; font-size: 8.2pt; line-height: 1.35;">
+            <style>
+                ${RP.css}
+                .ex-acta { border: 1pt solid #26687B; padding: 5mm 5.5mm 4.5mm; background: #fff; }
+                .ex-titulo { text-align: center; margin: 0 0 3mm; }
+                .ex-titulo span { display: inline-block; font-size: 10.5pt; font-weight: bold; letter-spacing: 2.4px; text-transform: uppercase; color: #12393f; border-top: .6pt solid #c9a24b; border-bottom: .6pt solid #c9a24b; padding: 1.2mm 6mm; }
+                .ex-dictamen td { height: 12mm; }
+                .ex-check { display: inline-block; width: 3mm; height: 3mm; border: .8pt solid #12393f; vertical-align: -0.5mm; margin-right: 1.4mm; }
+                .ex-talon { border: .8pt dashed #9fb3b7; padding: 4mm 5mm; background: #fff; }
+                .ex-talon-h { display: flex; justify-content: space-between; align-items: baseline; border-bottom: .6pt solid #26687B; padding-bottom: 1.6mm; margin-bottom: 2.4mm; }
+                .ex-talon-h .t { font-size: 8.6pt; font-weight: bold; text-transform: uppercase; color: #12393f; letter-spacing: .4px; }
+                .ex-talon-h .t span { font-size: 7pt; color: #26687B; letter-spacing: 1.2px; }
+                .ex-talon-h .f { font-size: 7.6pt; font-weight: bold; color: #9a2a1f; }
+                .ex-talon .rp-card { padding: 1mm 2mm 1.1mm; }
+                .ex-talon .rp-value { font-size: 7.6pt; }
+            </style>
+            <div class="rp">
                 <!-- ==================== SECCIÓN 1: ACTA DE EXAMEN EXTRAORDINARIO ==================== -->
-                <div style="border: 2px solid #000; padding: 18px 20px; border-radius: 4px; background: #fff; margin-bottom: 12px; position: relative;">
-                    <!-- Membrete Oficial -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #10599a; padding-bottom: 8px; margin-bottom: 10px;">
-                        <div style="width: 70px; text-align: left;">
-                            <img src="/img/logo.png" alt="Logo" style="height: 52px; width: auto; object-fit: contain;">
-                        </div>
-                        <div style="text-align: center; flex-grow: 1; padding: 0 10px;">
-                            <div style="font-weight: 900; font-size: 11pt; color: #10599a; text-transform: uppercase; letter-spacing: 0.5px;">
-                                ${cctNombre}
-                            </div>
-                            <div style="font-size: 7.2pt; color: #334155; margin-top: 2px;">
-                                Avenida Benito Juárez 901, Colonia Centro Teziutlán, Puebla. Tel: 231-3123979
-                            </div>
-                            <div style="font-size: 7.5pt; font-weight: bold; color: #0f172a; margin-top: 1px;">
-                                CLAVE C.C.T. ${cctClave}
-                            </div>
-                        </div>
-                        <div style="width: 140px; text-align: right; border-left: 1px solid #cbd5e1; padding-left: 8px;">
-                            <div style="font-size: 7pt; color: #64748b; font-weight: bold; text-transform: uppercase;">FOLIO OFICIAL</div>
-                            <div style="font-size: 9.5pt; font-weight: 900; color: #dc2626;">${folio}</div>
-                            <div style="font-size: 7pt; color: #334155; margin-top: 2px;">${fechaFormateada}</div>
-                        </div>
-                    </div>
+                <div class="ex-acta">
+                    ${RP.head({
+                        institucion: cctNombre,
+                        lineas: ['Avenida Benito Juárez 901, Colonia Centro, Teziutlán, Puebla · Tel. 231-312-3979', `Clave C.C.T. ${cctClave}`],
+                        folio: folio,
+                        tagSub: fechaFormateada
+                    })}
 
-                    <!-- Título del Documento -->
-                    <div style="text-align: center; margin-bottom: 10px;">
-                        <span style="font-size: 10.5pt; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; background: #f8fafc; padding: 3px 20px; border-radius: 4px; border: 1.5px solid #000; display: inline-block;">
-                            Acta de Examen Extraordinario
-                        </span>
-                    </div>
+                    <div class="ex-titulo"><span>Acta de examen extraordinario</span></div>
 
-                    <!-- Datos del Alumno y Asignatura -->
-                    <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; margin-bottom: 10px; font-size: 8pt;">
-                        <tbody>
-                            <tr>
-                                <td style="border: 1px solid #000; padding: 4px 8px; width: 68%; background: #ffffff;">
-                                    <span style="font-size: 6.8pt; color: #64748b; display: block; font-weight: bold; text-transform: uppercase;">Nombre del Alumno(a)</span>
-                                    <strong style="font-size: 9.2pt; text-transform: uppercase; color: #000;">${alumno}</strong>
-                                </td>
-                                <td style="border: 1px solid #000; padding: 4px 8px; width: 32%; background: #ffffff;">
-                                    <span style="font-size: 6.8pt; color: #64748b; display: block; font-weight: bold; text-transform: uppercase;">Matrícula / No. Control</span>
-                                    <strong style="font-size: 8.5pt; color: #000;">${matricula}</strong>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="border: 1px solid #000; padding: 4px 8px; background: #ffffff;">
-                                    <span style="font-size: 6.8pt; color: #64748b; display: block; font-weight: bold; text-transform: uppercase;">Asignatura / Materia</span>
-                                    <strong style="font-size: 8.8pt; text-transform: uppercase; color: #1e40af;">${materia}</strong>
-                                </td>
-                                <td style="border: 1px solid #000; padding: 4px 8px; background: #ffffff;">
-                                    <span style="font-size: 6.8pt; color: #64748b; display: block; font-weight: bold; text-transform: uppercase;">Semestre / Periodo y Grupo</span>
-                                    <strong style="font-size: 8.5pt; text-transform: uppercase; color: #000;">${semestre} | Grupo: ${grupo}</strong>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" style="border: 1px solid #000; padding: 4px 8px; background: #ffffff;">
-                                    <span style="font-size: 6.8pt; color: #64748b; display: block; font-weight: bold; text-transform: uppercase;">Docente Titular / Evaluador</span>
-                                    <strong style="font-size: 8.5pt; text-transform: uppercase; color: #000;">${docente}</strong>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    ${RP.meta([
+                        { label: 'Nombre del alumno(a)', value: alumno, flex: 2.1, lg: true },
+                        { label: 'Matrícula / No. control', value: matricula, flex: 1 }
+                    ])}
+                    ${RP.meta([
+                        { label: 'Asignatura / materia', value: materia, flex: 2.1 },
+                        { label: `${isBti ? 'Semestre' : 'Trimestre'} y grupo`, value: `${semestre} | Grupo: ${grupo}`, flex: 1 }
+                    ])}
+                    ${RP.meta([
+                        { label: 'Docente titular / evaluador', value: docente }
+                    ])}
 
-                    <!-- Dictamen y Calificación -->
-                    <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; margin-bottom: 12px; font-size: 8pt;">
+                    <table class="rp-table ex-dictamen" style="margin: 1mm 0 3mm;">
                         <thead>
-                            <tr style="background: #f8fafc; text-align: center; font-size: 7.2pt;">
-                                <th style="border: 1px solid #000; padding: 4px; width: 25%;">FECHA DE APLICACIÓN</th>
-                                <th style="border: 1px solid #000; padding: 4px; width: 25%;">CALIFICACIÓN (NÚMERO)</th>
-                                <th style="border: 1px solid #000; padding: 4px; width: 30%;">CALIFICACIÓN (CON LETRA)</th>
-                                <th style="border: 1px solid #000; padding: 4px; width: 20%;">DICTAMEN</th>
+                            <tr>
+                                <th style="width: 25%;">Fecha de aplicación</th>
+                                <th style="width: 22%;">Calificación (número)</th>
+                                <th style="width: 33%;">Calificación (con letra)</th>
+                                <th style="width: 20%;">Dictamen</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr style="text-align: center; height: 38px;">
-                                <td style="border: 1px solid #000; padding: 4px; font-weight: bold;">${fechaFormateada}</td>
-                                <td style="border: 1px solid #000; padding: 4px; font-size: 11pt; font-weight: bold;"></td>
-                                <td style="border: 1px solid #000; padding: 4px;"></td>
-                                <td style="border: 1px solid #000; padding: 4px; font-size: 7.5pt; line-height: 1.2;">
-                                    [ &nbsp; ] APROBADO<br>[ &nbsp; ] REPROBADO
+                            <tr>
+                                <td class="c" style="font-weight: bold; color: #12393f;">${fechaFormateada}</td>
+                                <td class="n" style="font-size: 12pt;"></td>
+                                <td></td>
+                                <td style="font-size: 7pt; font-weight: bold; color: #12393f; line-height: 1.9; padding-left: 3mm;">
+                                    <span class="ex-check"></span>APROBADO<br><span class="ex-check"></span>REPROBADO
                                 </td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <!-- Leyenda Legal -->
-                    <p style="font-size: 7.2pt; text-align: justify; margin: 0 0 16px 0; color: #334155; line-height: 1.35;">
+                    <p class="rp-note" style="margin: 0 0 4mm;">
                         El docente y las autoridades escolares que suscriben hacen constar que el(la) alumno(a) acreditó el proceso de examen extraordinario conforme al reglamento escolar vigente. Las calificaciones aquí asentadas son de carácter oficial y definitivo.
                     </p>
 
-                    <!-- Firmas Oficiales -->
-                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; padding: 0 5px;">
-                        <div style="width: 175px; text-align: center;">
-                            <div style="border-bottom: 1.5px solid #000; height: 35px; margin-bottom: 4px;"></div>
-                            <span style="font-size: 7.2pt; font-weight: bold; text-transform: uppercase; color: #000; display: block;">Firma del Alumno</span>
-                            <span style="font-size: 6.8pt; color: #64748b;">Aceptación de Calificación</span>
-                        </div>
-
-                        <div style="width: 110px; text-align: center; border: 1.5px dashed #94a3b8; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: #fafafa;">
-                            <span style="font-size: 7pt; font-weight: bold; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Sello Escolar</span>
-                        </div>
-
-                        <div style="width: 175px; text-align: center;">
-                            <div style="border-bottom: 1.5px solid #000; height: 35px; margin-bottom: 4px;"></div>
-                            <span style="font-size: 7.2pt; font-weight: bold; text-transform: uppercase; color: #000; display: block;">Docente Evaluador</span>
-                            <span style="font-size: 6.8pt; color: #64748b;">Firma de Conformidad</span>
-                        </div>
-
-                        <div style="width: 175px; text-align: center;">
-                            <div style="border-bottom: 1.5px solid #000; height: 35px; margin-bottom: 4px; display: flex; align-items: flex-end; justify-content: center; font-size: 7.2pt; font-weight: bold;">
-                                Ing. Fausto Mauro Leyva Flores
-                            </div>
-                            <span style="font-size: 7.2pt; font-weight: bold; text-transform: uppercase; color: #000; display: block;">Director</span>
-                            <span style="font-size: 6.8pt; color: #64748b;">Autorización Institucional</span>
-                        </div>
-                    </div>
+                    ${RP.firmas([
+                        { rol: 'Firma del alumno', detalle: 'Aceptación de calificación' },
+                        'sello:Sello escolar',
+                        { rol: 'Docente evaluador', detalle: 'Firma de conformidad' },
+                        { nombre: 'Ing. Fausto Mauro Leyva Flores', rol: 'Director', detalle: 'Autorización institucional' }
+                    ], '11mm')}
                 </div>
 
                 <!-- Línea de Corte -->
-                <div style="display: flex; align-items: center; justify-content: center; margin: 10px 0; color: #64748b; font-size: 7pt; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">
-                    <span style="border-top: 1.5px dashed #94a3b8; flex-grow: 1;"></span>
-                    <span style="padding: 0 12px;"><i class="ti ti-scissors me-1"></i> CORTE AQUÍ &mdash; TALÓN DE DERECHO A EXAMEN EXTRAORDINARIO</span>
-                    <span style="border-top: 1.5px dashed #94a3b8; flex-grow: 1;"></span>
-                </div>
+                <div class="rp-cut">&#9986; Corte aquí — talón de derecho a examen extraordinario</div>
 
                 <!-- ==================== SECCIÓN 2: RECIBO Y DERECHO A EXAMEN ==================== -->
-                <div style="border: 1.5px solid #000; padding: 14px 18px; border-radius: 4px; background: #fff;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid #10599a; padding-bottom: 6px; margin-bottom: 8px;">
-                        <div style="font-weight: 800; font-size: 9.5pt; color: #10599a; text-transform: uppercase;">
-                            ${cctNombre} &mdash; <span style="font-size: 8.5pt; color: #334155;">Comprobante de Derecho a Examen</span>
-                        </div>
-                        <div style="font-size: 8pt; font-weight: bold; color: #dc2626;">
-                            FOLIO: ${folio}
-                        </div>
+                <div class="ex-talon">
+                    <div class="ex-talon-h">
+                        <div class="t">${cctNombre} &mdash; <span>Comprobante de derecho a examen</span></div>
+                        <div class="f">FOLIO: ${folio}</div>
                     </div>
 
-                    <table style="width: 100%; border-collapse: collapse; font-size: 7.8pt; margin-bottom: 8px;">
-                        <tbody>
-                            <tr>
-                                <td style="padding: 2px 4px; width: 65%;"><strong>ALUMNO:</strong> ${alumno}</td>
-                                <td style="padding: 2px 4px; width: 35%;"><strong>MATRÍCULA:</strong> ${matricula}</td>
-                            </tr>
-                            <tr>
-                                <td style="padding: 2px 4px;"><strong>ASIGNATURA:</strong> ${materia}</td>
-                                <td style="padding: 2px 4px;"><strong>PERIODO / GRUPO:</strong> ${semestre} (${grupo})</td>
-                            </tr>
-                            <tr>
-                                <td colspan="2" style="padding: 2px 4px;"><strong>DOCENTE ASIGNADO:</strong> ${docente}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    ${RP.meta([
+                        { label: 'Alumno', value: alumno, flex: 2 },
+                        { label: 'Matrícula', value: matricula, flex: 1 }
+                    ])}
+                    ${RP.meta([
+                        { label: 'Asignatura', value: materia, flex: 1.4 },
+                        { label: 'Periodo / grupo', value: `${semestre} (${grupo})`, flex: 1 },
+                        { label: 'Docente asignado', value: docente, flex: 1.4 }
+                    ])}
 
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 5px 8px; font-size: 7.2pt; color: #334155; line-height: 1.3; margin-bottom: 10px;">
+                    <p class="rp-note" style="margin: 0 0 3mm; background: #f4f8f8; border: .6pt solid #dfe8ea; padding: 1.6mm 2.4mm;">
                         El presente recibo certifica que el alumno(a) ha tramitado en tiempo y forma su solicitud para presentar la prueba extraordinaria de la materia indicada. Es obligatorio presentar este talón con sello al momento de realizar la evaluación.
-                    </div>
+                    </p>
 
-                    <div style="display: flex; justify-content: space-around; align-items: flex-end; padding: 0 20px;">
-                        <div style="width: 190px; text-align: center;">
-                            <div style="border-bottom: 1px solid #000; height: 26px; margin-bottom: 3px;"></div>
-                            <span style="font-size: 7pt; font-weight: bold; text-transform: uppercase; color: #475569;">Firma del Alumno</span>
-                        </div>
-                        <div style="width: 90px; text-align: center; border: 1px dashed #94a3b8; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 3px;">
-                            <span style="font-size: 6.5pt; font-weight: bold; color: #94a3b8; text-transform: uppercase;">Sello</span>
-                        </div>
-                        <div style="width: 190px; text-align: center;">
-                            <div style="border-bottom: 1px solid #000; height: 26px; margin-bottom: 3px; display: flex; align-items: flex-end; justify-content: center; font-size: 7pt; font-weight: bold;">
-                                Control Escolar
-                            </div>
-                            <span style="font-size: 7pt; font-weight: bold; text-transform: uppercase; color: #475569;">Firma de Validación</span>
-                        </div>
+                    <div style="padding: 0 8mm;">
+                        ${RP.firmas([
+                            { rol: 'Firma del alumno' },
+                            'sello',
+                            { nombre: 'Control Escolar', rol: 'Firma de validación' }
+                        ], '8mm')}
                     </div>
                 </div>
             </div>
@@ -4703,42 +4575,7 @@ window.imprimirKardex = function() {
 
         const contenidoHtml = container.innerHTML;
         const win = window.open('', '', 'height=900,width=850');
-        win.document.write(`
-            <!DOCTYPE html>
-            <html>
-                <head>
-                    <title>Acta de Examen Extraordinario</title>
-                    <style>
-                        * {
-                            -webkit-print-color-adjust: exact !important;
-                            print-color-adjust: exact !important;
-                            box-sizing: border-box;
-                        }
-                        @page {
-                            size: letter portrait;
-                            margin: 10mm;
-                        }
-                        body {
-                            font-family: Arial, Helvetica, sans-serif;
-                            background: #fff;
-                            color: #000;
-                            margin: 0;
-                            padding: 0;
-                        }
-                        .hoja-print {
-                            width: 100%;
-                            max-width: 730px;
-                            margin: 0 auto;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="hoja-print">
-                        ${contenidoHtml}
-                    </div>
-                </body>
-            </html>
-        `);
+        win.document.write(RP.documento('Acta de Examen Extraordinario', contenidoHtml, { margin: '10mm' }));
         win.document.close();
         win.focus();
         setTimeout(() => {
@@ -4890,16 +4727,8 @@ window.imprimirKardex = function() {
                 if (cid && cid != targetCentroId) return false;
             }
 
-            if (semNum !== null) {
-                const nivel = parseInt(m.id_nivel_academico);
-                if (cctSeleccionado === 'BTI') {
-                    if (nivel !== (semNum + 6) && nivel !== semNum) return false;
-                } else if (cctSeleccionado === 'BGNE') {
-                    if (nivel !== semNum) return false;
-                } else {
-                    if (nivel !== semNum && nivel !== (semNum + 6)) return false;
-                }
-            }
+            // Solo materias del semestre/trimestre elegido (nivel exacto del plantel)
+            if (semNum !== null && parseInt(m.id_nivel_academico) !== nivelDePeriodo(semNum)) return false;
 
             if (!normQ) return true;
             const nomNorm = (m.nombreMateria || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -4967,13 +4796,9 @@ window.imprimirKardex = function() {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'list-group-item list-group-item-action py-2 text-start d-flex justify-content-between align-items-center';
-            btn.style.borderLeft = '3px solid #0284c7';
-            
-            let semBadge = '';
-            if (m.id_nivel_academico) {
-                const num = m.id_nivel_academico >= 7 ? (m.id_nivel_academico - 6) : m.id_nivel_academico;
-                semBadge = `${num}º Sem/Trim`;
-            }
+
+            const numPeriodo = periodoDeNivel(m.id_nivel_academico);
+            const semBadge = numPeriodo ? `${ORDINALES_PERIODO[numPeriodo - 1]} ${periodoExtraordinario().nombre.slice(0, 4).toLowerCase()}.` : '';
 
             btn.innerHTML = `
                 <div>
@@ -5076,7 +4901,6 @@ window.imprimirKardex = function() {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'list-group-item list-group-item-action py-2 text-start d-flex justify-content-between align-items-center';
-            btn.style.borderLeft = '3px solid #0284c7';
             btn.innerHTML = `
                 <div>
                     <span class="fw-semibold text-slate-800 fs-8 d-block">${fullName}</span>
@@ -5199,10 +5023,10 @@ window.imprimirKardex = function() {
 
         if (badge) {
             if (dias > 45) {
-                badge.className = 'badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-2 w-100 fs-9';
+                badge.className = 'tw:inline-flex tw:h-10 tw:items-center tw:bg-warning-100 tw:px-3 tw:text-[0.6875rem] tw:font-semibold tw:text-warning-600';
                 badge.innerText = `${dias} días`;
             } else {
-                badge.className = 'badge bg-success-subtle text-success border border-success-subtle px-2 py-2 w-100 fs-9';
+                badge.className = 'tw:inline-flex tw:h-10 tw:items-center tw:bg-success-100 tw:px-3 tw:text-[0.6875rem] tw:font-semibold tw:text-success-700';
                 badge.innerText = `${dias} días (1 hoja)`;
             }
         }
@@ -5333,7 +5157,7 @@ window.imprimirKardex = function() {
                 icon: 'warning',
                 title: 'Seleccione un grupo',
                 text: 'Por favor, elija un grupo para generar la lista de asistencia.',
-                confirmButtonColor: '#0284c7'
+                confirmButtonColor: '#26687B'
             });
             return;
         }
@@ -5453,66 +5277,18 @@ window.imprimirKardex = function() {
                    </div>`,
             width: '600px',
             confirmButtonText: 'Cerrar',
-            confirmButtonColor: '#0284c7'
+            confirmButtonColor: '#26687B'
         });
     }
 
-    function printDoc(tipo, nombre, detalle = '') {
-        let message = `Generando el archivo PDF para <strong>${nombre}</strong>.`;
-        if (detalle) {
-            message += `<br>Asignación: <i>${detalle}</i>`;
-        }
-
+    // Formatos que todavía no generan documento: se dice tal cual, sin simular una descarga.
+    function printDoc(tipo) {
         Swal.fire({
-            title: `Imprimir ${tipo}`,
-            html: message,
+            title: `${tipo}: aún no disponible para ${cctSeleccionado}`,
+            text: `Por ahora este formato solo se genera para el BTI. Para ${cctSeleccionado}, elabóralo en control escolar con la plantilla en papel.`,
             icon: 'info',
-            showCancelButton: true,
-            confirmButtonText: '<i class="ti ti-printer me-1"></i> Descargar PDF',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#10b981',
-            cancelButtonColor: '#64748b'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({
-                    title: '¡Generado!',
-                    text: 'El documento se descargó correctamente en tu equipo.',
-                    icon: 'success',
-                    confirmButtonColor: '#0284c7'
-                });
-            }
-        });
-    }
-
-    function simularImpresionGrupo(grupo) {
-        Swal.fire({
-            title: 'Imprimir Grupo Completo',
-            html: `¿Deseas descargar el paquete PDF con todas las boletas del grupo <strong>${grupo}</strong>?`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, descargar paquete',
-            cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#10b981',
-            cancelButtonColor: '#64748b'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({
-                    title: 'Generando PDF consolidado...',
-                    html: 'Esto puede demorar unos segundos.',
-                    timer: 1500,
-                    timerProgressBar: true,
-                    didOpen: () => {
-                        Swal.showLoading()
-                    }
-                }).then(() => {
-                    Swal.fire({
-                        title: '¡Listo!',
-                        text: `Se descargó el paquete del grupo ${grupo} (3 alumnos).`,
-                        icon: 'success',
-                        confirmButtonColor: '#0284c7'
-                    });
-                });
-            }
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#26687B'
         });
     }
 
@@ -5561,7 +5337,7 @@ window.imprimirKardex = function() {
                 icon: 'warning',
                 title: 'Seleccione un alumno',
                 text: 'Por favor, busque y seleccione un alumno de la lista.',
-                confirmButtonColor: '#0284c7'
+                confirmButtonColor: '#26687B'
             });
             return;
         }
@@ -5597,7 +5373,7 @@ window.imprimirKardex = function() {
                     icon: 'success',
                     title: 'Reporte registrado',
                     text: 'El reporte de indisciplina se guardó correctamente.',
-                    confirmButtonColor: '#0284c7'
+                    confirmButtonColor: '#26687B'
                 }).then(() => {
                     deseleccionarAlumnoReporte();
                     document.getElementById('reporte_incidente').value = '';
@@ -5609,7 +5385,7 @@ window.imprimirKardex = function() {
                     icon: 'error',
                     title: 'Error',
                     text: resp.message || 'No se pudo registrar el reporte.',
-                    confirmButtonColor: '#0284c7'
+                    confirmButtonColor: '#26687B'
                 });
             }
         })
@@ -5620,7 +5396,7 @@ window.imprimirKardex = function() {
                 icon: 'error',
                 title: 'Error de red',
                 text: 'Ocurrió un problema de comunicación con el servidor.',
-                confirmButtonColor: '#0284c7'
+                confirmButtonColor: '#26687B'
             });
         });
     };
@@ -5636,42 +5412,44 @@ window.imprimirKardex = function() {
                     tbody.innerHTML = '';
                     const list = resp.data || [];
                     if (list.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No se encontraron reportes.</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="6" class="tw:px-4 tw:py-8 tw:text-center tw:text-[0.8125rem] tw:text-slate-500">No se encontraron reportes.</td></tr>`;
                         return;
                     }
-                    
+
+                    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+                    const accion = 'tw:inline-flex tw:size-8 tw:cursor-pointer tw:items-center tw:justify-center tw:border-0 tw:bg-transparent tw:transition-colors';
+
                     window.reportesCache = window.reportesCache || {};
                     list.forEach(rep => {
                         window.reportesCache[rep.id] = rep;
                         const tr = document.createElement('tr');
-                        tr.className = 'fs-8';
+                        tr.className = 'tw:text-[0.8125rem] tw:transition-colors tw:hover:bg-slate-50';
                         tr.innerHTML = `
-                            <td><strong class="text-slate-800">${rep.folio}</strong></td>
-                            <td>
-                                <span class="d-block fw-semibold">${rep.alumno_nombre}</span>
-                                <small class="text-muted">ID: ${rep.id_alumno}</small>
+                            <td class="tw:px-4 tw:py-3 tw:align-middle"><span class=" tw:bg-slate-100 tw:px-2 tw:py-0.5 tw:font-mono tw:text-[0.6875rem] tw:font-semibold tw:text-slate-700">${esc(rep.folio)}</span></td>
+                            <td class="tw:px-4 tw:py-3 tw:align-middle">
+                                <span class="tw:block tw:font-semibold tw:text-slate-900">${esc(rep.alumno_nombre)}</span>
+                                <span class="tw:text-[0.6875rem] tw:text-slate-400">ID ${esc(rep.id_alumno)}</span>
                             </td>
-                            <td>${rep.tutor_nombre}</td>
-                            <td><span class="badge bg-warning-subtle text-warning-emphasis fw-bold">${rep.parcial}° Parcial</span></td>
-                            <td>${new Date(rep.fecha + 'T00:00:00').toLocaleDateString('es-MX')}</td>
-                            <td class="text-center">
-                                <div class="d-flex gap-1 justify-content-center">
-                                    <button class="btn btn-sm btn-light text-primary border" onclick="imprimirFormatoReporte(window.reportesCache[${rep.id}])" title="Imprimir Formato">
-                                        <i class="ti ti-printer"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-light text-danger border" onclick="eliminarReporte(${rep.id})" title="Eliminar">
-                                        <i class="ti ti-trash"></i>
-                                    </button>
-                                </div>
+                            <td class="tw:px-4 tw:py-3 tw:align-middle tw:text-slate-600">${esc(rep.tutor_nombre)}</td>
+                            <td class="tw:px-4 tw:py-3 tw:align-middle"><span class="tw:inline-flex tw:bg-brand-50 tw:px-2.5 tw:py-0.5 tw:text-[0.6875rem] tw:font-bold tw:text-brand-700 tw:ring-1 tw:ring-brand-200">P${esc(rep.parcial)}</span></td>
+                            <td class="tw:whitespace-nowrap tw:px-4 tw:py-3 tw:align-middle tw:font-mono tw:text-xs tw:text-slate-600">${new Date(rep.fecha + 'T00:00:00').toLocaleDateString('es-MX')}</td>
+                            <td class="tw:px-4 tw:py-3 tw:text-right tw:align-middle tw:whitespace-nowrap">
+                                <button type="button" class="${accion} tw:text-brand-700 tw:hover:bg-brand-50" onclick="imprimirFormatoReporte(window.reportesCache[${Number(rep.id)}])" title="Imprimir formato" aria-label="Imprimir formato">
+                                    <i data-lucide="printer" class="tw:size-4"></i>
+                                </button>
+                                <button type="button" class="${accion} tw:text-slate-400 tw:hover:bg-danger-50 tw:hover:text-danger-600" onclick="eliminarReporte(${Number(rep.id)})" title="Eliminar" aria-label="Eliminar">
+                                    <i data-lucide="trash-2" class="tw:size-4"></i>
+                                </button>
                             </td>
                         `;
                         tbody.appendChild(tr);
                     });
+                    if (window.lucide?.createIcons) lucide.createIcons();
                 }
             })
             .catch(err => {
                 console.error('Error al cargar historial:', err);
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">Error al cargar el historial.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="tw:px-4 tw:py-8 tw:text-center tw:text-[0.8125rem] tw:text-danger-600">Error al cargar el historial.</td></tr>`;
             });
     };
 
@@ -5710,7 +5488,7 @@ window.imprimirKardex = function() {
                             icon: 'success',
                             title: 'Eliminado',
                             text: 'El reporte de indisciplina fue eliminado.',
-                            confirmButtonColor: '#0284c7'
+                            confirmButtonColor: '#26687B'
                         });
                         cargarHistorialReportes();
                     } else {
@@ -5718,7 +5496,7 @@ window.imprimirKardex = function() {
                             icon: 'error',
                             title: 'Error',
                             text: resp.message || 'No se pudo eliminar el reporte.',
-                            confirmButtonColor: '#0284c7'
+                            confirmButtonColor: '#26687B'
                         });
                     }
                 })
@@ -5729,7 +5507,7 @@ window.imprimirKardex = function() {
                         icon: 'error',
                         title: 'Error de red',
                         text: 'No se pudo comunicar con el servidor.',
-                        confirmButtonColor: '#0284c7'
+                        confirmButtonColor: '#26687B'
                     });
                 });
             }
@@ -5738,106 +5516,50 @@ window.imprimirKardex = function() {
 
     window.imprimirFormatoReporte = function(rep) {
         const fechaFormateada = new Date(rep.fecha + 'T00:00:00').toLocaleDateString('es-MX', {day: 'numeric', month: 'long', year: 'numeric'}).toUpperCase();
-        
+
         function renderBloque(repVal) {
             return `
-                <div style="border: 2px solid #000; padding: 25px; font-family: Arial, Helvetica, sans-serif; position: relative; border-radius: 6px; background: #fff; margin-bottom: 25px;">
-                    <!-- Membrete -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 2px solid #10599a; padding-bottom: 10px;">
-                        <img src="/img/logo.png" alt="Logo" style="height: 50px; object-fit: contain;">
-                        <div style="text-align: center; flex-grow: 1;">
-                            <div style="font-weight: bold; font-size: 11pt; color: #10599a; letter-spacing: 0.5px; text-transform: uppercase;">
-                                Bachillerato Tecnológico Interamericano
-                            </div>
-                            <div style="font-size: 6.8pt; color: #444; margin-top: 2px;">
-                                Avenida Benito Juárez 901, Colonia Centro Teziutlán Puebla. Tel: 231-3123979
-                            </div>
-                        </div>
-                        <div style="text-align: right; font-size: 8.5pt; font-weight: bold;">
-                            Folio: <span style="color: #dc2626;">${repVal.folio}</span><br>
-                            Fecha: ${fechaFormateada}
-                        </div>
-                    </div>
+                <style>
+                    .in-hoja { border: 1pt solid #26687B; padding: 7mm 8mm 6mm; }
+                    .in-titulo { text-align: center; margin: 2mm 0 6mm; }
+                    .in-titulo span { display: inline-block; font-size: 12pt; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; color: #12393f; border-top: .6pt solid #c9a24b; border-bottom: .6pt solid #c9a24b; padding: 1.6mm 8mm; }
+                    .in-texto { font-size: 9.4pt; line-height: 1.75; color: #1f2a2c; }
+                    .in-texto p { margin: 0 0 3.5mm; }
+                    .in-suscribe { font-size: 8pt; font-weight: bold; letter-spacing: .5px; text-transform: uppercase; color: #4c5d60; border-left: 1.2mm solid #c9a24b; background: #fbf8ef; padding: 1.8mm 3mm; }
+                    .in-incidente { border: .6pt solid #b9c9cc; border-left: 1.4mm solid #26687B; background: #f4f8f8; padding: 3mm 4mm; min-height: 32mm; white-space: pre-wrap; font-size: 9.2pt; line-height: 1.55; color: #12393f; margin-bottom: 5mm; }
+                    .in-cierre { font-size: 8.2pt; font-style: italic; font-weight: bold; color: #26687B; text-align: center; line-height: 1.55; margin: 0 6mm 10mm; }
+                </style>
+                <div class="in-hoja">
+                    ${RP.head({
+                        lineas: ['Avenida Benito Juárez 901, Colonia Centro, Teziutlán, Puebla · Tel. 231-312-3979'],
+                        folio: repVal.folio,
+                        tagSub: `Fecha: ${fechaFormateada}`
+                    })}
 
-                    <!-- Titulo -->
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <h4 style="margin: 0; font-size: 12.5pt; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; text-decoration: underline;">
-                            Reporte por indisciplina
-                        </h4>
-                    </div>
+                    <div class="in-titulo"><span>Reporte por indisciplina</span></div>
 
-                    <!-- Contenido -->
-                    <div style="font-size: 9.5pt; line-height: 1.7; color: #000; text-align: justify;">
-                        <p style="margin: 0 0 12px 0;">
-                            <strong>Sr. (a):</strong> <span style="border-bottom: 1px solid #000; padding: 0 10px; font-weight: bold; text-transform: uppercase;">${repVal.tutor_nombre || 'S/N'}</span>
-                        </p>
-                        <p style="margin: 0 0 15px 0; text-transform: uppercase; font-weight: bold; font-size: 8.5pt; color: #333;">
-                            EL QUE SUSCRIBE ING. FAUSTO MAURO LEYVA FLORES, DIRECTOR DEL BACHILLERATO TECNOLÓGICO INTERAMERICANO.
-                        </p>
-                        <p style="margin: 0 0 12px 0;">
-                            POR ESTE CONDUCTO LE INFORMO QUE EL ALUMNO(A): <span style="border-bottom: 1px solid #000; padding: 0 10px; font-weight: bold; text-transform: uppercase;">${repVal.alumno_nombre}</span>
-                        </p>
-                        <p style="margin: 0 0 8px 0;">
-                            INCURRIÓ A LA FALTA DE INDISCIPLINA YA QUE:
-                        </p>
-                        <div style="border: 1px solid #94a3b8; background: #f8fafc; padding: 12px 15px; border-radius: 4px; font-family: monospace; font-size: 9.5pt; margin-bottom: 15px; min-height: 90px; white-space: pre-wrap; line-height: 1.4;">${repVal.incidente}</div>
-                        
-                        <p style="margin: 0 0 25px 0; font-size: 8.5pt; font-style: italic; color: #334155; line-height: 1.5; font-weight: bold; text-align: center;">
+                    <div class="in-texto">
+                        <p><strong>Sr. (a):</strong> <span class="rp-fill">${repVal.tutor_nombre || 'S/N'}</span></p>
+                        <p class="in-suscribe">El que suscribe Ing. Fausto Mauro Leyva Flores, Director del Bachillerato Tecnológico Interamericano.</p>
+                        <p>POR ESTE CONDUCTO LE INFORMO QUE EL ALUMNO(A): <span class="rp-fill">${repVal.alumno_nombre}</span></p>
+                        <p style="margin-bottom: 1.6mm;">INCURRIÓ A LA FALTA DE INDISCIPLINA YA QUE:</p>
+                        <div class="in-incidente">${repVal.incidente}</div>
+                        <p class="in-cierre">
                             ESPERAMOS SU VALIOSA CONTRIBUCIÓN PARA QUE SU HIJO (A) MEJORE EN SU COMPORTAMIENTO Y NOS AYUDE A SACARLO ADELANTE EN SU EDUCACIÓN, FORMÁNDOLO EN UN BUEN CIUDADADANO.
                         </p>
                     </div>
 
-                    <!-- Firmas -->
-                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px;">
-                        <div style="width: 250px; text-align: center;">
-                            <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 35px;"></div>
-                            <span style="font-size: 7.5pt; font-weight: bold; text-transform: uppercase; color: #475569;">Nombre y Firma del Alumno</span>
-                        </div>
-                        <div style="width: 140px; text-align: center; border: 1px dashed #cbd5e1; height: 75px; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: #fafafa;">
-                            <span style="font-size: 7.5pt; font-weight: bold; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Sello</span>
-                        </div>
-                        <div style="width: 250px; text-align: center;">
-                            <div style="border-bottom: 1px solid #000; margin-bottom: 5px; height: 35px; text-align: center; font-size: 8pt; font-weight: bold; display: flex; align-items: flex-end; justify-content: center; text-transform: uppercase; color: #000;">
-                                Ing. Fausto Leyva Flores
-                            </div>
-                            <span style="font-size: 7.5pt; font-weight: bold; text-transform: uppercase; color: #475569;">Director</span>
-                        </div>
-                    </div>
+                    ${RP.firmas([
+                        { rol: 'Nombre y firma del alumno' },
+                        'sello',
+                        { nombre: 'Ing. Fausto Leyva Flores', rol: 'Director' }
+                    ], '14mm')}
                 </div>
             `;
         }
 
         const win = window.open('', '', 'height=850,width=800');
-        win.document.write(`
-            <html>
-                <head>
-                    <title>Reporte de Indisciplina - ${rep.folio}</title>
-                    <style>
-                        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-                        @page {
-                            size: letter portrait;
-                            margin: 15mm 15mm 15mm 15mm;
-                        }
-                        html, body {
-                            font-family: Arial, Helvetica, sans-serif;
-                            background: #fff;
-                            color: #000;
-                            padding: 0;
-                            margin: 0;
-                        }
-                        .container {
-                            width: 100%;
-                            margin: 0 auto;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        ${renderBloque(rep)}
-                    </div>
-                </body>
-            </html>
-        `);
+        win.document.write(RP.documento(`Reporte de Indisciplina - ${rep.folio}`, renderBloque(rep), { margin: '15mm' }));
         win.document.close();
         win.focus();
         setTimeout(() => {
@@ -5845,6 +5567,668 @@ window.imprimirKardex = function() {
             win.close();
         }, 400);
     };
+
+    // ==========================================
+    // ACTAS ORDINARIO (BTI)
+    // ==========================================
+
+    /**
+     * Combobox escribible reutilizable.
+     *  - getItems(): [{ value, label, sub?, tag? }]
+     *  - libre: si true, se acepta el texto escrito aunque no esté en la lista (asignatura).
+     *  - onChange(item|null): se llama al elegir o al limpiar.
+     */
+    function crearCombo({ id, getItems, onChange = () => {}, libre = false, mono = false, remoto = null }) {
+        const input = document.getElementById(`${id}Input`);
+        const lista = document.getElementById(`${id}Lista`);
+        const limpiar = document.getElementById(`${id}Limpiar`);
+        const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+        const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        let seleccionado = null, visibles = [], activo = -1;
+        // Búsqueda remota opcional (p. ej. alumnos → su grupo): se muestra como 2ª sección
+        let remotos = [], remotoEstado = '', remotoTimer = null, remotoReq = 0;
+
+        const abrir = (abierto) => { lista.style.display = abierto ? 'block' : 'none'; input.setAttribute('aria-expanded', String(abierto)); if (!abierto) activo = -1; };
+        const syncLimpiar = () => { limpiar.style.display = input.value ? 'block' : 'none'; };
+
+        function filtrar() {
+            const q = norm(input.value);
+            const filtro = (seleccionado && q === norm(seleccionado.label)) ? '' : q;
+            const rank = (it) => {
+                if (!filtro) return 0;
+                const l = norm(it.label);
+                if (l === filtro) return 0;
+                if (l.startsWith(filtro)) return 1;
+                if (l.split(' ').some(p => p.startsWith(filtro))) return 2;
+                if (l.includes(filtro) || norm(it.sub).includes(filtro)) return 3;
+                return -1;
+            };
+            const locales = getItems().map(it => ({ ...it, r: rank(it) })).filter(it => it.r >= 0)
+                .sort((a, b) => a.r - b.r || (b.tag ? 1 : 0) - (a.tag ? 1 : 0) || a.label.localeCompare(b.label, 'es', { numeric: true }))
+                .slice(0, 60);
+            programarRemoto(filtro);
+            visibles = [...locales, ...remotos];
+            activo = filtro && visibles.length ? 0 : -1;
+            pintar(filtro);
+        }
+
+        function programarRemoto(filtro) {
+            if (!remoto) return;
+            clearTimeout(remotoTimer);
+            const req = ++remotoReq;
+            if (filtro.length < 3) { remotos = []; remotoEstado = ''; return; }
+            remotoEstado = 'buscando';
+            remotoTimer = setTimeout(async () => {
+                let res = [];
+                try { res = await remoto(input.value.trim()); } catch (e) { res = null; }
+                if (req !== remotoReq) return; // llegó una búsqueda más nueva
+                remotos = (res || []).map(it => ({ ...it, seccion: 'remoto' }));
+                remotoEstado = res === null ? 'error' : '';
+                const locales = visibles.filter(it => it.seccion !== 'remoto');
+                visibles = [...locales, ...remotos];
+                if (activo < 0 && visibles.length) activo = 0;
+                if (document.activeElement === input) pintar(norm(input.value));
+            }, 280);
+        }
+
+        const opcionHtml = (it, i) => `
+            <button type="button" role="option" data-i="${i}" aria-selected="${i === activo}" ${it.deshabilitado ? 'aria-disabled="true"' : ''}
+                class="tw:flex tw:w-full tw:items-center tw:justify-between tw:gap-3 tw:border-0 tw:px-3 tw:py-2 tw:text-left tw:transition-colors ${it.deshabilitado ? 'tw:cursor-not-allowed tw:opacity-55' : 'tw:cursor-pointer'} ${i === activo ? 'tw:bg-brand-50' : 'tw:bg-transparent tw:hover:bg-slate-50'}">
+                <span class="tw:min-w-0">
+                    <span class="tw:block tw:truncate tw:text-[0.8125rem] tw:font-semibold tw:text-slate-900 ${mono && it.seccion !== 'remoto' ? 'tw:font-mono' : ''}">${esc(it.titulo ?? it.label)}</span>
+                    ${it.sub ? `<span class="tw:block tw:truncate tw:text-[0.75rem] tw:text-slate-500">${it.subHtml ?? esc(it.sub)}</span>` : ''}
+                </span>
+                <span class="tw:flex tw:shrink-0 tw:items-center tw:gap-2">
+                    ${it.tag ? `<span class=" ${it.tagTono || 'tw:bg-brand-50 tw:text-brand-700'} tw:px-2 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold">${esc(it.tag)}</span>` : ''}
+                    ${seleccionado && seleccionado.value == it.value && it.seccion !== 'remoto' ? '<i data-lucide="check" class="tw:size-4 tw:text-brand-700"></i>' : ''}
+                </span>
+            </button>`;
+
+        function pintar(filtro = '') {
+            abrir(true);
+            const locales = visibles.filter(it => it.seccion !== 'remoto');
+            const seccionTitulo = (t) => `<div class="tw:px-3 tw:pt-2 tw:pb-1 tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-400">${t}</div>`;
+            const aviso = (t) => `<div class="tw:px-3 tw:py-2.5 tw:text-center tw:text-[0.8125rem] tw:text-slate-500">${t}</div>`;
+            let html = '';
+
+            if (locales.length) {
+                if (remoto && filtro) html += seccionTitulo(remoto.tituloLocal || 'Coincidencias');
+                html += locales.map((it) => opcionHtml(it, visibles.indexOf(it))).join('');
+            }
+            if (remoto && filtro) {
+                if (remotos.length) {
+                    html += seccionTitulo(remoto.tituloRemoto || 'Más resultados');
+                    html += remotos.map((it) => opcionHtml(it, visibles.indexOf(it))).join('');
+                } else if (remotoEstado === 'buscando') {
+                    html += aviso(`<span class="tw:mr-1.5 tw:inline-block tw:size-3 tw:animate-spin tw:rounded-full tw:border-2 tw:border-slate-200 tw:border-t-brand-700 tw:align-[-1px]"></span> ${remoto.textoBuscando || 'Buscando…'}`);
+                } else if (remotoEstado === 'error') {
+                    html += aviso('No se pudo completar la búsqueda.');
+                } else if (!locales.length && filtro.length < 3) {
+                    html += aviso(remoto.textoMinimo || 'Escribe al menos 3 letras para buscar.');
+                }
+            }
+            if (!html) {
+                html = aviso(filtro ? (libre ? 'Sin coincidencias: se usará el texto escrito.' : `Nada coincide con “${esc(input.value.trim())}”`) : 'No hay opciones disponibles');
+            }
+            lista.innerHTML = html;
+            lista.querySelectorAll('[data-i]').forEach(b => b.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const it = visibles[+b.dataset.i];
+                if (!it?.deshabilitado) elegir(it);
+            }));
+            lista.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
+            if (window.lucide?.createIcons) lucide.createIcons();
+        }
+
+        function elegir(item, notificar = true) {
+            // Un resultado remoto (alumno) se traduce a la opción real (su grupo)
+            if (item && item.seccion === 'remoto') item = item.resolver ? item.resolver() : null;
+            const cambio = (seleccionado?.value ?? null) !== (item?.value ?? null);
+            seleccionado = item || null;
+            input.value = item ? item.label : '';
+            syncLimpiar();
+            abrir(false);
+            if (notificar && cambio) onChange(seleccionado);
+        }
+
+        input.addEventListener('focus', filtrar);
+        input.addEventListener('input', () => {
+            syncLimpiar();
+            if (seleccionado && norm(input.value) !== norm(seleccionado.label)) { seleccionado = null; onChange(null); }
+            filtrar();
+        });
+        input.addEventListener('keydown', (e) => {
+            const abierto = lista.style.display !== 'none';
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (!abierto) return filtrar();
+                if (!visibles.length) return;
+                activo = e.key === 'ArrowDown' ? (activo + 1) % visibles.length : (activo <= 0 ? visibles.length - 1 : activo - 1);
+                pintar(norm(input.value));
+            } else if (e.key === 'Enter' && abierto) {
+                e.preventDefault();
+                const it = visibles[activo >= 0 ? activo : 0];
+                if (it && !it.deshabilitado) elegir(it);
+                else if (!it) abrir(false);
+            } else if (e.key === 'Escape') {
+                abrir(false);
+            }
+        });
+        input.addEventListener('blur', () => {
+            if (!seleccionado && input.value.trim()) {
+                const q = norm(input.value);
+                const exacto = getItems().find(it => norm(it.label) === q);
+                if (exacto) return elegir(exacto);
+            }
+            abrir(false);
+        });
+        limpiar.addEventListener('click', () => { elegir(null); input.focus(); });
+
+        return {
+            get valor() { return seleccionado; },
+            /** Texto final: lo elegido, o lo escrito si el combo acepta texto libre. */
+            get texto() { return seleccionado ? seleccionado.label : (libre ? input.value.trim() : ''); },
+            elegir,
+            input,
+        };
+    }
+
+    /**
+     * Búsqueda remota de alumnos (nombre o matrícula) para los campos "Grupo" de las actas:
+     * al elegir un alumno se selecciona su grupo. idCentro: 2 = BTI, 3 = BGNE.
+     */
+    function buscarAlumnosParaGrupo(idCentro) {
+        const fn = async (texto) => {
+            const params = new URLSearchParams({ search: texto, limit: 8, page: 1, id_centro_trabajo: idCentro });
+            const resp = await fetch(`/alumnos/lista?${params}`, { headers: { Accept: 'application/json' } }).then(r => r.json());
+            const porId = new Map((window.gruposDb || []).map(g => [String(g.id), g]));
+            return (resp?.data || []).map(al => {
+                const nombre = `${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}`.replace(/\s+/g, ' ').trim().toUpperCase();
+                const idGrupo = al.idGrupo ?? al.id_grupo;
+                const g = idGrupo != null ? porId.get(String(idGrupo)) : null;
+                const clave = g?.clave || al.nombreGrupoTexto || '';
+                const matricula = al.numeroControl ? `, ${al.numeroControl}` : '';
+                const activo = String(al.statusAlumno || 'ACTIVO').toUpperCase() === 'ACTIVO';
+                return {
+                    value: `al-${al.idAlumno}`,
+                    titulo: nombre,
+                    sub: idGrupo != null && clave ? `Grupo ${clave}${matricula}` : `Sin grupo asignado${matricula}`,
+                    subHtml: idGrupo != null && clave
+                        ? `Grupo <span class="tw:font-mono tw:font-semibold tw:text-slate-700">${escGrupo(clave)}</span>${escGrupo(matricula)}`
+                        : null,
+                    tag: activo ? '' : al.statusAlumno,
+                    tagTono: 'tw:bg-slate-100 tw:text-slate-600',
+                    deshabilitado: idGrupo == null || !clave,
+                    resolver: () => ({ value: String(idGrupo), label: clave, sub: g?.modalidadHorario || '', alumno: nombre }),
+                };
+            });
+        };
+        fn.tituloLocal = 'Grupos';
+        fn.tituloRemoto = 'Alumnos';
+        fn.textoBuscando = 'Buscando alumnos…';
+        fn.textoMinimo = 'Escribe al menos 3 letras para buscar por nombre de alumno.';
+        return fn;
+    }
+
+    const actas = {};
+
+    function nombreDocente(d) {
+        return `${d.nombreDocente || d.nombre || ''} ${d.apPaternoDocente || d.apPaterno || ''} ${d.apMaternoDocente || d.apMaterno || ''}`.replace(/\s+/g, ' ').trim();
+    }
+    const horariosDeGrupo = (idGrupo) => (window.horariosDb || []).filter(h => h.id_grupo == idGrupo);
+
+    function initActasOrdinario() {
+        if (!document.getElementById('actaGrupoInput')) return;
+
+        actas.grupo = crearCombo({
+            id: 'actaGrupo',
+            mono: true,
+            remoto: buscarAlumnosParaGrupo(2),
+            getItems: () => (window.gruposDb || [])
+                .filter(g => (g.id_centroTrabajo ?? g.idCentroTrabajo ?? g.id_centro_trabajo) == 2)
+                .map(g => ({ value: String(g.id), label: g.clave, sub: g.modalidadHorario || '' })),
+            onChange: onActaGrupoChange,
+        });
+
+        actas.docente = crearCombo({
+            id: 'actaDocente',
+            getItems: () => {
+                const g = actas.grupo?.valor;
+                const enGrupo = new Set(g ? horariosDeGrupo(g.value).map(h => String(h.id_docente)) : []);
+                return (window.docentesDb || []).map(d => {
+                    const id = String(d.idDocente || d.id);
+                    return { value: id, label: nombreDocente(d), tag: enGrupo.has(id) ? 'En este grupo' : '' };
+                }).filter(it => it.label);
+            },
+            onChange: (doc) => {
+                // Si el docente imparte una sola materia en el grupo, se propone
+                const g = actas.grupo.valor;
+                if (!doc || !g || actas.materia.texto) return;
+                const suyas = horariosDeGrupo(g.value).filter(h => h.id_docente == doc.value);
+                const unicas = [...new Set(suyas.map(h => h.nombreMateria))];
+                if (unicas.length === 1) actas.materia.elegir({ value: `h-${unicas[0]}`, label: unicas[0] }, false);
+            },
+        });
+
+        actas.materia = crearCombo({
+            id: 'actaMateria',
+            libre: true,
+            getItems: () => {
+                const g = actas.grupo?.valor;
+                const docentesPorId = new Map((window.docentesDb || []).map(d => [String(d.idDocente || d.id), nombreDocente(d)]));
+                if (g) {
+                    const vistos = new Map();
+                    horariosDeGrupo(g.value).forEach(h => {
+                        if (!vistos.has(h.nombreMateria)) vistos.set(h.nombreMateria, { value: `h-${h.nombreMateria}`, label: h.nombreMateria, sub: docentesPorId.get(String(h.id_docente)) || '', idDocente: h.id_docente });
+                    });
+                    if (vistos.size) return [...vistos.values()];
+                }
+                // Sin horarios: catálogo de materias del BTI
+                const vistos = new Set();
+                return (window.materiasDb || [])
+                    .filter(m => (m.idCentroTrabajo ?? m.id_centroTrabajo) == 2 || (m.idCentroTrabajo ?? m.id_centroTrabajo) == null)
+                    .map(m => ({ value: `m-${m.id}`, label: m.nombreMateria }))
+                    .filter(it => it.label && !vistos.has(it.label) && vistos.add(it.label));
+            },
+            onChange: (mat) => {
+                // Elegir la materia del horario propone a su docente si aún no hay uno
+                if (mat?.idDocente && !actas.docente.valor) {
+                    const d = (window.docentesDb || []).find(x => (x.idDocente || x.id) == mat.idDocente);
+                    if (d) actas.docente.elegir({ value: String(d.idDocente || d.id), label: nombreDocente(d) }, false);
+                }
+            },
+        });
+    }
+
+    let actaAlumnosReq = 0;
+    function onActaGrupoChange(grupo) {
+        const resumen = document.getElementById('actaResumen');
+        const pintar = (icon, html, tono = 'tw:text-slate-500') => {
+            resumen.className = `tw:m-0 tw:flex tw:items-center tw:gap-2 tw:text-[0.8125rem] ${tono}`;
+            resumen.innerHTML = `<i data-lucide="${icon}" class="tw:size-4 tw:shrink-0"></i> ${html}`;
+            if (window.lucide?.createIcons) lucide.createIcons();
+        };
+        if (!grupo) return pintar('info', 'Elige un grupo para ver cuántos alumnos aparecerán en el acta.');
+
+        // Con un solo docente/materia en el horario del grupo, se proponen solos
+        const hs = horariosDeGrupo(grupo.value);
+        const materias = [...new Set(hs.map(h => h.nombreMateria))];
+        if (materias.length === 1 && !actas.materia.texto) actas.materia.elegir({ value: `h-${materias[0]}`, label: materias[0] }, false);
+        const docentes = [...new Set(hs.map(h => String(h.id_docente)))];
+        if (docentes.length === 1 && !actas.docente.valor) {
+            const d = (window.docentesDb || []).find(x => String(x.idDocente || x.id) === docentes[0]);
+            if (d) actas.docente.elegir({ value: docentes[0], label: nombreDocente(d) }, false);
+        }
+
+        const req = ++actaAlumnosReq;
+        pintar('loader', 'Consultando alumnos del grupo…');
+        fetch(`/reportes/grupo/${encodeURIComponent(grupo.value)}/alumnos`, { headers: { Accept: 'application/json' } })
+            .then(r => r.json())
+            .then(resp => {
+                if (req !== actaAlumnosReq) return; // llegó tarde: el usuario ya cambió de grupo
+                const total = resp?.total ?? (resp?.data || []).length;
+                total > 0
+                    ? pintar('users-round', `<span><strong class="tw:font-semibold tw:text-slate-900">${total} alumnos activos</strong> en ${escGrupo(grupo.label)}${grupo.alumno ? ` (grupo de ${escGrupo(grupo.alumno)})` : ''} aparecerán en el acta.</span>`, 'tw:text-slate-600')
+                    : pintar('triangle-alert', `El grupo ${grupo.label} no tiene alumnos activos; el acta saldrá sin nombres.`, 'tw:text-warning-600');
+            })
+            .catch(() => { if (req === actaAlumnosReq) pintar('circle-alert', 'No se pudo consultar el número de alumnos; el acta se generará igual.', 'tw:text-slate-500'); });
+    }
+
+    function generarActaOrdinarioPdf() {
+        const grupo = actas.grupo?.valor;
+        if (!grupo) {
+            Swal.fire({ icon: 'warning', title: 'Elige un grupo', text: 'El acta se genera con los alumnos del grupo seleccionado.', confirmButtonColor: '#26687B' })
+                .then(() => actas.grupo?.input.focus());
+            return;
+        }
+        const fExamen = document.getElementById('actaFechaExamenInput').value;
+        const fEntrega = document.getElementById('actaFechaEntregaInput').value;
+
+        const params = new URLSearchParams({
+            id_grupo: grupo.value,
+            clave_grupo: grupo.label,
+            docente_nombre: actas.docente.texto,
+            materia: actas.materia.texto,
+            examen: document.getElementById('actaExamenInput').value.trim(),
+            fecha_examen: fExamen,
+            fecha_entrega: fEntrega,
+        });
+        window.open(`/reportes/acta-ordinario-pdf?${params}`, '_blank');
+    }
+
+    document.addEventListener('DOMContentLoaded', initActasOrdinario);
+
+    // ==========================================
+    // ACTAS ORDINARIO (BGNE): por trimestre / módulo
+    // ==========================================
+    const actasBgne = {};
+    const SEMANAS_POR_TRIMESTRE = 13; // igual que la lista de asistencia sabatina/dominical
+    const SEMANAS_DE_CLASE = 12;      // fin = inicio + 12 semanas (último sábado/domingo del trimestre)
+
+    /** Fecha de inicio del grupo en UTC (acepta "2025-11-29", "2025-11-29 00:00:00" o "Sat, 29 Nov 2025 00:00:00 GMT"). */
+    function fechaInicioGrupo(g) {
+        const v = g?.fechaInicio || g?.fecha_inicio || '';
+        const m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (m) return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+        const d = new Date(v);
+        return isNaN(d) ? null : new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+    }
+    const isoUTC = (d) => d.toISOString().slice(0, 10);
+    const sumarSemanas = (d, s) => new Date(d.getTime() + s * 7 * 864e5);
+
+    /** Precarga inicio/fin del trimestre (el usuario puede corregirlas). */
+    function calcularFechasActaBgne() {
+        const g = actasBgne.grupoObj;
+        const t = parseInt(document.getElementById('actaBgneTrimestreSelect').value);
+        const ini = document.getElementById('actaBgneFechaInicioInput');
+        const fin = document.getElementById('actaBgneFechaFinInput');
+        const base = fechaInicioGrupo(g);
+        if (!base || !t) return;
+        const inicio = sumarSemanas(base, (t - 1) * SEMANAS_POR_TRIMESTRE);
+        ini.value = isoUTC(inicio);
+        fin.value = isoUTC(sumarSemanas(inicio, SEMANAS_DE_CLASE));
+    }
+
+    function initActasBgne() {
+        if (!document.getElementById('actaBgneGrupoInput')) return;
+        const grupoPorId = (id) => (window.gruposDb || []).find(g => String(g.id) === String(id));
+        const docentesPorId = () => new Map((window.docentesDb || []).map(d => [String(d.idDocente || d.id), nombreDocente(d)]));
+
+        actasBgne.grupo = crearCombo({
+            id: 'actaBgneGrupo',
+            mono: true,
+            remoto: buscarAlumnosParaGrupo(3),
+            getItems: () => (window.gruposDb || [])
+                .filter(g => (g.id_centroTrabajo ?? g.idCentroTrabajo ?? g.id_centro_trabajo) == 3)
+                .map(g => ({ value: String(g.id), label: g.clave, sub: g.modalidadHorario || '' })),
+            onChange: (item) => {
+                actasBgne.grupoObj = item ? grupoPorId(item.value) : null;
+                // El trimestre del grupo (BGNE: id_nivel_academico 1–6)
+                const nivel = parseInt(actasBgne.grupoObj?.id_nivel_academico);
+                if (nivel >= 1 && nivel <= 6) document.getElementById('actaBgneTrimestreSelect').value = String(nivel);
+                calcularFechasActaBgne();
+                resumenActaBgne(item);
+            },
+        });
+
+        actasBgne.materia = crearCombo({
+            id: 'actaBgneMateria',
+            libre: true,
+            getItems: () => {
+                const t = parseInt(document.getElementById('actaBgneTrimestreSelect').value);
+                const g = actasBgne.grupo?.valor;
+                const docs = docentesPorId();
+                const hs = g ? horariosDeGrupo(g.value) : [];
+                const vistos = new Set();
+                return (window.materiasDb || [])
+                    .filter(m => (m.idCentroTrabajo ?? m.id_centroTrabajo) == 3)
+                    .filter(m => !t || parseInt(m.id_nivel_academico) === t)
+                    .map(m => {
+                        const h = hs.find(x => x.id_materia == m.id);
+                        return { value: `m-${m.id}`, label: m.nombreMateria, sub: h ? (docs.get(String(h.id_docente)) || '') : '', tag: h ? 'En este grupo' : '', idDocente: h?.id_docente };
+                    })
+                    .filter(it => it.label && !vistos.has(it.label) && vistos.add(it.label));
+            },
+            onChange: (mat) => {
+                // Si la materia está en el horario del grupo, se propone su docente
+                if (mat?.idDocente && !actasBgne.docente.texto) {
+                    const nombre = docentesPorId().get(String(mat.idDocente));
+                    if (nombre) actasBgne.docente.elegir({ value: String(mat.idDocente), label: nombre }, false);
+                }
+            },
+        });
+
+        actasBgne.docente = crearCombo({
+            id: 'actaBgneDocente',
+            libre: true,
+            getItems: () => {
+                const g = actasBgne.grupo?.valor;
+                const enGrupo = new Set(g ? horariosDeGrupo(g.value).map(h => String(h.id_docente)) : []);
+                return (window.docentesDb || []).map(d => {
+                    const id = String(d.idDocente || d.id);
+                    return { value: id, label: nombreDocente(d), tag: enGrupo.has(id) ? 'En este grupo' : '' };
+                }).filter(it => it.label);
+            },
+        });
+    }
+
+    function onActaBgneTrimestreChange() {
+        calcularFechasActaBgne();
+        // La asignatura elegida puede no pertenecer al nuevo trimestre
+        const mat = actasBgne.materia?.valor;
+        const t = parseInt(document.getElementById('actaBgneTrimestreSelect').value);
+        if (mat && t) {
+            const m = (window.materiasDb || []).find(x => `m-${x.id}` === mat.value);
+            if (m && parseInt(m.id_nivel_academico) !== t) actasBgne.materia.elegir(null);
+        }
+    }
+
+    let actaBgneReq = 0;
+    function resumenActaBgne(grupo) {
+        const resumen = document.getElementById('actaBgneResumen');
+        const pintar = (icon, html, tono = 'tw:text-slate-500') => {
+            resumen.className = `tw:m-0 tw:flex tw:items-center tw:gap-2 tw:text-[0.8125rem] ${tono}`;
+            resumen.innerHTML = `<i data-lucide="${icon}" class="tw:size-4 tw:shrink-0"></i> ${html}`;
+            if (window.lucide?.createIcons) lucide.createIcons();
+        };
+        if (!grupo) return pintar('info', 'Elige un grupo para ver cuántos alumnos aparecerán en el acta.');
+        if (!fechaInicioGrupo(actasBgne.grupoObj)) {
+            // Sin fecha de inicio no se pueden calcular las del trimestre
+            pintar('triangle-alert', `El grupo ${escGrupo(grupo.label)} no tiene fecha de inicio: captura las fechas del trimestre a mano.`, 'tw:text-warning-600');
+        }
+        const req = ++actaBgneReq;
+        fetch(`/reportes/grupo/${encodeURIComponent(grupo.value)}/alumnos`, { headers: { Accept: 'application/json' } })
+            .then(r => r.json())
+            .then(resp => {
+                if (req !== actaBgneReq || !fechaInicioGrupo(actasBgne.grupoObj)) return;
+                const total = resp?.total ?? (resp?.data || []).length;
+                total > 0
+                    ? pintar('users-round', `<span><strong class="tw:font-semibold tw:text-slate-900">${total} alumnos activos</strong> en ${escGrupo(grupo.label)}${grupo.alumno ? ` (grupo de ${escGrupo(grupo.alumno)})` : ''} aparecerán en el acta.</span>`, 'tw:text-slate-600')
+                    : pintar('triangle-alert', `El grupo ${escGrupo(grupo.label)} no tiene alumnos activos; el acta saldrá sin nombres.`, 'tw:text-warning-600');
+            })
+            .catch(() => {});
+    }
+
+    function generarActaBgnePdf() {
+        const grupo = actasBgne.grupo?.valor;
+        const trimestre = document.getElementById('actaBgneTrimestreSelect').value;
+        const faltan = [!grupo && 'el grupo', !trimestre && 'el trimestre'].filter(Boolean);
+        if (faltan.length) {
+            Swal.fire({ icon: 'warning', title: 'Faltan datos', text: `Elige ${faltan.join(' y ')} para generar el acta.`, confirmButtonColor: '#26687B' });
+            return;
+        }
+        const ini = document.getElementById('actaBgneFechaInicioInput').value;
+        const fin = document.getElementById('actaBgneFechaFinInput').value;
+        if (ini && fin && fin < ini) {
+            Swal.fire({ icon: 'warning', title: 'Fechas inválidas', text: 'La fecha de fin no puede ser anterior a la de inicio.', confirmButtonColor: '#26687B' });
+            return;
+        }
+        const params = new URLSearchParams({
+            id_grupo: grupo.value,
+            clave_grupo: grupo.label,
+            trimestre,
+            materia: actasBgne.materia.texto,
+            docente_nombre: actasBgne.docente.texto,
+            fecha_inicio: ini,
+            fecha_fin: fin,
+            fecha_entrega: document.getElementById('actaBgneFechaEntregaInput').value,
+        });
+        window.open(`/reportes/acta-ordinario-bgne-pdf?${params}`, '_blank');
+    }
+
+    document.addEventListener('DOMContentLoaded', initActasBgne);
+
+    // ==========================================
+    // GRUPO (Lista de asistencias): combobox escribible
+    // El <select> oculto sigue siendo la fuente de verdad; este input solo lo controla.
+    // ==========================================
+    let grupoAsistenciaActivo = -1;   // índice resaltado con el teclado
+    let grupoAsistenciaOpciones = []; // [{ id, clave, modalidad, texto }]
+
+    const normGrupo = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+    const escGrupo = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    function opcionesGrupoAsistencia() {
+        const sel = document.getElementById('asistenciaGrupoSelect');
+        if (!sel) return [];
+        const porId = new Map((window.gruposDb || []).map(g => [String(g.id), g]));
+        return Array.from(sel.options).filter(o => o.value).map(o => {
+            const g = porId.get(String(o.value)) || {};
+            return { id: o.value, clave: g.clave || o.text, modalidad: g.modalidadHorario || '', texto: o.text };
+        });
+    }
+
+    /** Muestra en el input el grupo que tenga el select (o lo vacía). */
+    function sincronizarInputGrupoAsistencia() {
+        const sel = document.getElementById('asistenciaGrupoSelect');
+        const input = document.getElementById('asistenciaGrupoInput');
+        const btn = document.getElementById('btn-limpiar-asistencia-grupo');
+        if (!sel || !input) return;
+        const opt = sel.value ? sel.options[sel.selectedIndex] : null;
+        input.value = opt ? opt.text : '';
+        if (btn) btn.style.display = input.value ? 'block' : 'none';
+        cerrarSugerenciasGrupoAsistencia();
+    }
+
+    function cerrarSugerenciasGrupoAsistencia() {
+        const div = document.getElementById('asistencia-grupo-sugerencia');
+        const input = document.getElementById('asistenciaGrupoInput');
+        if (div) div.style.display = 'none';
+        if (input) input.setAttribute('aria-expanded', 'false');
+        grupoAsistenciaActivo = -1;
+    }
+
+    function buscarGruposAsistencia(query = '') {
+        const div = document.getElementById('asistencia-grupo-sugerencia');
+        const input = document.getElementById('asistenciaGrupoInput');
+        if (!div) return;
+
+        const sel = document.getElementById('asistenciaGrupoSelect');
+        const q = normGrupo(query);
+        // Si el texto es el del grupo ya elegido, mostrar la lista completa
+        const textoElegido = sel && sel.value ? normGrupo(sel.options[sel.selectedIndex].text) : null;
+        const filtro = (q && q !== textoElegido) ? q : '';
+
+        // Coincidencias por clave primero (empieza con > contiene), luego por modalidad
+        const rank = (o) => {
+            const c = normGrupo(o.clave);
+            if (!filtro) return 0;
+            if (c === filtro) return 0;
+            if (c.startsWith(filtro)) return 1;
+            if (c.includes(filtro)) return 2;
+            if (normGrupo(o.texto).includes(filtro)) return 3;
+            return -1;
+        };
+        grupoAsistenciaOpciones = opcionesGrupoAsistencia()
+            .map(o => ({ ...o, r: rank(o) }))
+            .filter(o => o.r >= 0)
+            .sort((a, b) => a.r - b.r || a.clave.localeCompare(b.clave, 'es', { numeric: true }));
+
+        div.style.display = 'block';
+        input?.setAttribute('aria-expanded', 'true');
+
+        if (grupoAsistenciaOpciones.length === 0) {
+            grupoAsistenciaActivo = -1;
+            div.innerHTML = `<div class="tw:px-3 tw:py-3 tw:text-center tw:text-[0.8125rem] tw:text-slate-500">${
+                opcionesGrupoAsistencia().length ? `Ningún grupo coincide con “${escGrupo(query.trim())}”` : 'No hay grupos para este plantel'}</div>`;
+            return;
+        }
+
+        grupoAsistenciaActivo = filtro ? 0 : -1;
+        renderSugerenciasGrupoAsistencia();
+    }
+
+    function renderSugerenciasGrupoAsistencia() {
+        const div = document.getElementById('asistencia-grupo-sugerencia');
+        const sel = document.getElementById('asistenciaGrupoSelect');
+        div.innerHTML = grupoAsistenciaOpciones.slice(0, 60).map((o, i) => `
+            <button type="button" role="option" data-id="${escGrupo(o.id)}" id="grupo-asist-opt-${i}" aria-selected="${i === grupoAsistenciaActivo}"
+                class="tw:flex tw:w-full tw:cursor-pointer tw:items-center tw:justify-between tw:gap-3 tw:border-0 tw:px-3 tw:py-2 tw:text-left tw:transition-colors ${i === grupoAsistenciaActivo ? 'tw:bg-brand-50' : 'tw:bg-transparent tw:hover:bg-slate-50'}">
+                <span class="tw:font-mono tw:text-[0.8125rem] tw:font-semibold tw:text-slate-900">${escGrupo(o.clave)}</span>
+                <span class="tw:flex tw:items-center tw:gap-2">
+                    ${o.modalidad ? `<span class="tw:truncate tw:text-[0.75rem] tw:text-slate-500">${escGrupo(o.modalidad)}</span>` : ''}
+                    ${sel && sel.value == o.id ? '<i data-lucide="check" class="tw:size-4 tw:text-brand-700"></i>' : ''}
+                </span>
+            </button>`).join('');
+
+        // mousedown evita que el blur del input cierre la lista antes del click
+        div.querySelectorAll('button[data-id]').forEach(b => {
+            b.addEventListener('mousedown', (e) => { e.preventDefault(); seleccionarGrupoAsistencia(b.dataset.id); });
+        });
+        div.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
+        if (window.lucide?.createIcons) lucide.createIcons();
+    }
+
+    function seleccionarGrupoAsistencia(id) {
+        const sel = document.getElementById('asistenciaGrupoSelect');
+        if (!sel) return;
+        const cambio = sel.value != id;
+        sel.value = id;
+        sincronizarInputGrupoAsistencia();
+        if (cambio) onAsistenciaGrupoChange();
+    }
+
+    function onGrupoAsistenciaInput(valor) {
+        const sel = document.getElementById('asistenciaGrupoSelect');
+        const btn = document.getElementById('btn-limpiar-asistencia-grupo');
+        if (btn) btn.style.display = valor ? 'block' : 'none';
+
+        // Si el texto ya no corresponde al grupo elegido, se deselecciona
+        if (sel && sel.value && normGrupo(valor) !== normGrupo(sel.options[sel.selectedIndex].text)) {
+            sel.value = '';
+            onAsistenciaGrupoChange();
+        }
+        buscarGruposAsistencia(valor);
+    }
+
+    function onGrupoAsistenciaKeydown(e) {
+        const div = document.getElementById('asistencia-grupo-sugerencia');
+        const abierta = div && div.style.display !== 'none';
+        const n = Math.min(grupoAsistenciaOpciones.length, 60);
+
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (!abierta) return buscarGruposAsistencia(e.target.value);
+            if (!n) return;
+            grupoAsistenciaActivo = e.key === 'ArrowDown'
+                ? (grupoAsistenciaActivo + 1) % n
+                : (grupoAsistenciaActivo <= 0 ? n - 1 : grupoAsistenciaActivo - 1);
+            renderSugerenciasGrupoAsistencia();
+        } else if (e.key === 'Enter') {
+            if (!abierta) return;
+            e.preventDefault();
+            const o = grupoAsistenciaOpciones[grupoAsistenciaActivo >= 0 ? grupoAsistenciaActivo : 0];
+            if (o) seleccionarGrupoAsistencia(o.id);
+        } else if (e.key === 'Escape') {
+            cerrarSugerenciasGrupoAsistencia();
+        } else if (e.key === 'Tab' && abierta && grupoAsistenciaActivo >= 0) {
+            const o = grupoAsistenciaOpciones[grupoAsistenciaActivo];
+            if (o) seleccionarGrupoAsistencia(o.id);
+        }
+    }
+
+    /** Al salir del campo: si lo escrito es exactamente una clave, se elige; si no, se restaura. */
+    function onGrupoAsistenciaBlur() {
+        const sel = document.getElementById('asistenciaGrupoSelect');
+        const input = document.getElementById('asistenciaGrupoInput');
+        if (!sel || !input) return;
+        const q = normGrupo(input.value);
+        if (!sel.value && q) {
+            const exactas = opcionesGrupoAsistencia().filter(o => normGrupo(o.clave) === q || normGrupo(o.texto) === q);
+            if (exactas.length === 1) return seleccionarGrupoAsistencia(exactas[0].id);
+        }
+        cerrarSugerenciasGrupoAsistencia();
+    }
+
+    function limpiarGrupoAsistencia() {
+        const sel = document.getElementById('asistenciaGrupoSelect');
+        const input = document.getElementById('asistenciaGrupoInput');
+        const teniaGrupo = sel && sel.value;
+        if (sel) sel.value = '';
+        sincronizarInputGrupoAsistencia();
+        if (teniaGrupo) onAsistenciaGrupoChange();
+        input?.focus();
+    }
 
     // Cerrar sugerencias al hacer click fuera
     document.addEventListener('click', function(e) {

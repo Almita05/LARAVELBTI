@@ -2,420 +2,318 @@
 
 @section('content')
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link rel="stylesheet" href="{{ asset('css/estilosGrupos.css') }}">
+@php
+    /*
+     * NOTA: los elementos que el JS muestra/oculta usan el atributo `hidden`
+     * y NO llevan utilidades de display de Tailwind (son !important).
+     */
+    $card   = ' tw:border tw:border-slate-200 tw:bg-white tw:shadow-card';
+    $label  = 'tw:mb-1.5 tw:block tw:text-[0.8125rem] tw:font-medium tw:text-slate-700';
+    $select = 'tw:h-10 tw:w-full tw:border tw:border-slate-200 tw:bg-white tw:px-3 tw:text-sm tw:text-slate-900 tw:shadow-xs tw:outline-none tw:transition tw:hover:border-slate-300 tw:focus:border-brand-500 tw:focus:ring-4 tw:focus:ring-brand-500/10';
+    $th     = 'tw:px-4 tw:py-2.5 tw:text-left tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.06em] tw:text-slate-500';
 
-<div class="page-container">
+    // Niveles separados por tipo para que el JS arme el select según la escuela
+    $niveles = collect($niveles ?? [])->map(fn ($n) => ['id' => (int) $n->id, 'nombre' => $n->nombre])->sortBy('id')->values();
+@endphp
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{{ url()->previous() }}" class="btn btn-regresar">
-            <i class="fa-solid fa-arrow-left me-2"></i>
-            Regresar
-        </a>
+<div class="tw:mx-auto tw:flex tw:max-w-[1600px] tw:flex-col tw:gap-6">
 
-        <h3 class="page-title mb-0">
-            <i class="fa-solid fa-magnifying-glass me-2"></i>
-            Búsqueda de Grupo (Filtro por Horario)
-        </h3>
+    {{-- ===================== ENCABEZADO ===================== --}}
+    <header>
+        <h1 class="tw:m-0 tw:text-[1.5rem] tw:font-bold tw:tracking-tight tw:text-slate-900">Búsqueda de grupo</h1>
+        <p class="tw:m-0 tw:mt-1 tw:text-sm tw:text-slate-500">Encuentra el grupo que mejor se acomoda al horario y nivel de un prospecto.</p>
+    </header>
 
-        <div style="width: 100px;"></div> {{-- Spacer --}}
-    </div>
+    {{-- ===================== FILTROS ===================== --}}
+    <section class="{{ $card }} tw:p-5">
+        <div class="tw:mb-4 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-2">
+            <h2 class="tw:m-0 tw:flex tw:items-center tw:gap-2 tw:text-[0.9375rem] tw:font-semibold tw:text-slate-900">
+                <i data-lucide="sliders-horizontal" class="tw:size-4 tw:text-brand-700"></i> Preferencias del prospecto
+            </h2>
+            <button type="button" id="btnLimpiar" disabled
+                class="tw:inline-flex tw:cursor-pointer tw:items-center tw:gap-1.5 tw:border-0 tw:bg-transparent tw:px-2.5 tw:py-1.5 tw:text-[0.8125rem] tw:font-medium tw:text-slate-500 tw:transition tw:hover:bg-slate-100 tw:hover:text-slate-900 tw:disabled:cursor-default tw:disabled:opacity-40 tw:disabled:hover:bg-transparent">
+                <i data-lucide="rotate-ccw" class="tw:size-4"></i> Limpiar filtros
+            </button>
+        </div>
 
-    <div class="glass-card mb-4">
-        <div class="glass-header p-4" style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-            <h5 class="mb-3 fw-bold" style="color: #334155; font-size: 1.1rem;">
-                <i class="fa-solid fa-sliders me-2 text-info"></i> Indique las preferencias del prospecto
-            </h5>
-            <div class="row g-3">
-                <!-- CCT -->
-                <div class="col-md-3">
-                    <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">CCT / Bachillerato</label>
-                    <select id="filtroCCT" class="form-select form-select-premium w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
-                        <option value="">Cualquier escuela (Todos)</option>
-                        <option value="3">BGNE (General No Escolarizado)</option>
-                        <option value="2">BTI (Tecnológico Interamericano)</option>
-                        <option value="1">INF. Y COMP. (Informática y Computación)</option>
-                    </select>
-                </div>
-                <!-- Día de Clase -->
-                <div class="col-md-3">
-                    <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">Día de Preferencia</label>
-                    <select id="filtroDia" class="form-select form-select-premium w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
-                        <option value="">Cualquier día (Todos)</option>
-                        <option value="SABADO">Sábados</option>
-                        <option value="DOMINGO">Domingos</option>
-                        <option value="LUNES-VIERNES">Lunes a Viernes</option>
-                    </select>
-                </div>
-                <!-- Turno / Horario -->
-                <div class="col-md-3">
-                    <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">Turno / Horario</label>
-                    <select id="filtroTurno" class="form-select form-select-premium w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
-                        <option value="">Cualquier turno (Todos)</option>
-                        <option value="MATUTINO">Matutino (Mañana)</option>
-                        <option value="VESPERTINO">Vespertino (Tarde)</option>
-                        <option value="SABATINO">Sabatino (Sábados completo)</option>
-                        <option value="DOMINICAL">Dominical (Domingos completo)</option>
-                    </select>
-                </div>
-                <!-- Nivel / Trimestre / Semestre -->
-                <div class="col-md-3">
-                    <label class="form-label mb-1" style="font-size:0.75rem; font-weight:600; color:#334155;">Trimestre o Semestre de Interés</label>
-                    <select id="filtroNivel" class="form-select form-select-premium w-100" style="min-height:38px; font-size:0.85rem; padding: 0.35rem 0.75rem;">
-                        <option value="">Cualquier nivel (Todos)</option>
-                        @foreach($niveles as $nivel)
-                            <option value="{{ $nivel->id }}">{{ $nivel->nombre }}</option>
-                        @endforeach
-                    </select>
-                </div>
+        <div class="tw:grid tw:grid-cols-1 tw:gap-4 tw:sm:grid-cols-2 tw:xl:grid-cols-4">
+            <div>
+                <label for="filtroCCT" class="{{ $label }}">Escuela</label>
+                <select id="filtroCCT" class="{{ $select }}">
+                    <option value="">Todas</option>
+                    <option value="2">BTI, Tecnológico Interamericano</option>
+                    <option value="3">BGNE, General No Escolarizado</option>
+                    <option value="1">Informática y Computación</option>
+                </select>
+            </div>
+            <div>
+                <label for="filtroDia" class="{{ $label }}">Día de preferencia</label>
+                <select id="filtroDia" class="{{ $select }}"></select>
+            </div>
+            <div>
+                <label for="filtroTurno" class="{{ $label }}">Turno</label>
+                <select id="filtroTurno" class="{{ $select }}"></select>
+            </div>
+            <div>
+                <label for="filtroNivel" class="{{ $label }}" id="lblNivel">Semestre o trimestre de interés</label>
+                <select id="filtroNivel" class="{{ $select }}"></select>
+            </div>
+        </div>
+    </section>
+
+    {{-- ===================== RESULTADOS ===================== --}}
+    <section class="{{ $card }} tw:overflow-hidden" aria-live="polite">
+        <div class="tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-2 tw:border-b tw:border-slate-100 tw:px-5 tw:py-3.5">
+            <h2 class="tw:m-0 tw:text-[0.9375rem] tw:font-semibold tw:text-slate-900">Resultados</h2>
+            <span id="conteoResultados" class="tw:text-[0.8125rem] tw:text-slate-500"></span>
+        </div>
+
+        {{-- Aviso: se muestran grupos del nivel anterior como próximos ingresos --}}
+        <div id="avisoSugerencia" hidden>
+            <div class="tw:mx-5 tw:mt-4 tw:flex tw:items-start tw:gap-3 tw:border tw:border-warning-600/30 tw:bg-warning-50 tw:px-4 tw:py-3 tw:text-[0.8125rem] tw:text-slate-700">
+                <i data-lucide="forward" class="tw:mt-0.5 tw:size-4 tw:shrink-0 tw:text-warning-600"></i>
+                <p class="tw:m-0" id="avisoSugerenciaTexto"></p>
             </div>
         </div>
 
-        <div class="p-4 pt-0">
-            <div id="alertSugerencia" style="display:none;"></div>
+        <div id="estadoResultados"></div>
 
-            <div id="loading" class="text-center py-5" style="display:none;">
-                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
-                <div class="text-muted mt-2 fw-semibold">Buscando opciones disponibles...</div>
-            </div>
-
-            <div class="table-responsive">
-                <table class="table table-borderless glass-table align-middle mb-0" id="tablaResultados" style="display:none;">
-                    <thead>
-                        <tr>
-                            <th class="ps-4">Clave</th>
-                            <th>Bachillerato / Carrera</th>
-                            <th>Nivel Actual</th>
-                            <th>Días</th>
-                            <th>Turno</th>
-                            <th>Fecha Inicio</th>
-                            <th>Fecha Fin</th>
-                            <th class="text-center">Alumnos Activos</th>
-                            <th class="text-center">Estatus</th>
+        <div id="tablaWrapper" hidden>
+            <div class="tw:overflow-x-auto">
+                <table class="tw:w-full tw:min-w-[920px] tw:border-collapse">
+                    <thead class="tw:bg-slate-50">
+                        <tr class="tw:border-b tw:border-slate-200">
+                            <th class="{{ $th }} tw:pl-5">Grupo</th>
+                            <th class="{{ $th }}">Nivel</th>
+                            <th class="{{ $th }}">Horario</th>
+                            <th class="{{ $th }}">Periodo del nivel</th>
+                            <th class="{{ $th }} tw:text-center">Alumnos</th>
+                            <th class="{{ $th }} tw:pr-5">Estatus</th>
                         </tr>
                     </thead>
-                    <tbody id="resultadosBody">
-                        <!-- Resultados cargados vía JS -->
-                    </tbody>
+                    <tbody id="resultadosBody" class="tw:divide-y tw:divide-slate-100"></tbody>
                 </table>
             </div>
-
-            <div id="sinResultados" class="text-center py-5 text-muted">
-                <i class="fa-solid fa-circle-info fa-3x mb-3 text-info"></i>
-                <h5 class="fw-bold" style="color: #334155;">Realiza una búsqueda</h5>
-                <p class="text-muted px-3">Modifica los filtros arriba para mostrar las opciones de grupos y periodos que mejor se acomoden al alumno.</p>
-            </div>
         </div>
-    </div>
+    </section>
 </div>
 
 <script>
-// Helper para formatear fechas de manera segura y evitar desfasamientos horarios
-function formatFriendlyDate(dateStr) {
-    if (!dateStr) return 'N/A';
-    try {
-        const date = new Date(dateStr);
-        if (isNaN(date.getTime())) {
-            return dateStr;
-        }
-        const isGMT = dateStr.includes('GMT') || dateStr.includes('UTC') || dateStr.includes('Z');
-        const yyyy = isGMT ? date.getUTCFullYear() : date.getFullYear();
-        const mm = String((isGMT ? date.getUTCMonth() : date.getMonth()) + 1).padStart(2, '0');
-        const dd = String(isGMT ? date.getUTCDate() : date.getDate()).padStart(2, '0');
-        return `${dd}/${mm}/${yyyy}`; // Formato: día/mes/año
-    } catch (e) {
-        return dateStr;
+document.addEventListener('DOMContentLoaded', () => {
+    const NIVELES = @json($niveles);
+    const filtros = {
+        cct: document.getElementById('filtroCCT'),
+        dia: document.getElementById('filtroDia'),
+        turno: document.getElementById('filtroTurno'),
+        nivel: document.getElementById('filtroNivel'),
+    };
+    const estado = document.getElementById('estadoResultados');
+    const tablaWrapper = document.getElementById('tablaWrapper');
+    const tbody = document.getElementById('resultadosBody');
+    const conteo = document.getElementById('conteoResultados');
+    const aviso = document.getElementById('avisoSugerencia');
+
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const refrescarIconos = () => { if (window.lucide?.createIcons) lucide.createIcons(); };
+    const CCT_NOMBRE = { 1: 'Informática', 2: 'BTI', 3: 'BGNE' };
+
+    // ------------------------------------------------------------- fechas
+    /** Acepta "2026-10-25", ISO o "Sun, 27 Jul 2025 00:00:00 GMT" sin desfase de zona horaria. */
+    function parseFecha(v) {
+        if (!v) return null;
+        const m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (m) return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+        const d = new Date(v);
+        return isNaN(d) ? null : new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
     }
-}
+    const fmt = (d) => d ? d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) : '—';
+    const sumarDias = (d, n) => new Date(d.getTime() + n * 864e5);
 
-document.addEventListener('DOMContentLoaded', function() {
-    const filtroCCT = document.getElementById('filtroCCT');
-    const filtroDia = document.getElementById('filtroDia');
-    const filtroTurno = document.getElementById('filtroTurno');
-    const filtroNivel = document.getElementById('filtroNivel');
-    
-    const loading = document.getElementById('loading');
-    const tablaResultados = document.getElementById('tablaResultados');
-    const resultadosBody = document.getElementById('resultadosBody');
-    const sinResultados = document.getElementById('sinResultados');
+    // ------------------------------------------------------------- opciones dependientes
+    /** Reconstruye un <select> conservando el valor si sigue siendo válido (ocultar <option> no funciona en Safari). */
+    function llenar(select, opciones, textoTodos) {
+        const previo = select.value;
+        select.innerHTML = `<option value="">${textoTodos}</option>` +
+            opciones.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join('');
+        select.value = opciones.some(([v]) => String(v) === previo) ? previo : '';
+    }
 
-    // Lógica para condicionar dinámicamente las opciones de los filtros
-    function updateFilterOptions() {
-        const cct = filtroCCT.value;
-        const dia = filtroDia.value;
+    function actualizarOpciones() {
+        const cct = filtros.cct.value;
+        const dia = filtros.dia.value;
 
-        // 1. Mostrar/Ocultar "Lunes a Viernes", Sábado y Domingo en días según CCT
-        const optLV = filtroDia.querySelector('option[value="LUNES-VIERNES"]');
-        const optSab = filtroDia.querySelector('option[value="SABADO"]');
-        const optDom = filtroDia.querySelector('option[value="DOMINGO"]');
+        // Días: BTI solo entre semana, BGNE solo fines de semana
+        const dias = { '2': [['LUNES-VIERNES', 'Lunes a viernes']], '3': [['SABADO', 'Sábados'], ['DOMINGO', 'Domingos']] }[cct]
+            ?? [['LUNES-VIERNES', 'Lunes a viernes'], ['SABADO', 'Sábados'], ['DOMINGO', 'Domingos']];
+        llenar(filtros.dia, dias, 'Cualquier día');
+        if (cct === '2' && !filtros.dia.value && dia) filtros.dia.value = 'LUNES-VIERNES';
 
-        if (cct === '3') { // BGNE (Solo Fin de Semana)
-            if (optLV) optLV.style.display = 'none';
-            if (optSab) optSab.style.display = 'block';
-            if (optDom) optDom.style.display = 'block';
-            
-            if (filtroDia.value === 'LUNES-VIERNES') {
-                filtroDia.value = '';
+        // Turnos según escuela y día
+        let turnos = [['MATUTINO', 'Matutino'], ['VESPERTINO', 'Vespertino'], ['SABATINO', 'Sabatino (sábado completo)'], ['DOMINICAL', 'Dominical (domingo completo)']];
+        if (cct === '2' || filtros.dia.value === 'LUNES-VIERNES') turnos = turnos.slice(0, 2);
+        if (filtros.dia.value === 'SABADO') turnos = turnos.filter(([v]) => v !== 'DOMINICAL');
+        if (filtros.dia.value === 'DOMINGO') turnos = turnos.filter(([v]) => v !== 'SABATINO');
+        llenar(filtros.turno, turnos, 'Cualquier turno');
+
+        // Niveles: BTI semestres (7–12), BGNE trimestres (1–6)
+        const niveles = NIVELES.filter(n => cct === '2' ? n.id >= 7 : cct === '3' ? n.id <= 6 : true);
+        llenar(filtros.nivel, niveles.map(n => [n.id, n.nombre]), 'Cualquier nivel');
+        document.getElementById('lblNivel').textContent = cct === '2' ? 'Semestre de interés' : cct === '3' ? 'Trimestre de interés' : 'Semestre o trimestre de interés';
+
+        document.getElementById('btnLimpiar').disabled = !Object.values(filtros).some(f => f.value);
+    }
+
+    // ------------------------------------------------------------- estados
+    function mostrarEstado(icon, titulo, texto, tono = 'tw:text-slate-400') {
+        tablaWrapper.hidden = true;
+        aviso.hidden = true;
+        conteo.textContent = '';
+        estado.innerHTML = `
+            <div class="tw:flex tw:flex-col tw:items-center tw:px-6 tw:py-16 tw:text-center">
+                <span class="tw:inline-flex tw:size-12 tw:items-center tw:justify-center tw:bg-slate-100 ${tono}"><i data-lucide="${icon}" class="tw:size-5"></i></span>
+                <p class="tw:m-0 tw:mt-3 tw:text-sm tw:font-semibold tw:text-slate-900">${titulo}</p>
+                <p class="tw:m-0 tw:mt-1 tw:max-w-md tw:text-[0.8125rem] tw:text-slate-500">${texto}</p>
+            </div>`;
+        refrescarIconos();
+    }
+
+    const inicial = () => mostrarEstado('search', 'Elige al menos un filtro', 'Selecciona escuela, día, turno o nivel para ver los grupos disponibles.');
+
+    // ------------------------------------------------------------- búsqueda
+    let peticion = 0; // descarta respuestas de búsquedas anteriores
+
+    async function consultar(params) {
+        const res = await fetch(`/grupos/lista?${params}`, { headers: { Accept: 'application/json' } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return (await res.json()).data || [];
+    }
+
+    async function buscar() {
+        const { cct, dia, turno, nivel } = Object.fromEntries(Object.entries(filtros).map(([k, f]) => [k, f.value]));
+        if (!cct && !dia && !turno && !nivel) return inicial();
+
+        const params = new URLSearchParams({ limit: 100 });
+        if (cct) params.set('id_centro_trabajo', cct);
+        if (dia) params.set('dia', dia);
+        if (turno) params.set('modalidad_horario', turno);
+        if (nivel) params.set('id_nivel_academico', nivel);
+
+        const req = ++peticion;
+        tablaWrapper.hidden = true;
+        aviso.hidden = true;
+        conteo.textContent = '';
+        estado.innerHTML = `<div class="tw:flex tw:flex-col tw:items-center tw:gap-3 tw:py-16 tw:text-[0.8125rem] tw:text-slate-500">
+            <span class="tw:inline-block tw:size-6 tw:animate-spin tw:rounded-full tw:border-2 tw:border-slate-200 tw:border-t-brand-700"></span>Buscando grupos…</div>`;
+
+        try {
+            let grupos = await consultar(params);
+            let sugerencia = null;
+
+            // Sin grupos en ese nivel: mostrar los del nivel anterior, que avanzarán a él
+            const nivelId = parseInt(nivel);
+            const anterior = (nivelId >= 2 && nivelId <= 6) || (nivelId >= 8 && nivelId <= 12) ? nivelId - 1 : null;
+            if (!grupos.length && anterior) {
+                const p2 = new URLSearchParams(params);
+                p2.set('id_nivel_academico', anterior);
+                grupos = await consultar(p2);
+                if (grupos.length) sugerencia = nivelId;
             }
-        } else if (cct === '2') { // BTI (Solo entre semana)
-            if (optLV) optLV.style.display = 'block';
-            if (optSab) optSab.style.display = 'none';
-            if (optDom) optDom.style.display = 'none';
-            
-            if (filtroDia.value === 'SABADO' || filtroDia.value === 'DOMINGO') {
-                filtroDia.value = 'LUNES-VIERNES';
+            if (req !== peticion) return;
+
+            if (!grupos.length) {
+                return mostrarEstado('calendar-x', 'Sin opciones disponibles', 'No hay grupos activos ni próximos ingresos con esos criterios. Prueba quitando algún filtro.', 'tw:text-warning-600');
             }
-        } else { // Todos
-            if (optLV) optLV.style.display = 'block';
-            if (optSab) optSab.style.display = 'block';
-            if (optDom) optDom.style.display = 'block';
+            render(grupos, sugerencia);
+        } catch (e) {
+            if (req !== peticion) return;
+            console.error(e);
+            mostrarEstado('circle-alert', 'No se pudo consultar', 'Ocurrió un error al obtener los grupos. Intenta de nuevo.', 'tw:text-danger-600');
+        }
+    }
+
+    function render(grupos, nivelSugerido) {
+        estado.innerHTML = '';
+        conteo.textContent = `${grupos.length} ${grupos.length === 1 ? 'grupo' : 'grupos'}`;
+
+        if (nivelSugerido) {
+            const nombre = NIVELES.find(n => n.id === nivelSugerido)?.nombre || 'ese nivel';
+            document.getElementById('avisoSugerenciaTexto').innerHTML =
+                `<strong class="tw:font-semibold">Próximo ingreso:</strong> ningún grupo cursa <strong class="tw:font-semibold">${esc(nombre)}</strong> en este momento. ` +
+                `Estos grupos del nivel anterior avanzarán a él; las fechas mostradas son estimadas.`;
+            aviso.hidden = false;
         }
 
-        // 2. Mostrar/Ocultar Turnos según CCT y Día
-        const optSabatino = filtroTurno.querySelector('option[value="SABATINO"]');
-        const optDominical = filtroTurno.querySelector('option[value="DOMINICAL"]');
-        const optMatutino = filtroTurno.querySelector('option[value="MATUTINO"]');
-        const optVespertino = filtroTurno.querySelector('option[value="VESPERTINO"]');
+        tbody.innerHTML = grupos.map(g => {
+            const esTrimestre = parseInt(g.id_nivel_academico) <= 6;
+            let inicio = parseFecha(g.fechaInicioNivel || g.fechaInicio);
+            let fin = parseFecha(g.fechaFinNivel || g.fechaFin);
+            let periodo;
 
-        if (optSabatino) optSabatino.style.display = 'block';
-        if (optDominical) optDominical.style.display = 'block';
-        if (optMatutino) optMatutino.style.display = 'block';
-        if (optVespertino) optVespertino.style.display = 'block';
-
-        if (cct === '3') { // BGNE
-            if (dia === 'SABADO') {
-                if (optDominical) optDominical.style.display = 'none';
-                if (filtroTurno.value === 'DOMINICAL') filtroTurno.value = '';
-            } else if (dia === 'DOMINGO') {
-                if (optSabatino) optSabatino.style.display = 'none';
-                if (filtroTurno.value === 'SABATINO') filtroTurno.value = '';
-            }
-        } else if (cct === '2') { // BTI (Solo entre semana)
-            if (optSabatino) optSabatino.style.display = 'none';
-            if (optDominical) optDominical.style.display = 'none';
-            if (filtroTurno.value === 'SABATINO' || filtroTurno.value === 'DOMINICAL') {
-                filtroTurno.value = '';
-            }
-        }
-
-        // 3. Mostrar/Ocultar Trimestres vs Semestres según CCT
-        const opcionesNivel = filtroNivel.querySelectorAll('option');
-        opcionesNivel.forEach(opt => {
-            const val = opt.value;
-            if (!val) return;
-
-            const texto = opt.text.toLowerCase();
-            if (cct === '3') { // BGNE -> Solo Trimestres
-                if (texto.includes('semestre')) {
-                    opt.style.display = 'none';
-                    if (filtroNivel.value === val) filtroNivel.value = '';
+            if (nivelSugerido && fin) {
+                if (esTrimestre) {
+                    // Trimestre: el siguiente inicia 7 días después y dura 13 semanas
+                    inicio = sumarDias(fin, 7);
+                    fin = sumarDias(inicio, 12 * 7);
+                    periodo = `${fmt(inicio)} – ${fmt(fin)}`;
                 } else {
-                    opt.style.display = 'block';
-                }
-            } else if (cct === '2') { // BTI -> Solo Semestres
-                if (texto.includes('trimestre')) {
-                    opt.style.display = 'none';
-                    if (filtroNivel.value === val) filtroNivel.value = '';
-                } else {
-                    opt.style.display = 'block';
+                    // Semestre: no hay regla de duración fija; solo se sabe cuándo termina el actual
+                    periodo = `Después del ${fmt(fin)}`;
                 }
             } else {
-                opt.style.display = 'block';
-            }
-        });
-    }
-
-    // Escuchar cambios para actualización de dependencias y búsquedas en tiempo real
-    filtroCCT.addEventListener('change', function() {
-        updateFilterOptions();
-        buscarGrupos();
-    });
-    filtroDia.addEventListener('change', function() {
-        updateFilterOptions();
-        buscarGrupos();
-    });
-    filtroTurno.addEventListener('change', buscarGrupos);
-    filtroNivel.addEventListener('change', buscarGrupos);
-
-    // Inicializar lógica de visibilidad de filtros al cargar
-    updateFilterOptions();
-
-    function buscarGrupos() {
-        const cct = filtroCCT.value;
-        const dia = filtroDia.value;
-        const turno = filtroTurno.value;
-        const nivel = filtroNivel.value;
-
-        // Si todos están vacíos, mostrar mensaje inicial
-        if (!cct && !dia && !turno && !nivel) {
-            document.getElementById('alertSugerencia').style.display = 'none';
-            tablaResultados.style.display = 'none';
-            sinResultados.style.display = 'block';
-            sinResultados.innerHTML = `
-                <i class="fa-solid fa-circle-info fa-3x mb-3 text-info"></i>
-                <h5 class="fw-bold" style="color: #334155;">Realiza una búsqueda</h5>
-                <p class="text-muted px-3">Modifica los filtros arriba para mostrar las opciones de grupos y periodos que mejor se acomoden al alumno.</p>
-            `;
-            resultadosBody.innerHTML = '';
-            return;
-        }
-
-        loading.style.display = 'block';
-        tablaResultados.style.display = 'none';
-        sinResultados.style.display = 'none';
-        document.getElementById('alertSugerencia').style.display = 'none';
-
-        // Armar query params
-        const params = new URLSearchParams();
-        if (cct) params.append('id_centro_trabajo', cct);
-        if (dia) params.append('dia', dia);
-        if (turno) params.append('modalidad_horario', turno);
-        if (nivel) params.append('id_nivel_academico', nivel);
-        params.append('limit', 100);
-
-        fetch(`/grupos/lista?${params.toString()}`)
-            .then(res => res.json())
-            .then(resp => {
-                const grupos = resp.data || [];
-
-                if (grupos.length > 0) {
-                    loading.style.display = 'none';
-                    renderTablaResultados(grupos, false);
-                } else {
-                    // Si no hay grupos en el nivel seleccionado, intentar buscar el nivel anterior (progresión)
-                    const nivelId = parseInt(nivel);
-                    let nivelAnteriorId = null;
-
-                    if (nivelId >= 2 && nivelId <= 6) {
-                        nivelAnteriorId = nivelId - 1;
-                    } else if (nivelId >= 8 && nivelId <= 12) {
-                        nivelAnteriorId = nivelId - 1;
-                    }
-
-                    if (nivelAnteriorId) {
-                        const prevParams = new URLSearchParams(params);
-                        prevParams.set('id_nivel_academico', nivelAnteriorId);
-
-                        fetch(`/grupos/lista?${prevParams.toString()}`)
-                            .then(r => r.json())
-                            .then(prevResp => {
-                                loading.style.display = 'none';
-                                const prevGrupos = prevResp.data || [];
-                                
-                                if (prevGrupos.length > 0) {
-                                    renderTablaResultados(prevGrupos, true, nivelId);
-                                } else {
-                                    mostrarSinResultados();
-                                }
-                            })
-                            .catch(err => {
-                                console.error(err);
-                                loading.style.display = 'none';
-                                mostrarError();
-                            });
-                    } else {
-                        loading.style.display = 'none';
-                        mostrarSinResultados();
-                    }
-                }
-            })
-            .catch(err => {
-                console.error(err);
-                loading.style.display = 'none';
-                mostrarError();
-            });
-    }
-
-    function renderTablaResultados(grupos, esSugerencia = false, nivelBuscadoId = null) {
-        resultadosBody.innerHTML = '';
-        const alertSugerencia = document.getElementById('alertSugerencia');
-
-        if (esSugerencia) {
-            const optNivelBuscado = filtroNivel.querySelector(`option[value="${nivelBuscadoId}"]`);
-            const nombreNivelBuscado = optNivelBuscado ? optNivelBuscado.text : 'el nivel solicitado';
-            
-            alertSugerencia.innerHTML = `
-                <div class="alert alert-warning mb-3 d-flex align-items-center shadow-sm" role="alert" style="border-radius: 10px; border-left: 5px solid #ffc107; background: #fffdf5; padding: 12px 20px;">
-                    <i class="fa-solid fa-circle-exclamation me-3 fa-lg text-warning"></i>
-                    <div class="text-dark" style="font-size: 0.9rem;">
-                        <strong>Sugerencia de Próximo Ingreso:</strong> No hay grupos activos cursando actualmente <strong>${nombreNivelBuscado}</strong>.
-                        Se muestran a continuación los grupos del nivel anterior que avanzarán a este nivel y las fechas estimadas para su inicio.
-                    </div>
-                </div>
-            `;
-            alertSugerencia.style.display = 'block';
-        } else {
-            alertSugerencia.style.display = 'none';
-        }
-
-        grupos.forEach(g => {
-            const diasStr = Array.isArray(g.diasClase) ? g.diasClase.join(', ') : (g.diasClase || 'No especificado');
-            const statusBadge = g.statusGrupo === 'ACTIVO' 
-                ? '<span class="badge bg-success text-white px-2.5 py-1">ACTIVO</span>' 
-                : `<span class="badge bg-secondary text-white px-2.5 py-1">${g.statusGrupo || 'INACTIVO'}</span>`;
-
-            let fechaInicioStr = g.fechaInicioNivel || g.fechaInicio;
-            let fechaFinStr = g.fechaFinNivel || g.fechaFin;
-            let badgeNivel = `<span class="badge bg-light text-dark fw-bold border" style="font-size: 0.8rem;">${g.nombre_nivel || 'N/A'}</span>`;
-
-            if (esSugerencia) {
-                // Calcular las fechas estimadas del siguiente nivel
-                if (fechaFinStr) {
-                    const currentEnd = new Date(fechaFinStr);
-                    // El siguiente nivel inicia 7 días después
-                    const nextStart = new Date(currentEnd.getTime() + 7 * 24 * 60 * 60 * 1000);
-                    // Dura 13 semanas (12 * 7 dias inclusive)
-                    const nextEnd = new Date(nextStart.getTime() + 12 * 7 * 24 * 60 * 60 * 1000);
-
-                    fechaInicioStr = nextStart.toISOString();
-                    fechaFinStr = nextEnd.toISOString();
-                }
-
-                badgeNivel = `
-                    <div class="d-flex flex-column gap-1 align-items-start">
-                        <span class="badge bg-light text-dark fw-bold border" style="font-size: 0.75rem;">${g.nombre_nivel || 'N/A'}</span>
-                        <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.7rem;"><i class="fa-solid fa-forward me-1"></i> Siguiente nivel</span>
-                    </div>
-                `;
+                periodo = `${fmt(inicio)} – ${fmt(fin)}`;
             }
 
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="ps-4 fw-bold" style="color: rgb(7, 101, 136);">${g.clave}</td>
-                <td class="fw-semibold text-dark">${g.nombreCentroTrabajo || 'N/A'}</td>
-                <td>${badgeNivel}</td>
-                <td class="text-secondary"><i class="fa-regular fa-calendar me-1"></i> ${diasStr}</td>
-                <td class="text-secondary"><i class="fa-regular fa-clock me-1"></i> ${g.modalidadHorario || 'N/A'}</td>
-                <td class="text-secondary fw-semibold">${formatFriendlyDate(fechaInicioStr)}</td>
-                <td class="text-secondary fw-semibold">${formatFriendlyDate(fechaFinStr)}</td>
-                <td class="text-center fw-bold text-dark"><i class="fa-solid fa-users me-1 text-primary"></i> ${g.alumnos_count || 0}</td>
-                <td class="text-center">${statusBadge}</td>
-            `;
-            resultadosBody.appendChild(tr);
-        });
+            const dias = Array.isArray(g.diasClase) ? g.diasClase.join(', ') : (g.diasClase || '');
+            const activo = g.statusGrupo === 'ACTIVO';
+            const cct = CCT_NOMBRE[g.id_centroTrabajo] || g.nombreCentroTrabajo || '';
 
-        tablaResultados.style.display = 'table';
+            return `
+            <tr class="tw:transition-colors tw:hover:bg-slate-50">
+                <td class="tw:px-4 tw:py-3 tw:pl-5">
+                    <p class="tw:m-0 tw:font-mono tw:text-sm tw:font-semibold tw:text-slate-900">${esc(g.clave)}</p>
+                    <p class="tw:m-0 tw:mt-0.5 tw:flex tw:items-center tw:gap-1.5 tw:text-xs tw:text-slate-500">
+                        <span class=" tw:bg-brand-50 tw:px-1.5 tw:font-semibold tw:text-brand-700">${esc(cct)}</span>
+                        ${g.aula ? `<span>Aula ${esc(g.aula)}</span>` : ''}
+                    </p>
+                </td>
+                <td class="tw:px-4 tw:py-3">
+                    <span class="tw:text-[0.8125rem] tw:font-medium tw:text-slate-800">${esc(g.nombre_nivel || '—')}</span>
+                    ${nivelSugerido ? `<span class="tw:mt-1 tw:flex tw:w-fit tw:items-center tw:gap-1 tw:rounded-none tw:bg-warning-100 tw:px-2 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold tw:text-warning-600"><i data-lucide="forward" class="tw:size-3"></i> Pasa al siguiente</span>` : ''}
+                </td>
+                <td class="tw:px-4 tw:py-3">
+                    <p class="tw:m-0 tw:flex tw:items-center tw:gap-1.5 tw:text-[0.8125rem] tw:text-slate-700"><i data-lucide="calendar-days" class="tw:size-3.5 tw:text-slate-400"></i>${esc(dias || '—')}</p>
+                    <p class="tw:m-0 tw:mt-0.5 tw:flex tw:items-center tw:gap-1.5 tw:text-xs tw:text-slate-500"><i data-lucide="clock" class="tw:size-3.5 tw:text-slate-400"></i>${esc(g.modalidadHorario || '—')}</p>
+                </td>
+                <td class="tw:px-4 tw:py-3 tw:text-[0.8125rem] tw:whitespace-nowrap tw:text-slate-700">${periodo}</td>
+                <td class="tw:px-4 tw:py-3 tw:text-center">
+                    <span class="tw:inline-flex tw:items-center tw:gap-1 tw:text-sm tw:font-semibold tw:tabular-nums tw:text-slate-900"><i data-lucide="users" class="tw:size-3.5 tw:text-slate-400"></i>${Number(g.alumnos_count) || 0}</span>
+                </td>
+                <td class="tw:px-4 tw:py-3 tw:pr-5">
+                    <span class="tw:inline-flex tw:items-center tw:gap-1.5 tw:rounded-none tw:px-2.5 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold ${activo ? 'tw:bg-success-100 tw:text-success-700' : 'tw:bg-slate-100 tw:text-slate-500'}">
+                        <span class="tw:size-1.5 tw:rounded-full ${activo ? 'tw:bg-success-500' : 'tw:bg-slate-400'}"></span>${activo ? 'Activo' : esc(g.statusGrupo || 'Inactivo')}
+                    </span>
+                </td>
+            </tr>`;
+        }).join('');
+
+        tablaWrapper.hidden = false;
+        refrescarIconos();
     }
 
-    function mostrarSinResultados() {
-        tablaResultados.style.display = 'none';
-        sinResultados.style.display = 'block';
-        sinResultados.innerHTML = `
-            <i class="fa-solid fa-triangle-exclamation fa-3x mb-3 text-warning"></i>
-            <h5 class="fw-bold" style="color: #334155;">No hay opciones disponibles</h5>
-            <p class="text-muted">No se encontraron grupos activos ni próximos ingresos que coincidan con estos criterios de horario y nivel.</p>
-        `;
-    }
+    // ------------------------------------------------------------- eventos
+    Object.values(filtros).forEach(f => f.addEventListener('change', () => {
+        if (f === filtros.cct || f === filtros.dia) actualizarOpciones();
+        document.getElementById('btnLimpiar').disabled = !Object.values(filtros).some(x => x.value);
+        buscar();
+    }));
+    document.getElementById('btnLimpiar').addEventListener('click', () => {
+        Object.values(filtros).forEach(f => f.value = '');
+        actualizarOpciones();
+        buscar();
+    });
 
-    function mostrarError() {
-        tablaResultados.style.display = 'none';
-        sinResultados.style.display = 'block';
-        sinResultados.innerHTML = `
-            <i class="fa-solid fa-circle-exclamation fa-3x mb-3 text-danger"></i>
-            <h5 class="fw-bold text-danger">Error de carga</h5>
-            <p class="text-muted">Ocurrió un error al consultar el listado de grupos.</p>
-        `;
-    }
+    actualizarOpciones();
+    inicial();
 });
 </script>
 

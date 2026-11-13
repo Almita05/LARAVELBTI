@@ -32,7 +32,7 @@
     color: white;
 
     padding: 10px 20px;
-    border-radius: 12px;
+    border-radius: 0;
 
     text-decoration: none;
     font-weight: 600;
@@ -56,7 +56,7 @@
     backdrop-filter: blur(12px);
 
     border: 1px solid rgba(255, 255, 255, .2);
-    border-radius: 20px;
+    border-radius: 0;
 
     padding: 30px 20px;
 

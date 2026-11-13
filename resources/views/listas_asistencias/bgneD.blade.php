@@ -30,7 +30,7 @@ body {
 .portal-card {
     background: transparent;
     border: 2px solid #ffffff;
-    border-radius: 15px;
+    border-radius: 0;
     padding: 30px 20px;
     text-align: center;
     color: white;
@@ -73,7 +73,7 @@ a {
     color: #fff;
     font-weight: 600;
     padding: .375rem .75rem;
-    border-radius: .375rem;
+    border-radius: 0;
 }
 
 .btn-regresar:hover {

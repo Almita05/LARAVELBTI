@@ -18,7 +18,7 @@
 .glass-card {
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
-    border-radius: 12px !important;
+    border-radius: 0!important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
     color: #1e293b !important;
 }
@@ -64,7 +64,7 @@
     align-items: center;
     background: #f1f5f9;
     border: 1px solid #cbd5e1;
-    border-radius: 8px;
+    border-radius: 0;
     overflow: hidden;
 }
 
@@ -104,7 +104,7 @@
     font-size: 0.88rem;
     font-weight: 600;
     padding: 8px 16px;
-    border-radius: 8px;
+    border-radius: 0;
     transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
@@ -124,7 +124,7 @@
     font-size: 0.88rem;
     font-weight: 600;
     padding: 8px 16px;
-    border-radius: 8px;
+    border-radius: 0;
     transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
@@ -170,7 +170,7 @@
 
 .search-input {
     padding-left: 36px !important;
-    border-radius: 20px !important;
+    border-radius: 0!important;
     font-size: 0.85rem !important;
     border: 1px solid #cbd5e1 !important;
     background: #ffffff !important;
@@ -213,7 +213,7 @@
 .legend-dot {
     width: 14px;
     height: 14px;
-    border-radius: 3px;
+    border-radius: 0;
 }
 
 .legend-dot.completo {
@@ -236,7 +236,7 @@
     width: 100%;
     overflow-x: auto;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 0;
     background: #ffffff;
 }
 
@@ -298,7 +298,7 @@
 .teacher-avatar {
     width: 32px;
     height: 32px;
-    border-radius: 50%;
+    border-radius:0;
     background: rgba(38, 104, 123, 0.1);
     color: rgb(38, 104, 123);
     display: flex;
@@ -352,7 +352,7 @@
 
 .hour-cell.real-val {
     padding: 4px;
-    border-radius: 6px;
+    border-radius: 0;
     transition: all 0.25s ease;
 }
 
@@ -404,7 +404,7 @@
 
 .modal-content-card {
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 0;
     width: 100%;
     max-width: 500px;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -453,7 +453,7 @@
 /* File Upload drag area */
 .upload-drag-area {
     border: 2px dashed #cbd5e1;
-    border-radius: 12px;
+    border-radius: 0;
     padding: 30px 20px;
     text-align: center;
     cursor: pointer;
@@ -494,7 +494,7 @@
 .progress-bar-outer {
     height: 8px;
     background: #e2e8f0;
-    border-radius: 4px;
+    border-radius: 0;
     overflow: hidden;
     margin-bottom: 8px;
 }
@@ -531,7 +531,7 @@
     font-size: 0.88rem;
     font-weight: 600;
     padding: 8px 16px;
-    border-radius: 8px;
+    border-radius: 0;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -629,14 +629,14 @@
         </div>
 
         <!-- Processing Alert Banner -->
-        <div id="processingAlert" class="alert alert-info d-flex align-items-center mb-3 justify-content-between" style="display: none !important; border-radius: 8px; border-left: 4px solid #0ea5e9; background: #f0f9ff; color: #0369a1; padding: 12px 20px;">
+        <div id="processingAlert" class="alert alert-info d-flex align-items-center mb-3 justify-content-between" style="display: none !important; border-radius: 0; border-left: 4px solid #0ea5e9; background: #f0f9ff; color: #0369a1; padding: 12px 20px;">
             <div class="d-flex align-items-center">
                 <i class="fa-solid fa-circle-info me-2 text-info fs-5" style="color: #0ea5e9 !important;"></i>
                 <div>
                     El archivo <strong id="lblUploadedFilename"></strong> se ha recibido y guardado. Se encuentra en proceso de carga en el servidor.
                 </div>
             </div>
-            <button id="btnRefreshStatus" class="btn btn-sm btn-info text-white d-flex align-items-center" style="background: #0ea5e9; border: none; border-radius: 4px; padding: 5px 10px; font-size: 0.8rem; font-weight: 600;">
+            <button id="btnRefreshStatus" class="btn btn-sm btn-info text-white d-flex align-items-center" style="background: #0ea5e9; border: none; border-radius: 0; padding: 5px 10px; font-size: 0.8rem; font-weight: 600;">
                 <i class="fa-solid fa-arrows-rotate me-1"></i>Actualizar estado
             </button>
         </div>
@@ -661,7 +661,7 @@
     <div class="modal-content-card">
         <div class="modal-header-custom">
             <h5 class="modal-title">
-                <i class="ti ti-file-spreadsheet me-2" style="color: #1E5B66;"></i>
+                <i class="ti ti-file-spreadsheet me-2" style="color: #26687B;"></i>
                 Importar Registro Biométrico
             </h5>
             <button class="btn-close-modal" id="btnCloseModal">
@@ -702,7 +702,7 @@
     <div class="modal-content-card" style="max-width: 650px;">
         <div class="modal-header-custom">
             <h5 class="modal-title">
-                <i class="ti ti-calendar me-2" style="color: #1E5B66;"></i>
+                <i class="ti ti-calendar me-2" style="color: #26687B;"></i>
                 Detalle de Horario
             </h5>
             <button class="btn-close-modal" id="btnCloseDetailModal">
@@ -720,7 +720,7 @@
             </div>
 
             <!-- Table of classes -->
-            <div class="table-responsive-custom" style="border-radius: 8px; border: 1px solid #e2e8f0; max-height: 300px; overflow-y: auto;">
+            <div class="table-responsive-custom" style="border-radius: 0; border: 1px solid #e2e8f0; max-height: 300px; overflow-y: auto;">
                 <table class="asistencias-table mb-0" style="width: 100%;">
                     <thead>
                         <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">

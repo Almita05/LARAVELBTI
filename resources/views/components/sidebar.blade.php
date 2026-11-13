@@ -5,542 +5,255 @@ if (is_string($modulosValidos)) {
 $modulosValidos = explode(',', $modulosValidos);
 }
 $modulosValidos = array_map('trim', $modulosValidos);
+$is = fn (...$routes) => request()->routeIs(...$routes);
 @endphp
 
-<link rel="stylesheet" href="{{ asset('css/sidebar.css') }}?v=2.2">
+<aside id="sidebar"
+    class="tw:fixed tw:inset-y-0 tw:left-0 tw:z-[1045] tw:flex tw:w-[270px] tw:flex-col tw:bg-brand-700 tw:shadow-[4px_0_24px_-12px_rgb(15_23_42/0.45)] tw:transition-[width] tw:duration-300 tw:ease-out tw:sb-collapsed:w-[75px]">
 
-
-<div class="sidebar" id="sidebar">
-
-    <div class="sidebar-header">
-        <button type="button" id="toggleSidebar" class="toggle-sidebar" title="Colapsar menú">
-            <i class="ti ti-chevron-left"></i>
-        </button>
+    {{-- Identidad institucional --}}
+    <div class="tw:flex tw:h-[60px] tw:shrink-0 tw:items-center tw:gap-3 tw:border-b tw:border-white/10 tw:px-4 tw:sb-collapsed:justify-center tw:sb-collapsed:px-0" data-sb-header>
+        <a href="{{ route('home') }}" class="tw:flex tw:min-w-0 tw:items-center tw:gap-3 tw:no-underline">
+            {{-- Logo sin caja: PNG transparente alineado con el texto --}}
+            <span class="tw:inline-flex tw:size-10 tw:shrink-0 tw:items-center tw:justify-center tw:bg-transparent">
+                <img src="{{ asset('img/logo.png') }}" alt="BTI" class="tw:size-full tw:bg-transparent tw:object-contain">
+            </span>
+            <span class="tw:text-[1.1rem] tw:leading-none tw:font-bold tw:tracking-[0.02em] tw:text-white tw:sb-collapsed:hidden">BTI</span>
+        </a>
     </div>
 
-    <div class="sidebar-nav-container">
-
+    {{-- Navegación --}}
+    <nav id="sidebarAccordion" class="tw:flex tw:flex-1 tw:flex-col tw:gap-1 tw:overflow-y-auto tw:overflow-x-hidden tw:px-3 tw:py-4 tw:[scrollbar-width:none]">
 
     @if($rol=='ADMIN' || $rol=='PERSONAL' || in_array('inicio', $modulosValidos))
-    <div class="accordion-item menu-title">
-        <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#menu-Inicio"
-                aria-expanded="false" aria-controls="menu-Inicio">
-                <i class="ti ti-home"></i>
-                <span class="menu-text">Inicio</span>
-            </button>
-        </h2>
-        <div id="menu-Inicio" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
-            <div class="accordion-body">
-                <div class="submenu-list">
-                    <a href="{{ route('home') }}">
-                        Dashboard
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+        <x-sidebar.item :href="route('home')" icon="layout-dashboard" label="Dashboard" :active="$is('home')" />
     @endif
+
     @if($rol=='ADMIN' || $rol=='PERSONAL')
-    @if(has_perm('notificaciones', 'ver'))
-    <div class="accordion-item menu-title">
-        <h2 class="accordion-header">
-            <a href="{{ route('notificaciones') }}"
-                class="accordion-button no-chevron d-flex align-items-center text-white {{ request()->routeIs('notificaciones') ? 'active' : '' }}" style="text-decoration: none;">
-                <div class="position-relative d-inline-flex align-items-center justify-content-center"
-                    style="width: 22px; height: 22px; flex-shrink: 0;">
-                    <i class="ti ti-bell" style="font-size: 18px; margin: 0;"></i>
-                    <span class="badge rounded-pill bg-danger position-absolute d-none"
-                        id="sidebar-notificaciones-badge"
-                        style="font-size: 0.58rem; padding: 0.25em 0.45em; top: -5px; right: -5px; line-height: 1;">0</span>
-                </div>
-                <span class="menu-text">Avisos y Pendientes</span>
-            </a>
-        </h2>
-    </div>
-    @endif
+        @if(has_perm('notificaciones', 'ver'))
+        <x-sidebar.item :href="route('notificaciones')" icon="bell" label="Avisos y Pendientes" :active="$is('notificaciones')">
+            <x-slot:badge>
+                <span id="sidebar-notificaciones-badge"
+                    class="d-none tw:absolute tw:-top-1.5 tw:-right-2 tw:min-w-[18px] tw:rounded-none tw:bg-danger-500 tw:px-1 tw:text-center tw:text-[0.625rem] tw:font-bold tw:leading-[18px] tw:text-white tw:ring-2 tw:ring-brand-700">0</span>
+            </x-slot:badge>
+        </x-sidebar.item>
+        @endif
 
-    @if(has_perm('alumnos_list', 'ver') || has_perm('alumnos_asistencias',
-    'ver') || has_perm('alumnos_reporte_asistencias', 'ver'))
-    <div class="accordion-item menu-title">
-        <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#menu-Alumnos"
-                aria-expanded="false" aria-controls="menu-Alumnos">
-                <i class="ti ti-users"></i>
-                <span class="menu-text">Alumnos</span>
-            </button>
-        </h2>
-        <div id="menu-Alumnos" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
-            <div class="accordion-body">
-                <div class="submenu-list">
-                    @if(has_perm('alumnos_list', 'ver'))
-                    <a href="{{ route('alumnos') }}">
-                        Listado Alumnos
-                    </a>
-                    @endif
-                    @if(has_perm('alumnos_list', 'ver') || (isset($rol) && $rol=='ADMIN'))
-                    <a href="{{ route('alumnos.online') }}" class="{{ request()->routeIs('alumnos.online*') ? 'active' : '' }}">
-                        <i class="ti ti-device-laptop me-1"></i> Alumnos Online
-                    </a>
-                    @endif
-                    @if(has_perm('alumnos_asistencias', 'ver'))
-                    <a href="{{ route('asistencias_alumnos') }}">
-                        Asistencia Alumnos
-                    </a>
-                    @endif
-                    @if(has_perm('alumnos_reporte_asistencias', 'ver'))
-                    <a href="{{ route('reportes.asistencias') }}">
-                        Reporte de Asistencias
-                    </a>
-                    @endif
-                    @if(has_perm('alumnos_list', 'ver'))
-                    <a href="{{ route('reportes_indisciplina.index_view') }}">
-                        Reportes de Indisciplina
-                    </a>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
+        <p class="tw:mx-3 tw:mt-4 tw:mb-1 tw:text-[0.8125rem] tw:font-medium tw:text-white/60 tw:sb-collapsed:hidden">Académico</p>
 
-    @if(has_perm('docentes_list', 'ver') || has_perm('docentes_asistencias', 'ver') || has_perm('docentes_horarios',
-    'ver') || has_perm('docentes_permisos_captura', 'ver'))
-    <div class="accordion-item menu-title">
-        <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#menu-Docentes"
-                aria-expanded="false" aria-controls="menu-Docentes">
-                <i class="ti ti-chalkboard"></i>
-                <span class="menu-text">Docentes</span>
-            </button>
-        </h2>
-        <div id="menu-Docentes" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
-            <div class="accordion-body">
-                <div class="submenu-list">
-                    @if(has_perm('docentes_list', 'ver'))
-                    <a href="{{ route('docentes') }}">
-                        Listado de Docentes
-                    </a>
-                    @endif
-                    @if(has_perm('docentes_asistencias', 'ver'))
-                    <a href="{{ route('asistencias_docentes') }}">
-                        Asistencia Docente
-                    </a>
-                    @endif
-                    @if(has_perm('docentes_horarios', 'ver'))
-                    <a href="{{ route('horarios_docentes') }}">
-                        Horario Docente
-                    </a>
-                    @endif
-                    @if(has_perm('docentes_permisos_captura', 'ver'))
-                    <a href="{{ route('permisos_captura') }}">
-                        Permisos de Captura
-                    </a>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
+        @if(has_perm('alumnos_list', 'ver') || has_perm('alumnos_asistencias', 'ver') || has_perm('alumnos_reporte_asistencias', 'ver'))
+        <x-sidebar.group id="Alumnos" icon="graduation-cap" label="Alumnos"
+            :active="$is('alumnos', 'alumnos.online*', 'asistencias_alumnos', 'reportes.asistencias', 'reportes_indisciplina.index_view')">
+            @if(has_perm('alumnos_list', 'ver'))
+            <x-sidebar.link :href="route('alumnos')" :active="$is('alumnos')">Listado de Alumnos</x-sidebar.link>
+            @endif
+            @if(has_perm('alumnos_list', 'ver') || (isset($rol) && $rol=='ADMIN'))
+            <x-sidebar.link :href="route('alumnos.online')" :active="$is('alumnos.online*')">Alumnos Online</x-sidebar.link>
+            @endif
+            @if(has_perm('alumnos_asistencias', 'ver'))
+            <x-sidebar.link :href="route('asistencias_alumnos')" :active="$is('asistencias_alumnos')">Asistencia de Alumnos</x-sidebar.link>
+            @endif
+            @if(has_perm('alumnos_reporte_asistencias', 'ver'))
+            <x-sidebar.link :href="route('reportes.asistencias')" :active="$is('reportes.asistencias')">Reporte de Asistencias</x-sidebar.link>
+            @endif
+            @if(has_perm('alumnos_list', 'ver'))
+            <x-sidebar.link :href="route('reportes_indisciplina.index_view')" :active="$is('reportes_indisciplina.index_view')">Reportes de Indisciplina</x-sidebar.link>
+            @endif
+        </x-sidebar.group>
+        @endif
 
-    @if(has_perm('grupos_list', 'ver') || has_perm('grupos_calificaciones', 'ver') || has_perm('grupos_horarios',
-    'ver'))
-    <div class="accordion-item menu-title">
-        <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#menu-Grupos"
-                aria-expanded="false" aria-controls="menu-Grupos">
-                <i class="ti ti-users-group"></i>
-                <span class="menu-text">Grupos</span>
-            </button>
-        </h2>
-        <div id="menu-Grupos" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
-            <div class="accordion-body">
-                <div class="submenu-list">
-                    @if(has_perm('grupos_list', 'ver'))
-                    <a href="{{ route('grupos') }}">
-                        Listado Grupos
-                    </a>
-                    @endif
-                    @if(has_perm('grupos_calificaciones', 'ver'))
-                    <a href="{{ route('grupos.captura_calificaciones') }}">
-                        Captura Calificaciones
-                    </a>
-                    @endif
-                    @if(has_perm('grupos_horarios', 'ver'))
-                    <a href="{{ route('horarios') }}">
-                        Armado Horarios
-                    </a>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
+        @if(has_perm('docentes_list', 'ver') || has_perm('docentes_asistencias', 'ver') || has_perm('docentes_horarios', 'ver') || has_perm('docentes_permisos_captura', 'ver'))
+        <x-sidebar.group id="Docentes" icon="presentation" label="Docentes"
+            :active="$is('docentes', 'asistencias_docentes', 'horarios_docentes', 'permisos_captura')">
+            @if(has_perm('docentes_list', 'ver'))
+            <x-sidebar.link :href="route('docentes')" :active="$is('docentes')">Listado de Docentes</x-sidebar.link>
+            @endif
+            @if(has_perm('docentes_asistencias', 'ver'))
+            <x-sidebar.link :href="route('asistencias_docentes')" :active="$is('asistencias_docentes')">Asistencia Docente</x-sidebar.link>
+            @endif
+            @if(has_perm('docentes_horarios', 'ver'))
+            <x-sidebar.link :href="route('horarios_docentes')" :active="$is('horarios_docentes')">Horario Docente</x-sidebar.link>
+            @endif
+            @if(has_perm('docentes_permisos_captura', 'ver'))
+            <x-sidebar.link :href="route('permisos_captura')" :active="$is('permisos_captura')">Permisos de Captura</x-sidebar.link>
+            @endif
+        </x-sidebar.group>
+        @endif
 
-    @if(has_perm('materias', 'ver'))
-    <div class="accordion-item menu-title">
-        <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#menu-Materias"
-                aria-expanded="false" aria-controls="menu-Materias">
-                <i class="ti ti-books"></i>
-                <span class="menu-text">Materias</span>
-            </button>
-        </h2>
-        <div id="menu-Materias" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
-            <div class="accordion-body">
-                <div class="submenu-list">
-                    <a href="{{ route('materias') }}">
-                        Listado Materias
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
+        @if(has_perm('grupos_list', 'ver') || has_perm('grupos_calificaciones', 'ver') || has_perm('grupos_horarios', 'ver'))
+        <x-sidebar.group id="Grupos" icon="users" label="Grupos"
+            :active="$is('grupos', 'grupos.captura_calificaciones', 'horarios')">
+            @if(has_perm('grupos_list', 'ver'))
+            <x-sidebar.link :href="route('grupos')" :active="$is('grupos')">Listado de Grupos</x-sidebar.link>
+            @endif
+            @if(has_perm('grupos_calificaciones', 'ver'))
+            <x-sidebar.link :href="route('grupos.captura_calificaciones')" :active="$is('grupos.captura_calificaciones')">Captura de Calificaciones</x-sidebar.link>
+            @endif
+            @if(has_perm('grupos_horarios', 'ver'))
+            <x-sidebar.link :href="route('horarios')" :active="$is('horarios')">Armado de Horarios</x-sidebar.link>
+            @endif
+        </x-sidebar.group>
+        @endif
+
+        @if(has_perm('materias', 'ver'))
+        <x-sidebar.item :href="route('materias')" icon="book-open" label="Materias" :active="$is('materias')" />
+        @endif
     @endif
 
     @if($rol=='DOCENTE')
-    @if(in_array('horarios', $modulosValidos))
-    <div class="accordion-item menu-title">
-        <h2 class="accordion-header">
-            <a href="{{ route('horarios_docentes') }}"
-                class="accordion-button no-chevron d-flex align-items-center text-white {{ request()->routeIs('horarios_docentes') ? 'active' : '' }}" style="text-decoration: none;">
-                <i class="ti ti-calendar-event me-2"></i>
-                <span class="menu-text">Mi Horario</span>
-            </a>
-        </h2>
-    </div>
-    @endif
+        <p class="tw:mx-3 tw:mt-2 tw:mb-1 tw:text-[0.8125rem] tw:font-medium tw:text-white/60 tw:sb-collapsed:hidden">Mi espacio</p>
 
-    @if(in_array('pendientes', $modulosValidos))
-    <div class="accordion-item menu-title">
-        <h2 class="accordion-header">
-            <a href="{{ route('docentes.pendientes') }}"
-                class="accordion-button no-chevron d-flex align-items-center text-white {{ request()->routeIs('docentes.pendientes') ? 'active' : '' }}" style="text-decoration: none;">
-                <i class="ti ti-checklist me-2"></i>
-                <span class="menu-text">Pendientes</span>
-            </a>
-        </h2>
-    </div>
-    @endif
+        @if(in_array('horarios', $modulosValidos))
+        <x-sidebar.item :href="route('horarios_docentes')" icon="calendar-clock" label="Mi Horario" :active="$is('horarios_docentes')" />
+        @endif
 
-    @if(in_array('grupos', $modulosValidos))
-    <div class="accordion-item menu-title">
-        <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                data-bs-target="#menu-GruposDocente" aria-expanded="false" aria-controls="menu-GruposDocente">
-                <i class="ti ti-users-group"></i>
-                <span class="menu-text">Mis Grupos</span>
-            </button>
-        </h2>
-        <div id="menu-GruposDocente" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
-            <div class="accordion-body">
-                <div class="submenu-list">
-                    <a href="{{ route('grupos') }}">
-                        Listado de Grupos
-                    </a>
-                    <a href="{{ route('grupos.captura_calificaciones') }}">
-                        Capturar Calificaciones
-                    </a>
-                    <a href="{{ route('asistencias_alumnos') }}">
-                        Asistencia
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
+        @if(in_array('pendientes', $modulosValidos))
+        <x-sidebar.item :href="route('docentes.pendientes')" icon="list-checks" label="Pendientes" :active="$is('docentes.pendientes')" />
+        @endif
+
+        @if(in_array('grupos', $modulosValidos))
+        <x-sidebar.group id="GruposDocente" icon="users" label="Mis Grupos"
+            :active="$is('grupos', 'grupos.captura_calificaciones', 'asistencias_alumnos')">
+            <x-sidebar.link :href="route('grupos')" :active="$is('grupos')">Listado de Grupos</x-sidebar.link>
+            <x-sidebar.link :href="route('grupos.captura_calificaciones')" :active="$is('grupos.captura_calificaciones')">Capturar Calificaciones</x-sidebar.link>
+            <x-sidebar.link :href="route('asistencias_alumnos')" :active="$is('asistencias_alumnos')">Asistencia</x-sidebar.link>
+        </x-sidebar.group>
+        @endif
     @endif
 
     @if($rol=='ADMIN' || $rol=='PERSONAL')
-    {{-- Nuevo Módulo: Imprimir --}}
-    <div class="accordion-item menu-title">
-        <h2 class="accordion-header">
-            <a href="{{ route('reportes.imprimir') }}"
-                class="accordion-button no-chevron d-flex align-items-center text-white {{ request()->routeIs('reportes.imprimir') ? 'active' : '' }}" style="text-decoration: none;">
-                <i class="ti ti-printer"></i>
-                <span class="menu-text ms-2">Imprimir</span>
-            </a>
-        </h2>
-    </div>
+        <p class="tw:mx-3 tw:mt-4 tw:mb-1 tw:text-[0.8125rem] tw:font-medium tw:text-white/60 tw:sb-collapsed:hidden">Documentos</p>
 
-    @if($rol=='ADMIN' || has_perm('formatos_boletas_bti', 'ver') || has_perm('formatos_kardex_bgne', 'ver') ||
-    has_perm('formatos_actas_extraordinarios', 'ver') || has_perm('formatos_listas_asistencia', 'ver') ||
-    has_perm('formatos_actas_ordinarios', 'ver'))
-    <div class="accordion-item menu-title">
-        <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                data-bs-target="#menu-ImprimirFormatos" aria-expanded="false" aria-controls="menu-ImprimirFormatos">
-                <i class="ti ti-files"></i>
-                <span class="menu-text">Imprimir Formatos</span>
-            </button>
-        </h2>
-        <div id="menu-ImprimirFormatos" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
-            <div class="accordion-body">
-                <div class="submenu-list">
-                    @if(has_perm('formatos_boletas_bti', 'ver'))
-                    <a href="{{ route('boleta_calificaciones_bti') }}">
-                        Boletas BTI
-                    </a>
-                    @endif
-                    @if(has_perm('formatos_kardex_bgne', 'ver'))
-                    <a href="{{ route('kardex_no_escolarizado') }}">
-                        Kardex BGNE
-                    </a>
-                    @endif
-                    @if(has_perm('formatos_actas_extraordinarios', 'ver'))
-                    <a href="{{ route('boleta_calificaciones_extraordinarios') }}">
-                        Actas de calificaciones Extraordinarios
-                    </a>
-                    @endif
-                    @if(has_perm('formatos_listas_asistencia', 'ver'))
-                    <a href="{{ route('listas_asistencias') }}">
-                        Listas de Asistencia
-                    </a>
-                    @endif
-                    @if(has_perm('formatos_actas_ordinarios', 'ver'))
-                    <a href="{{ route('actas_calificaciones') }}">
-                        Actas de Calificaciones O.
-                    </a>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
+        @if($rol=='ADMIN' || has_perm('formatos_boletas_bti', 'ver') || has_perm('formatos_kardex_bgne', 'ver') ||
+            has_perm('formatos_actas_extraordinarios', 'ver') || has_perm('formatos_listas_asistencia', 'ver') || has_perm('formatos_actas_ordinarios', 'ver'))
+        <x-sidebar.item :href="route('reportes.imprimir')" icon="printer" label="Imprimir" :active="$is('reportes.imprimir')" />
+        @endif
+
+        @if($rol=='ADMIN' || has_perm('formatos_boletas_bti', 'ver') || has_perm('formatos_kardex_bgne', 'ver') ||
+        has_perm('formatos_actas_extraordinarios', 'ver') || has_perm('formatos_listas_asistencia', 'ver') ||
+        has_perm('formatos_actas_ordinarios', 'ver'))
+        <x-sidebar.group id="ImprimirFormatos" icon="files" label="Imprimir Formatos"
+            :active="$is('boleta_calificaciones_bti', 'kardex_no_escolarizado', 'boleta_calificaciones_extraordinarios', 'listas_asistencias', 'actas_calificaciones')">
+            @if(has_perm('formatos_boletas_bti', 'ver'))
+            <x-sidebar.link :href="route('boleta_calificaciones_bti')" :active="$is('boleta_calificaciones_bti')">Boletas BTI</x-sidebar.link>
+            @endif
+            @if(has_perm('formatos_kardex_bgne', 'ver'))
+            <x-sidebar.link :href="route('kardex_no_escolarizado')" :active="$is('kardex_no_escolarizado')">Kardex BGNE</x-sidebar.link>
+            @endif
+            @if(has_perm('formatos_actas_extraordinarios', 'ver'))
+            <x-sidebar.link :href="route('boleta_calificaciones_extraordinarios')" :active="$is('boleta_calificaciones_extraordinarios')">Actas de Extraordinarios</x-sidebar.link>
+            @endif
+            @if(has_perm('formatos_listas_asistencia', 'ver'))
+            <x-sidebar.link :href="route('listas_asistencias')" :active="$is('listas_asistencias')">Listas de Asistencia</x-sidebar.link>
+            @endif
+            @if(has_perm('formatos_actas_ordinarios', 'ver'))
+            <x-sidebar.link :href="route('actas_calificaciones')" :active="$is('actas_calificaciones')">Actas de Ordinarios</x-sidebar.link>
+            @endif
+        </x-sidebar.group>
+        @endif
     @endif
 
     {{-- Menú Unificado: Otros --}}
     @if($rol=='ADMIN' || has_perm('planes_bti', 'ver') || has_perm('planes_bgne', 'ver') ||
     has_perm('generaciones', 'ver') || has_perm('busqueda_grupos', 'ver') || has_perm('alumnos_calificaciones', 'ver'))
-    <div class="accordion-item menu-title">
-        <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                data-bs-target="#menu-Otros" aria-expanded="false" aria-controls="menu-Otros">
-                <i class="ti ti-folder-plus"></i>
-                <span class="menu-text">Otros</span>
-            </button>
-        </h2>
-        <div id="menu-Otros" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
-            <div class="accordion-body">
-                <div class="submenu-list">
-                    {{-- Sub-Módulo: Planes de Estudio --}}
-                    @if($rol=='ADMIN' || has_perm('planes_bti', 'ver') || has_perm('planes_bgne', 'ver'))
-                    <div class="mb-1">
-                        <span class="text-white opacity-75 fw-semibold px-2" style="font-size: 0.72rem; letter-spacing: 0.5px;">
-                            <i class="ti ti-books me-1"></i> Planes de Estudio
-                        </span>
-                        <div class="d-flex flex-column gap-1 mt-1 ps-2">
-                            @if($rol=='ADMIN' || has_perm('planes_bti', 'ver'))
-                            <a href="{{ route('planesBTI') }}">
-                                Planes BTI
-                            </a>
-                            @endif
-                            @if($rol=='ADMIN' || has_perm('planes_bgne', 'ver'))
-                            <a href="{{ route('planesBGNE') }}">
-                                Planes BGNE
-                            </a>
-                            @endif
-                        </div>
-                    </div>
-                    <div style="border-top: 1px solid rgba(255, 255, 255, 0.12); margin: 6px 8px;"></div>
-                    @endif
+        <p class="tw:mx-3 tw:mt-4 tw:mb-1 tw:text-[0.8125rem] tw:font-medium tw:text-white/60 tw:sb-collapsed:hidden">Administración</p>
 
-                    {{-- Sub-Módulo: Generaciones --}}
-                    @if($rol=='ADMIN' || has_perm('generaciones', 'ver'))
-                    <a href="{{ route('generaciones') }}">
-                        Generaciones
-                    </a>
-                    @endif
+        <x-sidebar.group id="Otros" icon="layers" label="Otros"
+            :active="$is('planesBTI', 'planesBGNE', 'generaciones', 'busqueda_grupos', 'boletas_bti', 'personal')">
+            @if($rol=='ADMIN' || has_perm('planes_bti', 'ver') || has_perm('planes_bgne', 'ver'))
+            <span class="tw:px-3 tw:pt-1 tw:pb-0.5 tw:text-[0.8125rem] tw:font-medium tw:text-white/60">Planes de Estudio</span>
+            @if($rol=='ADMIN' || has_perm('planes_bti', 'ver'))
+            <x-sidebar.link :href="route('planesBTI')" :active="$is('planesBTI')">Planes BTI</x-sidebar.link>
+            @endif
+            @if($rol=='ADMIN' || has_perm('planes_bgne', 'ver'))
+            <x-sidebar.link :href="route('planesBGNE')" :active="$is('planesBGNE')">Planes BGNE</x-sidebar.link>
+            @endif
+            <span class="tw:mx-3 tw:my-1.5 tw:block tw:h-px tw:bg-white/10"></span>
+            @endif
 
-                    {{-- Sub-Módulo: Búsqueda de Grupo --}}
-                    @if($rol=='ADMIN' || has_perm('busqueda_grupos', 'ver'))
-                    <a href="{{ route('busqueda_grupos') }}">
-                        Búsqueda de Grupo
-                    </a>
-                    @endif
+            @if($rol=='ADMIN' || has_perm('generaciones', 'ver'))
+            <x-sidebar.link :href="route('generaciones')" :active="$is('generaciones')">Generaciones</x-sidebar.link>
+            @endif
+            @if($rol=='ADMIN' || has_perm('busqueda_grupos', 'ver'))
+            <x-sidebar.link :href="route('busqueda_grupos')" :active="$is('busqueda_grupos')">Búsqueda de Grupo</x-sidebar.link>
+            @endif
+            @if(has_perm('alumnos_calificaciones', 'ver'))
+            <x-sidebar.link :href="route('boletas_bti')" :active="$is('boletas_bti')">Captura de Calificaciones</x-sidebar.link>
+            @endif
+            @if($rol=='ADMIN')
+            <x-sidebar.link :href="route('personal')" :active="$is('personal')">Personal</x-sidebar.link>
+            @endif
+        </x-sidebar.group>
 
-                    {{-- Sub-Módulo: Captura de calificaciones --}}
-                    @if(has_perm('alumnos_calificaciones', 'ver'))
-                    <a href="{{ route('boletas_bti') }}">
-                        Captura de calificaciones
-                    </a>
-                    @endif
-
-                    {{-- Sub-Módulo: Personal (Solo Admin) --}}
-                    @if($rol=='ADMIN')
-                    <a href="{{ route('personal') }}">
-                        Personal
-                    </a>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-
-   <div class="accordion-item menu-title">
-        <h2 class="accordion-header">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                data-bs-target="#menu-EstadoCuenta" aria-expanded="false" aria-controls="menu-EstadoCuenta">
-                <i class="ti ti-receipt"></i>
-                <span class="menu-text">Estados de cuenta</span>
-            </button>
-        </h2>
-        <div id="menu-EstadoCuenta" class="accordion-collapse collapse" data-bs-parent="#sidebarAccordion">
-            <div class="accordion-body">
-                <div class="submenu-list">
-                    @if($rol=='ADMIN' || has_perm('planes_bti', 'ver') || has_perm('planes_bgne', 'ver'))
-                    @if($rol=='ADMIN' || has_perm('planes_bti', 'ver'))
-                    <a href="{{ route('analizar-estado-cuenta') }}">
-                        Verificar estados de cuenta
-                    </a>
-                    @endif
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
+        <x-sidebar.group id="EstadoCuenta" icon="receipt" label="Estados de Cuenta" :active="$is('analizar-estado-cuenta')">
+            @if($rol=='ADMIN' || has_perm('planes_bti', 'ver'))
+            <x-sidebar.link :href="route('analizar-estado-cuenta')" :active="$is('analizar-estado-cuenta')">Verificar Estados de Cuenta</x-sidebar.link>
+            @endif
+        </x-sidebar.group>
     @endif
-    </div><!-- /.sidebar-nav-container -->
-</div><!-- /#sidebar -->
+    </nav>
 
-<style>
-.accordion-button.no-chevron::after {
-    display: none !important;
-}
+    {{-- Pie: colapsar --}}
+    <div class="tw:shrink-0 tw:border-t tw:border-white/10 tw:p-3">
+        <button type="button" id="toggleSidebar" title="Colapsar / expandir menú"
+            class="tw:flex tw:w-full tw:cursor-pointer tw:items-center tw:gap-3 tw:border-0 tw:bg-white/5 tw:px-3 tw:py-2 tw:text-[0.8125rem] tw:font-medium tw:text-white/70 tw:transition-colors tw:hover:bg-white/15 tw:hover:text-white tw:sb-collapsed:justify-center tw:sb-collapsed:px-0">
+            <span class="tw:inline-flex tw:transition-transform tw:duration-300 tw:sb-collapsed:rotate-180">
+                <i data-lucide="chevrons-left" class="tw:size-[18px]"></i>
+            </span>
+            <span class="tw:sb-collapsed:hidden">Contraer menú</span>
+        </button>
+    </div>
+</aside>
 
-.sidebar a.accordion-button.no-chevron {
-    color: white !important;
-}
-
-.sidebar a.accordion-button.no-chevron:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-}
-</style>
 <script>
-// Restaurar estado de la barra lateral de forma inmediata para evitar parpadeos (FOUC)
-(function() {
-    const sidebarState = localStorage.getItem('sidebar-state');
-    if (sidebarState === 'collapsed') {
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar) {
-            sidebar.classList.add('sidebar-hidden');
+// Restaurar estado del sidebar de inmediato para evitar parpadeo (FOUC)
+(function () {
+    try {
+        if (localStorage.getItem('sidebar-state') === 'collapsed') {
+            document.getElementById('sidebar')?.classList.add('sidebar-hidden');
             document.body.classList.add('sidebar-hidden');
-            const toggleBtn = document.getElementById('toggleSidebar');
-            if (toggleBtn) {
-                const icon = toggleBtn.querySelector('i');
-                if (icon) {
-                    icon.classList.remove('ti-chevron-left');
-                    icon.classList.add('ti-chevron-right');
-                }
-            }
         }
-    }
+    } catch (e) {}
 })();
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const sidebar = document.getElementById('sidebar');
     const toggleButton = document.getElementById('toggleSidebar');
+    if (!sidebar) return;
 
-    function setSidebarState(state) {
-        localStorage.setItem('sidebar-state', state);
+    function setCollapsed(collapsed) {
+        sidebar.classList.toggle('sidebar-hidden', collapsed);
+        document.body.classList.toggle('sidebar-hidden', collapsed);
+        try { localStorage.setItem('sidebar-state', collapsed ? 'collapsed' : 'expanded'); } catch (e) {}
     }
 
-    function expandSidebar() {
-        if (sidebar && sidebar.classList.contains('sidebar-hidden')) {
-            sidebar.classList.remove('sidebar-hidden');
-            document.body.classList.remove('sidebar-hidden');
-            if (toggleButton) {
-                const icon = toggleButton.querySelector('i');
-                if (icon) {
-                    icon.classList.remove('ti-chevron-right');
-                    icon.classList.add('ti-chevron-left');
-                }
-            }
-            setSidebarState('expanded');
-        }
-    }
+    toggleButton?.addEventListener('click', () => setCollapsed(!sidebar.classList.contains('sidebar-hidden')));
 
-    function collapseSidebar() {
-        if (sidebar && !sidebar.classList.contains('sidebar-hidden')) {
-            sidebar.classList.add('sidebar-hidden');
-            document.body.classList.add('sidebar-hidden');
-            if (toggleButton) {
-                const icon = toggleButton.querySelector('i');
-                if (icon) {
-                    icon.classList.remove('ti-chevron-left');
-                    icon.classList.add('ti-chevron-right');
-                }
-            }
-            setSidebarState('collapsed');
-        }
-    }
-
-    // Toggle button click listener
-    if (toggleButton && sidebar) {
-        toggleButton.addEventListener('click', function() {
-            if (sidebar.classList.contains('sidebar-hidden')) {
-                expandSidebar();
-            } else {
-                collapseSidebar();
-            }
+    // Estando colapsado, cualquier clic en un elemento del menú lo expande
+    sidebar.querySelectorAll('[data-sb-item], [data-sb-header]').forEach(el => {
+        el.addEventListener('click', () => {
+            if (sidebar.classList.contains('sidebar-hidden')) setCollapsed(false);
         });
-    }
+    });
 
-    // Expandir sidebar al hacer clic en cualquier botón de menú (acordeón) o cabecera estando colapsado
-    if (sidebar) {
-        const topHeader = sidebar.querySelector('.sidebar-header');
-        if (topHeader) {
-            topHeader.addEventListener('click', function(e) {
-                if (e.target.closest('#toggleSidebar')) return;
-                if (sidebar.classList.contains('sidebar-hidden')) {
-                    expandSidebar();
-                }
-            });
-        }
-
-        const menuButtons = sidebar.querySelectorAll('.accordion-button');
-        menuButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                if (sidebar.classList.contains('sidebar-hidden')) {
-                    expandSidebar();
-                }
-            });
-        });
-    }
-
-    // Función global para actualizar el badge del sidebar en tiempo real
-    window.actualizarBadgeSidebarNotificaciones = function(total) {
+    // Actualiza el badge de notificaciones en tiempo real (API global usada por otras vistas)
+    window.actualizarBadgeSidebarNotificaciones = function (total) {
         const badge = document.getElementById('sidebar-notificaciones-badge');
         if (!badge) return;
         const count = parseInt(total, 10) || 0;
-        if (count > 0) {
-            badge.textContent = count > 99 ? '99+' : count;
-            badge.classList.remove('d-none');
-        } else {
-            badge.textContent = '0';
-            badge.classList.add('d-none');
-        }
+        badge.textContent = count > 99 ? '99+' : count;
+        badge.classList.toggle('d-none', count <= 0);
     };
 
-    // Consultar cantidad de notificaciones con bypass de caché
-    window.recargarConteoNotificacionesSidebar = function() {
+    window.recargarConteoNotificacionesSidebar = function () {
         fetch('/notificaciones/count?_t=' + Date.now(), {
-            headers: {
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache'
-            }
+            headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' }
         })
-        .then(response => {
-            if (!response.ok) throw new Error('Status ' + response.status);
-            return response.json();
-        })
-        .then(data => {
-            if (data && typeof data.total !== 'undefined') {
-                window.actualizarBadgeSidebarNotificaciones(data.total);
-            }
-        })
-        .catch(err => console.debug('Error fetching notification count:', err));
+            .then(r => { if (!r.ok) throw new Error('Status ' + r.status); return r.json(); })
+            .then(data => {
+                if (data && typeof data.total !== 'undefined') window.actualizarBadgeSidebarNotificaciones(data.total);
+            })
+            .catch(err => console.debug('Error fetching notification count:', err));
     };
 
     window.recargarConteoNotificacionesSidebar();

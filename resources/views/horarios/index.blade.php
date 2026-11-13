@@ -8,10 +8,10 @@
 
 <style>
 :root {
-    --brand-primary: #1E5B66;
+    --brand-primary: #26687B;
     --brand-dark: #184A54;
-    --brand-light: #F0F7F8;
-    --brand-border: #CBE4E8;
+    --brand-light: #EFF6F7;
+    --brand-border: #BBDBE1;
     --bg-page: #F8FAFC;
     --bg-surface: #FFFFFF;
     --border-subtle: #E2E8F0;
@@ -68,7 +68,7 @@
     color: var(--text-secondary);
     height: 36px;
     padding: 0 12px;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     font-weight: 500;
     display: inline-flex;
@@ -91,7 +91,7 @@
     color: var(--brand-primary);
     border: 1px solid var(--brand-border);
     padding: 4px 10px;
-    border-radius: 999px;
+    border-radius: 0;
     font-size: 0.75rem;
     font-weight: 600;
     display: inline-flex;
@@ -129,7 +129,7 @@
 .edit-panel {
     background: #FFFFFF;
     border: 1px solid var(--border-subtle);
-    border-radius: 12px;
+    border-radius: 0;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     display: flex;
     flex-direction: column;
@@ -178,7 +178,7 @@
     background: #FFFFFF !important;
     border: 1px solid var(--border-subtle) !important;
     color: var(--text-primary) !important;
-    border-radius: 6px !important;
+    border-radius: 0!important;
     padding-left: 34px !important;
     height: 36px !important;
     font-size: 0.8125rem !important;
@@ -187,7 +187,7 @@
 
 .search-input-custom:focus {
     border-color: var(--brand-primary) !important;
-    box-shadow: 0 0 0 2px rgba(30, 91, 102, 0.12) !important;
+    box-shadow: 0 0 0 2px rgba(38, 104, 123, 0.12) !important;
     outline: none !important;
 }
 
@@ -195,7 +195,7 @@
     background-color: #FFFFFF !important;
     border: 1px solid var(--border-subtle) !important;
     color: var(--text-secondary) !important;
-    border-radius: 6px !important;
+    border-radius: 0!important;
     font-size: 0.8125rem !important;
     height: 34px !important;
     padding: 0 24px 0 8px !important;
@@ -205,7 +205,7 @@
 
 .filter-select-custom:focus {
     border-color: var(--brand-primary) !important;
-    box-shadow: 0 0 0 2px rgba(30, 91, 102, 0.12) !important;
+    box-shadow: 0 0 0 2px rgba(38, 104, 123, 0.12) !important;
     outline: none !important;
 }
 
@@ -230,13 +230,13 @@
 .calendar-container::-webkit-scrollbar-thumb,
 .edit-panel::-webkit-scrollbar-thumb {
     background: #CBD5E1;
-    border-radius: 3px;
+    border-radius: 0;
 }
 
 .group-item {
     background: #FFFFFF;
     border: 1px solid var(--border-subtle);
-    border-radius: 8px;
+    border-radius: 0;
     padding: 10px 12px;
     display: flex;
     align-items: center;
@@ -261,7 +261,7 @@
     background: #F1F5F9;
     color: #475569;
     padding: 2px 7px;
-    border-radius: 6px;
+    border-radius: 0;
     border: 1px solid var(--border-subtle);
     font-family: 'Inter', sans-serif;
 }
@@ -323,7 +323,7 @@
     font-size: 0.75rem;
     font-weight: 600;
     padding: 2px 8px;
-    border-radius: 999px;
+    border-radius: 0;
     display: inline-block;
 }
 
@@ -333,7 +333,7 @@
     color: var(--text-secondary);
     height: 32px;
     padding: 0 12px;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.8125rem;
     font-weight: 500;
     display: inline-flex;
@@ -355,7 +355,7 @@
     color: #FFFFFF;
     height: 32px;
     padding: 0 12px;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.8125rem;
     font-weight: 500;
     display: inline-flex;
@@ -375,7 +375,7 @@
     overflow-y: auto;
     max-height: calc(100vh - 250px);
     border: 1px solid var(--border-subtle);
-    border-radius: 8px;
+    border-radius: 0;
     scrollbar-width: thin;
 }
 
@@ -446,7 +446,7 @@
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.05em;
-    border-radius: 6px;
+    border-radius: 0;
     padding: 6px 10px;
     display: flex;
     align-items: center;
@@ -468,7 +468,7 @@
     cursor: pointer;
     transition: all 0.15s ease;
     position: relative;
-    border-radius: 4px;
+    border-radius: 0;
 }
 
 .cell-slot:hover {
@@ -476,9 +476,9 @@
 }
 
 .cell-slot.selected {
-    background: rgba(30, 91, 102, 0.06) !important;
+    background: rgba(38, 104, 123, 0.06) !important;
     border: 2px dashed var(--brand-primary);
-    border-radius: 6px;
+    border-radius: 0;
 }
 
 .cell-slot .add-btn-icon {
@@ -502,7 +502,7 @@
     min-height: 64px;
     height: auto;
     margin: 3px;
-    border-radius: 6px;
+    border-radius: 0;
     padding: 8px 10px;
     text-align: left;
     display: flex;
@@ -531,7 +531,7 @@
 }
 
 .cell-slot.drag-over {
-    background: rgba(30, 91, 102, 0.12) !important;
+    background: rgba(38, 104, 123, 0.12) !important;
     border: 2px dashed var(--brand-primary) !important;
 }
 
@@ -554,7 +554,7 @@
     color: var(--brand-primary);
     border: 1px solid var(--brand-border);
     padding: 1px 5px;
-    border-radius: 4px;
+    border-radius: 0;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
@@ -589,7 +589,7 @@
     cursor: pointer;
     transition: color 0.15s ease;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: 0;
 }
 
 .btn-close-panel:hover {
@@ -619,7 +619,7 @@
     background: #FFFFFF !important;
     border: 1px solid var(--border-subtle) !important;
     color: var(--text-primary) !important;
-    border-radius: 6px !important;
+    border-radius: 0!important;
     padding: 6px 10px !important;
     font-size: 0.8125rem !important;
     height: 36px !important;
@@ -628,7 +628,7 @@
 
 .form-input-custom:focus {
     border-color: var(--brand-primary) !important;
-    box-shadow: 0 0 0 2px rgba(30, 91, 102, 0.12) !important;
+    box-shadow: 0 0 0 2px rgba(38, 104, 123, 0.12) !important;
     outline: none !important;
 }
 
@@ -653,7 +653,7 @@
     font-size: 0.8125rem;
     font-weight: 500;
     height: 36px;
-    border-radius: 6px;
+    border-radius: 0;
     transition: all 0.15s ease;
     cursor: pointer;
 }
@@ -672,7 +672,7 @@
     font-size: 0.8125rem !important;
     font-weight: 500 !important;
     height: 36px !important;
-    border-radius: 6px !important;
+    border-radius: 0!important;
     transition: all 0.15s ease;
     cursor: pointer;
 }
@@ -688,7 +688,7 @@
     font-size: 0.8125rem;
     font-weight: 500;
     height: 36px;
-    border-radius: 6px;
+    border-radius: 0;
     transition: all 0.15s ease;
     margin-top: 6px;
     cursor: pointer;
@@ -707,7 +707,7 @@
 .eval-card {
     padding: 10px 12px;
     border: 1px solid var(--border-subtle);
-    border-radius: 8px;
+    border-radius: 0;
     background: #FFFFFF;
     margin-bottom: 8px;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
@@ -732,7 +732,7 @@
     border: 1px solid var(--success-border);
     font-size: 0.6875rem;
     padding: 1px 6px;
-    border-radius: 999px;
+    border-radius: 0;
     font-weight: 600;
 }
 
@@ -742,7 +742,7 @@
     border: 1px solid var(--border-subtle);
     font-size: 0.6875rem;
     padding: 1px 6px;
-    border-radius: 999px;
+    border-radius: 0;
     font-weight: 500;
 }
 
@@ -751,7 +751,7 @@
     width: 100%;
     background: var(--brand-primary);
     color: #FFFFFF;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.8125rem;
     font-weight: 500;
     display: inline-flex;
@@ -773,7 +773,7 @@
     padding: 12px;
     background: #F8FAFC;
     border: 1px dashed #CBD5E1;
-    border-radius: 8px;
+    border-radius: 0;
     display: flex;
     align-items: flex-start;
     gap: 8px;
@@ -888,11 +888,11 @@
             <div id="progressContainer" style="display:none; margin-top: 5px; margin-bottom: 16px; padding: 0 4px;">
                 <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.75rem; color: #64748B;">
                     <span>Inicio Periodo: <strong id="progressStartDate" style="font-family: 'JetBrains Mono', monospace;">—</strong></span>
-                    <span id="progressPercent" style="font-weight: 600; color: #1E5B66; font-family: 'JetBrains Mono', monospace;">0%</span>
+                    <span id="progressPercent" style="font-weight: 600; color: #26687B; font-family: 'JetBrains Mono', monospace;">0%</span>
                     <span>Fin Periodo: <strong id="progressEndDate" style="font-family: 'JetBrains Mono', monospace;">—</strong></span>
                 </div>
-                <div class="progress" style="height: 6px; background-color: #E2E8F0; border-radius: 3px; overflow: hidden;">
-                    <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%; background-color: #1E5B66; transition: width 0.4s ease;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                <div class="progress" style="height: 6px; background-color: #E2E8F0; border-radius: 0; overflow: hidden;">
+                    <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%; background-color: #26687B; transition: width 0.4s ease;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
 
@@ -933,7 +933,7 @@
 
                     <!-- Group Calendar periods list, shown when a group is active -->
                     <div id="groupCalendarInfo" style="display: none; width: 100%;">
-                        <h5 style="font-size: 0.875rem; font-weight: 600; color: #1E5B66; margin-bottom: 12px; border-bottom: 1px solid #E2E8F0; padding-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                        <h5 style="font-size: 0.875rem; font-weight: 600; color: #26687B; margin-bottom: 12px; border-bottom: 1px solid #E2E8F0; padding-bottom: 6px; display: flex; align-items: center; gap: 8px;">
                             <i class="ti ti-calendar" style="font-size: 16px;"></i> Calendario de Periodos
                         </h5>
                         <div id="groupPeriodsList" style="display: flex; flex-direction: column; gap: 8px; width: 100%;"></div>
@@ -942,7 +942,7 @@
                         <div class="mt-3 pt-3" id="seccionFechasEvaluacion" style="border-top: 1px dashed #CBD5E1; display: none;">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 style="font-size: 0.8125rem; font-weight: 600; color: #0F172A; margin: 0; display: flex; align-items: center; gap: 6px;">
-                                    <i class="ti ti-calendar-check" style="font-size: 18px; color: #1E5B66;"></i> Fechas Evaluaciones
+                                    <i class="ti ti-calendar-check" style="font-size: 18px; color: #26687B;"></i> Fechas Evaluaciones
                                 </h6>
                                 <span id="badgeFechasEvaluacionStatus" class="badge-soft-muted">Cargando...</span>
                             </div>
@@ -1002,7 +1002,7 @@
                     <!-- Checkbox for multiple classes -->
                     <div class="form-check mb-2 mt-2">
                         <input class="form-check-input" type="checkbox" id="chkMultipleClasses">
-                        <label class="form-check-label" for="chkMultipleClasses" style="font-size: 0.8125rem; font-weight: 500; color: #1E5B66;">
+                        <label class="form-check-label" for="chkMultipleClasses" style="font-size: 0.8125rem; font-weight: 500; color: #26687B;">
                             Impartir más de una materia en esta hora
                         </label>
                     </div>
@@ -1049,29 +1049,29 @@
 <!-- Modal Configuración Fechas Periodos Evaluaciones -->
 <div class="modal fade" id="modalFechasPeriodosEvaluacion" tabindex="-1" aria-labelledby="modalFechasPeriodosEvaluacionLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content" style="border-radius: 12px; border: 1px solid var(--border-subtle); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); overflow: hidden;">
+        <div class="modal-content" style="border-radius: 0; border: 1px solid var(--border-subtle); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); overflow: hidden;">
             <div class="modal-header px-4 py-3" style="border-bottom: 1px solid #E2E8F0;">
                 <h5 class="modal-title fw-bold d-flex align-items-center gap-2" id="modalFechasPeriodosEvaluacionLabel" style="font-size: 1rem; color: #0F172A;">
-                    <i class="ti ti-calendar" style="font-size: 18px; color: #1E5B66;"></i>
-                    <span>Fechas de Periodos de Evaluación — Grupo: <span id="modalEvalGrupoClave" class="badge px-2 py-1 ms-1" style="background: #F0F7F8; color: #1E5B66; border: 1px solid #CBE4E8; font-family: 'JetBrains Mono', monospace;"></span></span>
+                    <i class="ti ti-calendar" style="font-size: 18px; color: #26687B;"></i>
+                    <span>Fechas de Periodos de Evaluación — Grupo: <span id="modalEvalGrupoClave" class="badge px-2 py-1 ms-1" style="background: #EFF6F7; color: #26687B; border: 1px solid #BBDBE1; font-family: 'JetBrains Mono', monospace;"></span></span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             
             <form id="formFechasPeriodosEvaluacion" onsubmit="guardarFechasPeriodosEvaluacion(event)">
                 <div class="modal-body p-4" style="background-color: #F8FAFC; max-height: 75vh; overflow-y: auto;">
-                    <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center gap-2" style="font-size: 0.8rem; border-radius: 8px; border-left: 4px solid #1E5B66; background: #F0F7F8; color: #184A54; border-color: #CBE4E8;">
-                        <i class="ti ti-info-circle" style="font-size: 1.1rem; color: #1E5B66; flex-shrink: 0;"></i>
+                    <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center gap-2" style="font-size: 0.8rem; border-radius: 0; border-left: 4px solid #26687B; background: #EFF6F7; color: #184A54; border-color: #BBDBE1;">
+                        <i class="ti ti-info-circle" style="font-size: 1.1rem; color: #26687B; flex-shrink: 0;"></i>
                         <div>
                             Define los periodos de evaluación para este grupo. Las fechas se sincronizan con las ventanas de captura y se reflejarán automáticamente en las <strong>Boletas Oficiales de Calificaciones</strong>.
                         </div>
                     </div>
 
                     <!-- Fila 1er Parcial -->
-                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 8px; overflow: hidden; border: 1px solid #E2E8F0 !important;">
-                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #1E5B66;">
+                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 0; overflow: hidden; border: 1px solid #E2E8F0 !important;">
+                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #26687B;">
                             <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
-                                <i class="ti ti-number-1 me-1" style="color: #1E5B66;"></i> Primer Parcial (1ER. PARCIAL)
+                                <i class="ti ti-number-1 me-1" style="color: #26687B;"></i> Primer Parcial (1ER. PARCIAL)
                             </span>
                             <div class="form-check form-switch mb-0">
                                 <input class="form-check-input" type="checkbox" id="evalP1Habilitado" checked>
@@ -1082,21 +1082,21 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Inicio:</label>
-                                    <input type="date" class="form-control form-control-sm" id="evalP1FechaInicio" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                                    <input type="date" class="form-control form-control-sm" id="evalP1FechaInicio" style="border-radius: 0; font-family: 'JetBrains Mono', monospace;">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Fin / Límite:</label>
-                                    <input type="date" class="form-control form-control-sm" id="evalP1FechaFin" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                                    <input type="date" class="form-control form-control-sm" id="evalP1FechaFin" style="border-radius: 0; font-family: 'JetBrains Mono', monospace;">
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Fila 2do Parcial -->
-                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 8px; overflow: hidden; border: 1px solid #E2E8F0 !important;">
-                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #1E5B66;">
+                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 0; overflow: hidden; border: 1px solid #E2E8F0 !important;">
+                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #26687B;">
                             <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
-                                <i class="ti ti-number-2 me-1" style="color: #1E5B66;"></i> Segundo Parcial (2DO. PARCIAL)
+                                <i class="ti ti-number-2 me-1" style="color: #26687B;"></i> Segundo Parcial (2DO. PARCIAL)
                             </span>
                             <div class="form-check form-switch mb-0">
                                 <input class="form-check-input" type="checkbox" id="evalP2Habilitado" checked>
@@ -1107,21 +1107,21 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Inicio:</label>
-                                    <input type="date" class="form-control form-control-sm" id="evalP2FechaInicio" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                                    <input type="date" class="form-control form-control-sm" id="evalP2FechaInicio" style="border-radius: 0; font-family: 'JetBrains Mono', monospace;">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Fin / Límite:</label>
-                                    <input type="date" class="form-control form-control-sm" id="evalP2FechaFin" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                                    <input type="date" class="form-control form-control-sm" id="evalP2FechaFin" style="border-radius: 0; font-family: 'JetBrains Mono', monospace;">
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Fila 3er Parcial -->
-                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 8px; overflow: hidden; border: 1px solid #E2E8F0 !important;">
-                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #1E5B66;">
+                    <div class="card mb-3 border-0 shadow-sm" style="border-radius: 0; overflow: hidden; border: 1px solid #E2E8F0 !important;">
+                        <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #26687B;">
                             <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
-                                <i class="ti ti-number-3 me-1" style="color: #1E5B66;"></i> Tercer Parcial (3ER. PARCIAL)
+                                <i class="ti ti-number-3 me-1" style="color: #26687B;"></i> Tercer Parcial (3ER. PARCIAL)
                             </span>
                             <div class="form-check form-switch mb-0">
                                 <input class="form-check-input" type="checkbox" id="evalP3Habilitado" checked>
@@ -1132,11 +1132,11 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Inicio:</label>
-                                    <input type="date" class="form-control form-control-sm" id="evalP3FechaInicio" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                                    <input type="date" class="form-control form-control-sm" id="evalP3FechaInicio" style="border-radius: 0; font-family: 'JetBrains Mono', monospace;">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold text-secondary mb-1">Fecha de Fin / Límite:</label>
-                                    <input type="date" class="form-control form-control-sm" id="evalP3FechaFin" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                                    <input type="date" class="form-control form-control-sm" id="evalP3FechaFin" style="border-radius: 0; font-family: 'JetBrains Mono', monospace;">
                                 </div>
                             </div>
                         </div>
@@ -1145,7 +1145,7 @@
                     <!-- Fila Semestral y Extraordinario (Grid de 2 columnas) -->
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 8px; overflow: hidden; border: 1px solid #E2E8F0 !important;">
+                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 0; overflow: hidden; border: 1px solid #E2E8F0 !important;">
                                 <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #0284c7;">
                                     <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
                                         <i class="ti ti-school me-1" style="color: #0284c7;"></i> Examen Semestral
@@ -1157,18 +1157,18 @@
                                 <div class="card-body p-3">
                                     <div class="mb-2">
                                         <label class="form-label small fw-semibold text-secondary mb-1">Fecha Inicio:</label>
-                                        <input type="date" class="form-control form-control-sm" id="evalSemestralFechaInicio" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                                        <input type="date" class="form-control form-control-sm" id="evalSemestralFechaInicio" style="border-radius: 0; font-family: 'JetBrains Mono', monospace;">
                                     </div>
                                     <div>
                                         <label class="form-label small fw-semibold text-secondary mb-1">Fecha Fin:</label>
-                                        <input type="date" class="form-control form-control-sm" id="evalSemestralFechaFin" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                                        <input type="date" class="form-control form-control-sm" id="evalSemestralFechaFin" style="border-radius: 0; font-family: 'JetBrains Mono', monospace;">
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 8px; overflow: hidden; border: 1px solid #E2E8F0 !important;">
+                            <div class="card h-100 border-0 shadow-sm" style="border-radius: 0; overflow: hidden; border: 1px solid #E2E8F0 !important;">
                                 <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom" style="border-left: 4px solid #d97706;">
                                     <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
                                         <i class="ti ti-file-text me-1" style="color: #d97706;"></i> Extraordinario
@@ -1180,11 +1180,11 @@
                                 <div class="card-body p-3">
                                     <div class="mb-2">
                                         <label class="form-label small fw-semibold text-secondary mb-1">Fecha Inicio:</label>
-                                        <input type="date" class="form-control form-control-sm" id="evalExtraordinarioFechaInicio" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                                        <input type="date" class="form-control form-control-sm" id="evalExtraordinarioFechaInicio" style="border-radius: 0; font-family: 'JetBrains Mono', monospace;">
                                     </div>
                                     <div>
                                         <label class="form-label small fw-semibold text-secondary mb-1">Fecha Fin:</label>
-                                        <input type="date" class="form-control form-control-sm" id="evalExtraordinarioFechaFin" style="border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                                        <input type="date" class="form-control form-control-sm" id="evalExtraordinarioFechaFin" style="border-radius: 0; font-family: 'JetBrains Mono', monospace;">
                                     </div>
                                 </div>
                             </div>
@@ -1196,7 +1196,7 @@
                         <input class="form-check-input mt-1" type="checkbox" id="evalReplicarMismoSemestre" checked style="cursor: pointer;">
                         <div>
                             <label class="form-check-label fw-bold mb-0" for="evalReplicarMismoSemestre" style="cursor: pointer; font-size: 0.85rem; color: #0F172A;">
-                                <i class="ti ti-copy me-1" style="color: #1E5B66;"></i> Replicar estas fechas a todos los grupos de este mismo semestre / CCT
+                                <i class="ti ti-copy me-1" style="color: #26687B;"></i> Replicar estas fechas a todos los grupos de este mismo semestre / CCT
                             </label>
                             <div class="text-secondary small mt-1" style="font-size: 0.75rem;">
                                 Si está marcado, se aplicará automáticamente este mismo calendario de evaluaciones a los grupos paralelos activos del mismo nivel académico.
@@ -1207,10 +1207,10 @@
                 </div>
 
                 <div class="modal-footer bg-white px-4 py-3 border-top d-flex justify-content-between">
-                    <button type="button" class="btn btn-sm btn-outline-secondary px-3" data-bs-dismiss="modal" style="border-radius: 6px; height: 36px;">
+                    <button type="button" class="btn btn-sm btn-outline-secondary px-3" data-bs-dismiss="modal" style="border-radius: 0; height: 36px;">
                         Cancelar
                     </button>
-                    <button type="submit" class="btn btn-sm px-4 fw-medium text-white" id="btnGuardarFechasEvaluacionModal" style="background-color: #1E5B66; border-radius: 6px; height: 36px; border: none;">
+                    <button type="submit" class="btn btn-sm px-4 fw-medium text-white" id="btnGuardarFechasEvaluacionModal" style="background-color: #26687B; border-radius: 0; height: 36px; border: none;">
                         <i class="ti ti-device-floppy me-1"></i> Guardar Fechas
                     </button>
                 </div>
@@ -1638,7 +1638,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     </div>
                     <div style="font-size: 0.6875rem; color: #64748B; margin-top: 2px;">Grupo: <strong style="font-family: 'JetBrains Mono', monospace;">${matchedGroup.clave}</strong></div>
                 </div>
-                <span style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.12); color: #047857; padding: 2px 7px; border-radius: 999px; font-weight: 600;">Ir al grupo</span>
+                <span style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.12); color: #047857; padding: 2px 7px; border-radius: 0; font-weight: 600;">Ir al grupo</span>
             `;
 
             btn.addEventListener("click", () => {
@@ -2509,7 +2509,7 @@ document.addEventListener("DOMContentLoaded", function() {
             } else {
                 // Periodo futuro: colocar botón "Anticipar Horario" si es BGNE
                 if (isBgne) {
-                    badgeHtml = '<button type="button" class="btn btn-warning btn-xs py-0 px-2 fw-bold text-dark btn-anticipar-horario" style="font-size: 0.65rem; border-radius: 6px; border: none; height: 18px; line-height: 18px; display: inline-flex; align-items: center; justify-content: center;">Anticipar Horario</button>';
+                    badgeHtml = '<button type="button" class="btn btn-warning btn-xs py-0 px-2 fw-bold text-dark btn-anticipar-horario" style="font-size: 0.65rem; border-radius: 0; border: none; height: 18px; line-height: 18px; display: inline-flex; align-items: center; justify-content: center;">Anticipar Horario</button>';
                 }
             }
 
@@ -3119,7 +3119,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 icon: 'error',
                 title: 'Error',
                 text: 'Error al cargar los horarios desde el servidor.',
-                confirmButtonColor: '#1E5B66'
+                confirmButtonColor: '#26687B'
             });
         }
     }

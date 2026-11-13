@@ -29,8 +29,16 @@ return [
         ],
     ],
 
+    // Analizador de estados de cuenta (.QRP): intérprete de Python que ejecuta python/qrp_parser.py.
+    // Ruta completa a python.exe o comando (p. ej. "py -3"). Vacío: "py -3" en Windows, "python3" en Linux.
+    'qrp' => [
+        'python' => env('QRP_PYTHON'),
+    ],
+
     'api' => [
         'base_url' => rtrim(env('API_URL', 'http://127.0.0.1:5000'), '/'),
+        // Token compartido con el backend Flask (cabecera X-API-Token). Debe coincidir con API_TOKEN del backend.
+        'token' => env('API_TOKEN'),
     ],
 
     // 👇 Agrega esto

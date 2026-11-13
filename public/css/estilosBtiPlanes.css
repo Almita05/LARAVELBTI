@@ -16,7 +16,7 @@
     background: rgba(255, 255, 255, .08);
     backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
+    border-radius: 0;
     overflow: hidden;
     box-shadow: 0 8px 25px rgba(0, 0, 0, .15);
     padding: .5%;
@@ -116,7 +116,7 @@
 
 .glass-modal {
     border: 1px solid rgba(255, 255, 255, .15);
-    border-radius: 20px;
+    border-radius: 0;
     overflow: hidden;
     color: white;
     backdrop-filter: blur(12px);
@@ -137,7 +137,7 @@
 .accordion-item {
     background: rgba(255, 255, 255, .06);
     border: none;
-    border-radius: 14px;
+    border-radius: 0;
     overflow: hidden;
 }
 
@@ -194,7 +194,7 @@
     .materia-card {
         background: rgba(255, 255, 255, 0.10);
         border: 1px solid rgba(255, 255, 255, 0.25);
-        border-radius: 16px;
+        border-radius: 0;
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         color: black;
@@ -227,7 +227,7 @@
     .materia-card .btn-primary {
         background: rgb(49, 125, 146);
         border-color: rgb(49, 125, 146);
-        border-radius: 10px;
+        border-radius: 0;
     }
 
     .materia-card .btn-primary:hover {

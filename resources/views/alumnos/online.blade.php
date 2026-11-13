@@ -26,7 +26,7 @@
     .btn-cancelar-modal {
         height: 38px;
         padding: 0 16px;
-        border-radius: 6px;
+        border-radius: 0;
         background: #FFFFFF;
         border: 1px solid #E2E8F0;
         color: #475569;
@@ -43,8 +43,8 @@
     .btn-guardar-modal {
         height: 38px;
         padding: 0 16px;
-        border-radius: 6px;
-        background: #1E5B66;
+        border-radius: 0;
+        background: #26687B;
         border: none;
         color: #FFFFFF;
         font-size: 0.875rem;
@@ -62,8 +62,8 @@
     #inputBuscarAlumnoPresencial:focus,
     #inputMoodleUsernameNuevo:focus,
     #inputPassMoodleNuevo:focus {
-        border-color: #1E5B66 !important;
-        box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.12) !important;
+        border-color: #26687B !important;
+        box-shadow: 0 0 0 3px rgba(38, 104, 123, 0.12) !important;
         outline: none !important;
         background-color: #FFFFFF !important;
     }
@@ -80,7 +80,7 @@
             <div>
                 <div class="d-flex align-items-center gap-2">
                     <h1 class="online-header-title">
-                        Control Escolar • Modalidad Online
+                        Control Escolar, Modalidad Online
                     </h1>
                     <span class="badge-moodle-header">
                         Moodle LMS Activo
@@ -95,7 +95,7 @@
         <div class="online-header-actions">
             {{-- Botón para consultar la distribución oficial de materias en trimestres --}}
             <button type="button" class="btn-header-secondary" onclick="abrirModalDistribucion()">
-                <i class="ti ti-layout-grid" style="color: #1E5B66;"></i>
+                <i class="ti ti-layout-grid" style="color: #26687B;"></i>
                 <span>Distribución de Materias</span>
             </button>
 
@@ -174,7 +174,7 @@
 ======================================================== --}}
 <div class="modal fade" id="modalDistribucionMaterias" data-bs-focus="false" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content" style="border-radius: 14px; overflow: hidden; border: 1px solid #E2E8F0;">
+        <div class="modal-content" style="border-radius: 0; overflow: hidden; border: 1px solid #E2E8F0;">
             <div class="modal-header-executive">
                 <div class="modal-header-executive-left">
                     <div class="modal-icon-box">
@@ -182,7 +182,7 @@
                     </div>
                     <div>
                         <h5 class="modal-title-text">Distribución Oficial de Materias por Trimestre</h5>
-                        <p class="modal-subtitle-text">Esquema modular oficial BGNE • 3 Bloques Mensuales (4 Semanas c/u)</p>
+                        <p class="modal-subtitle-text">Esquema modular oficial BGNE, 3 Bloques Mensuales (4 Semanas c/u)</p>
                     </div>
                 </div>
                 <button type="button" class="btn-modal-close" data-bs-dismiss="modal">
@@ -192,9 +192,9 @@
 
             <div class="modal-body-executive">
                 {{-- Banner informativo de mapeo con Moodle --}}
-                <div class="alert alert-light border d-flex align-items-center justify-content-between p-2 px-3 mb-3" style="border-radius: 8px; border-color: #CBE4E8 !important; background: #F0F7F8 !important; font-size: 0.8125rem; color: #16464F;">
+                <div class="alert alert-light border d-flex align-items-center justify-content-between p-2 px-3 mb-3" style="border-radius: 0; border-color: #BBDBE1 !important; background: #EFF6F7 !important; font-size: 0.8125rem; color: #1F5565;">
                     <div class="d-flex align-items-center gap-2">
-                        <i class="ti ti-brand-moodle fs-4" style="color: #1E5B66;"></i>
+                        <i class="ti ti-brand-moodle fs-4" style="color: #26687B;"></i>
                         <span><strong>Vinculación con Moodle LMS:</strong> Haz clic en el botón de cada materia (ej. <code>+ Asignar Moodle</code> o <code>Moodle: #ID</code>) para registrar o cambiar su ID de curso. El sistema enrolará automáticamente a los estudiantes a estos cursos según sus pagos.</span>
                     </div>
                 </div>
@@ -216,7 +216,7 @@
             </div>
 
             <div class="modal-footer-executive">
-                <button type="button" class="btn btn-sm btn-secondary px-4" data-bs-dismiss="modal" style="border-radius: 6px;">
+                <button type="button" class="btn btn-sm btn-secondary px-4" data-bs-dismiss="modal" style="border-radius: 0;">
                     Cerrar
                 </button>
             </div>
@@ -229,7 +229,7 @@
 ======================================================== --}}
 <div class="modal fade" id="modalRegistrarPagoOnline" data-bs-focus="false" aria-hidden="true">
     <div class="modal-dialog modal-md modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 14px; overflow: hidden; border: 1px solid #E2E8F0;">
+        <div class="modal-content" style="border-radius: 0; overflow: hidden; border: 1px solid #E2E8F0;">
             <div class="modal-header-executive">
                 <div class="modal-header-executive-left">
                     <div class="modal-icon-box">
@@ -253,7 +253,7 @@
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div class="d-flex align-items-center gap-2">
                                 <span class="badge" style="background: #E2E8F0; color: #0F172A; font-weight: 600; font-size: 0.75rem;" id="lblPagoTrimestreActual">2° Trimestre</span>
-                                <span class="text-muted small">• Cobro: <strong class="text-dark" id="lblPagoDiaCobro">SÁBADO</strong></span>
+                                <span class="text-muted small">Cobro: <strong class="text-dark" id="lblPagoDiaCobro">SÁBADO</strong></span>
                             </div>
                             <div class="small">
                                 <span class="text-muted">Vence:</span>
@@ -261,7 +261,7 @@
                             </div>
                         </div>
                         <div class="d-flex align-items-center justify-content-between pt-2 border-top" style="border-color: #E2E8F0 !important; font-size: 0.78rem;">
-                            <span class="text-muted">Avance actual: <strong class="text-dark" id="lblPagoAvanceMesActual">Mes 1 • Semana 2 de 4</strong></span>
+                            <span class="text-muted">Avance actual: <strong class="text-dark" id="lblPagoAvanceMesActual">Mes 1, Semana 2 de 4</strong></span>
                             <span class="text-truncate text-secondary ms-2" style="max-width: 220px;" id="lblPagoMateriasActuales">-</span>
                         </div>
                     </div>
@@ -289,7 +289,7 @@
                     <div class="p-3 rounded-3 mb-3" style="background: #F0FDF4; border: 1px solid #BBF7D0;">
                         <div class="d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-2">
-                                <div style="width: 32px; height: 32px; border-radius: 6px; background: #DCFCE7; color: #15803D; display: flex; align-items: center; justify-content: center;">
+                                <div style="width: 32px; height: 32px; border-radius: 0; background: #DCFCE7; color: #15803D; display: flex; align-items: center; justify-content: center;">
                                     <i class="ti ti-check" style="font-size: 1.1rem;"></i>
                                 </div>
                                 <div>
@@ -343,7 +343,7 @@
 
                 <div class="modal-footer-executive">
                     <button type="button" class="btn btn-sm btn-outline-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-sm btn-primary px-4" id="btnGuardarPagoOnline" style="background: #1E5B66; border-color: #1E5B66;">
+                    <button type="submit" class="btn btn-sm btn-primary px-4" id="btnGuardarPagoOnline" style="background: #26687B; border-color: #26687B;">
                         <i class="ti ti-check me-1"></i> Confirmar Pago
                     </button>
                 </div>
@@ -357,7 +357,7 @@
 ======================================================== --}}
 <div class="modal fade" id="modalDetallesAlumnoOnline" data-bs-focus="false" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content" style="border-radius: 14px; overflow: hidden; border: 1px solid #E2E8F0;">
+        <div class="modal-content" style="border-radius: 0; overflow: hidden; border: 1px solid #E2E8F0;">
             <div class="modal-header-executive">
                 <div class="modal-header-executive-left">
                     <div class="modal-icon-box">
@@ -365,7 +365,7 @@
                     </div>
                     <div>
                         <h5 class="modal-title-text" id="lblDetalleNombre">Ficha del Estudiante Online</h5>
-                        <p class="modal-subtitle-text" id="lblDetalleSubtitulo">Matrícula: - • Grupo: -</p>
+                        <p class="modal-subtitle-text" id="lblDetalleSubtitulo">Matrícula: -, Grupo: -</p>
                     </div>
                 </div>
                 <button type="button" class="btn-modal-close" data-bs-dismiss="modal">
@@ -445,7 +445,7 @@
             </div>
 
             <div class="modal-footer-executive">
-                <button type="button" class="btn btn-sm btn-secondary px-4" data-bs-dismiss="modal" style="border-radius: 6px;">
+                <button type="button" class="btn btn-sm btn-secondary px-4" data-bs-dismiss="modal" style="border-radius: 0;">
                     Cerrar Ficha
                 </button>
             </div>
@@ -458,7 +458,7 @@
 ======================================================== --}}
 <div class="modal fade" id="modalIntegrarAlumnoOnline" data-bs-focus="false" aria-hidden="true">
     <div class="modal-dialog modal-md modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 14px; overflow: hidden; border: 1px solid #E2E8F0; background: #FFFFFF;">
+        <div class="modal-content" style="border-radius: 0; overflow: hidden; border: 1px solid #E2E8F0; background: #FFFFFF;">
             <div class="modal-header-executive" style="background: #FFFFFF; border-bottom: 1px solid #E2E8F0; padding: 16px 20px;">
                 <div class="modal-header-executive-left">
                     <div class="modal-icon-box">
@@ -483,7 +483,7 @@
                         </label>
                         <div style="position: relative; display: flex; align-items: center; width: 100%;">
                             <i class="ti ti-search" style="position: absolute; left: 12px; color: #94A3B8; font-size: 16px; pointer-events: none;"></i>
-                            <input type="text" class="form-control" id="inputBuscarAlumnoPresencial" placeholder="Escribe nombre o matrícula..." onkeyup="buscarPresencialesEnVivo(this.value)" style="width: 100%; height: 38px; padding: 0 12px 0 36px; border: 1px solid #E2E8F0; border-radius: 6px; font-size: 0.875rem; color: #0F172A; transition: all 0.15s;">
+                            <input type="text" class="form-control" id="inputBuscarAlumnoPresencial" placeholder="Escribe nombre o matrícula..." onkeyup="buscarPresencialesEnVivo(this.value)" style="width: 100%; height: 38px; padding: 0 12px 0 36px; border: 1px solid #E2E8F0; border-radius: 0; font-size: 0.875rem; color: #0F172A; transition: all 0.15s;">
                         </div>
                         <div id="listaResultadosPresenciales" class="list-group mt-2 border rounded-3 overflow-hidden shadow-sm" style="display: none; max-height: 180px; overflow-y: auto;">
                         </div>
@@ -491,14 +491,14 @@
 
                     {{-- 2. Card del Alumno Seleccionado --}}
                     <input type="hidden" id="integrarAlumnoId" required>
-                    <div id="boxAlumnoSeleccionado" class="mb-3" style="display: none; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 12px 16px;">
+                    <div id="boxAlumnoSeleccionado" class="mb-3" style="display: none; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 0; padding: 12px 16px;">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <span style="font-size: 0.7rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">ALUMNO:</span>
                                 <span class="fw-bold text-dark fs-6" id="lblAlumnoSeleccionadoNombre">-</span>
                                 <div style="font-size: 0.75rem; color: #64748B; margin-top: 2px;" id="lblAlumnoSeleccionadoInfo">Grupo asignado: -</div>
                             </div>
-                            <button type="button" class="btn btn-sm btn-link text-decoration-none p-0" onclick="cambiarAlumnoSeleccionado()" title="Cambiar alumno" style="font-size: 0.75rem; color: #1E5B66; font-weight: 500;">
+                            <button type="button" class="btn btn-sm btn-link text-decoration-none p-0" onclick="cambiarAlumnoSeleccionado()" title="Cambiar alumno" style="font-size: 0.75rem; color: #26687B; font-weight: 500;">
                                 <i class="ti ti-pencil me-1"></i>Cambiar
                             </button>
                         </div>
@@ -509,7 +509,7 @@
                         <label style="font-size: 0.75rem; font-weight: 600; color: #334155; display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
                             <i class="ti ti-device-laptop" style="color: #64748B; font-size: 15px;"></i> Modalidad de Asistencia
                         </label>
-                        <input type="text" class="form-control" value="Modalidad en Línea (Online)" readonly style="height: 38px; border: 1px solid #E2E8F0; border-radius: 6px; padding: 0 12px; font-size: 0.875rem; color: #475569; background-color: #F8FAFC; width: 100%;">
+                        <input type="text" class="form-control" value="Modalidad en Línea (Online)" readonly style="height: 38px; border: 1px solid #E2E8F0; border-radius: 0; padding: 0 12px; font-size: 0.875rem; color: #475569; background-color: #F8FAFC; width: 100%;">
                     </div>
 
                     {{-- 4. Trimestre en que Comienza --}}
@@ -517,7 +517,7 @@
                         <label for="selectTrimestreInicioNuevo" style="font-size: 0.75rem; font-weight: 600; color: #334155; display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
                             Trimestre en que Comienza <span class="text-danger">*</span>
                         </label>
-                        <select class="form-select" id="selectTrimestreInicioNuevo" required style="height: 38px; border: 1px solid #E2E8F0; border-radius: 6px; padding: 0 32px 0 12px; font-size: 0.875rem; color: #0F172A; background-color: #FFFFFF; width: 100%; appearance: auto;">
+                        <select class="form-select" id="selectTrimestreInicioNuevo" required style="height: 38px; border: 1px solid #E2E8F0; border-radius: 0; padding: 0 32px 0 12px; font-size: 0.875rem; color: #0F172A; background-color: #FFFFFF; width: 100%; appearance: auto;">
                             <option value="1" selected>1° Trimestre (Inicio Regular)</option>
                             <option value="2">2° Trimestre</option>
                             <option value="3">3° Trimestre</option>
@@ -535,7 +535,7 @@
                         <label for="selectDiaPagoNuevo" style="font-size: 0.75rem; font-weight: 600; color: #334155; display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
                             <i class="ti ti-calendar" style="color: #64748B; font-size: 15px;"></i> Día de Cobro / Vencimiento de Pagos <span class="text-danger">*</span>
                         </label>
-                        <select class="form-select" id="selectDiaPagoNuevo" required style="height: 38px; border: 1px solid #E2E8F0; border-radius: 6px; padding: 0 32px 0 12px; font-size: 0.875rem; color: #0F172A; background-color: #FFFFFF; width: 100%; appearance: auto;">
+                        <select class="form-select" id="selectDiaPagoNuevo" required style="height: 38px; border: 1px solid #E2E8F0; border-radius: 0; padding: 0 32px 0 12px; font-size: 0.875rem; color: #0F172A; background-color: #FFFFFF; width: 100%; appearance: auto;">
                             <option value="SABADO" selected>Cada Sábado (Fin de Semana)</option>
                             <option value="DOMINGO">Cada Domingo (Fin de Semana)</option>
                             <option value="LUNES">Cada Lunes (Semanal)</option>
@@ -550,9 +550,9 @@
                     </div>
 
                     {{-- 6. Caja de Moodle (Limpia, sin efecto dropzone ni morado) --}}
-                    <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-left: 3px solid #1E5B66; border-radius: 6px; padding: 16px; margin-top: 8px;">
-                        <div style="font-weight: 600; color: #1E5B66; font-size: 0.875rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
-                            <i class="ti ti-school" style="color: #1E5B66; font-size: 18px;"></i>
+                    <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-left: 3px solid #26687B; border-radius: 0; padding: 16px; margin-top: 8px;">
+                        <div style="font-weight: 600; color: #26687B; font-size: 0.875rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                            <i class="ti ti-school" style="color: #26687B; font-size: 18px;"></i>
                             <span>Credenciales Moodle Automáticas</span>
                         </div>
                         <p style="font-size: 0.75rem; color: #475569; margin-bottom: 12px; line-height: 1.4;">
@@ -561,11 +561,11 @@
                         <div class="row g-2">
                             <div class="col-6">
                                 <label for="inputMoodleUsernameNuevo" style="font-size: 0.72rem; font-weight: 600; color: #64748B; margin-bottom: 4px; display: block;">Usuario Moodle:</label>
-                                <input type="text" id="inputMoodleUsernameNuevo" placeholder="alu..." style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #1E293B; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; height: 36px; padding: 0 12px; border-radius: 6px; width: 100%;">
+                                <input type="text" id="inputMoodleUsernameNuevo" placeholder="alu..." style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #1E293B; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; height: 36px; padding: 0 12px; border-radius: 0; width: 100%;">
                             </div>
                             <div class="col-6">
                                 <label for="inputPassMoodleNuevo" style="font-size: 0.72rem; font-weight: 600; color: #64748B; margin-bottom: 4px; display: block;">Contraseña:</label>
-                                <input type="text" id="inputPassMoodleNuevo" placeholder="Autogenerada (Bti.xxx*)" style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #1E293B; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; height: 36px; padding: 0 12px; border-radius: 6px; width: 100%;">
+                                <input type="text" id="inputPassMoodleNuevo" placeholder="Autogenerada (Bti.xxx*)" style="background: #FFFFFF; border: 1px solid #CBD5E1; color: #1E293B; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; height: 36px; padding: 0 12px; border-radius: 0; width: 100%;">
                             </div>
                         </div>
                     </div>
@@ -714,8 +714,8 @@
                             <button type="button" class="btn-ghost-action" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" title="Más opciones e información">
                                 <i class="ti ti-dots-vertical" style="font-size: 1.15rem;"></i>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border" style="border-radius: 10px; font-size: 0.8125rem; min-width: 230px; z-index: 1060; padding: 6px 0;">
-                                <li class="px-3 py-2 bg-light border-bottom mb-1" style="margin-top: -6px; border-radius: 9px 9px 0 0;">
+                            <ul class="dropdown-menu dropdown-menu-end shadow border" style="border-radius: 0; font-size: 0.8125rem; min-width: 230px; z-index: 1060; padding: 6px 0;">
+                                <li class="px-3 py-2 bg-light border-bottom mb-1" style="margin-top: -6px; border-radius: 0;">
                                     <div class="fw-bold text-dark text-truncate" style="font-size: 0.8125rem;">${al.nombreCompleto}</div>
                                     <div class="text-muted" style="font-size: 0.72rem;">
                                         ${al.numeroControl ? `Matrícula: <strong>${al.numeroControl}</strong><br>` : ''}
@@ -742,7 +742,7 @@
                                         <span>${toggleTitle}</span>
                                     </a>
                                 </li>
-                                <li class="border-top mt-1 pt-2 px-3 text-muted" style="font-size: 0.72rem; background: #FAFBFD; margin-bottom: -6px; border-radius: 0 0 9px 9px; padding-bottom: 8px;">
+                                <li class="border-top mt-1 pt-2 px-3 text-muted" style="font-size: 0.72rem; background: #FAFBFD; margin-bottom: -6px; border-radius: 0; padding-bottom: 8px;">
                                     ${al.en_riesgo_academico ? `<div class="text-danger fw-semibold mb-1"><i class="ti ti-alert-triangle me-1"></i>Debe ${al.actividades_pendientes} tareas</div>` : ''}
                                     ${al.celularAlumno ? `<div><i class="ti ti-phone me-1"></i>${al.celularAlumno}</div>` : ''}
                                     ${al.correoAlumno ? `<div><i class="ti ti-mail me-1"></i>${al.correoAlumno}</div>` : ''}
@@ -854,7 +854,7 @@
         const semPagadas = parseInt(al.semanas_totales_pagadas) || 0;
         const semMes = (semPagadas % 4);
         const semMesTexto = (semMes === 0) ? '0 de 4 cubiertas' : `Semana ${semMes} de 4 cubiertas`;
-        document.getElementById('lblPagoAvanceMesActual').textContent = `Mes ${al.mes_actual || 1} • ${semMesTexto}`;
+        document.getElementById('lblPagoAvanceMesActual').textContent = `Mes ${al.mes_actual || 1}, ${semMesTexto}`;
 
         // Materias en curso
         const trimActual = al.trimestre_actual || 1;
@@ -863,7 +863,7 @@
         if (distribucionMateriasGlobal && distribucionMateriasGlobal[trimActual]) {
             const matsMes = distribucionMateriasGlobal[trimActual]['mes_' + mesActual] || [];
             if (matsMes.length > 0) {
-                nombresMats = matsMes.map(m => m.nombreMateria).join(' • ');
+                nombresMats = matsMes.map(m => m.nombreMateria).join(', ');
             }
         }
         document.getElementById('lblPagoMateriasActuales').textContent = nombresMats;
@@ -910,7 +910,7 @@
         const mesResultante = Math.min(3, Math.floor(((semResultantes - 1) % 12) / 4) + 1);
         const semMesResultante = ((semResultantes - 1) % 4) + 1;
 
-        document.getElementById('lblProyNivelResultante').textContent = `${trimResultante}° Trimestre • Mes ${mesResultante} (Semana ${semMesResultante} de 4 cubiertas)`;
+        document.getElementById('lblProyNivelResultante').textContent = `${trimResultante}° Trimestre, Mes ${mesResultante} (Semana ${semMesResultante} de 4 cubiertas)`;
 
         // Materias asignadas en Moodle
         let matsAsignadas = [];
@@ -927,7 +927,7 @@
                 }
             }
         }
-        document.getElementById('lblProyMateriasAsignadas').textContent = matsAsignadas.length > 0 ? matsAsignadas.join(' • ') : 'Materias correspondientes al bloque';
+        document.getElementById('lblProyMateriasAsignadas').textContent = matsAsignadas.length > 0 ? matsAsignadas.join(', ') : 'Materias correspondientes al bloque';
 
         // Nueva fecha de próximo pago
         let fechaBase = new Date();
@@ -989,7 +989,7 @@
                             </div>
                         </div>
                     `,
-                    confirmButtonColor: '#1E5B66'
+                    confirmButtonColor: '#26687B'
                 });
                 cargarAlumnosOnline();
             } else {
@@ -1021,7 +1021,7 @@
                 const al = data.alumno;
                 alumnoDetalleActual = al;
                 document.getElementById('lblDetalleNombre').textContent = `${al.nombre} ${al.apPaterno} ${al.apMaterno}`;
-                document.getElementById('lblDetalleSubtitulo').textContent = `Matrícula: ${al.numeroControl || 'ID-' + al.idAlumno} • Grupo: ${al.clave_grupo || 'BGNE ONLINE'}`;
+                document.getElementById('lblDetalleSubtitulo').textContent = `Matrícula: ${al.numeroControl || 'ID-' + al.idAlumno}, Grupo: ${al.clave_grupo || 'BGNE ONLINE'}`;
                 document.getElementById('badgeDetalleTrimInicio').textContent = `${data.trimestre_inicio}° Trimestre`;
                 document.getElementById('badgeDetalleTrimActual').textContent = `${data.trimestre_actual}° Trimestre (Mes ${data.mes_actual})`;
                 document.getElementById('badgeDetalleSemanas').textContent = `${data.semanas_totales} Semanas Cubiertas`;
@@ -1068,7 +1068,7 @@
                         const subtituloModulo = esGeoICS ? (sem.semana <= 2 ? 'Geografía' : 'Intro. CS') : null;
 
                         let texto = `Sem ${sem.semana}${subtituloModulo ? ' (' + subtituloModulo + ')' : ''}`;
-                        let tooltipTitle = `${subtituloModulo ? subtituloModulo + ' • ' : ''}Bloqueada (Semana no pagada)`;
+                        let tooltipTitle = `${subtituloModulo ? subtituloModulo + ', ' : ''}Bloqueada (Semana no pagada)`;
                         let onclickAttr = `onclick="Swal.fire('Semana Bloqueada', 'Esta semana no ha sido liberada porque el estudiante aún no registra el pago correspondiente.', 'info')"`;
 
                         const nombreEscapado = mat.nombreMateria.replace(/'/g, "\\'");
@@ -1077,19 +1077,19 @@
                             claseEstatus = 'semana-liberada';
                             icono = 'ti-clock';
                             texto = `Sem ${sem.semana}${subtituloModulo ? ' (' + subtituloModulo + ')' : ''} (Por entregar)`;
-                            tooltipTitle = `${subtituloModulo ? subtituloModulo + ' • ' : ''}Semana Pagada • Tarea pendiente de entrega`;
+                            tooltipTitle = `${subtituloModulo ? subtituloModulo + ', ' : ''}Semana Pagada, Tarea pendiente de entrega`;
                             onclickAttr = `onclick="gestionarEntregaActividad(${alumnoDetalleActual.idAlumno}, ${mat.id}, '${nombreEscapado}', ${sem.semana}, 'LIBERADA', null, '${sem.fecha_liberacion || ''}')"`;
                         } else if (sem.estatus === 'ENTREGADA') {
                             claseEstatus = 'semana-entregada';
                             icono = 'ti-file-check';
                             texto = `Sem ${sem.semana}${subtituloModulo ? ' (' + subtituloModulo + ')' : ''} (Entregada)`;
-                            tooltipTitle = `${subtituloModulo ? subtituloModulo + ' • ' : ''}Actividad entregada ${sem.fecha_entrega ? 'el ' + sem.fecha_entrega : ''}`;
+                            tooltipTitle = `${subtituloModulo ? subtituloModulo + ', ' : ''}Actividad entregada ${sem.fecha_entrega ? 'el ' + sem.fecha_entrega : ''}`;
                             onclickAttr = `onclick="gestionarEntregaActividad(${alumnoDetalleActual.idAlumno}, ${mat.id}, '${nombreEscapado}', ${sem.semana}, 'ENTREGADA', null, '${sem.fecha_entrega || ''}')"`;
                         } else if (sem.estatus === 'CALIFICADA') {
                             claseEstatus = 'semana-calificada';
                             icono = 'ti-award';
                             texto = `Sem ${sem.semana}${subtituloModulo ? ' (' + subtituloModulo + ')' : ''}: ${sem.calificacion}`;
-                            tooltipTitle = `${subtituloModulo ? subtituloModulo + ' • ' : ''}Calificada con ${sem.calificacion}`;
+                            tooltipTitle = `${subtituloModulo ? subtituloModulo + ', ' : ''}Calificada con ${sem.calificacion}`;
                             onclickAttr = `onclick="gestionarEntregaActividad(${alumnoDetalleActual.idAlumno}, ${mat.id}, '${nombreEscapado}', ${sem.semana}, 'CALIFICADA', ${sem.calificacion}, '${sem.fecha_entrega || ''}')"`;
                         }
 
@@ -1103,7 +1103,7 @@
                             <div class="bg-white p-3 rounded-3 border h-100 shadow-sm" style="border-color: #E2E8F0 !important;">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <strong class="text-dark" style="font-size: 0.85rem;">${mat.nombreMateria}</strong>
-                                    <span class="badge" style="background: #F0F7F8; color: #1E5B66; font-size: 0.68rem;">${mat.clave || 'BGNE'}</span>
+                                    <span class="badge" style="background: #EFF6F7; color: #26687B; font-size: 0.68rem;">${mat.clave || 'BGNE'}</span>
                                 </div>
                                 <div class="d-flex gap-2 flex-wrap">
                                     ${semanasHtml}
@@ -1116,8 +1116,8 @@
                 return `
                     <div class="mb-3">
                         <div class="d-flex align-items-center gap-2 mb-2">
-                            <span class="badge" style="background: #1E5B66; color: #FFFFFF; font-size: 0.72rem; padding: 4px 8px;">
-                                MES ${mes.mes_bloque} • Semanas ${(mes.mes_bloque - 1) * 4 + 1} a ${mes.mes_bloque * 4}
+                            <span class="badge" style="background: #26687B; color: #FFFFFF; font-size: 0.72rem; padding: 4px 8px;">
+                                Mes ${mes.mes_bloque}: semanas ${(mes.mes_bloque - 1) * 4 + 1} a ${mes.mes_bloque * 4}
                             </span>
                             <div style="flex: 1; height: 1px; background: #E2E8F0;"></div>
                         </div>
@@ -1129,10 +1129,10 @@
             }).join('');
 
             return `
-                <div class="card mb-4 border-0 shadow-sm" style="background: #F8FAFC; border-radius: 12px; border: 1px solid #E2E8F0 !important;">
-                    <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between" style="border-radius: 12px 12px 0 0;">
+                <div class="card mb-4 border-0 shadow-sm" style="background: #F8FAFC; border-radius: 0; border: 1px solid #E2E8F0 !important;">
+                    <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between" style="border-radius: 0;">
                         <h6 class="mb-0 fw-bold text-dark d-flex align-items-center gap-2">
-                            <i class="ti ti-bookmark" style="color: #1E5B66;"></i> ${trim.trimestre}° Trimestre
+                            <i class="ti ti-bookmark" style="color: #26687B;"></i> ${trim.trimestre}° Trimestre
                             ${trim.es_actual ? '<span class="badge bg-success" style="font-size: 0.65rem;">EN CURSO</span>' : ''}
                         </h6>
                     </div>
@@ -1149,12 +1149,12 @@
     // Gestión interactiva del estado de una actividad semanal
     async function gestionarEntregaActividad(idAlumno, idMateria, nombreMateria, semana, estatusActual, califActual, fechaActual) {
         const esGeoICS = (nombreMateria || '').includes('GEOGRAFIA') && (nombreMateria || '').includes('CIENCIA');
-        const moduloDetalle = esGeoICS ? (semana <= 2 ? ' • Módulo 1: Geografía' : ' • Módulo 2: Intro. a Ciencias Sociales') : '';
+        const moduloDetalle = esGeoICS ? (semana <= 2 ? ', Módulo 1: Geografía' : ', Módulo 2: Intro. a Ciencias Sociales') : '';
 
         const htmlModal = `
             <div class="text-start" style="font-size: 0.85rem;">
                 <div class="mb-1 text-muted small">Materia y Semana:</div>
-                <div class="p-2 bg-light rounded border fw-bold text-dark font-monospace mb-3">${nombreMateria} • Semana ${semana}${moduloDetalle}</div>
+                <div class="p-2 bg-light rounded border fw-bold text-dark font-monospace mb-3">${nombreMateria}, Semana ${semana}${moduloDetalle}</div>
 
                 <div class="mb-3">
                     <label class="form-label fw-bold small text-dark">Estatus de la Actividad:</label>
@@ -1178,12 +1178,12 @@
         `;
 
         const result = await Swal.fire({
-            title: 'Control de Actividad • Sem ' + semana,
+            title: 'Control de Actividad, semana ' + semana,
             html: htmlModal,
             showCancelButton: true,
             confirmButtonText: '<i class="ti ti-check me-1"></i> Guardar Estatus',
             cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#1E5B66'
+            confirmButtonColor: '#26687B'
         });
 
         if (result.isConfirmed) {
@@ -1306,7 +1306,7 @@
             showCancelButton: true,
             confirmButtonText: '<i class="ti ti-check me-1"></i> Guardar Curso',
             cancelButtonText: 'Cancelar',
-            confirmButtonColor: '#1E5B66',
+            confirmButtonColor: '#26687B',
             cancelButtonColor: '#64748B',
             didOpen: () => {
                 const input = Swal.getInput();
@@ -1370,8 +1370,8 @@
             if (btn) {
                 if (i === num) {
                     btn.className = 'btn btn-sm btn-primary px-3';
-                    btn.style.backgroundColor = '#1E5B66';
-                    btn.style.borderColor = '#1E5B66';
+                    btn.style.backgroundColor = '#26687B';
+                    btn.style.borderColor = '#26687B';
                 } else {
                     btn.className = 'btn btn-sm btn-outline-secondary px-3';
                     btn.style.backgroundColor = '';
@@ -1589,7 +1589,7 @@
                     icon: 'success',
                     title: '¡Moodle Sincronizado!',
                     html: data.message,
-                    confirmButtonColor: '#1E5B66'
+                    confirmButtonColor: '#26687B'
                 });
                 cargarAlumnosOnline();
             } else {
@@ -1602,7 +1602,7 @@
 
     async function toggleMoodleAccess(idAlumno, nombre, suspender) {
         const accionTexto = suspender ? 'suspender temporalmente el acceso a Moodle' : 'reactivar el acceso a Moodle';
-        const confirmBtnColor = suspender ? '#DC2626' : '#1E5B66';
+        const confirmBtnColor = suspender ? '#DC2626' : '#26687B';
 
         const result = await Swal.fire({
             title: '¿Confirmar acción en Moodle?',
@@ -1776,7 +1776,7 @@
                     icon: 'success',
                     title: '¡Estudiante Integrado a Online!',
                     text: data.mensaje || data.message || 'El alumno ha sido cambiado a modalidad en línea.',
-                    confirmButtonColor: '#1E5B66'
+                    confirmButtonColor: '#26687B'
                 });
                 cargarAlumnosOnline();
             } else {

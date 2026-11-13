@@ -44,7 +44,7 @@
 .kpi-card {
     background: #FFFFFF;
     border: 1px solid var(--border-subtle, #E2E8F0);
-    border-radius: 10px;
+    border-radius: 0;
     padding: 16px 20px;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
     display: flex;
@@ -55,7 +55,7 @@
 .kpi-icon-box {
     width: 44px;
     height: 44px;
-    border-radius: 8px;
+    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -106,7 +106,7 @@
     gap: 16px;
     background: #FFFFFF;
     border: 1px solid var(--border-subtle, #E2E8F0);
-    border-radius: 10px;
+    border-radius: 0;
     padding: 10px 14px;
     margin-bottom: 20px;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
@@ -124,7 +124,7 @@
     align-items: center;
     background: #F1F5F9;
     padding: 4px;
-    border-radius: 8px;
+    border-radius: 0;
     gap: 2px;
     flex-shrink: 0;
     white-space: nowrap;
@@ -134,7 +134,7 @@
 .asistencias-tab-btn {
     height: 32px;
     padding: 0 14px;
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.8125rem;
     font-weight: 500;
     color: #475569;
@@ -154,7 +154,7 @@
 }
 
 .asistencias-tab-btn.active {
-    background: var(--brand-primary, #1E5B66);
+    background: var(--brand-primary, #26687B);
     color: #FFFFFF;
     font-weight: 600;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1);
@@ -187,7 +187,7 @@
     height: 38px;
     padding: 0 12px 0 36px;
     border: 1px solid var(--border-subtle, #E2E8F0);
-    border-radius: 6px;
+    border-radius: 0;
     font-size: 0.875rem;
     color: #0F172A;
     background: #F8FAFC;
@@ -196,16 +196,16 @@
 
 .asistencias-search-input:focus {
     background: #FFFFFF;
-    border-color: var(--brand-primary, #1E5B66);
+    border-color: var(--brand-primary, #26687B);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(30, 91, 102, 0.1);
+    box-shadow: 0 0 0 3px rgba(38, 104, 123, 0.1);
 }
 
 /* Tarjeta de Grupo SaaS */
 .grupo-card-surface {
     background: #FFFFFF !important;
     border: 1px solid var(--border-subtle, #E2E8F0) !important;
-    border-radius: 12px !important;
+    border-radius: 0!important;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
     transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
     overflow: hidden;
@@ -233,7 +233,7 @@
     font-size: 0.6875rem;
     font-weight: 600;
     padding: 2px 8px;
-    border-radius: 9999px;
+    border-radius: 0;
     letter-spacing: 0.02em;
     white-space: nowrap;
 }
@@ -245,7 +245,7 @@
     font-size: 0.6875rem;
     font-weight: 600;
     padding: 2px 8px;
-    border-radius: 9999px;
+    border-radius: 0;
     letter-spacing: 0.02em;
     white-space: nowrap;
     display: inline-flex;
@@ -260,7 +260,7 @@
     font-size: 0.6875rem;
     font-weight: 600;
     padding: 2px 8px;
-    border-radius: 9999px;
+    border-radius: 0;
     letter-spacing: 0.02em;
     white-space: nowrap;
     display: inline-flex;
@@ -300,8 +300,8 @@
     height: 36px;
     background: #F8FAFC;
     border: 1px solid #E2E8F0;
-    border-radius: 6px;
-    color: var(--brand-primary, #1E5B66);
+    border-radius: 0;
+    color: var(--brand-primary, #26687B);
     font-size: 0.8125rem;
     font-weight: 600;
     display: inline-flex;
@@ -314,17 +314,17 @@
 }
 
 .btn-matriz:hover {
-    background: #F0F7F8;
-    border-color: var(--brand-primary, #1E5B66);
-    color: var(--brand-primary-hover, #16464F);
+    background: #EFF6F7;
+    border-color: var(--brand-primary, #26687B);
+    color: var(--brand-primary-hover, #1F5565);
 }
 
 .btn-pasar-lista {
     width: 100%;
     height: 36px;
-    background: var(--brand-primary, #1E5B66);
-    border: 1px solid var(--brand-primary, #1E5B66);
-    border-radius: 6px;
+    background: var(--brand-primary, #26687B);
+    border: 1px solid var(--brand-primary, #26687B);
+    border-radius: 0;
     color: #FFFFFF;
     font-size: 0.8125rem;
     font-weight: 600;
@@ -339,8 +339,8 @@
 }
 
 .btn-pasar-lista:hover {
-    background: var(--brand-primary-hover, #16464F);
-    border-color: var(--brand-primary-hover, #16464F);
+    background: var(--brand-primary-hover, #1F5565);
+    border-color: var(--brand-primary-hover, #1F5565);
     color: #FFFFFF;
 }
 </style>
@@ -362,7 +362,7 @@
 
     <!-- Alertas -->
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 8px; background-color: #FEF2F2; color: #991B1B; border: 1px solid #FECACA !important;">
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 0; background-color: #FEF2F2; color: #991B1B; border: 1px solid #FECACA !important;">
             <i class="ti ti-alert-triangle me-2"></i>{{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -495,11 +495,11 @@
                             <div>
                                 <h4 class="grupo-clave mb-1.5">{{ $grupo['clave'] }}</h4>
                                 <div class="d-flex align-items-center gap-1 flex-wrap">
-                                    <span class="badge" style="font-size: 0.6875rem; padding: 2px 7px; border-radius: 4px; {{ $grupo['id_centroTrabajo'] == 2 ? 'background-color: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD;' : 'background-color: #F0F7F8; color: #1E5B66; border: 1px solid #CBE4E8;' }}">
+                                    <span class="badge" style="font-size: 0.6875rem; padding: 2px 7px; border-radius: 0; {{ $grupo['id_centroTrabajo'] == 2 ? 'background-color: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD;' : 'background-color: #EFF6F7; color: #26687B; border: 1px solid #BBDBE1;' }}">
                                         {{ $grupo['nombreCentroTrabajo'] ?? ($grupo['id_centroTrabajo'] == 2 ? 'BTI' : 'BGNE') }}
                                     </span>
                                     @if($turnoLabel)
-                                        <span class="badge" style="font-size: 0.6875rem; padding: 2px 7px; border-radius: 4px; {{ $turnoBadgeStyle }}">
+                                        <span class="badge" style="font-size: 0.6875rem; padding: 2px 7px; border-radius: 0; {{ $turnoBadgeStyle }}">
                                             {{ $turnoLabel }}
                                         </span>
                                     @endif
@@ -755,7 +755,7 @@
         <div class="modal-content">
             <div class="modal-header d-flex justify-content-between align-items-center">
                 <h5 class="modal-title fw-bold mb-0" id="modalJustificacionLabel">
-                    <i class="ti ti-shield-check me-2" style="font-size: 1.2rem; vertical-align: -2px; color: #1E5B66;"></i>Justificar Faltas de Alumno
+                    <i class="ti ti-shield-check me-2" style="font-size: 1.2rem; vertical-align: -2px; color: #26687B;"></i>Justificar Faltas de Alumno
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -765,19 +765,19 @@
                     <div class="mb-3 position-relative">
                         <label class="form-label" style="font-size: 0.75rem; font-weight: 600; color: #475569; margin-bottom: 6px; text-transform: uppercase;">Buscar Alumno</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 text-muted" style="border-radius: 6px 0 0 6px; border-color: #E2E8F0;">
+                            <span class="input-group-text bg-white border-end-0 text-muted" style="border-radius: 0; border-color: #E2E8F0;">
                                 <i class="ti ti-search" style="font-size: 15px; color: #94A3B8;"></i>
                             </span>
-                            <input type="text" id="just-buscar-alumno" class="form-control border-start-0 text-dark bg-white" placeholder="Escribe nombre o matrícula..." oninput="buscarAlumnoJustificacion(this.value)" style="border-radius: 0 6px 6px 0; border-color: #E2E8F0; height: 38px; font-size: 0.875rem;">
+                            <input type="text" id="just-buscar-alumno" class="form-control border-start-0 text-dark bg-white" placeholder="Escribe nombre o matrícula..." oninput="buscarAlumnoJustificacion(this.value)" style="border-radius: 0; border-color: #E2E8F0; height: 38px; font-size: 0.875rem;">
                         </div>
                         <!-- Resultados de búsqueda -->
-                        <div id="just-resultados-busqueda" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1050; max-height: 200px; overflow-y: auto; border-radius: 6px; border: 1px solid #E2E8F0; margin-top: 4px;"></div>
+                        <div id="just-resultados-busqueda" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1050; max-height: 200px; overflow-y: auto; border-radius: 0; border: 1px solid #E2E8F0; margin-top: 4px;"></div>
                     </div>
 
                     <!-- Alumno Seleccionado -->
                     <div class="mb-3 d-none" id="just-seleccionado-container">
                         <span class="text-muted small d-block mb-1" style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Alumno Seleccionado:</span>
-                        <div class="p-3 bg-light border" style="border-radius: 8px; border-color: #E2E8F0 !important;">
+                        <div class="p-3 bg-light border" style="border-radius: 0; border-color: #E2E8F0 !important;">
                             <strong class="text-dark d-block" id="just-alumno-nombre" style="font-size: 0.875rem;"></strong>
                             <small class="text-muted" id="just-alumno-matricula" style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;"></small>
                             <input type="hidden" name="id_alumno" id="just-id-alumno">
@@ -788,18 +788,18 @@
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label" style="font-size: 0.75rem; font-weight: 600; color: #475569; margin-bottom: 6px; text-transform: uppercase;">Fecha Inicio</label>
-                            <input type="date" name="fecha_inicio" id="just-fecha-inicio" class="form-control text-dark bg-white" required style="border-radius: 6px; border-color: #E2E8F0; height: 38px; font-size: 0.875rem;">
+                            <input type="date" name="fecha_inicio" id="just-fecha-inicio" class="form-control text-dark bg-white" required style="border-radius: 0; border-color: #E2E8F0; height: 38px; font-size: 0.875rem;">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" style="font-size: 0.75rem; font-weight: 600; color: #475569; margin-bottom: 6px; text-transform: uppercase;">Fecha Fin</label>
-                            <input type="date" name="fecha_fin" id="just-fecha-fin" class="form-control text-dark bg-white" required style="border-radius: 6px; border-color: #E2E8F0; height: 38px; font-size: 0.875rem;">
+                            <input type="date" name="fecha_fin" id="just-fecha-fin" class="form-control text-dark bg-white" required style="border-radius: 0; border-color: #E2E8F0; height: 38px; font-size: 0.875rem;">
                         </div>
                     </div>
 
                     <!-- Motivo -->
                     <div class="mb-3">
                         <label class="form-label" style="font-size: 0.75rem; font-weight: 600; color: #475569; margin-bottom: 6px; text-transform: uppercase;">Motivo / Justificante</label>
-                        <textarea name="motivo" id="just-motivo" class="form-control text-dark bg-white" rows="3" placeholder="Ej. Presenta justificante médico..." style="border-radius: 6px; border-color: #E2E8F0; font-size: 0.875rem; resize: none;"></textarea>
+                        <textarea name="motivo" id="just-motivo" class="form-control text-dark bg-white" rows="3" placeholder="Ej. Presenta justificante médico..." style="border-radius: 0; border-color: #E2E8F0; font-size: 0.875rem; resize: none;"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer" style="background: #F8FAFC; border-top: 1px solid #E2E8F0; padding: 12px 20px;">
