@@ -817,7 +817,7 @@
 
 <div class="horarios-page-wrapper">
 
-    <!-- Page Header (Unified horizontal row, role badge, avatar removed) -->
+    <!-- Page Header -->
     <div class="horarios-page-header">
         <div class="horarios-header-left">
             <a href="{{ route('home') }}" class="btn-regresar">
@@ -826,12 +826,6 @@
             </a>
             <h1 class="page-heading">Horarios del Grupo</h1>
         </div>
-        
-        <!-- Institutional Soft Badge Role (Avatar removed) -->
-        <span class="badge-rol-coordinacion">
-            <i class="ti ti-shield-check"></i>
-            Coordinación Académica
-        </span>
     </div>
 
     <!-- Main 3-Panel Proportional Grid Layout -->
@@ -874,14 +868,6 @@
                     Horario del Grupo: <span id="selectedGroupName" class="group-clave-highlight">Ninguno</span>
                     <span id="selectedGroupNivel" class="badge-nivel ms-2" style="display:none;"></span>
                 </h3>
-                <div class="d-flex gap-2">
-                    <button class="btn-header-secondary" type="button">
-                        <i class="ti ti-user-check"></i>Vista del Docente
-                    </button>
-                    <button class="btn-header-primary" id="btnSaveChanges" type="button">
-                        <i class="ti ti-refresh"></i>Refrescar
-                    </button>
-                </div>
             </div>
 
             <!-- Progress Bar for Academic Level -->
@@ -3000,11 +2986,13 @@ document.addEventListener("DOMContentLoaded", function() {
     btnCancelEdit.addEventListener("click", clearForm);
     btnCloseEditPanel.addEventListener("click", clearForm);
 
-    btnSaveChanges.addEventListener("click", function() {
-        if (activeGroup) {
-            renderActiveGroupClasses();
-        }
-    });
+    if (btnSaveChanges) {
+        btnSaveChanges.addEventListener("click", function() {
+            if (activeGroup) {
+                renderActiveGroupClasses();
+            }
+        });
+    }
 
     function redrawCalendarGrid() {
         const cells = calendarBody.getElementsByClassName("cell-slot");
