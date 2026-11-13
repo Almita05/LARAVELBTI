@@ -492,4 +492,154 @@ class ListasAsistenciasController extends Controller
         $pdf = Pdf::loadView('listas_asistencias.pdf_formato', compact('materia', 'docente', 'grupo', 'alumnos'));
         return $pdf->stream('lista_asistencia.pdf');
     }
+
+    /**
+     * Acta de calificaciones (ordinario) del BTI.
+     * Docente, asignatura, examen y fechas se imprimen tal cual llegan; si vienen vacíos quedan en blanco.
+     */
+    public function generarPdfActaOrdinario(Request $request)
+    {
+        $request->validate([
+            'id_grupo' => 'required',
+            'fecha_examen' => 'nullable|date',
+            'fecha_entrega' => 'nullable|date',
+        ]);
+
+        $idGrupo = $request->get('id_grupo');
+        $mayus = fn($v) => mb_strtoupper(trim((string) $v), 'UTF-8');
+
+        $grupo = $this->grupoPorId($idGrupo);
+        $claveGrupo = $grupo->clave ?? $request->get('clave_grupo', '');
+
+        $fecha = function ($valor) {
+            if (!$valor) return '';
+            try { return Carbon::parse($valor)->format('d/m/Y'); } catch (\Throwable $e) { return ''; }
+        };
+
+        // Ciclo escolar según la fecha de examen (o la de hoy): ago-dic / feb-jul
+        $ref = $request->filled('fecha_examen') ? Carbon::parse($request->get('fecha_examen')) : Carbon::now();
+        $ciclo = $ref->month >= 8 ? "AGO-DIC {$ref->year}" : "FEB-JUL {$ref->year}";
+
+        $alumnos = $this->alumnosParaActa($idGrupo);
+
+        $pdf = Pdf::loadView('actas_ordinario.pdf_acta_ordinario', [
+            'grupo'        => $mayus($claveGrupo),
+            'docente'      => $mayus($request->get('docente_nombre', '')),
+            'asignatura'   => $mayus($request->get('materia', '')),
+            'examen'       => $mayus($request->get('examen', '')),
+            'fechaExamen'  => $fecha($request->get('fecha_examen')),
+            'fechaEntrega' => $fecha($request->get('fecha_entrega')),
+            'ciclo'        => $ciclo,
+            'alumnos'      => $alumnos,
+        ])->setPaper('letter', 'landscape');
+
+        $archivo = 'acta_ordinario_' . preg_replace('/[^A-Za-z0-9_-]+/', '_', (string) ($claveGrupo ?: $idGrupo)) . '.pdf';
+        return $pdf->stream($archivo);
+    }
+
+    /**
+     * Acta de calificaciones finales (ordinario) del BGNE, por trimestre ("módulo").
+     * Las fechas de inicio/fin llegan precalculadas desde el front (editables); la de entrega es manual.
+     */
+    public function generarPdfActaOrdinarioBgne(Request $request)
+    {
+        $request->validate([
+            'id_grupo' => 'required',
+            'trimestre' => 'nullable|integer|between:1,6',
+            'fecha_inicio' => 'nullable|date',
+            'fecha_fin' => 'nullable|date',
+            'fecha_entrega' => 'nullable|date',
+        ]);
+
+        $idGrupo = $request->get('id_grupo');
+        $mayus = fn($v) => mb_strtoupper(trim((string) $v), 'UTF-8');
+        $grupo = $this->grupoPorId($idGrupo);
+        $claveGrupo = $grupo->clave ?? $request->get('clave_grupo', '');
+
+        // "05 DE SEPTIEMBRE 2026", como en el formato en papel
+        $fechaLarga = function ($valor) use ($mayus) {
+            if (!$valor) return '';
+            try { return $mayus(Carbon::parse($valor)->locale('es')->translatedFormat('d \d\e F Y')); } catch (\Throwable $e) { return ''; }
+        };
+
+        // Sistema según la modalidad del grupo (SÁBADOS / DOMINGOS)
+        $modalidad = $mayus($grupo->modalidadHorario ?? $request->get('modalidad', ''));
+        $sistema = str_contains($modalidad, 'DOMINGO') ? 'DOMINGOS'
+            : ((str_contains($modalidad, 'SABADO') || str_contains($modalidad, 'SÁBADO')) ? 'SÁBADOS' : $modalidad);
+
+        // Logo propio del BGNE si existe; si no, el institucional
+        $logo = file_exists(public_path('img/logo_bgne.png')) ? 'img/logo_bgne.png' : 'img/logo.png';
+
+        $pdf = Pdf::loadView('actas_ordinario.pdf_acta_ordinario_bgne', [
+            'grupo'        => $mayus($claveGrupo),
+            'docente'      => $mayus($request->get('docente_nombre', '')),
+            'asignatura'   => $mayus($request->get('materia', '')),
+            'trimestre'    => $request->filled('trimestre') ? (int) $request->get('trimestre') : null,
+            'fechaInicio'  => $fechaLarga($request->get('fecha_inicio')),
+            'fechaFin'     => $fechaLarga($request->get('fecha_fin')),
+            'fechaEntrega' => $fechaLarga($request->get('fecha_entrega')),
+            'sistema'      => $sistema,
+            'logo'         => $logo,
+            'alumnos'      => $this->alumnosParaActa($idGrupo),
+        ])->setPaper('letter', 'landscape');
+
+        $archivo = 'acta_bgne_' . preg_replace('/[^A-Za-z0-9_-]+/', '_', (string) ($claveGrupo ?: $idGrupo)) . '.pdf';
+        return $pdf->stream($archivo);
+    }
+
+    /** Grupo por id (vía API). */
+    private function grupoPorId($idGrupo): ?object
+    {
+        try {
+            $res = \Illuminate\Support\Facades\Http::timeout(4)->get(config('services.api.base_url') . '/getGrupo/' . $idGrupo);
+            if ($res->successful()) {
+                return (object) ($res->json()['data'] ?? $res->json());
+            }
+        } catch (\Throwable $e) {}
+        return null;
+    }
+
+    /** Alumnos activos del grupo en mayúsculas, separados en apellidos/nombre y en orden alfabético. */
+    private function alumnosParaActa($idGrupo): array
+    {
+        $mayus = fn($v) => mb_strtoupper(trim((string) $v), 'UTF-8');
+        $alumnos = [];
+        foreach ($this->alumnosActivosGrupo($idGrupo) as $al) {
+            $al = (array) $al;
+            $fila = [
+                'apPaterno' => $mayus($al['apPaterno'] ?? $al['ap_paterno'] ?? ''),
+                'apMaterno' => $mayus($al['apMaterno'] ?? $al['ap_materno'] ?? ''),
+                'nombre'    => $mayus($al['nombre'] ?? ''),
+            ];
+            if ($fila['apPaterno'] . $fila['apMaterno'] . $fila['nombre'] !== '') {
+                $alumnos[] = $fila;
+            }
+        }
+
+        // Orden alfabético ignorando acentos (JIMENEZ y JIMÉNEZ quedan juntos)
+        $clave = fn($a) => strtr("{$a['apPaterno']} {$a['apMaterno']} {$a['nombre']}",
+            ['Á' => 'A', 'É' => 'E', 'Í' => 'I', 'Ó' => 'O', 'Ú' => 'U', 'Ü' => 'U', 'Ñ' => 'N~']);
+        usort($alumnos, fn($a, $b) => strcmp($clave($a), $clave($b)));
+        return $alumnos;
+    }
+
+    /** Alumnos activos de un grupo (vía API). */
+    private function alumnosActivosGrupo($idGrupo): array
+    {
+        try {
+            $res = \Illuminate\Support\Facades\Http::timeout(4)->get(config('services.api.base_url') . '/alumnos_by_grupo/' . $idGrupo);
+            if ($res->successful()) {
+                $json = $res->json();
+                $lista = array_values(array_filter($json['data'] ?? $json ?? [], function ($item) {
+                    $item = (array) $item;
+                    return strtoupper($item['statusAlumno'] ?? $item['status'] ?? 'ACTIVO') === 'ACTIVO';
+                }));
+                return $lista;
+            }
+            \Illuminate\Support\Facades\Log::warning("alumnos_by_grupo/{$idGrupo} respondió HTTP {$res->status()}");
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("alumnos_by_grupo/{$idGrupo}: " . $e->getMessage());
+        }
+        return [];
+    }
 }

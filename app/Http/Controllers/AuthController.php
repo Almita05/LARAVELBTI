@@ -2,132 +2,170 @@
 
 namespace App\Http\Controllers;
 
-use App\Repositories\UserRepository;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Http;
+use App\Models\User;
+use App\Services\RestablecerPasswordService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rules\Password;
 
+/**
+ * Autenticación. Todas las fuentes se consultan vía API (nunca la BD directa) y la contraseña
+ * se verifica dentro de la API: el hash nunca llega a Laravel.
+ *
+ * Orden: tb_users (Auth::attempt con ApiUserProvider) → docentes → personal.
+ * Si el usuario existe en una fuente pero la contraseña no coincide, se siguen revisando las demás
+ * (cuentas antiguas con el mismo nombre en dos tablas ya no se bloquean entre sí).
+ */
 class AuthController extends Controller
 {
-    public function test(UserRepository $users)
-{
-    $usuario = $users->findByUsername('admin');
+    /**
+     * Destino tras el login según el rol de tb_users.
+     * Hoy ambos dashboards son /home (DashboardController); si se crea un dashboard
+     * de supervisión propio, basta con cambiar RUTA_SUPERVISION.
+     */
+    private const RUTA_SUPERVISION = 'home';
+    private const RUTA_ESCUELA = 'home';
 
-    dd($usuario['Password']);
-}
+    public function showLogin()
+    {
+        return view('auth.login');
+    }
 
-
-
-public function showLogin()
-{
-    return view('auth.login');
-}
-
-
-
-     public function login(Request $request, UserRepository $users)
-{
-    $usernameInput = trim($request->usuario);
-
-    // 1. Intentar autenticar como Administrador / Google Sheet User
-    $usuario = $users->findByUsername($usernameInput);
-
-    if ($usuario) {
-        if ($usuario['Estado'] != 'Activo') {
-            return back()->with('error','Usuario inactivo');
-        }
-
-        if (!Hash::check($request->password, $usuario['Password'])) {
-            return back()->with('error','Contraseña incorrecta');
-        }
-
-        session([
-            'usuario_id' => $usuario['ID'],
-            'usuario' => $usuario['Usuario'],
-            'nombre' => $usuario['Nombre'],
-            'rol' => $usuario['Rol'] ?? 'ADMIN'
+    public function login(Request $request)
+    {
+        $request->validate([
+            'usuario' => 'required|string|max:100',
+            'password' => 'required|string|max:255',
         ]);
 
-        return redirect('/home');
-    }
+        $usuario = trim($request->usuario);
+        $password = (string) $request->password;
+        $api = config('services.api.base_url');
 
-    // 2. Intentar autenticar como Docente en MySQL
-    $urlDocente = config('services.api.base_url') . '/docentes/by-username/' . urlencode($usernameInput);
-    $resDocente = Http::get($urlDocente);
+        $passwordIncorrecta = false;
+        $bloqueo = null;
 
-    if ($resDocente->successful()) {
-        $docenteData = $resDocente->json()['data'] ?? null;
-
-        if ($docenteData) {
-            if (($docenteData['statusDocente'] ?? '') !== 'ACTIVO') {
-                return back()->with('error', 'El docente se encuentra inactivo');
+        try {
+            // 1. Usuarios administrativos (tb_users)
+            $res = Http::timeout(5)->get("{$api}/usuarios/by-username/" . rawurlencode($usuario));
+            if ($res->successful()) {
+                if (!$res->json('data.activo')) {
+                    $bloqueo = 'Usuario inactivo';
+                } elseif (Auth::attempt(['usuario' => $usuario, 'password' => $password, 'activo' => true])) {
+                    return $this->iniciarSesionAdministrativa($request);
+                } else {
+                    $passwordIncorrecta = true;
+                }
             }
 
-            if (empty($docenteData['password'])) {
-                return back()->with('error', 'Esta cuenta aún no tiene contraseña asignada');
+            // 2. Docentes
+            $res = Http::timeout(8)->post("{$api}/docentes/login", ['usuario' => $usuario, 'password' => $password]);
+            if ($res->successful() && ($d = $res->json('data'))) {
+                $request->session()->regenerate();
+                session([
+                    'origen' => 'docente',
+                    'usuario_id' => $d['idDocente'],
+                    'usuario' => $d['usuario'] ?: $d['correoDocente'],
+                    'nombre' => trim(($d['nombreDocente'] ?? '') . ' ' . ($d['apPaternoDocente'] ?? '') . ' ' . ($d['apMaternoDocente'] ?? '')),
+                    'rol' => 'DOCENTE',
+                    'id_docente' => $d['idDocente'],
+                    'modulos' => $d['permisos_modulos'] ?? 'horarios,pendientes,grupos',
+                ]);
+                return redirect('/home');
             }
+            [$passwordIncorrecta, $bloqueo] = $this->acumular($res, $passwordIncorrecta, $bloqueo);
 
-            if (!Hash::check($request->password, $docenteData['password'])) {
-                return back()->with('error', 'Contraseña incorrecta');
+            // 3. Personal
+            $res = Http::timeout(8)->post("{$api}/personal/login", ['usuario' => $usuario, 'password' => $password]);
+            if ($res->successful() && ($p = $res->json('data'))) {
+                $request->session()->regenerate();
+                session([
+                    'origen' => 'personal',
+                    'usuario_id' => $p['idPersonal'],
+                    'usuario' => $p['usuario'],
+                    'nombre' => $p['nombre'],
+                    'rol' => 'PERSONAL',
+                    'rol_nombre' => $p['rol'],
+                    // Sin permisos asignados = sin módulos (ya no se otorgan permisos por defecto)
+                    'modulos' => (string) ($p['permisos_modulos'] ?? ''),
+                ]);
+                return redirect('/home');
             }
-
-            $nombreCompleto = trim(($docenteData['nombreDocente'] ?? '') . ' ' . ($docenteData['apPaternoDocente'] ?? '') . ' ' . ($docenteData['apMaternoDocente'] ?? ''));
-
-            session([
-                'usuario_id' => $docenteData['idDocente'],
-                'usuario' => $docenteData['usuario'] ?: $docenteData['correoDocente'],
-                'nombre' => $nombreCompleto,
-                'rol' => 'DOCENTE',
-                'id_docente' => $docenteData['idDocente'],
-                'modulos' => $docenteData['permisos_modulos'] ?? 'horarios,pendientes,grupos'
-            ]);
-
-            return redirect('/home');
+            [$passwordIncorrecta, $bloqueo] = $this->acumular($res, $passwordIncorrecta, $bloqueo);
+        } catch (\Throwable $e) {
+            Log::error('Login: no se pudo contactar la API: ' . $e->getMessage());
+            return back()->withInput($request->only('usuario'))
+                ->with('error', 'No se pudo conectar con el servidor. Intenta de nuevo en unos minutos.');
         }
+
+        // Mensaje genérico ante contraseña incorrecta o usuario inexistente (no revela qué cuentas existen)
+        $mensaje = $passwordIncorrecta ? 'Usuario o contraseña incorrectos' : ($bloqueo ?? 'Usuario o contraseña incorrectos');
+        return back()->withInput($request->only('usuario'))->with('error', $mensaje);
     }
 
-    // 3. Intentar autenticar como Personal en MySQL
-    $urlPersonal = config('services.api.base_url') . '/personal/by-username/' . urlencode($usernameInput);
-    $resPersonal = Http::get($urlPersonal);
+    /** 401 = contraseña incorrecta; 403 = cuenta bloqueada (inactiva / sin contraseña); 404 = no existe. */
+    private function acumular($res, bool $passwordIncorrecta, ?string $bloqueo): array
+    {
+        if ($res->status() === 401) $passwordIncorrecta = true;
+        if ($res->status() === 403) $bloqueo ??= $res->json('error');
+        return [$passwordIncorrecta, $bloqueo];
+    }
 
-    if ($resPersonal->successful()) {
-        $personalData = $resPersonal->json()['data'] ?? null;
+    private function iniciarSesionAdministrativa(Request $request)
+    {
+        $request->session()->regenerate(); // evita fijación de sesión
 
-        if ($personalData) {
-            if (($personalData['status'] ?? '') !== 'ACTIVO') {
-                return back()->with('error', 'La cuenta de personal se encuentra inactiva');
-            }
+        /** @var User $user */
+        $user = Auth::user();
 
-            if (empty($personalData['password'])) {
-                return back()->with('error', 'Esta cuenta aún no tiene contraseña asignada');
-            }
+        // El resto de la app (middleware auth.session, has_perm, menú) lee estas variables
+        session([
+            'origen' => 'usuarios',
+            'usuario_id' => $user->id,
+            'usuario' => $user->usuario,
+            'nombre' => $user->name,
+            'rol' => $user->esAdmin() ? 'ADMIN' : strtoupper((string) $user->rol),
+        ]);
 
-            if (!Hash::check($request->password, $personalData['password'])) {
-                return back()->with('error', 'Contraseña incorrecta');
-            }
+        return $user->rol === User::ROL_ADMIN
+            ? redirect()->route(self::RUTA_SUPERVISION)
+            : redirect()->route(self::RUTA_ESCUELA);
+    }
 
-            session([
-                'usuario_id' => $personalData['idPersonal'],
-                'usuario' => $personalData['usuario'],
-                'nombre' => $personalData['nombre'],
-                'rol' => 'PERSONAL',
-                'rol_nombre' => $personalData['rol'],
-                'modulos' => $personalData['permisos_modulos'] ?? 'inicio,notificaciones,alumnos,docentes,grupos,materias,planes,formatos,generaciones'
-            ]);
+    /**
+     * Restablece la contraseña de una cuenta de tb_users (ruta protegida con solo.admin).
+     * Si la cuenta destino es admin, además se exige `correo_maestro` = MASTER_RECOVERY_EMAIL.
+     * Para un admin sin acceso al sistema: `php artisan usuarios:restablecer-password`.
+     */
+    public function restablecerPassword(Request $request, RestablecerPasswordService $servicio)
+    {
+        $datos = $request->validate([
+            'usuario' => 'required|string|max:100',
+            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
+            'correo_maestro' => 'nullable|string|email|max:255',
+        ]);
 
-            return redirect('/home');
+        $cuenta = $servicio->buscar($datos['usuario']);
+        if (!$cuenta) {
+            return response()->json(['success' => false, 'message' => 'El usuario no existe.'], 404);
         }
+
+        $servicio->restablecer($cuenta, $datos['password'], $datos['correo_maestro'] ?? null, 'web:' . session('usuario'));
+
+        return $request->expectsJson()
+            ? response()->json(['success' => true, 'message' => 'Contraseña restablecida correctamente.'])
+            : back()->with('success', 'Contraseña restablecida correctamente.');
     }
 
-    return back()->with('error','Usuario no encontrado');
-}
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->flush();      // Borra todas las variables de sesión
+        $request->session()->invalidate(); // Invalida la sesión
+        $request->session()->regenerateToken();
 
-   public function logout(Request $request)
-{
-    $request->session()->flush();      // Borra todas las variables de sesión
-    $request->session()->invalidate(); // Invalida la sesión
-    $request->session()->regenerateToken();
-
-    return redirect('/login');
-}
+        return redirect('/login');
+    }
 }

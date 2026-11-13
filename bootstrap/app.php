@@ -13,8 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
 
         $middleware->alias([
-            'auth.session' => \App\Http\Middleware\AuthSession::class,
-    'docente.admin' => \App\Http\Middleware\DocenteOAdmin::class,
+            'auth.session'  => \App\Http\Middleware\AuthSession::class,
+            'docente.admin' => \App\Http\Middleware\DocenteOAdmin::class,
+            'permiso'       => \App\Http\Middleware\Permiso::class,
+            'sin.docente'   => \App\Http\Middleware\SinDocente::class,
+            'solo.admin'    => \App\Http\Middleware\SoloAdmin::class,
         ]);
 
     })

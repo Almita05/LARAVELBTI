@@ -6,9 +6,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use App\Services\MoodleService;
+use App\Services\HistorialAlumnoService;
 
 class AlumnoController extends Controller
 {
+    /** Historial de cambios del alumno (línea del tiempo). */
+    public function historial($id, HistorialAlumnoService $historial)
+    {
+        try {
+            return response()->json(['success' => true, 'data' => $historial->listar($id)]);
+        } catch (\Throwable $e) {
+            \Log::error("Historial del alumno {$id}: " . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'No se pudo consultar el historial del alumno.'], 500);
+        }
+    }
+
      public function index()
 {
     $url = config('services.api.base_url') . '/generaciones';
@@ -199,7 +211,11 @@ public function update(Request $request, $id)
 {
     $request->merge(json_decode($request->getContent(), true));
     \Log::info('Update request payload ID ' . $id . ':', $request->all());
-    
+
+    // Para el historial: estado del alumno antes de guardar
+    $historial = app(HistorialAlumnoService::class);
+    $antes = $historial->snapshot($id);
+
     $url = config('services.api.base_url') . '/updateAlumno/' . $id;
     
     $response = Http::withHeaders([
@@ -254,6 +270,8 @@ public function update(Request $request, $id)
             'message' => 'Error en la base de datos: ' . $resData['error']
         ], 400);
     }
+
+    $historial->registrarDiferencias($id, $antes, $historial->snapshot($id));
 
     return response()->json([
         'success' => true,
@@ -342,6 +360,8 @@ public function cambiarModalidadOnline(Request $request, $id, MoodleService $moo
 {
     $url = config('services.api.base_url') . '/alumnos/' . $id . '/modalidad-online';
     $payload = $request->json()->all() ?: $request->all();
+    $historial = app(HistorialAlumnoService::class);
+    $antes = $historial->snapshot($id);
 
     $response = Http::withHeaders([
         'Accept' => 'application/json',
@@ -351,6 +371,8 @@ public function cambiarModalidadOnline(Request $request, $id, MoodleService $moo
     if ($response->failed()) {
         return response()->json($response->json(), $response->status());
     }
+
+    $historial->registrarDiferencias($id, $antes, $historial->snapshot($id));
 
     $resData = $response->json();
 
@@ -380,11 +402,17 @@ public function cambiarModalidadOnline(Request $request, $id, MoodleService $moo
 public function cambiarModalidadPresencial($id, MoodleService $moodleService)
 {
     $url = config('services.api.base_url') . '/alumnos/' . $id . '/modalidad-presencial';
+    $historial = app(HistorialAlumnoService::class);
+    $antes = $historial->snapshot($id);
 
     $response = Http::withHeaders([
         'Accept' => 'application/json',
         'Content-Type' => 'application/json'
     ])->post($url);
+
+    if ($response->successful()) {
+        $historial->registrarDiferencias($id, $antes, $historial->snapshot($id));
+    }
 
     // Suspender acceso del alumno en Moodle mientras esté en modalidad presencial
     try {

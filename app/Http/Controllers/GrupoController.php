@@ -77,6 +77,36 @@ class GrupoController extends Controller
 
     public function saveAsistenciasSemestre(Request $request, $id_grupo)
     {
+        // Asistencias: enteros >= 0, nunca más que las clases impartidas
+        $request->validate([
+            'id_nivel_academico' => 'required|integer|between:1,12',
+            'asistencias' => 'required|array',
+            'asistencias.*.idAlumno' => 'required|integer',
+            'asistencias.*.total_asistencias' => 'nullable|integer|min:0|max:999',
+            'asistencias.*.asistencias' => 'nullable|integer|min:0|max:999',
+        ], [
+            'asistencias.*.total_asistencias.integer' => 'Las clases impartidas deben ser un número entero.',
+            'asistencias.*.total_asistencias.min' => 'Las clases impartidas no pueden ser negativas.',
+            'asistencias.*.total_asistencias.max' => 'Las clases impartidas no pueden ser más de 999.',
+            'asistencias.*.asistencias.integer' => 'Las asistencias deben ser un número entero.',
+            'asistencias.*.asistencias.min' => 'Las asistencias no pueden ser negativas.',
+            'asistencias.*.asistencias.max' => 'Las asistencias no pueden ser más de 999.',
+        ]);
+
+        $errores = [];
+        foreach ($request->input('asistencias') as $i => $fila) {
+            $tot = $fila['total_asistencias'] ?? null;
+            $asist = $fila['asistencias'] ?? null;
+            if ($asist !== null && $tot === null) {
+                $errores["asistencias.$i.asistencias"] = 'Hay asistencias capturadas sin clases impartidas.';
+            } elseif ($asist !== null && (int) $asist > (int) $tot) {
+                $errores["asistencias.$i.asistencias"] = "Las asistencias ({$asist}) no pueden ser más que las clases impartidas ({$tot}).";
+            }
+        }
+        if ($errores) {
+            throw \Illuminate\Validation\ValidationException::withMessages($errores);
+        }
+
         $payload = $request->all();
         $payload['user'] = session('nombre') ?: session('usuario') ?: 'SISTEMA';
         $url = config('services.api.base_url') . '/grupos/' . $id_grupo . '/asistencias-semestre';

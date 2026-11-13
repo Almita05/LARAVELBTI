@@ -62,9 +62,9 @@ return [
     */
 
     'providers' => [
+        // Usuarios administrativos (tb_users) a través de la API Flask — ver App\Auth\ApiUserProvider
         'users' => [
-            'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', User::class),
+            'driver' => 'api',
         ],
 
         // 'users' => [
@@ -113,5 +113,18 @@ return [
     */
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Correo maestro de recuperación
+    |--------------------------------------------------------------------------
+    |
+    | Requisito adicional para restablecer la contraseña de una cuenta con rol
+    | "admin". Se lee aquí (y no con env() en el controlador) para que siga
+    | funcionando con `php artisan config:cache` en producción.
+    |
+    */
+
+    'master_recovery_email' => env('MASTER_RECOVERY_EMAIL'),
 
 ];

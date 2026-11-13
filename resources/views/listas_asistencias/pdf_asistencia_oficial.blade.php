@@ -3,321 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <title>Lista de Asistencia - {{ $grupo }}</title>
+@php
+    /*
+     * Solo cálculos de presentación: las fechas llegan ya calculadas desde el
+     * controlador (columnasFechas / mesesAgrupados) y aquí no se modifican.
+     *
+     * Geometría (carta horizontal): 279.4mm - 2 x 9mm de margen = 261mm útiles.
+     * Todas las columnas de fecha reciben exactamente el mismo ancho, sin importar
+     * si el día tiene 1 o 2 dígitos; el nombre del alumno absorbe el sobrante.
+     */
+    $esEscolarizado = $isEscolarizado ?? false;
+    $totalCols = max(1, count($columnasFechas));
+
+    $anchoUtil = 261;
+    // dompdf no aplica border-box en celdas: suma bordes y padding al ancho declarado.
+    $bordeCol = 0.34; // bordes de 0.75pt
+    $anchoTabla = $anchoUtil - ($totalCols + 2) * $bordeCol - 4.5;
+    $anchoNum = 7;
+    $anchoNombreMin = 72;
+    $anchoFecha = floor(min(13, ($anchoTabla - $anchoNum - $anchoNombreMin) / $totalCols) * 100) / 100;
+    $anchoNombre = $anchoTabla - $anchoNum - ($anchoFecha * $totalCols);
+
+    // Fila de evaluaciones (P.1 / P.2): se agrupan columnas consecutivas iguales
+    $segmentosEval = [];
+    $hayEval = false;
+    foreach ($columnasFechas as $f) {
+        $ev = $f['eval'] ?? null;
+        if ($ev) $hayEval = true;
+        $last = count($segmentosEval) - 1;
+        if ($last >= 0 && $segmentosEval[$last]['eval'] === $ev) {
+            $segmentosEval[$last]['colspan']++;
+        } else {
+            $segmentosEval[] = ['eval' => $ev, 'colspan' => 1];
+        }
+    }
+    $mostrarEval = !$esEscolarizado && $hayEval;
+
+    // Clases por columna: viernes (cierre de semana) y columnas de evaluación
+    $clasesCol = [];
+    foreach ($columnasFechas as $i => $f) {
+        $clasesCol[$i] = trim(
+            (($f['letra_dia'] ?? '') === 'V' ? 'vie ' : '') .
+            (!empty($f['eval']) ? 'eval' : '')
+        );
+    }
+
+    $modalidadLabel = $esEscolarizado
+        ? 'Escolarizado'
+        : ((($columnasFechas[0]['letra_dia'] ?? '') === 'D') ? 'Dominical' : 'Sabatino');
+
+    // Alto de fila adaptable: el padding vertical (máx. 6px) se reduce lo necesario
+    // para que todas las filas + firmas quepan en una sola hoja.
+    // Calibrado sobre el render real de dompdf: una fila sin padding mide ~4.9mm.
+    $altoDisponible = $mostrarEval ? 111 : 117;            // mm para el cuerpo de la tabla
+    $altoFila = $altoDisponible / max(1, count($alumnos));
+    $padV = round(max(0.2, min(1.6, ($altoFila - 4.9) / 2)), 2); // 1.6mm ≈ 6px
+    // Con muchas filas la celda de asistencia baja de 18px a ~4.2mm para conservar una sola hoja
+    $filasApretadas = ($altoFila - 4.9) / 2 < 0.3;
+
+    // Nombre en una sola línea (nowrap): si no cabe a 8.5pt se reduce la fuente
+    // para que dompdf no ensanche la columna y saque la tabla de la hoja.
+    $fuenteNombre = function ($nombre) use (&$anchoNombre) {
+        $len = mb_strlen($nombre ?? "");
+        if ($len === 0) return null;
+        $pt = ($anchoNombre - 5) / ($len * 0.64 * 0.3528);
+        return $pt >= 8.5 ? null : max(6, floor($pt * 10) / 10);
+    };
+    $compacto = $padV < 1.6;
+@endphp
     <style>
         @page {
             size: letter landscape;
-            margin: 4mm 6mm 4mm 6mm;
+            margin: 8mm 9mm 7mm 9mm;
         }
 
-        * {
-            box-sizing: border-box;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
+        @include('pdf.partials.estilos-base')
+
+        /* ---------- Tabla de asistencia ---------- */
+        .grid {
+            width: {{ $anchoTabla }}mm;
         }
 
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #000;
-            background: #fff;
-            font-size: 7.2pt;
-            line-height: 1.15;
-        }
-
-        .header-container {
-            width: 100%;
-            margin-bottom: 2px;
-            position: relative;
-        }
-
-        .school-title {
-            text-align: center;
-            font-size: 11.5pt;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            margin: 0;
-            color: #000;
-        }
-
-        .sheet-title {
-            text-align: center;
-            font-size: 9.5pt;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            margin: 1px 0 0 0;
-            color: #000;
-        }
-
-        .logo-box {
-            position: absolute;
-            right: 0;
-            top: -2px;
-            width: 55px;
-            text-align: right;
-        }
-
-        .logo-img {
-            height: 42px;
-            object-fit: contain;
-        }
-
-        /* Metadatos (Docente, Asignatura, Grupo) */
-        .meta-table {
-            width: 60%;
-            border-collapse: separate;
-            border-spacing: 0 1.5px;
-            margin-top: 2px;
-            margin-bottom: 4px;
-            font-size: 7.2pt;
-        }
-
-        .meta-label {
-            font-weight: bold;
-            text-transform: uppercase;
-            padding-right: 5px;
-            width: 18%;
-            vertical-align: middle;
-            font-size: 7pt;
-        }
-
-        .meta-val-box {
-            border: 1px solid #000;
-            padding: 1.5px 6px;
-            background: #fff;
-            text-transform: uppercase;
-            font-weight: 600;
-            font-size: 7.2pt;
-            border-radius: 2px;
-        }
-
-        /* Tabla de Asistencia */
-        .attendance-grid {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1px;
-            font-size: 6.5pt;
-        }
-
-        .attendance-grid th, 
-        .attendance-grid td {
-            border: 0.8px solid #000;
-            padding: 1px 1px;
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        .th-num {
-            background-color: #dae3f3;
-            color: #000;
-            font-weight: bold;
-            font-size: 6.8pt;
-            width: 16px;
-        }
-
-        .th-alumnos {
-            background-color: #dae3f3;
-            color: #000;
-            font-weight: bold;
-            font-size: 7.2pt;
-            text-align: center;
-            width: {{ ($isEscolarizado ?? false) ? '175px' : '230px' }};
-        }
-
-        .th-mes {
-            background-color: #dae3f3;
-            font-weight: bold;
-            font-size: 6.5pt;
-            text-transform: uppercase;
-            padding: 1.5px 1px;
-        }
-
-        .th-dia {
-            font-weight: bold;
-            font-size: 6.2pt;
-            background-color: #f2f2f2;
-            height: 12px;
-        }
-
-        .th-letra {
-            font-weight: bold;
-            font-size: 5.8pt;
-            background-color: #ffffff;
-            height: 11px;
-        }
-
-        .eval-highlight {
-            background-color: #b4c6e7 !important;
-            font-weight: bold;
-        }
-
-        .td-num {
-            font-size: 6.2pt;
-            font-weight: bold;
-            width: 16px;
-        }
-
-        .td-alumno-nombre {
-            text-align: left !important;
-            padding-left: 4px !important;
-            font-size: 6.5pt;
-            height: 13.5px;
-            white-space: nowrap;
+        .grid th,
+        .grid td {
             overflow: hidden;
-            text-overflow: ellipsis;
-            text-transform: uppercase;
+            padding: 0;               /* dompdf aplica 1px por defecto y desborda la hoja */
+            vertical-align: middle;
         }
 
-        .td-check-cell {
-            height: 13.5px;
+        .col-num { width: {{ $anchoNum }}mm; }
+        .col-nombre { width: {{ $anchoNombre }}mm; }
+        .col-fecha { width: {{ $anchoFecha }}mm; }
+
+        .grid thead th.th-nombre {
+            text-align: left;
+            padding-left: 8px;
         }
 
-        .eval-badge-cell {
-            background-color: #8ea9db;
-            color: #000;
-            border: 1px solid #000;
-            text-align: center;
-            padding: 1px 0;
-            font-size: 6.8pt;
-            font-weight: 800;
+        .grid thead th.th-secundario { height: 4.2mm; padding: 2px 0; }
+        .grid tbody td.td-check { min-width: 0; padding: 0; }
+        .grid tbody td.td-num { padding-left: 4px; padding-right: 4px; }
+        .grid tbody td.td-nombre { padding-left: 8px; padding-right: 8px; }
+        .grid thead th.th-primario { padding-top: 4px; padding-bottom: 4px; }
+        .grid thead th.th-nombre { padding-left: 8px; }
+
+        .grid thead th.th-secundario.eval,
+        .grid tbody td.eval {
+            background-color: #FFFDF5;
         }
 
-        /* Firmas */
-        .footer-signatures {
-            width: 100%;
-            margin-top: 16px;
+
+        .grid tbody td.td-num,
+        .grid tbody td.td-nombre { padding-top: {{ $padV }}mm; padding-bottom: {{ $padV }}mm; }
+
+        .grid thead th.th-mes { padding: 4px 0; }
+        .grid thead th.th-mes.angosto { font-size: 6pt; padding: 4px 0; }
+
+        @if($filasApretadas)
+        .grid tbody td.td-check { height: 4.2mm; }
+        .grid tbody td.td-num,
+        .grid tbody td.td-nombre { padding-top: 0; padding-bottom: 0; }
+        @endif
+
+        /* Detalle: cierre de semana más visible */
+        .grid .vie { border-right: 1.3pt solid #0F172A; }
+
+        /* Franja de evaluaciones alineada con las columnas de fecha */
+        .eval-strip {
+            width: {{ $anchoUtil }}mm;
             border-collapse: collapse;
-            font-size: 6.8pt;
+            margin-bottom: 2px;
         }
 
-        .sig-space {
-            height: 48px;
+        .eval-strip td {
+            padding: 0;
+            height: 4.4mm;
+            text-align: center;
+            vertical-align: middle;
         }
 
-        .sig-line {
-            border-top: 1px solid #000;
-            width: 65%;
-            margin: 0 auto 3px auto;
+        .eval-strip td.eval-badge {
+            background-color: #FFFFFF;
+            color: #92400E;
+            border: 0.75pt solid #B45309;
+            font-family: 'Inter SemiBold', 'Inter', sans-serif;
+            font-size: 7pt;
+            letter-spacing: 0.05em;
         }
+
+        .pdf-firmas { margin-top: {{ $compacto ? '7mm' : '12mm' }}; }
     </style>
 </head>
 <body>
 
-@php
-    $logoPath = public_path('img/logo.png');
-    $logoBase64 = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
-@endphp
+@include('pdf.partials.encabezado', [
+    'titulo' => 'Bachillerato Tecnológico Interamericano',
+    'subtitulo' => 'Lista de Asistencia',
+    'badge' => trim(($cct ?? '') . ' - ' . $modalidadLabel, ' -'),
+])
 
-<div class="header-container">
-    @if($logoBase64)
-        <div class="logo-box">
-            <img src="{{ $logoBase64 }}" class="logo-img" alt="Logo">
-        </div>
-    @endif
-    <h1 class="school-title">Bachillerato Tecnológico Interamericano</h1>
-    <h2 class="sheet-title">Lista de Asistencia</h2>
-</div>
+@include('pdf.partials.metadatos', ['items' => [
+    'Docente' => $docente,
+    'Asignatura' => $asignatura,
+    'Grupo' => $grupo,
+]])
 
-<!-- Metadatos de la clase -->
-<table class="meta-table">
-    <tr>
-        <td class="meta-label">Docente :</td>
-        <td class="meta-val-box">{{ $docente }}</td>
-    </tr>
-    <tr>
-        <td class="meta-label">Asignatura :</td>
-        <td class="meta-val-box">{{ $asignatura }}</td>
-    </tr>
-    <tr>
-        <td class="meta-label">Grupo :</td>
-        <td class="meta-val-box">{{ $grupo }}</td>
-    </tr>
-</table>
+@if($mostrarEval)
+    <table class="eval-strip">
+        <tr>
+            <td style="width: {{ $anchoUtil - $totalCols * ($anchoFecha + $bordeCol) }}mm;"></td>
+            @foreach($segmentosEval as $seg)
+                <td class="{{ $seg['eval'] ? 'eval-badge' : '' }}" style="width: {{ $seg['colspan'] * ($anchoFecha + $bordeCol) }}mm;">{{ $seg['eval'] ?? '' }}</td>
+            @endforeach
+        </tr>
+    </table>
+@endif
 
-<!-- Tabla de Asistencia -->
-<table class="attendance-grid">
+<table class="pdf-table grid">
     <thead>
-        @if(!($isEscolarizado ?? false) && collect($columnasFechas)->contains(fn($f) => !empty($f['eval'])))
-            <!-- Fila de evaluaciones P.1 y P.2 solo para sabatino/dominical -->
-            <tr>
-                <th style="border: none; background: transparent;" colspan="2"></th>
-                @foreach($columnasFechas as $f)
-                    @if($f['eval'])
-                        <th class="eval-badge-cell" style="border: 1px solid #000; background-color: #b4c6e7;">
-                            {{ $f['eval'] }}
-                        </th>
-                    @else
-                        <th style="border: none; background: transparent; height: 11px;"></th>
-                    @endif
-                @endforeach
-            </tr>
-        @endif
-
-        <!-- Fila 1: Meses agrupados -->
         <tr>
-            <th class="th-num" rowspan="3">#</th>
-            <th class="th-alumnos" rowspan="3">NOMBRE DEL ALUMNO</th>
+            <th class="th-primario col-num" rowspan="3">#</th>
+            <th class="th-primario th-nombre col-nombre" rowspan="3">Nombre del alumno</th>
             @foreach($mesesAgrupados as $m)
-                <th class="th-mes" colspan="{{ $m['colspan'] }}">
-                    {{ $m['mes'] }}
-                </th>
+                @php $anchoMes = $m['colspan'] * $anchoFecha; @endphp
+                {{-- Un mes con 1-2 columnas no cabe completo: se reduce o se omite para no ensanchar la tabla --}}
+                <th class="th-primario th-mes {{ $anchoMes < 9 ? 'angosto' : '' }}" colspan="{{ $m['colspan'] }}">{{ $anchoMes >= 6 ? $m['mes'] : '' }}</th>
             @endforeach
         </tr>
-
-        <!-- Fila 2: Días del mes -->
         <tr>
-            @foreach($columnasFechas as $f)
-                <th class="th-dia {{ $f['eval'] ? 'eval-highlight' : '' }}">
-                    {{ $f['dia'] }}
-                </th>
+            @foreach($columnasFechas as $i => $f)
+                <th class="th-secundario col-fecha {{ $clasesCol[$i] }}">{{ $f['dia'] }}</th>
             @endforeach
         </tr>
-
-        <!-- Fila 3: Letra del día (L, M, M, J, V / S / D) -->
         <tr>
-            @foreach($columnasFechas as $f)
-                <th class="th-letra {{ $f['eval'] ? 'eval-highlight' : '' }}">
-                    {{ $f['letra_dia'] }}
-                </th>
+            @foreach($columnasFechas as $i => $f)
+                <th class="th-secundario col-fecha {{ $clasesCol[$i] }}">{{ $f['letra_dia'] }}</th>
             @endforeach
         </tr>
     </thead>
     <tbody>
-        @foreach($alumnos as $idx => $al)
+        @foreach($alumnos as $al)
             <tr>
-                <td class="td-num">{{ $al['num'] }}</td>
-                <td class="td-alumno-nombre">
-                    @if(!empty($al['nombre']))
-                        {{ $al['nombre'] }}
-                    @else
-                        &nbsp;
-                    @endif
+                <td class="td-num col-num">{{ $al['num'] }}</td>
+                @php $fs = $fuenteNombre($al['nombre'] ?? ''); @endphp
+                <td class="td-nombre col-nombre"@if($fs) style="font-size: {{ $fs }}pt;"@endif>
+                    @if(!empty($al['nombre'])){{ $al['nombre'] }}@else&nbsp;@endif
                 </td>
-                @foreach($columnasFechas as $f)
-                    <td class="td-check-cell"></td>
+                @foreach($columnasFechas as $i => $f)
+                    <td class="td-check col-fecha {{ $clasesCol[$i] }}"></td>
                 @endforeach
             </tr>
         @endforeach
     </tbody>
 </table>
 
-<!-- Firmas al pie con amplio espacio para firma física y sello -->
-<table class="footer-signatures">
+<table class="pdf-firmas">
     <tr>
-        <td style="width: 42%; text-align: center; vertical-align: bottom;">
-            <div class="sig-space"></div>
-            <div class="sig-line"></div>
-            <strong>Firma del Docente</strong><br>
-            <span style="font-size: 6.5pt; color: #222;">{{ $docente }}</span>
+        <td style="width: 40%;">
+            <div class="firma-linea"></div>
+            <div class="firma-rol">Firma del Docente</div>
+            <div class="firma-detalle">{{ $docente }}</div>
         </td>
-        <td style="width: 16%;"></td>
-        <td style="width: 42%; text-align: center; vertical-align: bottom;">
-            <div class="sig-space"></div>
-            <div class="sig-line"></div>
-            <strong>Control Escolar / Dirección</strong><br>
-            <span style="font-size: 6.5pt; color: #222;">Sello y Firma de Validación</span>
+        <td style="width: 20%;"></td>
+        <td style="width: 40%;">
+            <div class="firma-linea"></div>
+            <div class="firma-rol">Control Escolar / Dirección</div>
+            <div class="firma-detalle">Sello y firma de validación</div>
         </td>
     </tr>
 </table>
