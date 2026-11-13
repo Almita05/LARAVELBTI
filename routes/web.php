@@ -128,6 +128,9 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () use ($FO
         Route::get('/reportes/constancia-estudios-bti/{id}/datos', [ConstanciaEstudiosController::class, 'datosBti'])
             ->where('id', '[0-9]+')->name('reportes.constancia_bti_datos');
         Route::get('/reportes/constancia-estudios-bti-pdf', [ConstanciaEstudiosController::class, 'pdfBti'])->name('reportes.constancia_bti_pdf');
+        Route::get('/reportes/constancia-estudios-bgne/{id}/datos', [ConstanciaEstudiosController::class, 'datosBgne'])
+            ->where('id', '[0-9]+')->name('reportes.constancia_bgne_datos');
+        Route::get('/reportes/constancia-estudios-bgne-pdf', [ConstanciaEstudiosController::class, 'pdfBgne'])->name('reportes.constancia_bgne_pdf');
     });
     Route::middleware('permiso:formatos_actas_ordinarios,ver')->group(function () {
         Route::get('/reportes/acta-ordinario-pdf', [ListasAsistenciasController::class, 'generarPdfActaOrdinario'])->name('reportes.acta_ordinario_pdf');

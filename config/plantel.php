@@ -21,4 +21,19 @@ return [
         'lema'             => '¡ Excelencia educativa a su servicio !',
         'logo'             => 'img/logo.png',
     ],
+
+    'bgne' => [
+        'nombre'           => 'BACHILLERATO INTERAMERICANO',
+        'direccion'        => 'Avenida Benito Juárez 901, Colonia Centro Teziutlán Puebla. Tel. 231-3123979',
+        'direccion_texto'  => 'AVENIDA JUÁREZ NO. 901 ESQUINA CON LEÓN GUZMÁN DE TEZIUTLÁN, PUEBLA',
+        'cct'              => '21PBH0353G',
+        'programa'         => 'BACHILLERATO GENERAL NO ESCOLARIZADO',
+        'ciudad'           => 'TEZIUTLÁN, PUEBLA',
+        'director'         => env('BTI_DIRECTOR', 'ING. FAUSTO MAURO LEYVA FLORES'),
+        // Quien firma la constancia BGNE
+        'firmante'         => env('BGNE_FIRMANTE', 'ING. MARCO ANTONIO RODRIGUEZ MENDEZ'),
+        'firmante_cargo'   => env('BGNE_FIRMANTE_CARGO', 'COORDINADOR ACADÉMICO'),
+        'lema'             => '¡ Excelencia educativa a su servicio !',
+        'logo'             => 'img/logo_bgne.png',
+    ],
 ];

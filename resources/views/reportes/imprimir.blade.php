@@ -77,7 +77,7 @@
                 {{-- ============ CONSTANCIA DE ESTUDIOS ============ --}}
                 <div class="tab-pane fade" id="pane-constancia" role="tabpanel">
                     <x-imprimir.pane-header title="Constancia de estudios">
-                        Oficio que acredita que el alumno está inscrito y cursando el semestre actual.
+                        Oficio que acredita que el alumno estudia en el plantel o, en BGNE, que ya concluyó su bachillerato.
                     </x-imprimir.pane-header>
 
                     <div class="tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-3">
@@ -166,6 +166,95 @@
                                         </div>
                                     </div>
                                     <figcaption class="tw:mt-3 tw:text-center tw:text-[0.8125rem] tw:text-slate-600">Así saldrá la hoja. Al cambiar los datos de la izquierda se actualiza aquí.</figcaption>
+                                </figure>
+                            </div>
+                        </div>
+
+                        {{-- Datos de la constancia BGNE. La vista previa es el PDF real generado con estos datos. --}}
+                        <div id="constancia-bgne-campos" class="tw:mt-5" style="display: none;">
+                            <div class="tw:grid tw:grid-cols-1 tw:items-start tw:gap-6 tw:xl:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
+                                <div class="tw:flex tw:flex-col tw:gap-4">
+                                    <x-ui.field label="Tipo de constancia" for="constanciaBgneTipo">
+                                        <select id="constanciaBgneTipo" class="{{ $input }}" onchange="onTipoConstanciaBgne()">
+                                            <option value="cursando">Está cursando</option>
+                                            <option value="concluyo">Concluyó el bachillerato</option>
+                                        </select>
+                                    </x-ui.field>
+                                    <div class="tw:grid tw:grid-cols-[110px_minmax(0,1fr)] tw:gap-3">
+                                        <x-ui.field label="Tratamiento" for="constanciaBgneTratamiento">
+                                            <select id="constanciaBgneTratamiento" class="{{ $input }}" onchange="programarPreviewBgne()">
+                                                <option value="EL">El C.</option>
+                                                <option value="LA">La C.</option>
+                                            </select>
+                                        </x-ui.field>
+                                        <x-ui.field label="Número de oficio" for="constanciaBgneOficio">
+                                            <input type="text" id="constanciaBgneOficio" class="{{ $input }}" placeholder="Vacío si no lleva" oninput="programarPreviewBgne()">
+                                        </x-ui.field>
+                                    </div>
+
+                                    {{-- Alumno que está cursando --}}
+                                    <div id="constancia-bgne-cursando" class="tw:flex tw:flex-col tw:gap-4">
+                                        <x-ui.field label="Trimestre que cursa" for="constanciaBgneTrimestre">
+                                            <select id="constanciaBgneTrimestre" class="{{ $input }}" onchange="programarPreviewBgne()">
+                                                @foreach (['Primer', 'Segundo', 'Tercer', 'Cuarto', 'Quinto', 'Sexto'] as $i => $t)
+                                                    <option value="{{ $i + 1 }}">{{ $t }} trimestre</option>
+                                                @endforeach
+                                            </select>
+                                        </x-ui.field>
+                                        <div class="tw:grid tw:grid-cols-2 tw:gap-3">
+                                            <x-ui.field label="Inicio del periodo" for="constanciaBgneInicio">
+                                                <input type="date" id="constanciaBgneInicio" class="{{ $input }}" oninput="programarPreviewBgne()">
+                                            </x-ui.field>
+                                            <x-ui.field label="Fin del periodo" for="constanciaBgneFin">
+                                                <input type="date" id="constanciaBgneFin" class="{{ $input }}" oninput="programarPreviewBgne()">
+                                            </x-ui.field>
+                                        </div>
+                                        <label class="tw:flex tw:cursor-pointer tw:items-center tw:gap-2 tw:text-[0.875rem] tw:font-medium tw:text-slate-700">
+                                            <input type="checkbox" id="constanciaBgneExtra" class="tw:size-4 tw:accent-brand-700" onchange="onExtraConstanciaBgne()">
+                                            Incluir curso extracurricular
+                                        </label>
+                                        <div id="constancia-bgne-extra-campos" class="tw:flex-col tw:gap-3 tw:border tw:border-slate-200 tw:bg-slate-50 tw:p-3" style="display: none;">
+                                            <x-ui.field label="Curso" for="constanciaBgneCurso">
+                                                <input type="text" id="constanciaBgneCurso" class="{{ $input }}" value="COMPUTACIÓN" oninput="programarPreviewBgne()">
+                                            </x-ui.field>
+                                            <div class="tw:grid tw:grid-cols-1 tw:gap-3">
+                                                <x-ui.field label="Días" for="constanciaBgneDias">
+                                                    <input type="text" id="constanciaBgneDias" class="{{ $input }}" placeholder="SÁBADOS" oninput="programarPreviewBgne()">
+                                                </x-ui.field>
+                                                <x-ui.field label="Horario" for="constanciaBgneHorario">
+                                                    <input type="text" id="constanciaBgneHorario" class="{{ $input }}" value="JORNADA COMPLETA" oninput="programarPreviewBgne()">
+                                                </x-ui.field>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- Alumno que ya concluyó --}}
+                                    <div id="constancia-bgne-concluyo" class="tw:flex-col tw:gap-4" style="display: none;">
+                                        <x-ui.field label="Fecha de la última materia" for="constanciaBgneUltimaMateria">
+                                            <input type="date" id="constanciaBgneUltimaMateria" class="{{ $input }}" oninput="programarPreviewBgne()">
+                                        </x-ui.field>
+                                        <div class="tw:grid tw:grid-cols-2 tw:gap-3">
+                                            <x-ui.field label="Expedición del certificado" for="constanciaBgneFechaCert">
+                                                <input type="date" id="constanciaBgneFechaCert" class="{{ $input }}" oninput="programarPreviewBgne()">
+                                            </x-ui.field>
+                                            <x-ui.field label="Folio del certificado" for="constanciaBgneFolio">
+                                                <input type="text" id="constanciaBgneFolio" class="{{ $input }}" oninput="programarPreviewBgne()">
+                                            </x-ui.field>
+                                        </div>
+                                    </div>
+
+                                    <x-ui.field label="Fecha de expedición" for="constanciaBgneExpedicion">
+                                        <input type="date" id="constanciaBgneExpedicion" class="{{ $input }}" oninput="programarPreviewBgne()">
+                                    </x-ui.field>
+                                    <p id="constancia-bgne-aviso" class="tw:m-0 tw:border tw:border-warning-100 tw:bg-warning-50 tw:px-3 tw:py-2 tw:text-[0.875rem] tw:text-slate-800" style="display: none;">
+                                        Este alumno no tiene matrícula registrada, así que la constancia dirá S/N. Regístrala en su expediente si debe aparecer.
+                                    </p>
+                                </div>
+
+                                <figure class="tw:m-0 tw:bg-slate-100 tw:p-4 tw:sm:p-6">
+                                    <iframe id="constancia-bgne-preview" title="Vista previa de la constancia BGNE"
+                                            class="tw:block tw:h-[760px] tw:w-full tw:border tw:border-slate-300 tw:bg-white"></iframe>
+                                    <figcaption class="tw:mt-3 tw:text-center tw:text-[0.8125rem] tw:text-slate-600" id="constancia-bgne-preview-estado">Es el PDF tal como se imprimirá. Se actualiza al cambiar los datos.</figcaption>
                                 </figure>
                             </div>
                         </div>
@@ -1750,10 +1839,11 @@
         document.getElementById('constancia-info-alumno').style.display = 'none';
         const constPl = document.getElementById('constancia-preview-placeholder'); if (constPl) constPl.style.display = 'block';
         document.getElementById('constancia-bti-campos').style.display = 'none';
+        document.getElementById('constancia-bgne-campos').style.display = 'none';
         document.getElementById('constanciaAlumnoSearch').value = '';
         alumnoConstanciaId = null;
-        // El BTI tiene un único formato de constancia (oficio); el selector de tipo aplica a los demás planteles
-        document.getElementById('constancia-tipo-wrapper').style.display = cctSeleccionado === 'BTI' ? 'none' : 'block';
+        // BTI y BGNE tienen sus propios campos de constancia; el selector de tipo genérico solo aplica a INF
+        document.getElementById('constancia-tipo-wrapper').style.display = ['BTI', 'BGNE'].includes(cctSeleccionado) ? 'none' : 'block';
         document.getElementById('kardex-info-alumno').style.display = 'none';
         document.getElementById('boleta-tabla-resultados').style.display = 'none';
         document.getElementById('credencial-info-alumno').style.display = 'none';
@@ -1966,7 +2056,9 @@
             alumnoConstanciaId = alumno.idAlumno;
             constanciaPreviewBase = { nombre: fullName.toUpperCase(), matricula: alumno.numeroControl || '' };
             document.getElementById('constancia-bti-campos').style.display = 'none';
+            document.getElementById('constancia-bgne-campos').style.display = 'none';
             if (cctSeleccionado === 'BTI') cargarDatosConstanciaBti(alumno.idAlumno);
+            if (cctSeleccionado === 'BGNE') cargarDatosConstanciaBgne(alumno.idAlumno);
         });
     }
 
@@ -2028,6 +2120,7 @@
     }
 
     function generarConstancia() {
+        if (cctSeleccionado === 'BGNE') { generarConstanciaBgne(); return; }
         if (cctSeleccionado !== 'BTI') {
             printDoc('Constancia de Estudios', document.getElementById('lbl-constancia-nombre').innerText);
             return;
@@ -2054,6 +2147,115 @@
             fecha_expedicion: v('constanciaFechaExpedicion'),
         });
         window.open(`/reportes/constancia-estudios-bti-pdf?${params}`, '_blank');
+    }
+
+    // ---------- Constancia de estudios BGNE (cursando / concluyó) ----------
+    function cargarDatosConstanciaBgne(idAlumno) {
+        const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ''; };
+        fetch(`/reportes/constancia-estudios-bgne/${idAlumno}/datos`, { headers: { Accept: 'application/json' } })
+            .then(r => r.json())
+            .then(resp => {
+                if (alumnoConstanciaId !== idAlumno) return; // se eligió otro alumno mientras cargaba
+                if (!resp.success) throw new Error(resp.message);
+                const d = resp.data;
+                set('constanciaBgneTipo', d.tipo);
+                set('constanciaBgneOficio', d.oficio);
+                if (d.trimestre) set('constanciaBgneTrimestre', String(d.trimestre));
+                set('constanciaBgneInicio', d.fecha_inicio);
+                set('constanciaBgneFin', d.fecha_fin);
+                set('constanciaBgneDias', d.dias);
+                set('constanciaBgneFechaCert', d.fecha_certificado);
+                set('constanciaBgneFolio', d.folio_certificado);
+                set('constanciaBgneUltimaMateria', '');
+                set('constanciaBgneExpedicion', d.fecha_expedicion);
+                document.getElementById('constanciaBgneExtra').checked = false;
+                document.getElementById('constancia-bgne-aviso').style.display = d.numero_control ? 'none' : 'block';
+            })
+            .catch(err => {
+                console.error('Error al cargar datos de la constancia BGNE:', err);
+                Swal.fire({ icon: 'warning', title: 'Falta el grupo del alumno', text: 'No se encontró su grupo, así que el trimestre y el periodo no se llenaron. Captúralos a mano.', confirmButtonColor: '#26687B' });
+            })
+            .finally(() => {
+                if (alumnoConstanciaId !== idAlumno) return;
+                document.getElementById('constancia-bgne-campos').style.display = 'block';
+                onTipoConstanciaBgne();
+            });
+    }
+
+    function onTipoConstanciaBgne() {
+        const concluyo = document.getElementById('constanciaBgneTipo').value === 'concluyo';
+        document.getElementById('constancia-bgne-cursando').style.display = concluyo ? 'none' : 'flex';
+        document.getElementById('constancia-bgne-concluyo').style.display = concluyo ? 'flex' : 'none';
+        programarPreviewBgne(0);
+    }
+
+    function onExtraConstanciaBgne() {
+        document.getElementById('constancia-bgne-extra-campos').style.display =
+            document.getElementById('constanciaBgneExtra').checked ? 'flex' : 'none';
+        programarPreviewBgne(0);
+    }
+
+    function urlConstanciaBgne() {
+        const v = id => (document.getElementById(id)?.value || '').trim();
+        const concluyo = v('constanciaBgneTipo') === 'concluyo';
+        const p = new URLSearchParams({
+            id_alumno: alumnoConstanciaId,
+            tipo: concluyo ? 'concluyo' : 'cursando',
+            tratamiento: v('constanciaBgneTratamiento') || 'EL',
+            oficio: v('constanciaBgneOficio'),
+            fecha_expedicion: v('constanciaBgneExpedicion'),
+        });
+        if (concluyo) {
+            p.set('fecha_ultima_materia', v('constanciaBgneUltimaMateria'));
+            p.set('fecha_certificado', v('constanciaBgneFechaCert'));
+            p.set('folio_certificado', v('constanciaBgneFolio'));
+        } else {
+            p.set('trimestre', v('constanciaBgneTrimestre'));
+            p.set('fecha_inicio', v('constanciaBgneInicio'));
+            p.set('fecha_fin', v('constanciaBgneFin'));
+            if (document.getElementById('constanciaBgneExtra').checked) {
+                p.set('extracurricular', '1');
+                p.set('curso', v('constanciaBgneCurso'));
+                p.set('dias', v('constanciaBgneDias'));
+                p.set('horario', v('constanciaBgneHorario'));
+            }
+        }
+        // Las fechas vacías no se envían (el servidor las valida como fecha)
+        [...p.keys()].forEach(k => { if (p.get(k) === '') p.delete(k); });
+        return `/reportes/constancia-estudios-bgne-pdf?${p}`;
+    }
+
+    // La vista previa recarga el PDF real; se espera a que el usuario deje de escribir
+    let timerPreviewBgne = null;
+    function programarPreviewBgne(espera = 700) {
+        clearTimeout(timerPreviewBgne);
+        timerPreviewBgne = setTimeout(() => {
+            const frame = document.getElementById('constancia-bgne-preview');
+            if (!frame || !alumnoConstanciaId || document.getElementById('constancia-bgne-campos').style.display === 'none') return;
+            frame.src = `${urlConstanciaBgne()}#toolbar=0&navpanes=0&view=FitH`;
+        }, espera);
+    }
+
+    function generarConstanciaBgne() {
+        if (!alumnoConstanciaId) {
+            Swal.fire({ icon: 'info', title: 'Selecciona un alumno', confirmButtonColor: '#26687B' });
+            return;
+        }
+        const v = id => (document.getElementById(id)?.value || '').trim();
+        if (v('constanciaBgneTipo') === 'cursando') {
+            if (!v('constanciaBgneInicio') || !v('constanciaBgneFin')) {
+                Swal.fire({ icon: 'warning', title: 'Periodo incompleto', text: 'Indica las fechas de inicio y fin del trimestre.', confirmButtonColor: '#26687B' });
+                return;
+            }
+            if (v('constanciaBgneInicio') > v('constanciaBgneFin')) {
+                Swal.fire({ icon: 'warning', title: 'Periodo inválido', text: 'La fecha de inicio no puede ser posterior a la de fin.', confirmButtonColor: '#26687B' });
+                return;
+            }
+        } else if (!v('constanciaBgneUltimaMateria') || !v('constanciaBgneFechaCert') || !v('constanciaBgneFolio')) {
+            Swal.fire({ icon: 'warning', title: 'Faltan datos del certificado', text: 'Captura la fecha de la última materia, la fecha de expedición del certificado y su folio.', confirmButtonColor: '#26687B' });
+            return;
+        }
+        window.open(urlConstanciaBgne(), '_blank');
     }
 
     function limpiarBusquedaKardex() {
@@ -2949,21 +3151,48 @@
             const elLbl = document.getElementById('lbl-extraordinario-nombre');
             if (elLbl) elLbl.innerText = fullName;
 
-            // Si el alumno cuenta con grupo asignado en la BD, auto-seleccionarlo
-            const grpVal = alumno.claveGrupo || alumno.grupo || alumno.nombreGrupo || '';
-            if (grpVal) {
-                const grpInput = document.getElementById('extraordinarioGrupoInput');
-                if (grpInput && !grpInput.value) {
-                    grpInput.value = grpVal;
-                    const matchG = (window.gruposDb || []).find(g => (g.clave || '').toLowerCase() === grpVal.toLowerCase());
-                    if (matchG) seleccionarGrupoExtraordinario(matchG);
+            // El alumno ya está ligado a un grupo: se llena solo (y reemplaza el del alumno anterior)
+            const grpInput = document.getElementById('extraordinarioGrupoInput');
+            if (grpInput) grpInput.value = '';
+            resolverGrupoDeAlumno(alumno).then(grupo => {
+                if (alumnoExtraordinarioActual !== alumno) return; // se eligió otro alumno mientras cargaba
+                if (grupo?.id) {
+                    seleccionarGrupoExtraordinario(grupo);
+                    return;
                 }
-            }
+                // Grupo fuera del catálogo (o sin grupo): se muestra su clave si la hay y el periodo
+                // queda por elegir, para no arrastrar el del alumno anterior
+                if (grpInput) grpInput.value = grupo?.clave || '';
+                const semSelect = document.getElementById('extraordinarioSemestreSelect');
+                if (semSelect) semSelect.value = '';
+                actualizarExtraordinarioPreview();
+            });
 
             actualizarExtraordinarioPreview();
             const infoCard = document.getElementById('extraordinario-info-alumno');
             if (infoCard) infoCard.style.display = 'block';
         });
+    }
+
+    /*
+     * Grupo al que pertenece un alumno. La API de alumnos trae idGrupo y nombreGrupoTexto
+     * (no claveGrupo); se busca en el catálogo de grupos por id y, si no, por clave.
+     */
+    async function resolverGrupoDeAlumno(alumno) {
+        const id = alumno.idGrupo ?? alumno.id_grupo ?? null;
+        const clave = String(alumno.nombreGrupoTexto || alumno.claveGrupo || alumno.nombreGrupo || alumno.grupo || '').trim();
+        if (id == null && !clave) return null;
+
+        const buscar = () => (window.gruposDb || []).find(g =>
+            (id != null && (g.id ?? g.idGrupo) == id) ||
+            (clave && (g.clave || '').toLowerCase() === clave.toLowerCase()));
+
+        let grupo = buscar();
+        if (!grupo) {
+            await asegurarCatalogosAsistencia(); // carga el catálogo si aún no estaba
+            grupo = buscar();
+        }
+        return grupo || (clave ? { clave } : null);
     }
 
     function simularFiltrarBoletas() {
