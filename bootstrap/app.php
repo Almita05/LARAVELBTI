@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
 
+        // Confiar en Cloudflare Tunnel / proxy HTTPS
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'auth.session'  => \App\Http\Middleware\AuthSession::class,
             'docente.admin' => \App\Http\Middleware\DocenteOAdmin::class,
