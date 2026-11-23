@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
-use App\Services\MoodleService;
 use App\Services\HistorialAlumnoService;
 
 class AlumnoController extends Controller
@@ -209,8 +208,7 @@ public function show($id)
 
 public function update(Request $request, $id)
 {
-    $request->merge(json_decode($request->getContent(), true));
-    \Log::info('Update request payload ID ' . $id . ':', $request->all());
+    $request->merge(\App\Http\Middleware\LimpiarEntradaHtml::limpiarArreglo(json_decode($request->getContent(), true)));
 
     // Para el historial: estado del alumno antes de guardar
     $historial = app(HistorialAlumnoService::class);
@@ -356,51 +354,26 @@ public function guardarCalificaciones(Request $request, $id)
     return response()->json($response->json());
 }
 
-public function cambiarModalidadOnline(Request $request, $id, MoodleService $moodleService)
+public function cambiarModalidadOnline(Request $request, $id)
 {
-    $url = config('services.api.base_url') . '/alumnos/' . $id . '/modalidad-online';
+    // La API valida la cohorte y el fin de trimestre del grupo, y crea la cuenta de Moodle.
+    $url = config('services.api.base_url') . '/online/alumnos/' . $id . '/modalidad-online';
     $payload = $request->json()->all() ?: $request->all();
     $historial = app(HistorialAlumnoService::class);
     $antes = $historial->snapshot($id);
 
-    $response = Http::withHeaders([
-        'Accept' => 'application/json',
-        'Content-Type' => 'application/json'
-    ])->post($url, $payload);
+    $response = Http::timeout(60)->acceptJson()->post($url, $payload);
 
-    if ($response->failed()) {
-        return response()->json($response->json(), $response->status());
+    if ($response->successful()) {
+        $historial->registrarDiferencias($id, $antes, $historial->snapshot($id));
     }
 
-    $historial->registrarDiferencias($id, $antes, $historial->snapshot($id));
-
-    $resData = $response->json();
-
-    // Sincronización en vivo con Moodle LMS
-    try {
-        $alumno = DB::table('tb_alumnos')->where('idAlumno', $id)->first();
-        if ($alumno) {
-            $rawPass = $payload['moodle_password'] ?? null;
-            $moodleRes = $moodleService->syncAlumno($alumno, $rawPass);
-
-            if ($moodleRes['success']) {
-                $resData['alumno']['moodle_user_id'] = $moodleRes['moodle_user_id'];
-                $resData['alumno']['moodle_username'] = $moodleRes['moodle_username'];
-                $resData['alumno']['moodle_password'] = $moodleRes['moodle_password'];
-                $resData['moodle_status'] = $moodleRes['action'];
-            } else {
-                \Log::warning("MoodleService no pudo sincronizar alumno {$id}: " . ($moodleRes['error'] ?? ''));
-            }
-        }
-    } catch (\Throwable $e) {
-        \Log::error("Excepción en MoodleService para alumno {$id}: " . $e->getMessage());
-    }
-
-    return response()->json($resData, $response->status());
+    return response()->json($response->json(), $response->status());
 }
 
-public function cambiarModalidadPresencial($id, MoodleService $moodleService)
+public function cambiarModalidadPresencial($id)
 {
+    // La API regresa al alumno a presencial y suspende su cuenta de Moodle.
     $url = config('services.api.base_url') . '/alumnos/' . $id . '/modalidad-presencial';
     $historial = app(HistorialAlumnoService::class);
     $antes = $historial->snapshot($id);
@@ -412,13 +385,6 @@ public function cambiarModalidadPresencial($id, MoodleService $moodleService)
 
     if ($response->successful()) {
         $historial->registrarDiferencias($id, $antes, $historial->snapshot($id));
-    }
-
-    // Suspender acceso del alumno en Moodle mientras esté en modalidad presencial
-    try {
-        $moodleService->suspenderAlumno($id);
-    } catch (\Throwable $e) {
-        \Log::error("Excepción suspendiendo alumno {$id} en Moodle: " . $e->getMessage());
     }
 
     return response()->json($response->json(), $response->status());

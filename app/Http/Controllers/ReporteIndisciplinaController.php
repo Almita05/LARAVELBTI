@@ -107,6 +107,26 @@ class ReporteIndisciplinaController extends Controller
     }
 
     /**
+     * Reportes de indisciplina de un alumno (folio, fecha, parcial e incidente) para las observaciones de la boleta BTI.
+     */
+    public function getStudentReports($id_alumno)
+    {
+        try {
+            $url = $this->getBaseUrl() . '/reportes-indisciplina';
+            $response = Http::timeout(10)->get($url, ['id_alumno' => $id_alumno]);
+
+            if ($response->failed()) {
+                return response()->json(['success' => false, 'data' => []]);
+            }
+
+            return response()->json($response->json());
+        } catch (\Exception $e) {
+            Log::error('Error al obtener reportes del alumno en API: ' . $e->getMessage());
+            return response()->json(['success' => false, 'data' => []], 500);
+        }
+    }
+
+    /**
      * Render the view for BTI Disciplinary Reports.
      */
     public function indexView()

@@ -51,8 +51,8 @@ Route::get('/', function () {
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 
-// Máx. 10 intentos por minuto por IP (frena ataques de fuerza bruta)
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+// Máx. 10 intentos por minuto por IP y 5 por usuario (frena ataques de fuerza bruta; ver AppServiceProvider)
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -176,13 +176,28 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () use ($FO
         Route::post('/asistencias_alumnos/guardar', [AsistenciaAlumnoController::class, 'guardar'])->name('asistencias_alumnos.guardar');
         Route::post('/asistencias_alumnos/justificar', [AsistenciaAlumnoController::class, 'justificar'])->name('asistencias_alumnos.justificar');
         Route::post('/asistencias_alumnos/reabrir', [AsistenciaAlumnoController::class, 'reabrirPase'])->name('asistencias_alumnos.reabrir');
+        Route::post('/asistencias_alumnos/dia-especial', [AsistenciaAlumnoController::class, 'diaEspecial'])->name('asistencias_alumnos.dia_especial');
     });
+
+    // Asistencia del parcial para la boleta BTI (faltas, retardos y justificantes con fecha).
+    // La usan quienes imprimen boletas aunque no tengan acceso al módulo de reportes.
+    Route::get('/boletas/bti/asistencia/grupo/{id_grupo}/alumno/{id_alumno}', [ReporteAsistenciaController::class, 'getReporteBtiAlumno'])
+        ->whereNumber(['id_grupo', 'id_alumno'])
+        ->middleware('permiso:formatos_boletas_bti|alumnos_calificaciones|alumnos_reporte_asistencias')
+        ->name('boletas.bti.asistencia');
+    // Asistencia del parcial de todo el grupo BTI, calculada del pase de lista (consulta en Captura de Calificaciones).
+    Route::get('/boletas/bti/asistencia/grupo/{id_grupo}', [ReporteAsistenciaController::class, 'getReporteBtiGrupo'])
+        ->whereNumber('id_grupo')
+        ->middleware('permiso:grupos_calificaciones|formatos_boletas_bti|alumnos_calificaciones|alumnos_reporte_asistencias')
+        ->name('boletas.bti.asistencia.grupo');
 
     // Reportes de Asistencias
     Route::middleware('permiso:alumnos_reporte_asistencias')->group(function () {
         Route::get('/reportes/asistencias', [ReporteAsistenciaController::class, 'index'])->name('reportes.asistencias');
         Route::get('/reportes/asistencias/grupo/{id_grupo}', [ReporteAsistenciaController::class, 'getGrupoReport'])->name('reportes.asistencias.grupo');
         Route::get('/reportes/asistencias/grupo/{id_grupo}/alumno/{id_alumno}', [ReporteAsistenciaController::class, 'getAlumnoHistorial'])->name('reportes.asistencias.alumno_historial');
+        Route::get('/reportes/asistencias/bti/grupo/{id_grupo}', [ReporteAsistenciaController::class, 'getReporteBtiGrupo'])->whereNumber('id_grupo')->name('reportes.asistencias.bti.grupo');
+        Route::get('/reportes/asistencias/bti/grupo/{id_grupo}/alumno/{id_alumno}', [ReporteAsistenciaController::class, 'getReporteBtiAlumno'])->whereNumber(['id_grupo', 'id_alumno'])->name('reportes.asistencias.bti.alumno');
     });
 
     // Permisos de Captura Docentes
@@ -209,6 +224,8 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () use ($FO
         Route::delete('/reportes-indisciplina/{id}', [ReporteIndisciplinaController::class, 'destroy'])->middleware('sin.docente')->name('reportes_indisciplina.destroy');
     });
     Route::get('/alumnos/{id}/reportes-conteo', [ReporteIndisciplinaController::class, 'getStudentReportsCount']);
+    // Detalle de los reportes para las observaciones de la boleta BTI
+    Route::get('/alumnos/{id}/reportes-detalle', [ReporteIndisciplinaController::class, 'getStudentReports']);
 });
 
 
@@ -242,17 +259,20 @@ Route::middleware('auth.session')->group(function () use ($FORMATOS) {
         Route::get('/alumnos/online', [AlumnoOnlineController::class, 'index'])->name('alumnos.online');
         Route::get('/alumnos/online/data', [AlumnoOnlineController::class, 'getAlumnos']);
         Route::get('/alumnos/{id}/detalle-online', [AlumnoOnlineController::class, 'getDetalleAlumno'])->where('id', '[0-9]+');
-        Route::get('/online/distribucion-materias', [AlumnoOnlineController::class, 'getDistribucionMaterias']);
+        Route::get('/alumnos/{id}/pago-online/vista-previa', [AlumnoOnlineController::class, 'vistaPreviaPago'])->where('id', '[0-9]+');
         Route::get('/online/buscar-presenciales', [AlumnoOnlineController::class, 'buscarPresenciales']);
+        Route::get('/online/configuracion', [AlumnoOnlineController::class, 'configuracion']);
+        Route::get('/alumnos/{id}/integracion-online', [AlumnoOnlineController::class, 'vistaIntegracion'])->where('id', '[0-9]+');
         Route::middleware('sin.docente')->group(function () {
-            Route::post('/alumnos/{id}/trimestre-inicio', [AlumnoOnlineController::class, 'actualizarTrimestreInicio'])->where('id', '[0-9]+');
-            Route::post('/alumnos/{id}/dia-pago', [AlumnoOnlineController::class, 'actualizarDiaPago'])->where('id', '[0-9]+');
             Route::post('/alumnos/{id}/registrar-pago-online', [AlumnoOnlineController::class, 'registrarPago'])->where('id', '[0-9]+');
             Route::post('/alumnos/{id}/activar-online', [AlumnoOnlineController::class, 'activarModalidadOnline'])->where('id', '[0-9]+');
             Route::post('/alumnos/{id}/sincronizar-moodle', [AlumnoOnlineController::class, 'sincronizarMoodleAlumno'])->where('id', '[0-9]+');
             Route::post('/alumnos/{id}/toggle-suspension-moodle', [AlumnoOnlineController::class, 'toggleSuspensionMoodle'])->where('id', '[0-9]+');
-            Route::post('/online/materias/{id}/moodle-curso', [AlumnoOnlineController::class, 'guardarMoodleCourseId'])->where('id', '[0-9]+');
-            Route::post('/alumnos/{id}/actividades/actualizar', [AlumnoOnlineController::class, 'actualizarEstatusActividad'])->where('id', '[0-9]+');
+            Route::post('/online/habilitar-semanas', [AlumnoOnlineController::class, 'habilitarSemanas']);
+            Route::put('/online/planes/{id}/bloques', [AlumnoOnlineController::class, 'actualizarBloques'])->where('id', '[0-9]+');
+            Route::put('/online/cursos/{id}', [AlumnoOnlineController::class, 'actualizarCurso'])->where('id', '[0-9]+');
+            Route::post('/online/cursos/{id}/preparar-grupos', [AlumnoOnlineController::class, 'prepararGrupos'])->where('id', '[0-9]+');
+            Route::put('/online/grupos/{id}/plan', [AlumnoOnlineController::class, 'asignarPlanGrupo'])->where('id', '[0-9]+');
         });
     });
 

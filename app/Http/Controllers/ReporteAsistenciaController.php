@@ -46,6 +46,53 @@ class ReporteAsistenciaController extends Controller
         }
     }
 
+    /**
+     * Reporte BTI del grupo (estadísticas por alumno, por materia y cobertura de captura).
+     * Filtros opcionales: desde / hasta (AAAA-MM-DD).
+     */
+    public function getReporteBtiGrupo(Request $request, $id_grupo)
+    {
+        return $this->proxyReporte(
+            "/reportes/asistencias/bti/grupo/{$id_grupo}",
+            $request,
+            'Error al obtener el reporte BTI del grupo'
+        );
+    }
+
+    /**
+     * Reporte BTI de un alumno (resumen, por materia, justificantes e historial).
+     */
+    public function getReporteBtiAlumno(Request $request, $id_grupo, $id_alumno)
+    {
+        return $this->proxyReporte(
+            "/reportes/asistencias/bti/grupo/{$id_grupo}/alumno/{$id_alumno}",
+            $request,
+            'Error al obtener el reporte BTI del alumno'
+        );
+    }
+
+    private function proxyReporte(string $ruta, Request $request, string $mensajeError)
+    {
+        $validados = $request->validate([
+            'desde' => 'nullable|date_format:Y-m-d',
+            'hasta' => 'nullable|date_format:Y-m-d',
+            'parcial' => 'nullable|integer|between:1,3',
+        ]);
+
+        try {
+            $response = Http::timeout(30)->get(
+                config('services.api.base_url') . $ruta,
+                array_filter($validados)
+            );
+            return response()->json(
+                $response->json() ?? ['error' => $mensajeError],
+                $response->status()
+            );
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $mensajeError . ': ' . $e->getMessage()], 500);
+        }
+    }
+
     public function getAlumnoHistorial(Request $request, $id_grupo, $id_alumno)
     {
         $baseApiUrl = config('services.api.base_url');

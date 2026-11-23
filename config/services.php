@@ -50,7 +50,7 @@ return [
 
     'moodle' => [
         'base_url'       => rtrim(env('MOODLE_URL', 'https://moodle.btinteramericano.com'), '/'),
-        'token'          => env('MOODLE_TOKEN', '80d35103d66bd559a56a3bffd5893f3b'),
+        'token'          => env('MOODLE_TOKEN'),
         'role_online_id' => (int)env('MOODLE_ROLE_ONLINE_ID', 9),
     ],
 

@@ -1,5 +1,8 @@
 @extends('layouts.app')
 
+{{-- Vista usada desde el celular: activa el modo móvil del layout --}}
+@section('layout_movil', '1')
+
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
@@ -343,6 +346,87 @@
     border-color: var(--brand-primary-hover, #1F5565);
     color: #FFFFFF;
 }
+
+.tab-corto { display: none; }
+
+/* ==========================================================================
+   MÓVIL (< 768px): el docente abre esta pantalla en el celular
+   ========================================================================== */
+@media (max-width: 767.98px) {
+    /* El layout ya aplica 16px de margen lateral */
+    .page-container {
+        padding: 0;
+        min-height: auto;
+    }
+
+    .page-header-standard {
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+        gap: 12px;
+    }
+    .page-header-standard .btn-primary-saas {
+        width: 100%;
+        justify-content: center;
+        min-height: 44px;
+    }
+    .page-heading { font-size: 1.125rem; }
+    .page-subheading { font-size: 0.8125rem; }
+
+    /* KPIs en dos columnas compactas */
+    .kpi-grid-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+    .kpi-card {
+        padding: 12px;
+        gap: 10px;
+    }
+    .kpi-icon-box {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+    .kpi-label { font-size: 0.625rem; }
+    .kpi-value { font-size: 1.25rem; }
+
+    /* Filtros: tabs a todo lo ancho en 4 columnas iguales */
+    .asistencias-toolbar {
+        padding: 10px;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+    .asistencias-segmented-tabs {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        width: 100%;
+    }
+    .asistencias-tab-btn {
+        height: 40px;
+        padding: 0 4px;
+        font-size: 0.8125rem;
+    }
+    .tab-largo { display: none; }
+    .tab-corto { display: inline; }
+
+    /* 16px evita el zoom automático de iOS al enfocar el campo */
+    .asistencias-search-input {
+        height: 44px;
+        font-size: 16px;
+    }
+
+    /* Tarjetas de grupo */
+    .grupo-card-surface .card-body { padding: 16px !important; }
+    .grupo-card-surface:hover { transform: none !important; }
+    .metadata-list { margin-top: 10px; gap: 6px; }
+
+    /* Botones con área táctil cómoda */
+    .btn-matriz,
+    .btn-pasar-lista {
+        height: 48px;
+        font-size: 0.9375rem;
+    }
+}
 </style>
 
 <div class="page-container">
@@ -427,13 +511,13 @@
                 Todos
             </button>
             <button type="button" class="asistencias-tab-btn" id="tab-semana" onclick="filtrarDia('LUNES-VIERNES')">
-                Lunes a Viernes
+                <span class="tab-largo">Lunes a Viernes</span><span class="tab-corto">Lun-Vie</span>
             </button>
             <button type="button" class="asistencias-tab-btn" id="tab-sabados" onclick="filtrarDia('SABADO')">
-                Sábados
+                <span class="tab-largo">Sábados</span><span class="tab-corto">Sáb</span>
             </button>
             <button type="button" class="asistencias-tab-btn" id="tab-domingos" onclick="filtrarDia('DOMINGO')">
-                Domingos
+                <span class="tab-largo">Domingos</span><span class="tab-corto">Dom</span>
             </button>
         </div>
 
@@ -445,7 +529,7 @@
     </div>
 
     <!-- Listado de Grupos -->
-    <div class="row g-4" id="contenedor-grupos">
+    <div class="row g-3 g-md-4" id="contenedor-grupos">
         @foreach($grupos as $grupo)
             @php
                 $dias = $grupo['diasClase'] ?? [];

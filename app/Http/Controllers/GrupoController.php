@@ -37,8 +37,11 @@ class GrupoController extends Controller
 
     public function getCalificacionesGrupoMateria(Request $request, $id_grupo)
     {
-        $idDocente = $request->query('id_docente') ?: session('id_docente');
         $rol = session('rol');
+        // Un docente solo puede consultar con su propio ID (no el de otro docente vía ?id_docente=)
+        $idDocente = $rol === 'DOCENTE'
+            ? session('id_docente')
+            : ($request->query('id_docente') ?: session('id_docente'));
         $idMateria = $request->id_materia;
 
         $url = config('services.api.base_url') . '/grupos/' . $id_grupo . '/calificaciones-materia';
@@ -70,6 +73,11 @@ class GrupoController extends Controller
         if ($idNivel) {
             $params['id_nivel_academico'] = $idNivel;
         }
+        // BTI: asistencias por parcial (1, 2 o 3)
+        $parcial = $request->query('parcial');
+        if (in_array((string) $parcial, ['1', '2', '3'], true)) {
+            $params['parcial'] = (int) $parcial;
+        }
 
         $response = Http::get($url, $params);
         return response()->json($response->json(), $response->status());
@@ -80,6 +88,7 @@ class GrupoController extends Controller
         // Asistencias: enteros >= 0, nunca más que las clases impartidas
         $request->validate([
             'id_nivel_academico' => 'required|integer|between:1,12',
+            'parcial' => 'nullable|integer|between:1,3',
             'asistencias' => 'required|array',
             'asistencias.*.idAlumno' => 'required|integer',
             'asistencias.*.total_asistencias' => 'nullable|integer|min:0|max:999',

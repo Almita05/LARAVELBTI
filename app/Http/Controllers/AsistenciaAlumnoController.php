@@ -154,7 +154,10 @@ class AsistenciaAlumnoController extends Controller
                 $reaperturasFechas = array_values(array_unique(array_merge($reaperturasFechas, $dbReaperturas)));
             } catch (\Throwable $e) {}
 
-            return view('alumnos.asistencias_grid', compact('grupo', 'alumnos', 'fechas', 'asistencias', 'materias', 'selected_materia_id', 'reaperturasFechas'));
+            // Días inhábiles, de suspensión o en línea del calendario del grupo
+            $diasEspeciales = $attendanceData['dias_especiales'] ?? [];
+
+            return view('alumnos.asistencias_grid', compact('grupo', 'alumnos', 'fechas', 'asistencias', 'materias', 'selected_materia_id', 'reaperturasFechas', 'diasEspeciales'));
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error("Error en grupoGrid para grupo $id_grupo: " . $e->getMessage() . " en " . $e->getFile() . ":" . $e->getLine());
             return redirect()->route('asistencias_alumnos')->with('error', 'Ocurrió un problema al cargar el grupo: ' . $e->getMessage());
@@ -258,6 +261,43 @@ class AsistenciaAlumnoController extends Controller
         ]);
 
         return response()->json($response->json(), $response->status());
+    }
+
+    /**
+     * Marca un día del calendario del grupo: INHABIL, SUSPENSION (con motivo) o EN_LINEA.
+     * Con tipo NORMAL quita la marca. Solo administración; la lógica vive en la API.
+     */
+    public function diaEspecial(Request $request)
+    {
+        if (session('rol') === 'DOCENTE') {
+            return response()->json(['error' => 'No tienes permisos para marcar días del calendario.'], 403);
+        }
+
+        $request->validate([
+            'id_grupo' => 'required|integer',
+            'fecha' => 'required|date_format:Y-m-d',
+            'tipo' => 'nullable|in:NORMAL,INHABIL,SUSPENSION,EN_LINEA',
+            'motivo' => 'nullable|string|max:255',
+            'aplicar_plantel' => 'nullable|boolean',
+        ]);
+
+        try {
+            $response = Http::timeout(30)->post(config('services.api.base_url') . '/asistencias/alumnos/dia-especial', [
+                'id_grupo' => (int) $request->input('id_grupo'),
+                'fecha' => $request->input('fecha'),
+                'tipo' => $request->input('tipo') ?: 'NORMAL',
+                'motivo' => $request->input('motivo'),
+                'registrado_por' => session('usuario') ?? session('nombre') ?? 'Administración',
+                'aplicar_plantel' => $request->boolean('aplicar_plantel'),
+            ]);
+            $json = $response->json() ?: [];
+            if (!$response->successful() || isset($json['error'])) {
+                return response()->json(['error' => $json['error'] ?? 'No se pudo guardar el día en el servidor escolar.'], $response->successful() ? 400 : $response->status());
+            }
+            return response()->json($json);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'No se pudo comunicar con el servicio escolar: ' . $e->getMessage()], 500);
+        }
     }
 
     public function reabrirPase(Request $request)

@@ -18,10 +18,75 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    {{-- La capa "movil" se declara ANTES que las de Tailwind: las utilidades tw: son !important,
+         y entre declaraciones !important gana la capa declarada primero. --}}
+    @hasSection('layout_movil')
+    <style>@layer movil, theme, base, components, utilities;</style>
+    @endif
+
     {{-- Tailwind CSS v4 (prefijo tw:) — ver resources/css/app.css --}}
     @vite('resources/css/app.css')
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    {{-- Modo móvil opt-in: solo las vistas que declaran @section('layout_movil', '1') se adaptan al celular.
+         El resto del sistema conserva el render de escritorio (sin viewport) hasta que se adapte. --}}
+    @hasSection('layout_movil')
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <style>
+        .btn-menu-movil, .sidebar-movil-backdrop { display: none; }
+
+        @layer movil {
+            @media (max-width: 991.98px) {
+                body.layout-movil #sidebar {
+                    width: 270px !important;
+                    transform: translateX(-100%) !important;
+                    transition: transform 0.25s ease-out !important;
+                }
+                body.layout-movil.sidebar-movil-abierto #sidebar { transform: none !important; }
+                body.layout-movil #toggleSidebar { display: none !important; }
+
+                body.layout-movil > header {
+                    left: 0 !important;
+                    padding: 0 16px !important;
+                    gap: 12px !important;
+                }
+                body.layout-movil .main-content {
+                    margin-left: 0 !important;
+                    padding: 16px !important;
+                    /* clip (no hidden): hidden lo vuelve contenedor de scroll y rompe position: sticky */
+                    overflow-x: clip !important;
+                }
+            }
+        }
+
+        @media (max-width: 991.98px) {
+
+            .btn-menu-movil {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                width: 40px;
+                height: 40px;
+                border: 1px solid #E2E8F0;
+                border-radius: 0;
+                background: #FFFFFF;
+                color: #0F172A;
+                font-size: 20px;
+                cursor: pointer;
+            }
+            body.layout-movil.sidebar-movil-abierto .sidebar-movil-backdrop {
+                display: block;
+                position: fixed;
+                inset: 0;
+                z-index: 1044;
+                background: rgba(15, 23, 42, 0.45);
+            }
+            body.layout-movil.sidebar-movil-abierto { overflow: hidden; }
+        }
+    </style>
+    @endif
 
         <style>
     /* Iconografía Global Institucional (Tabler Icons) */
@@ -421,7 +486,7 @@
 
 </head>
 
-<body>
+<body @hasSection('layout_movil') class="layout-movil" @endif>
 
     @php
         $nombreUsuario = trim((string) session('nombre')) ?: 'Usuario';
@@ -441,6 +506,11 @@
 
     {{-- Barra superior --}}
     <header class="tw:fixed tw:top-0 tw:right-0 tw:left-[270px] tw:z-[1040] tw:flex tw:h-[60px] tw:items-center tw:justify-between tw:gap-4 tw:border-b tw:border-slate-200 tw:bg-white/90 tw:px-8 tw:backdrop-blur-md tw:transition-[left] tw:duration-300 tw:ease-out tw:sb-collapsed:left-[75px]">
+        @hasSection('layout_movil')
+            <button type="button" class="btn-menu-movil" id="btnMenuMovil" aria-label="Abrir menú" aria-controls="sidebar" aria-expanded="false">
+                <i class="ti ti-menu-2"></i>
+            </button>
+        @endif
         <div class="tw:flex tw:min-w-0 tw:flex-col tw:leading-tight">
             <span class="tw:truncate tw:text-[0.95rem] tw:font-semibold tw:tracking-tight tw:text-slate-900">Bachillerato Tecnológico Interamericano</span>
             <span class="tw:truncate tw:text-xs tw:font-medium tw:text-slate-500">Ciclo Escolar {{ $cicloEscolar }}</span>
@@ -492,6 +562,37 @@
     <main class="main-content tw:mt-[60px] tw:ml-[270px] tw:min-h-[calc(100vh-60px)] tw:overflow-x-hidden tw:bg-canvas tw:px-8 tw:py-6 tw:transition-[margin] tw:duration-300 tw:ease-out tw:sb-collapsed:ml-[75px]">
         @yield('content')
     </main>
+
+    @hasSection('layout_movil')
+    <div class="sidebar-movil-backdrop" id="sidebarMovilBackdrop"></div>
+    <script>
+        (function () {
+            const mq = window.matchMedia('(max-width: 991.98px)');
+            const body = document.body;
+            const btn = document.getElementById('btnMenuMovil');
+            const backdrop = document.getElementById('sidebarMovilBackdrop');
+
+            // En móvil el sidebar es off-canvas a ancho completo: ignorar el estado "colapsado" de escritorio
+            // (no se toca localStorage, así el escritorio conserva la preferencia del usuario).
+            function sincronizar() {
+                if (mq.matches) {
+                    body.classList.remove('sidebar-hidden');
+                    document.getElementById('sidebar')?.classList.remove('sidebar-hidden');
+                } else {
+                    cerrar();
+                }
+            }
+            function abrir() { body.classList.add('sidebar-movil-abierto'); btn?.setAttribute('aria-expanded', 'true'); }
+            function cerrar() { body.classList.remove('sidebar-movil-abierto'); btn?.setAttribute('aria-expanded', 'false'); }
+
+            btn?.addEventListener('click', () => body.classList.contains('sidebar-movil-abierto') ? cerrar() : abrir());
+            backdrop?.addEventListener('click', cerrar);
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrar(); });
+            mq.addEventListener ? mq.addEventListener('change', sincronizar) : mq.addListener(sincronizar);
+            sincronizar();
+        })();
+    </script>
+    @endif
 
     <!-- Contenedor global para Modales (evita problemas de z-index y stacking context con backdrop) -->
     <div id="contenedorModal"></div>

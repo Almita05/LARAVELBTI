@@ -90,6 +90,9 @@
 
     </div>
 
+    <!-- Reporte BTI (pase de lista diario; reglas propias de BTI) -->
+    @include('alumnos.partials.reporte_asistencias_bti')
+
     <!-- Estado Inicial Vacío -->
     <div class="text-center py-5 text-muted" id="mensaje-vacio-grupo">
         <i class="fa-solid fa-chart-line mb-3" style="font-size: 3.5rem; color: rgba(49, 125, 146, 0.3);"></i>
@@ -233,15 +236,28 @@
         }
     }
 
+    // Centro de trabajo por grupo: BTI (2) y BGNE (3) manejan las asistencias distinto
+    const CCT_BTI = 2;
+    const cctPorGrupo = @json(collect($grupos)->mapWithKeys(fn ($g) => [$g['id'] => (int) ($g['id_centroTrabajo'] ?? 0)]));
+
     function cargarReportesGrupo(idGrupo) {
+        document.getElementById('seccion-reporte').classList.add('d-none');
+        document.getElementById('seccion-reporte-bti').classList.add('d-none');
+
         if (!idGrupo) {
             activeGroupId = null;
-            document.getElementById('seccion-reporte').classList.add('d-none');
             document.getElementById('mensaje-vacio-grupo').classList.remove('d-none');
             return;
         }
 
         activeGroupId = idGrupo;
+
+        if (cctPorGrupo[idGrupo] === CCT_BTI) {
+            document.getElementById('mensaje-vacio-grupo').classList.add('d-none');
+            document.getElementById('seccion-reporte-bti').classList.remove('d-none');
+            cargarReporteBti(idGrupo);
+            return;
+        }
         Swal.fire({
             title: 'Cargando reportes...',
             text: 'Obteniendo estadísticas de asistencia del grupo',

@@ -3293,6 +3293,12 @@ window.abrirKardexAlumno = function(idAlumno) {
                                         <option value="12">6° Semestre</option>
                                     </select>
                                 </div>
+                                <div class="mb-3 text-start">
+                                    <label class="form-label fw-bold small text-slate-700">Boleta:</label>
+                                    <select id="swalBoletaParcialSelect" class="form-select">
+                                        ${['1', '2', '3', 'FINAL'].map(p => `<option value="${p}" ${String(window.parcialActualBTI ? window.parcialActualBTI(data) : '1') === p ? 'selected' : ''}>${p === 'FINAL' ? 'Final del semestre' : (p === '1' ? '1er' : p === '2' ? '2do' : '3er') + ' parcial'}</option>`).join('')}
+                                    </select>
+                                </div>
                                 <div class="p-3 bg-light rounded border text-start">
                                     <div class="form-check form-switch mb-2">
                                         <input class="form-check-input" type="checkbox" id="swalChkIncluirAsistencias" checked>
@@ -3312,14 +3318,15 @@ window.abrirKardexAlumno = function(idAlumno) {
                             preConfirm: () => {
                                 return {
                                     idNivelSemestre: parseInt(document.getElementById('swalBoletaSemestreSelect').value),
+                                    parcial: document.getElementById('swalBoletaParcialSelect').value,
                                     incluirAsistencias: document.getElementById('swalChkIncluirAsistencias').checked,
                                     incluirReportes: document.getElementById('swalChkIncluirReportes').checked
                                 };
                             }
                         }).then((semResult) => {
                             if (semResult.isConfirmed) {
-                                const { idNivelSemestre, incluirAsistencias, incluirReportes } = semResult.value;
-                                const opciones = { incluirAsistencias, incluirReportes };
+                                const { idNivelSemestre, parcial, incluirAsistencias, incluirReportes } = semResult.value;
+                                const opciones = { parcial, incluirAsistencias, incluirReportes };
                                 const alId = data.alumno.idAlumno;
                                 Swal.fire({
                                     title: 'Preparando boleta...',
@@ -3480,634 +3487,6 @@ function mostrarKardexConDatos(data) {
     calcularPromediosKardex();
 }
 
-    function imprimirBoletaBTISemestre(data, idNivelSemestre, reportesCounts, opciones = {}) {
-        const al = data.alumno;
-        const repCounts = reportesCounts || { 1: 0, 2: 0, 3: 0 };
-        const totalReportes = (repCounts[1] || 0) + (repCounts[2] || 0) + (repCounts[3] || 0);
-
-        const incAsist = opciones.incluirAsistencias !== false;
-        const incRep = opciones.incluirReportes !== false;
-
-        let boxReportesHtml = '';
-        if (incRep) {
-            if (totalReportes > 0) {
-                boxReportesHtml = `
-                    <!-- Box Reportes de Indisciplina (Con reportes) -->
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">CONDUCTA Y DISCIPLINA</span>
-                        <span style="font-size: 8.5pt; font-weight: 900; padding: 6px 5px 2px 5px; color: #dc2626; display: block;">
-                            ${totalReportes} REPORTE${totalReportes > 1 ? 'S' : ''} ACUMULADO${totalReportes > 1 ? 'S' : ''}
-                        </span>
-                        <span style="font-size: 7.5pt; font-weight: 700; padding: 2px 5px 6px 5px; color: #475569; display: block; word-spacing: 3px;">
-                            P1: <strong style="color: #dc2626; font-size: 8.5pt;">${repCounts[1] || 0}</strong> &nbsp;|&nbsp; 
-                            P2: <strong style="color: #dc2626; font-size: 8.5pt;">${repCounts[2] || 0}</strong> &nbsp;|&nbsp; 
-                            P3: <strong style="color: #dc2626; font-size: 8.5pt;">${repCounts[3] || 0}</strong>
-                        </span>
-                    </div>
-                `;
-            } else {
-                boxReportesHtml = `
-                    <!-- Box Reportes de Indisciplina (Sin reportes) -->
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">CONDUCTA Y DISCIPLINA</span>
-                        <span style="font-size: 8pt; font-weight: 800; padding: 8px 5px; color: #0f172a; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                            0 REPORTES DE INDISCIPLINA
-                        </span>
-                    </div>
-                `;
-            }
-        }
-
-        const periodos = data.periodos || [];
-        const p = periodos.find(x => x.idNivel === idNivelSemestre);
-        const materias = p ? p.materias || [] : [];
-
-        const semestresNombres = {
-            7: 'PRIMER',
-            8: 'SEGUNDO',
-            9: 'TERCER',
-            10: 'CUARTO',
-            11: 'QUINTO',
-            12: 'SEXTO'
-        };
-        const semestreNombreLargo = semestresNombres[idNivelSemestre] || 'SEMESTRE';
-
-        let filasMateriasHtml = '';
-        let p1Vals = []; let p2Vals = []; let p3Vals = []; let semVals = []; let extVals = []; let finalVals = [];
-        let totalAsist = 0; let totalTotAsist = 0;
-        let allAsistVals = [];
-        let allTotVals = [];
-
-        const formatNota = (val, isExtra = false) => {
-            if (val === null || val === undefined || isNaN(val)) {
-                return {
-                    text: isExtra ? '0.0' : '—',
-                    style: 'color: #000;'
-                };
-            }
-            const num = parseFloat(val);
-            const text = num.toFixed(1);
-            const style = num <= 5.0 ? 'color: #dc2626; font-weight: bold;' : 'color: #000;';
-            return { text, style, num };
-        };
-
-        materias.forEach(m => {
-            const isEquiv = m.es_equivalencia === true;
-            if (isEquiv) {
-                filasMateriasHtml += `
-                    <tr style="text-align: center; height: 32px;">
-                        <td style="border: 1px solid #000; padding: 6px; text-align: left; text-transform: uppercase; font-weight: bold; font-size: 8.5pt;">${m.nombreMateria}</td>
-                        <td colspan="5" style="border: 1px solid #000; padding: 6px; font-weight: bold; color: #d97706; font-size: 8.5pt;">EQUIVALENCIA</td>
-                        <td style="border: 1px solid #000; padding: 6px; font-weight: bold; font-size: 8.5pt;">—</td>
-                    </tr>
-                `;
-                return;
-            }
-
-            const p1 = (m.parcial1 !== null && m.parcial1 !== undefined && m.parcial1 !== '') ? parseFloat(m.parcial1) : null;
-            const p2 = (m.parcial2 !== null && m.parcial2 !== undefined && m.parcial2 !== '') ? parseFloat(m.parcial2) : null;
-            const p3 = (m.parcial3 !== null && m.parcial3 !== undefined && m.parcial3 !== '') ? parseFloat(m.parcial3) : null;
-            const sem = (m.semestral !== null && m.semestral !== undefined && m.semestral !== '') ? parseFloat(m.semestral) : null;
-            const ext = (m.extraordinario !== null && m.extraordinario !== undefined && m.extraordinario !== '') ? parseFloat(m.extraordinario) : null;
-            const finalVal = (m.calificacion !== null && m.calificacion !== undefined && m.calificacion !== '') ? parseFloat(m.calificacion) : null;
-
-            const parseVal = (v, arr) => { if (v !== null && !isNaN(v)) arr.push(v); };
-            parseVal(p1, p1Vals);
-            parseVal(p2, p2Vals);
-            parseVal(p3, p3Vals);
-            parseVal(sem, semVals);
-            parseVal(ext, extVals);
-            parseVal(finalVal, finalVals);
-
-            if (m.asistencias !== null && m.asistencias !== undefined) {
-                const a = parseInt(m.asistencias) || 0;
-                totalAsist += a;
-                allAsistVals.push(a);
-            }
-            if (m.total_asistencias !== null && m.total_asistencias !== undefined) {
-                const t = parseInt(m.total_asistencias) || 0;
-                totalTotAsist += t;
-                allTotVals.push(t);
-            }
-
-            const c1 = formatNota(p1);
-            const c2 = formatNota(p2);
-            const c3 = formatNota(p3);
-            const cSem = formatNota(sem);
-            const cExt = formatNota(ext, true);
-            const cFinal = formatNota(finalVal);
-
-            filasMateriasHtml += `
-                <tr style="text-align: center; height: 32px;">
-                    <td style="border: 1px solid #000; padding: 6px 8px; text-align: left; text-transform: uppercase; font-weight: 700; font-size: 8.5pt;">${m.nombreMateria}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${c1.style}">${c1.text}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${c2.style}">${c2.text}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${c3.style}">${c3.text}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${cSem.style}">${cSem.text}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; ${cExt.style}">${cExt.text}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-size: 9pt; background: #f8fafc; ${cFinal.style}">${cFinal.text}</td>
-                </tr>
-            `;
-        });
-
-        const getAvg = (arr) => arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '—';
-
-        const p1Avg = getAvg(p1Vals);
-        const p2Avg = getAvg(p2Vals);
-        const p3Avg = getAvg(p3Vals);
-        const semAvg = getAvg(semVals);
-        const extAvg = getAvg(extVals);
-        const finalAvg = getAvg(finalVals);
-
-        const formatAvgStyle = (avgStr, defaultColor = '#000') => {
-            if (avgStr === '—' || isNaN(avgStr)) return `color: ${defaultColor};`;
-            const n = parseFloat(avgStr);
-            return n <= 5.0 ? 'color: #dc2626; font-weight: bold;' : `color: ${defaultColor};`;
-        };
-
-        const p1AvgStyle = formatAvgStyle(p1Avg);
-        const p2AvgStyle = formatAvgStyle(p2Avg);
-        const p3AvgStyle = formatAvgStyle(p3Avg);
-        const semAvgStyle = formatAvgStyle(semAvg);
-        const extAvgStyle = formatAvgStyle(extAvg);
-        const finalAvgStyle = formatAvgStyle(finalAvg, '#1e293b');
-
-        const badgeFinalColor = (finalAvg !== '—' && !isNaN(finalAvg) && parseFloat(finalAvg) <= 5.0) ? '#dc2626' : '#2e596b';
-
-        const allSameTot = allTotVals.length > 0 && allTotVals.every(v => v === allTotVals[0]);
-        const allSameAsist = allAsistVals.length > 0 && allAsistVals.every(v => v === allAsistVals[0]);
-
-        const displayAsist = (allSameTot && allSameAsist && allAsistVals.length > 0) ? allAsistVals[0] : totalAsist;
-        const displayTotAsist = (allSameTot && allTotVals.length > 0) ? allTotVals[0] : totalTotAsist;
-        const pctAsist = displayTotAsist > 0 ? Math.round((displayAsist / displayTotAsist) * 100) : 0;
-
-        let badgesHtml = '';
-        if (incAsist) {
-            badgesHtml = `
-                <div style="display: flex; gap: 15px; width: 100%; justify-content: center;">
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block;">ASISTENCIAS</span>
-                        <span style="font-size: 11pt; font-weight: 800; padding: 6px 5px 2px 5px; color: #0f172a; display: block;">${displayAsist} / ${displayTotAsist}</span>
-                        <span style="font-size: 6.8pt; font-weight: 700; color: #2563eb; padding-bottom: 2px; display: block;">${pctAsist}% ASISTENCIA</span>
-                        <span style="font-size: 6pt; color: #64748b; padding-bottom: 4px; display: block;">(Detalle en Hoja 2)</span>
-                    </div>
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 110px; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <span style="font-size: 6.8pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 4px 0; text-transform: uppercase; display: block; line-height: 1.1;">PROMEDIO FINAL<br>DEL SEMESTRE</span>
-                        <span style="font-size: 13pt; font-weight: 900; padding: 10px 5px; color: ${badgeFinalColor}; display: block;">${finalAvg}</span>
-                    </div>
-                </div>
-            `;
-        } else {
-            badgesHtml = `
-                <div style="display: flex; width: 100%; justify-content: center;">
-                    <div style="border: 1.5px solid #000; background: #ffffff; width: 235px; border-radius: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <span style="font-size: 7.2pt; font-weight: 800; background: #2e596b; color: #ffffff; width: 100%; padding: 5px 0; text-transform: uppercase; display: block; letter-spacing: 0.5px;">PROMEDIO FINAL DEL SEMESTRE</span>
-                        <span style="font-size: 15pt; font-weight: 900; padding: 12px 5px; color: ${badgeFinalColor}; display: block;">${finalAvg}</span>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Datos de fechas de periodos de evaluación configuradas para el grupo
-        const pe = data.periodosEvaluacion || opciones.periodosEvaluacion || {};
-        const p1RangoText = pe.p1_rango || (pe.p1_inicio && pe.p1_fin ? `${pe.p1_inicio} al ${pe.p1_fin}` : '01/09/2025 al 10/10/2025');
-        const p2RangoText = pe.p2_rango || (pe.p2_inicio && pe.p2_fin ? `${pe.p2_inicio} al ${pe.p2_fin}` : '13/10/2025 al 21/11/2025');
-        const p3RangoText = pe.p3_rango || (pe.p3_inicio && pe.p3_fin ? `${pe.p3_inicio} al ${pe.p3_fin}` : '24/11/2025 al 16/01/2026');
-
-        const incidenciasAsistencia = opciones.incidenciasAsistencia || {
-            1: {
-                inicio: pe.p1_inicio || '01/09/2025',
-                fin: pe.p1_fin || '10/10/2025',
-                asistencias: 48,
-                total: 50,
-                pct: 96,
-                faltas: ['12 de Septiembre, 2025', '25 de Septiembre, 2025'],
-                retardos: ['18 de Septiembre, 2025'],
-                justificantes: [{ fecha: '29 de Septiembre, 2025', motivo: 'Cita Médica' }]
-            },
-            2: {
-                inicio: pe.p2_inicio || '13/10/2025',
-                fin: pe.p2_fin || '21/11/2025',
-                asistencias: 50,
-                total: 50,
-                pct: 100,
-                faltas: [],
-                retardos: [],
-                justificantes: []
-            },
-            3: {
-                inicio: pe.p3_inicio || '24/11/2025',
-                fin: pe.p3_fin || '16/01/2026',
-                asistencias: 47,
-                total: 50,
-                pct: 94,
-                faltas: ['05 de Diciembre, 2025'],
-                retardos: ['02 de Diciembre, 2025', '10 de Diciembre, 2025'],
-                justificantes: []
-            }
-        };
-
-                const renderListaFechas = (items, tipo) => {
-            if (!items || items.length === 0) {
-                const txt = (tipo === 'retardos' || tipo === 'justificantes') ? `Sin ${tipo} registrados` : `Sin ${tipo} registradas`;
-                return `<div style="font-size: 7.2pt; color: #64748b; font-style: italic; padding-left: 8px;">${txt}</div>`;
-            }
-            return items.map(item => {
-                if (typeof item === 'object') {
-                    return `<div style="font-size: 7.2pt; color: #000000; padding-left: 8px; line-height: 1.4;">• ${item.fecha} <span style="font-size: 6.8pt; color: #475569;">(${item.motivo})</span></div>`;
-                }
-                return `<div style="font-size: 7.2pt; color: #000000; padding-left: 8px; line-height: 1.4;">• ${item}</div>`;
-            }).join('');
-        };
-
-        const totFaltas = (incidenciasAsistencia[1]?.faltas?.length || 0) + (incidenciasAsistencia[2]?.faltas?.length || 0) + (incidenciasAsistencia[3]?.faltas?.length || 0);
-        const totRetardos = (incidenciasAsistencia[1]?.retardos?.length || 0) + (incidenciasAsistencia[2]?.retardos?.length || 0) + (incidenciasAsistencia[3]?.retardos?.length || 0);
-        const totJustif = (incidenciasAsistencia[1]?.justificantes?.length || 0) + (incidenciasAsistencia[2]?.justificantes?.length || 0) + (incidenciasAsistencia[3]?.justificantes?.length || 0);
-        const totAsist = (incidenciasAsistencia[1]?.asistencias || 0) + (incidenciasAsistencia[2]?.asistencias || 0) + (incidenciasAsistencia[3]?.asistencias || 0);
-        const totTotalAsist = (incidenciasAsistencia[1]?.total || 0) + (incidenciasAsistencia[2]?.total || 0) + (incidenciasAsistencia[3]?.total || 0);
-        const pctGlobal = totTotalAsist > 0 ? ((totAsist / totTotalAsist) * 100).toFixed(1) : '100.0';
-
-        const win = window.open('', '', 'height=850,width=1100');
-        win.document.write(`
-            <html>
-                <head>
-                    <title>Boleta de Calificaciones - ${semestreNombreLargo} Semestre - ${al.nombre}</title>
-                    <style>
-                        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
-                        @page {
-                            size: letter portrait;
-                            margin: 10mm 12mm;
-                        }
-                        html, body {
-                            font-family: Arial, Helvetica, sans-serif;
-                            background: #fff;
-                            color: #000;
-                            padding: 0;
-                            margin: 0;
-                        }
-                        .boleta-container {
-                            width: 100%;
-                            max-width: 800px;
-                            margin: 0 auto;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="boleta-container">
-                        
-                        <!-- Header -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 20px;">
-                            <div style="width: 100px; text-align: left;">
-                                <img src="/img/logo.png" style="height: 60px; width: auto; object-fit: contain;">
-                            </div>
-                            <div style="text-align: center; flex: 1;">
-                                <div style="font-size: 10pt; font-weight: bold; color: #000; letter-spacing: 0.5px; text-transform: uppercase;">Dirección General de Educación Tecnológica Industrial y de Servicios</div>
-                                <div style="font-size: 9pt; font-weight: 700; color: #334155; margin-top: 3px; text-transform: uppercase;">Educación Media Superior</div>
-                                <div style="font-size: 11pt; font-weight: 800; color: #0f172a; margin-top: 6px; text-transform: uppercase;">BOLETA DE CALIFICACIONES DEL ${semestreNombreLargo} SEMESTRE</div>
-                                <div style="font-size: 8.5pt; font-weight: bold; color: #475569; margin-top: 3px; text-transform: uppercase;">Ciclo Escolar 2025-2026</div>
-                            </div>
-                            <div style="width: 100px;"></div>
-                        </div>
-
-                        <!-- Details Row 1 -->
-                        <div style="display: flex; gap: 30px; font-size: 8.5pt; margin-bottom: 12px;">
-                            <div style="flex: 2; display: flex; flex-direction: column;">
-                                <div style="display: flex; align-items: flex-end; margin-bottom: 2px;">
-                                    <span style="font-weight: bold; color: #475569; width: 150px; text-transform: uppercase;">DATOS DEL ALUMNO (A):</span>
-                                    <span style="flex: 1; border-bottom: 1.2px solid #000; font-weight: 700; font-size: 9.5pt; text-align: center; padding-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px;">
-                                        ${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}
-                                    </span>
-                                </div>
-                                <div style="display: flex; justify-content: space-around; font-size: 7.2pt; color: #64748b; padding-left: 150px; margin-top: 1px;">
-                                    <span>Apellido Paterno</span>
-                                    <span>Apellido Materno</span>
-                                    <span>Nombre</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Details Row 2 -->
-                        <div style="display: flex; gap: 20px; font-size: 8.5pt; margin-bottom: 20px; align-items: flex-end;">
-                            <div style="flex: 2; display: flex; align-items: flex-end;">
-                                <span style="font-weight: bold; color: #475569; width: 150px; text-transform: uppercase;">DATOS DE LA ESCUELA:</span>
-                                <span style="flex: 1; border-bottom: 1.2px solid #000; font-weight: 700; text-align: center; padding-bottom: 2px; text-transform: uppercase; font-size: 9pt;">
-                                    ${al.nombreCentroTrabajo || 'BACHILLERATO TECNOLÓGICO INTERAMERICANO'}
-                                </span>
-                            </div>
-                            <div style="display: flex; gap: 15px; font-size: 8pt; text-align: center;">
-                                <div style="display: flex; flex-direction: column; width: 60px;">
-                                    <span style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 2px; text-transform: uppercase;">${al.nombreGrupoTexto || '—'}</span>
-                                    <span style="font-size: 7pt; color: #475569; font-weight: bold; margin-top: 2px;">GRUPO</span>
-                                </div>
-                                <div style="display: flex; flex-direction: column; width: 90px;">
-                                    <span style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 2px; text-transform: uppercase;">${al.modalidadHorario || 'MATUTINO'}</span>
-                                    <span style="font-size: 7pt; color: #475569; font-weight: bold; margin-top: 2px;">TURNO</span>
-                                </div>
-                                <div style="display: flex; flex-direction: column; width: 90px;">
-                                    <span style="font-weight: 700; border-bottom: 1px solid #000; padding-bottom: 2px; text-transform: uppercase;">${al.claveCentroTrabajo || '21PCT0073R'}</span>
-                                    <span style="font-size: 7pt; color: #475569; font-weight: bold; margin-top: 2px;">CCT</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Periodos de Evaluacion Parcial -->
-                        <div style="border: 1.5px solid #000; background: #ffffff; margin-bottom: 18px; border-radius: 0; overflow: hidden;">
-                            <div style="background: #2e596b; color: #ffffff; font-size: 7.2pt; font-weight: 800; text-align: center; padding: 3px 0; text-transform: uppercase; letter-spacing: 0.5px;">
-                                PERIODOS DE EVALUACIÓN PARCIAL (FECHAS)
-                            </div>
-                            <div style="display: flex; justify-content: space-around; align-items: center; background: #f8fafc; padding: 6px 12px; font-size: 7.8pt;">
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">1ER. PARCIAL:</span>
-                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 0;">${p1RangoText}</span>
-                                </div>
-                                <div style="height: 14px; border-left: 1.5px solid #cbd5e1;"></div>
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">2DO. PARCIAL:</span>
-                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 0;">${p2RangoText}</span>
-                                </div>
-                                <div style="height: 14px; border-left: 1.5px solid #cbd5e1;"></div>
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <span style="font-weight: 800; color: #0f172a; text-transform: uppercase;">3ER. PARCIAL:</span>
-                                    <span style="color: #1e293b; font-weight: 600; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 0;">${p3RangoText}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Grades Table and Info blocks -->
-                        <div style="display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; margin-bottom: 25px;">
-                            
-                            <!-- Main Grades Table -->
-                            <div style="flex: 1;">
-                                <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 8pt;">
-                                    <thead>
-                                        <tr style="background: #e2e8f0; color: #000; text-align: center; border-bottom: 1.5px solid #000;">
-                                            <th rowspan="2" style="border: 1px solid #000; padding: 6px; text-align: left; width: 220px; font-size: 7.8pt; text-transform: uppercase; font-weight: 800;">ASIGNATURAS / ÁREAS</th>
-                                            <th colspan="4" style="border: 1px solid #000; padding: 4px; font-size: 7.8pt; font-weight: 800;">PERIODOS DE EVALUACIÓN ORDINARIA</th>
-                                            <th rowspan="2" style="border: 1px solid #000; padding: 6px; width: 50px; font-size: 7.2pt; font-weight: 800; border-left: 1.5px solid #000;">EXTRAORDINARIO</th>
-                                            <th rowspan="2" style="border: 1px solid #000; padding: 6px; width: 65px; font-size: 7.2pt; font-weight: 800; border-left: 1.5px solid #000;">PROMEDIO FINAL/<br>MATERIA</th>
-                                        </tr>
-                                        <tr style="background: #f8fafc; color: #000; text-align: center; font-size: 7.2pt; border-bottom: 1.5px solid #000;">
-                                            <th style="border: 1px solid #000; padding: 4px; width: 45px;">1ER. PARCIAL</th>
-                                            <th style="border: 1px solid #000; padding: 4px; width: 45px;">2DO. PARCIAL</th>
-                                            <th style="border: 1px solid #000; padding: 4px; width: 45px;">3ER. PARCIAL</th>
-                                            <th style="border: 1px solid #000; padding: 4px; width: 55px;">SEMESTRAL</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${filasMateriasHtml}
-                                        <tr style="font-weight: bold; background: #e2e8f0; text-align: center; font-size: 8pt; border-top: 1.5px solid #000; height: 32px;">
-                                            <td style="border: 1px solid #000; padding: 6px; text-align: right; text-transform: uppercase; font-weight: 800;">PROMEDIO</td>
-                                            <td style="border: 1px solid #000; padding: 5px; ${p1AvgStyle}">${p1Avg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; ${p2AvgStyle}">${p2Avg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; ${p3AvgStyle}">${p3Avg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; ${semAvgStyle}">${semAvg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; ${extAvgStyle} border-left: 1.5px solid #000;">${extAvg}</td>
-                                            <td style="border: 1px solid #000; padding: 5px; background: #cbd5e1; ${finalAvgStyle} border-left: 1.5px solid #000;">${finalAvg}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- Sidebar details -->
-                            <div style="width: 250px; display: flex; flex-direction: column; gap: 20px; align-items: center;">
-                                
-                                ${badgesHtml}
-
-                                ${boxReportesHtml}
-
-                                <!-- Director Signature -->
-                                <div style="margin-top: 10px; width: 100%; text-align: center;">
-                                    <div style="border-bottom: 1px solid #000; width: 160px; margin: 0 auto 5px auto; height: 45px;"></div>
-                                    <div style="font-size: 7.8pt; font-weight: 800; text-transform: uppercase; color: #0f172a;">ING. FAUSTO LEYVA FLORES</div>
-                                    <div style="font-size: 7.2pt; font-weight: 700; color: #475569; text-transform: uppercase; margin-top: 1px;">DIRECTOR</div>
-                                </div>
-
-                                <!-- Date info -->
-                                <div style="font-size: 7.5pt; font-weight: bold; color: #1e293b; margin-top: 5px; text-transform: uppercase; text-align: center; border: 1px dashed #cbd5e1; padding: 4px 8px; border-radius: 0;">
-                                    TEZIUTLÁN PUEBLA A ${new Date().toLocaleDateString('es-MX', {day: 'numeric', month: 'long', year: 'numeric'}).toUpperCase()}
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <!-- Recommendations Table -->
-                        <div style="margin-top: 25px;">
-                            <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 8pt;">
-                                <thead>
-                                    <tr style="background: #2e596b; color: #ffffff; font-weight: 800; text-transform: uppercase; text-align: center;">
-                                        <th style="border: 1px solid #000; padding: 6px; font-size: 7.8pt; letter-spacing: 0.5px;">OBSERVACIONES O RECOMENDACIONES DE LA DOCENTE O DEL DOCENTE</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td style="border: 1px solid #000; height: 40px;"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                                                ${incAsist ? `
-                        <!-- ==================== SALTO DE PÁGINA OBLIGATORIO ==================== -->
-                        <div style="page-break-before: always; break-before: page; height: 1px;"></div>
-
-                        <!-- ==================== PÁGINA 2: ANEXO DE ASISTENCIA Y PUNTUALIDAD ==================== -->
-                        <div style="padding-top: 15px;">
-                            <!-- Header Hoja 2 -->
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000000; padding-bottom: 12px; margin-bottom: 16px;">
-                                <div style="width: 100px; text-align: left;">
-                                    <img src="/img/logo.png" style="height: 55px; width: auto; object-fit: contain;">
-                                </div>
-                                <div style="text-align: center; flex: 1;">
-                                    <div style="font-size: 9.5pt; font-weight: bold; color: #000000; letter-spacing: 0.5px; text-transform: uppercase;">BACHILLERATO TECNOLÓGICO INTERAMERICANO</div>
-                                    <div style="font-size: 11pt; font-weight: 800; color: #000000; margin-top: 4px; text-transform: uppercase;">REPORTE DETALLADO DE ASISTENCIA, PUNTUALIDAD E INCIDENCIAS</div>
-                                    <div style="font-size: 8.5pt; font-weight: bold; color: #334155; margin-top: 3px; text-transform: uppercase;">ANEXO A LA BOLETA DE CALIFICACIONES — ${semestreNombreLargo} SEMESTRE</div>
-                                </div>
-                                <div style="width: 100px;"></div>
-                            </div>
-
-                            <!-- Datos Resumidos del Alumno en Hoja 2 -->
-                            <div style="display: flex; justify-content: space-between; background: #f8fafc; border: 1px solid #000000; padding: 7px 14px; font-size: 8pt; margin-bottom: 18px;">
-                                <div>
-                                    <span style="font-weight: bold; color: #334155;">ALUMNO:</span>
-                                    <strong style="color: #000000; text-transform: uppercase; margin-left: 4px;">${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}</strong>
-                                </div>
-                                <div>
-                                    <span style="font-weight: bold; color: #334155;">MATRÍCULA:</span>
-                                    <strong style="color: #000000; margin-left: 4px;">${al.numeroControl || al.idAlumno || '—'}</strong>
-                                </div>
-                                <div>
-                                    <span style="font-weight: bold; color: #334155;">GRUPO:</span>
-                                    <strong style="color: #000000; margin-left: 4px;">${al.nombreGrupoTexto || '—'} (${al.modalidadHorario || 'MATUTINO'})</strong>
-                                </div>
-                                <div>
-                                    <span style="font-weight: bold; color: #334155;">CICLO:</span>
-                                    <strong style="color: #000000; margin-left: 4px;">2025-2026</strong>
-                                </div>
-                            </div>
-
-                            <!-- Encabezado Institucional de Sección -->
-                            <div style="background: #2e596b; color: #ffffff; padding: 6px 12px; font-size: 8pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; border: 1px solid #000000; border-bottom: none;">
-                                DESGLOSE DE INCIDENCIAS POR PERIODO PARCIAL
-                            </div>
-
-                            <!-- 3 Columnas por Periodo Parcial (Estilo Institucional y Proporcional) -->
-                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; border: 1px solid #000000; margin-bottom: 45px; font-size: 8pt; background: #ffffff;">
-                                
-                                <!-- Columna 1: 1er Parcial -->
-                                <div style="border-right: 1px solid #000000; display: flex; flex-direction: column;">
-                                    <div style="background: #e2e8f0; font-weight: 800; text-align: center; padding: 7px 6px; font-size: 8.5pt; border-bottom: 1px solid #000000; text-transform: uppercase; color: #000000;">
-                                        1ER. PARCIAL
-                                        <div style="font-size: 6.8pt; font-weight: 600; color: #334155; margin-top: 1px;">${incidenciasAsistencia[1]?.inicio || '01/09/2025'} AL ${incidenciasAsistencia[1]?.fin || '10/10/2025'}</div>
-                                    </div>
-                                    
-                                    <div style="padding: 7px 10px; background: #f8fafc; border-bottom: 1px solid #000000; text-align: center; font-size: 7.5pt;">
-                                        <span style="font-weight: bold; color: #334155;">ASISTENCIA DEL PERIODO:</span>
-                                        <strong style="font-size: 9.5pt; color: #000000; margin-left: 4px;">${incidenciasAsistencia[1]?.asistencias || 0} / ${incidenciasAsistencia[1]?.total || 0}</strong>
-                                        <span style="font-weight: bold; color: #334155; margin-left: 3px;">(${incidenciasAsistencia[1]?.pct || 0}%)</span>
-                                    </div>
-
-                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• FALTAS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[1]?.faltas?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[1]?.faltas, 'faltas')}
-                                    </div>
-
-                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• RETARDOS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[1]?.retardos?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[1]?.retardos, 'retardos')}
-                                    </div>
-
-                                    <div style="padding: 10px 12px; flex: 1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• JUSTIFICANTES:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[1]?.justificantes?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[1]?.justificantes, 'justificantes')}
-                                    </div>
-                                </div>
-
-                                <!-- Columna 2: 2do Parcial -->
-                                <div style="border-right: 1px solid #000000; display: flex; flex-direction: column;">
-                                    <div style="background: #e2e8f0; font-weight: 800; text-align: center; padding: 7px 6px; font-size: 8.5pt; border-bottom: 1px solid #000000; text-transform: uppercase; color: #000000;">
-                                        2DO. PARCIAL
-                                        <div style="font-size: 6.8pt; font-weight: 600; color: #334155; margin-top: 1px;">${incidenciasAsistencia[2]?.inicio || '13/10/2025'} AL ${incidenciasAsistencia[2]?.fin || '21/11/2025'}</div>
-                                    </div>
-                                    
-                                    <div style="padding: 7px 10px; background: #f8fafc; border-bottom: 1px solid #000000; text-align: center; font-size: 7.5pt;">
-                                        <span style="font-weight: bold; color: #334155;">ASISTENCIA DEL PERIODO:</span>
-                                        <strong style="font-size: 9.5pt; color: #000000; margin-left: 4px;">${incidenciasAsistencia[2]?.asistencias || 0} / ${incidenciasAsistencia[2]?.total || 0}</strong>
-                                        <span style="font-weight: bold; color: #334155; margin-left: 3px;">(${incidenciasAsistencia[2]?.pct || 0}%)</span>
-                                    </div>
-
-                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• FALTAS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[2]?.faltas?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[2]?.faltas, 'faltas')}
-                                    </div>
-
-                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• RETARDOS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[2]?.retardos?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[2]?.retardos, 'retardos')}
-                                    </div>
-
-                                    <div style="padding: 10px 12px; flex: 1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• JUSTIFICANTES:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[2]?.justificantes?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[2]?.justificantes, 'justificantes')}
-                                    </div>
-                                </div>
-
-                                <!-- Columna 3: 3er Parcial -->
-                                <div style="display: flex; flex-direction: column;">
-                                    <div style="background: #e2e8f0; font-weight: 800; text-align: center; padding: 7px 6px; font-size: 8.5pt; border-bottom: 1px solid #000000; text-transform: uppercase; color: #000000;">
-                                        3ER. PARCIAL
-                                        <div style="font-size: 6.8pt; font-weight: 600; color: #334155; margin-top: 1px;">${incidenciasAsistencia[3]?.inicio || '24/11/2025'} AL ${incidenciasAsistencia[3]?.fin || '16/01/2026'}</div>
-                                    </div>
-                                    
-                                    <div style="padding: 7px 10px; background: #f8fafc; border-bottom: 1px solid #000000; text-align: center; font-size: 7.5pt;">
-                                        <span style="font-weight: bold; color: #334155;">ASISTENCIA DEL PERIODO:</span>
-                                        <strong style="font-size: 9.5pt; color: #000000; margin-left: 4px;">${incidenciasAsistencia[3]?.asistencias || 0} / ${incidenciasAsistencia[3]?.total || 0}</strong>
-                                        <span style="font-weight: bold; color: #334155; margin-left: 3px;">(${incidenciasAsistencia[3]?.pct || 0}%)</span>
-                                    </div>
-
-                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• FALTAS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[3]?.faltas?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[3]?.faltas, 'faltas')}
-                                    </div>
-
-                                    <div style="padding: 10px 12px; border-bottom: 1px solid #e2e8f0;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• RETARDOS:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[3]?.retardos?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[3]?.retardos, 'retardos')}
-                                    </div>
-
-                                    <div style="padding: 10px 12px; flex: 1;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                                            <span style="font-weight: 800; color: #000000; font-size: 7.5pt;">• JUSTIFICANTES:</span>
-                                            <span style="background: #e2e8f0; color: #000000; font-weight: 800; padding: 1px 7px; border-radius: 0; font-size: 7.5pt;">${incidenciasAsistencia[3]?.justificantes?.length || 0}</span>
-                                        </div>
-                                        ${renderListaFechas(incidenciasAsistencia[3]?.justificantes, 'justificantes')}
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <!-- Firmas Hoja 2 -->
-                            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 55px; padding: 0 30px;">
-                                <div style="text-align: center; width: 220px;">
-                                    <div style="border-bottom: 1px solid #000000; margin-bottom: 6px; height: 50px;"></div>
-                                    <div style="font-size: 7.8pt; font-weight: 800; text-transform: uppercase; color: #000000;">PREFECTURA / CONTROL ESCOLAR</div>
-                                    <div style="font-size: 7pt; color: #475569; text-transform: uppercase;">RESPONSABLE DE ASISTENCIA</div>
-                                </div>
-
-                                <div style="text-align: center; width: 140px;">
-                                    <div style="border: 1px dashed #64748b; height: 70px; display: flex; align-items: center; justify-content: center; border-radius: 0;">
-                                        <span style="font-size: 7pt; color: #64748b; font-weight: bold; text-transform: uppercase;">SELLO ESCOLAR</span>
-                                    </div>
-                                </div>
-
-                                <div style="text-align: center; width: 220px;">
-                                    <div style="border-bottom: 1px solid #000000; margin-bottom: 6px; height: 50px;"></div>
-                                    <div style="font-size: 7.8pt; font-weight: 800; text-transform: uppercase; color: #000000;">PADRE DE FAMILIA O TUTOR</div>
-                                    <div style="font-size: 7pt; color: #475569; text-transform: uppercase;">FIRMA DE ENTERADO</div>
-                                </div>
-                            </div>
-
-                            <!-- Pie con fecha -->
-                            <div style="text-align: center; font-size: 7pt; color: #64748b; margin-top: 40px; text-transform: uppercase; letter-spacing: 0.5px;">
-                                DOCUMENTO OFICIAL ANEXO — TEZIUTLÁN, PUEBLA A ${new Date().toLocaleDateString('es-MX', {day: 'numeric', month: 'long', year: 'numeric'}).toUpperCase()}
-                            </div>
-                        </div>
-                        ` : ''}
-
-                    </div>
-                </body>
-            </html>
-        `);
-        win.document.close();
-        win.focus();
-        setTimeout(() => {
-            win.print();
-            win.close();
-        }, 400);
-    };
 
 window.imprimirFichaInscripcion = function() {
     const form = document.getElementById('formAlumno');
@@ -4304,6 +3683,9 @@ window.imprimirFichaInscripcion = function() {
     }, 400);
 };
 </script>
+
+{{-- Boleta de calificaciones BTI (formato institucional, compartida con reportes/imprimir) --}}
+@include('partials.boleta_bti_script')
 
 <!-- ======================================================== -->
 <!-- MODAL: CONFIGURAR MODALIDAD ONLINE (REGLA DE GRUPO + MOODLE) -->
@@ -4529,6 +3911,37 @@ function abrirModalPagoPorId(idAlumno) {
 }
 
 function abrirModalOnline(idAlumno, nombre, idGrupo, nombreGrupo, modalidad, diaPago, moodleUser) {
+    // La integración a online (cohorte, trimestre y validación de fin de trimestre) y los pagos se hacen en el módulo
+    // Alumnos online. Aquí solo se ofrece ir al módulo o regresar a presencial.
+    if (modalidad !== 'ONLINE') {
+        window.location.href = `/alumnos/online?integrar=${encodeURIComponent(idAlumno)}`;
+        return;
+    }
+    Swal.fire({
+        title: 'Alumno en modalidad online',
+        text: `${nombre} ya está en online. Sus pagos y semanas se manejan en el módulo Alumnos online.`,
+        icon: 'info',
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'Ir al módulo online',
+        denyButtonText: 'Regresar a presencial',
+        cancelButtonText: 'Cerrar',
+        confirmButtonColor: '#26687B',
+    }).then(async r => {
+        if (r.isConfirmed) {
+            window.location.href = '/alumnos/online';
+        } else if (r.isDenied) {
+            const c = await Swal.fire({ title: '¿Regresar a presencial?', text: 'Se suspenderá su cuenta de Moodle.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, regresar', cancelButtonText: 'Cancelar' });
+            if (!c.isConfirmed) return;
+            const res = await fetch(`/alumnos/${idAlumno}/modalidad-presencial`, { method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || data.success === false) return Swal.fire('Error', data.message || data.error || 'No se pudo cambiar la modalidad.', 'error');
+            Swal.fire('Actualizado', 'El alumno regresó a modalidad presencial.', 'success');
+            if (typeof window.cargarAlumnos === 'function') window.cargarAlumnos();
+        }
+    });
+    return;
+
     alumnoOnlineActualId = idAlumno;
     alumnoOnlineGrupoId = idGrupo;
 
@@ -4695,6 +4108,10 @@ async function guardarModalidadOnline() {
 let alumnoPagoActualId = null;
 
 function abrirModalPago(idAlumno, nombre, semanaActual, diaPago, nombreGrupo) {
+    // Los pagos online (78 semanas, cola FIFO) se registran en el módulo Alumnos online.
+    window.location.href = `/alumnos/online?pagar=${encodeURIComponent(idAlumno)}`;
+    return;
+
     alumnoPagoActualId = idAlumno;
 
     document.getElementById('modalPagoAlumnoNombre').innerText = nombre;

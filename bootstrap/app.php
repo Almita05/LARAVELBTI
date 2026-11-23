@@ -15,6 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Confiar en Cloudflare Tunnel / proxy HTTPS
         $middleware->trustProxies(at: '*');
 
+        // Cabeceras de seguridad en todas las respuestas
+        $middleware->append(\App\Http\Middleware\CabecerasSeguridad::class);
+
+        // Quita "<" y ">" de los datos que llegan (defensa contra XSS almacenado)
+        $middleware->web(append: [\App\Http\Middleware\LimpiarEntradaHtml::class]);
+
         $middleware->alias([
             'auth.session'  => \App\Http\Middleware\AuthSession::class,
             'docente.admin' => \App\Http\Middleware\DocenteOAdmin::class,

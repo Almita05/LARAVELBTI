@@ -1,5 +1,8 @@
 @extends('layouts.app')
 
+{{-- Vista usada desde el celular para pasar lista: activa el modo móvil del layout --}}
+@section('layout_movil', '1')
+
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @php
@@ -31,11 +34,11 @@
 
 <div class="page-container">
     <!-- Encabezado con Botón de Regresar -->
-    <div class="d-flex align-items-center mb-4">
-        <a href="{{ route('asistencias_alumnos') }}" class="btn rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 42px; height: 42px; background: rgba(255,255,255,0.4); border: 1px solid rgba(49, 125, 146, 0.2); color: rgb(38, 104, 123); transition: 0.2s;">
+    <div class="d-flex align-items-center mb-4 grid-header">
+        <a href="{{ route('asistencias_alumnos') }}" class="btn d-flex align-items-center justify-content-center me-3 flex-shrink-0" aria-label="Regresar a grupos" style="width: 42px; height: 42px; border-radius: 0; background: rgba(255,255,255,0.4); border: 1px solid rgba(49, 125, 146, 0.2); color: rgb(38, 104, 123); transition: 0.2s;">
             <i class="fa-solid fa-arrow-left"></i>
         </a>
-        <div>
+        <div class="grid-header-info">
             @php
                 $modRawGrid = strtoupper(trim($grupo['modalidadHorario'] ?? ''));
                 $esTardeGrid = str_contains($modRawGrid, 'TARDE') || str_contains($modRawGrid, 'VESPERTINO');
@@ -59,7 +62,7 @@
                 {{ $nombreDiaHoy }}, Semana {{ $semanaAnio }}, {{ $diasLabel }} {{ $grupo['horario'] ?? '' }}
             </p>
         </div>
-        <div class="ms-auto d-flex gap-2">
+        <div class="ms-auto d-flex gap-2 grid-header-vista">
             <!-- Selector de Vista: Listado o Matriz -->
             <div class="btn-group bg-light p-1" style="border-radius: 0; border: 1px solid rgba(49, 125, 146, 0.15);">
                 <button type="button" class="btn btn-sm btn-premium-view active rounded-3 px-3 py-1.5" id="btn-vista-listado" onclick="cambiarVista('LISTADO')" style="font-size: 0.78rem; font-weight: 500;">
@@ -77,7 +80,7 @@
         <div class="card-body p-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
             <div class="d-flex flex-wrap align-items-center gap-3">
                 <!-- Selector de Materia o Pase General -->
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2" id="div-select-materia">
                     <label class="text-muted fw-semibold mb-0" style="font-size: 0.82rem; min-width: 85px;">
                         @if(session('rol') !== 'DOCENTE') Modalidad: @else Asignatura: @endif
                     </label>
@@ -134,10 +137,10 @@
             </div>
             
             <div class="d-flex gap-2" id="div-nav-fecha">
-                <button class="btn btn-sm btn-secondary d-flex align-items-center justify-content-center" onclick="navegarFecha(-1)" style="border-radius: 0; width: 36px; height: 36px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                <button class="btn btn-sm d-flex align-items-center justify-content-center btn-nav-fecha" onclick="navegarFecha(-1)" aria-label="Fecha anterior">
                     <i class="fa-solid fa-chevron-left"></i>
                 </button>
-                <button class="btn btn-sm btn-secondary d-flex align-items-center justify-content-center" onclick="navegarFecha(1)" style="border-radius: 0; width: 36px; height: 36px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                <button class="btn btn-sm d-flex align-items-center justify-content-center btn-nav-fecha" onclick="navegarFecha(1)" aria-label="Fecha siguiente">
                     <i class="fa-solid fa-chevron-right"></i>
                 </button>
             </div>
@@ -146,7 +149,7 @@
 
     <!-- Progreso de Registro (Para vista Listado) -->
     <div class="card border-0 mb-4 shadow-sm" id="progreso-registro-card" style="border-radius: 0; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.12) !important;">
-        <div class="card-body p-4">
+        <div class="card-body p-3 p-md-4">
             <span class="text-muted d-block uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 1px;">PROGRESO DE REGISTRO</span>
             <div class="d-flex justify-content-between align-items-baseline mt-1 mb-2">
                 <h2 class="fw-bold mb-0" id="progreso-texto" style="font-size: 1.5rem; color: rgb(49, 125, 146) !important;">0 / 0 Alumnos</h2>
@@ -174,6 +177,13 @@
                 <i class="fa-solid fa-user-plus"></i>Agregar Alumno
             </button>
 
+            @if(session('rol') !== 'DOCENTE')
+            <!-- Botón Marcar día (inhábil, suspensión, en línea) -->
+            <button id="btn-marcar-dia" type="button" class="btn py-2 px-4 fw-semibold d-flex align-items-center gap-2" onclick="abrirDialogoDia(fechaSeleccionada)" title="Marcar un día como inhábil, suspensión o clase en línea" style="border-radius: 0; font-size: 0.82rem; border: 1px solid rgba(38, 104, 123, 0.45); color: rgb(38, 104, 123); background-color: #ffffff;">
+                <i class="fa-solid fa-calendar-day"></i>Marcar día
+            </button>
+            @endif
+
             <!-- Botón Descargar Excel -->
             <button id="btn-excel-asistencias" type="button" class="btn btn-outline-success py-2 px-4 fw-semibold d-flex align-items-center gap-2 d-none" onclick="descargarExcelAsistencias()" style="border-radius: 0; font-size: 0.82rem; border-color: rgba(34, 197, 94, 0.35); color: rgb(21, 128, 61); background-color: rgba(255,255,255,0.3);">
                 <i class="fa-solid fa-file-excel"></i>Descargar Excel
@@ -186,7 +196,7 @@
         <!-- Barra de herramientas superior del listado -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 px-1 gap-2">
             <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-white text-dark border shadow-sm px-3 py-2 rounded-pill fw-semibold" style="font-size: 0.8rem; border-color: rgba(49, 125, 146, 0.2) !important;">
+                <span class="badge bg-white text-dark border shadow-sm px-3 py-2 fw-semibold" style="border-radius: 0; font-size: 0.8rem; border-color: rgba(49, 125, 146, 0.2) !important;">
                     <i class="fa-solid fa-calendar-day me-1" style="color: rgb(49, 125, 146);"></i>
                     <span id="label-fecha-seleccionada">Fecha</span>
                 </span>
@@ -209,6 +219,7 @@
         </div>
 
         <!-- Contenedor de Tarjetas de Alumnos -->
+        <div id="banner-dia-especial" class="d-none mb-3"></div>
         <div id="lista-alumnos-cards" class="d-flex flex-column gap-3">
             <!-- Renderizado dinámicamente por renderListado() -->
         </div>
@@ -233,6 +244,15 @@
 
     <!-- Contenido Principal: VISTA MATRIZ EXCEL -->
     <div id="contenedor-vista-matriz" class="d-none">
+        <!-- Leyenda de días especiales -->
+        <div class="leyenda-dias d-flex flex-wrap align-items-center gap-3 mb-2">
+            <span><i class="cuadro dia-inhabil"></i>Inhábil (no cuenta)</span>
+            <span><i class="cuadro dia-suspension"></i>Suspensión (no cuenta)</span>
+            <span><i class="cuadro dia-en-linea"></i>Clase en línea</span>
+            @if(session('rol') !== 'DOCENTE')
+                <span class="text-muted ms-md-auto"><i class="fa-solid fa-hand-pointer me-1"></i>Haz clic en una fecha del encabezado o usa "Marcar día".</span>
+            @endif
+        </div>
         <div class="card border-0 shadow-sm" style="border-radius: 0; background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(49, 125, 146, 0.15) !important;">
             <div class="card-body p-0">
                 <!-- Contenedor scrollable horizontal y vertical -->
@@ -281,11 +301,12 @@
                                              }
                                          }
                                     @endphp
-                                    <th class="py-2 px-1 header-fecha-th @if($isEvaluation) col-evaluacion @endif" style="min-width: 75px; font-size: 0.72rem; font-weight: 600; color: #334155; border-left: 1px solid rgba(49, 125, 146, 0.15); @if($isEvaluation) background-color: #e2e8f0; @else background-color: #f8fafc; @endif">
+                                    <th class="py-2 px-1 header-fecha-th @if($isEvaluation) col-evaluacion @endif" data-fecha="{{ $f['fecha'] }}" style="min-width: 75px; font-size: 0.72rem; font-weight: 600; color: #334155; border-left: 1px solid rgba(49, 125, 146, 0.15); @if($isEvaluation) background-color: #e2e8f0; @else background-color: #f8fafc; @endif">
                                          @if($isEvaluation)
                                              <div class="text-primary fw-bold" style="font-size: 0.62rem; line-height: 1; margin-bottom: 2px;">{{ $evalLabel }}</div>
                                          @endif
                                          {{ \Carbon\Carbon::parse($f['fecha'])->format('d-m') }}
+                                         <div class="dia-especial-tag" data-tag-fecha="{{ $f['fecha'] }}"></div>
                                     </th>
                                 @endforeach
                             </tr>
@@ -471,6 +492,35 @@
     }
 
     /* Botones circulares de la matriz */
+    /* Días especiales del calendario: inhábil, suspensión, en línea */
+    #tabla-matriz th.fecha-marcable { cursor: pointer; }
+    #tabla-matriz th.fecha-marcable:hover { background-color: #e6eff1 !important; }
+    #tabla-matriz th.fecha-marcable:focus-visible { outline: 2px solid #26687B; outline-offset: -2px; }
+    .leyenda-dias { font-size: 0.75rem; color: #334155; }
+    .leyenda-dias .cuadro { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; border: 1px solid rgba(0,0,0,0.15); }
+    .leyenda-dias .cuadro.dia-inhabil { background: #dc2626; }
+    .leyenda-dias .cuadro.dia-suspension { background: #fbbf24; }
+    .leyenda-dias .cuadro.dia-en-linea { background: #dbeafe; }
+    .dia-especial-tag { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; line-height: 1.1; margin-top: 2px; min-height: 0.66rem; }
+    #tabla-matriz th.dia-inhabil { background-color: #dc2626 !important; color: #ffffff !important; }
+    #tabla-matriz th.dia-suspension { background-color: #fbbf24 !important; color: #5b3a00 !important; }
+    #tabla-matriz th.dia-en-linea { background-color: #dbeafe !important; color: #1e3a8a !important; }
+    #tabla-matriz td.celda-dia-especial { font-size: 0.68rem; font-weight: 600; text-transform: lowercase; white-space: nowrap; cursor: help; }
+    #tabla-matriz td.celda-dia-especial.dia-inhabil { background-color: #dc2626; color: #ffffff; }
+    #tabla-matriz td.celda-dia-especial.dia-suspension { background-color: #fde68a; color: #5b3a00; }
+    #tabla-matriz td.dia-en-linea { background-color: #eff6ff; }
+    .marca-en-linea { font-size: 0.56rem; font-weight: 600; color: #1d4ed8; text-transform: uppercase; line-height: 1; margin-top: 2px; }
+    .banner-dia-especial { padding: 12px 16px; border-left: 4px solid; font-size: 0.85rem; }
+    .banner-dia-especial div { font-size: 0.78rem; margin-top: 2px; }
+    .banner-dia-especial.dia-inhabil { background: #fef2f2; border-color: #dc2626; color: #7f1d1d; }
+    .banner-dia-especial.dia-suspension { background: #fffbeb; border-color: #d97706; color: #78350f; }
+    .banner-dia-especial.dia-en-linea { background: #eff6ff; border-color: #2563eb; color: #1e3a8a; }
+    .dialogo-dia .opcion-dia { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid #e2e8f0; margin-bottom: 6px; cursor: pointer; }
+    .dialogo-dia .opcion-dia:has(input:checked) { border-color: #26687B; background: #f0f7f9; }
+    .dialogo-dia .opcion-dia input { margin-top: 4px; accent-color: #26687B; }
+    .dialogo-dia .opcion-dia strong { display: block; font-size: 0.88rem; color: #0f172a; }
+    .dialogo-dia .opcion-dia small { display: block; font-size: 0.76rem; color: #64748b; }
+
     .btn-circle-status {
         width: 28px;
         height: 28px;
@@ -708,29 +758,188 @@
         }
     }
 
+    /* Navegación de fechas (anterior / siguiente) */
+    .btn-nav-fecha {
+        border-radius: 0;
+        width: 36px;
+        height: 36px;
+        background: #FFFFFF;
+        border: 1px solid rgba(49, 125, 146, 0.25);
+        color: rgb(38, 104, 123);
+    }
+    .btn-nav-fecha:hover {
+        background: #EFF6F7;
+        border-color: rgb(38, 104, 123);
+        color: rgb(31, 85, 101);
+    }
+
+    /* Mensajes de estado bajo el botón de confirmar: permitir varias líneas */
+    #msg-pase-bloqueado .badge {
+        white-space: normal;
+        border-radius: 0 !important;
+        line-height: 1.4;
+        text-align: left;
+    }
+
+    /* Evitar el retraso de doble toque en botones táctiles */
+    .btn-attendance-opt,
+    .btn-nav-fecha,
+    #btn-guardar-asistencias {
+        touch-action: manipulation;
+    }
+
     /* Optimizaciones responsivas para Móviles (< 768px) */
     @media (max-width: 767.98px) {
-        #contenedor-vista-listado {
-            padding-bottom: 75px;
+        .page-container {
+            padding: 0;
+        }
+
+        /* Encabezado: regresar + clave arriba, selector de vista abajo */
+        .grid-header {
+            flex-wrap: wrap;
+            row-gap: 12px;
+            margin-bottom: 16px !important;
+        }
+        .grid-header-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .grid-header-info h3 {
+            font-size: 1.3rem !important;
+        }
+        .grid-header-vista {
+            width: 100%;
+            margin-left: 0 !important;
+        }
+        .grid-header-vista .btn-group {
+            width: 100%;
+        }
+        .grid-header-vista .btn-premium-view {
+            flex: 1;
+            min-height: 38px;
+        }
+
+        /* Selectores de asignatura y fecha apilados a todo lo ancho */
+        #selector-fechas-card,
+        #progreso-registro-card {
+            margin-bottom: 12px !important;
+        }
+        #selector-fechas-card .card-body,
+        #selector-fechas-card .card-body > div:first-child {
+            gap: 12px !important;
+        }
+        #selector-fechas-card .card-body > div:first-child {
+            width: 100%;
         }
         #select-materia,
         #select-fecha {
             min-width: 0 !important;
             width: 100% !important;
+            height: 44px !important;
+            font-size: 16px !important; /* evita zoom de iOS */
         }
+        #div-select-materia,
         #div-select-fecha {
             width: 100% !important;
             flex-direction: column !important;
             align-items: stretch !important;
+            gap: 4px !important;
         }
+        #div-select-materia label,
         #div-select-fecha label {
             min-width: 0 !important;
-            margin-bottom: 2px;
         }
         #div-nav-fecha {
             width: 100% !important;
-            justify-content: center !important;
-            margin-top: 6px;
+        }
+        #div-nav-fecha .btn-nav-fecha {
+            flex: 1;
+            height: 44px;
+        }
+
+        #progreso-texto {
+            font-size: 1.25rem !important;
+        }
+
+        /* Buscador + agregar alumno */
+        #buscadorAlumno {
+            height: 44px !important;
+            font-size: 16px !important;
+        }
+        #btn-abrir-modal-alumno {
+            width: 100%;
+            justify-content: center;
+            min-height: 44px;
+        }
+
+        /* Acciones rápidas en botones grandes que ocupan el ancho */
+        #botones-acciones-listado {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        #botones-acciones-listado > .btn {
+            flex: 1 1 calc(50% - 4px);
+            justify-content: center;
+            min-height: 44px;
+            font-size: 0.8125rem !important;
+        }
+        #botones-acciones-listado > #btn-reabrir-pase {
+            flex-basis: 100%;
+        }
+
+        /* Tarjetas de alumno */
+        #lista-alumnos-cards {
+            gap: 10px !important;
+        }
+        .attendance-card:hover {
+            transform: none;
+        }
+        .badge-lista {
+            min-width: 40px;
+            height: 40px;
+            padding: 0 8px;
+        }
+        .alumno-subtitulo-card {
+            font-size: 0.78rem;
+        }
+        .btn-attendance-opt {
+            min-height: 48px;
+            font-size: 0.8125rem;
+        }
+        .attendance-note-input {
+            height: 42px;
+            font-size: 16px; /* evita zoom de iOS */
+        }
+
+        /* Botón Confirmar fijo al fondo de la pantalla mientras se recorre la lista */
+        #contenedor-vista-listado {
+            padding-bottom: 0;
+        }
+        #panel-guardar-asistencias-bottom {
+            position: sticky;
+            bottom: 0;
+            z-index: 20;
+            margin: 16px -16px -16px !important;
+            padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) !important;
+            background: #FFFFFF;
+            border-top: 1px solid #E2E8F0;
+            box-shadow: 0 -6px 16px -8px rgba(15, 23, 42, 0.18);
+        }
+        #btn-guardar-asistencias {
+            width: 100%;
+            min-width: 0 !important;
+            min-height: 52px;
+            padding: 12px 16px !important;
+            font-size: 1rem !important;
+        }
+        #msg-pase-bloqueado {
+            margin-top: 8px !important;
+            font-size: 0.75rem;
+        }
+        #msg-pase-bloqueado .badge {
+            display: block;
+            padding: 8px 10px !important;
+            font-size: 0.75rem;
         }
     }
 
@@ -815,6 +1024,168 @@
     let reaperturasActivas = Array.isArray(reaperturasRaw) ? [...reaperturasRaw] : Object.values(reaperturasRaw || {});
 
     const grupo = @json($grupo);
+
+    // ---------------------------------------------------------------
+    // Días especiales del calendario del grupo
+    //   INHABIL / SUSPENSION: no hay clase; no cuenta como día de clase ni como falta.
+    //   EN_LINEA: hubo clase en línea; se pasa lista normal.
+    // Los marca Administración desde el encabezado de fecha de la matriz.
+    // ---------------------------------------------------------------
+    const puedeMarcarDias = @json(session('rol') !== 'DOCENTE');
+    const diasEspeciales = {};
+    (@json($diasEspeciales ?? []) || []).forEach(d => { if (d && d.fecha) diasEspeciales[d.fecha] = d; });
+    const TIPOS_DIA = {
+        INHABIL:    { corto: 'Inhábil',    largo: 'Día inhábil (feriado)', clase: 'dia-inhabil' },
+        SUSPENSION: { corto: 'Suspensión', largo: 'Suspensión de clases',  clase: 'dia-suspension' },
+        EN_LINEA:   { corto: 'En línea',   largo: 'Clase en línea',        clase: 'dia-en-linea' },
+    };
+    const escHtml = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const tipoDia = fecha => (diasEspeciales[fecha] || {}).tipo || null;
+    const esDiaSinClase = fecha => ['INHABIL', 'SUSPENSION'].includes(tipoDia(fecha));
+    function descripcionDia(fecha) {
+        const d = diasEspeciales[fecha];
+        if (!d || !TIPOS_DIA[d.tipo]) return '';
+        return TIPOS_DIA[d.tipo].largo + (d.motivo ? `: ${d.motivo}` : '');
+    }
+
+    function avisarDiaSinClase() {
+        Swal.fire({
+            icon: 'info',
+            title: TIPOS_DIA[tipoDia(fechaSeleccionada)].largo,
+            text: 'Este día no hubo clase: no se pasa lista y no cuenta como falta.',
+            confirmButtonColor: 'rgb(49, 125, 146)'
+        });
+    }
+
+    // Marca de cada fecha en el encabezado de la matriz y en el selector de fecha del Listado
+    function pintarMarcasDias() {
+        document.querySelectorAll('#tabla-matriz [data-tag-fecha]').forEach(el => {
+            const fecha = el.dataset.tagFecha;
+            const t = TIPOS_DIA[tipoDia(fecha)];
+            const th = el.closest('th');
+            th.classList.remove('dia-inhabil', 'dia-suspension', 'dia-en-linea');
+            if (t) {
+                th.classList.add(t.clase);
+                el.textContent = t.corto;
+            } else {
+                el.textContent = '';
+            }
+            th.title = t ? descripcionDia(fecha) + (puedeMarcarDias ? '. Clic para cambiar.' : '')
+                         : (puedeMarcarDias ? 'Clic para marcar como inhábil, suspensión o clase en línea' : '');
+        });
+        const sel = document.getElementById('select-fecha');
+        if (sel) {
+            Array.from(sel.options).forEach(opt => {
+                if (opt.dataset.textoBase === undefined) opt.dataset.textoBase = opt.textContent.trim();
+                const t = TIPOS_DIA[tipoDia(opt.value)];
+                opt.textContent = opt.dataset.textoBase + (t ? ` [${t.corto.toUpperCase()}]` : '');
+            });
+        }
+    }
+
+    // Aviso del día seleccionado en la vista Listado
+    function pintarBannerDia() {
+        const el = document.getElementById('banner-dia-especial');
+        if (!el) return;
+        const t = TIPOS_DIA[tipoDia(fechaSeleccionada)];
+        if (!t) { el.className = 'd-none mb-3'; el.innerHTML = ''; return; }
+        const nota = tipoDia(fechaSeleccionada) === 'EN_LINEA'
+            ? 'La clase de este día se dio en línea. Pasa lista normalmente.'
+            : 'No hubo clase este día: no se pasa lista y no cuenta como día de clase ni como falta.';
+        el.className = `banner-dia-especial ${t.clase} mb-3`;
+        el.innerHTML = `<strong>${escHtml(t.largo)}</strong>${diasEspeciales[fechaSeleccionada].motivo ? `: ${escHtml(diasEspeciales[fechaSeleccionada].motivo)}` : ''}<div>${nota}</div>`;
+    }
+
+    // Administración: marcar un día como inhábil, suspensión o en línea
+    function abrirDialogoDia(fecha) {
+        if (!puedeMarcarDias || !fechas.length) return;
+        if (!fechas.some(f => f.fecha === fecha)) fecha = fechas[0].fecha;
+        const actual = diasEspeciales[fecha] || {};
+        const fmt = iso => { const [y, m, d] = iso.split('-'); return `${d}/${m}/${y}`; };
+        const opcionesFecha = fechas.map(f => {
+            const t = TIPOS_DIA[tipoDia(f.fecha)];
+            return `<option value="${f.fecha}" ${f.fecha === fecha ? 'selected' : ''}>${fmt(f.fecha)}${t ? ` (${t.corto})` : ''}</option>`;
+        }).join('');
+        const opcion = (valor, titulo, desc) => `
+            <label class="opcion-dia">
+                <input type="radio" name="tipoDia" value="${valor}" ${(actual.tipo || 'NORMAL') === valor ? 'checked' : ''}>
+                <span><strong>${titulo}</strong><small>${desc}</small></span>
+            </label>`;
+        Swal.fire({
+            title: 'Marcar día',
+            html: `
+                <div class="dialogo-dia text-start">
+                    <label for="fechaDia" class="form-label mb-1 fw-semibold" style="font-size: 0.82rem;">Fecha</label>
+                    <select id="fechaDia" class="form-select mb-3" style="border-radius: 0; font-size: 0.85rem;">${opcionesFecha}</select>
+                    ${opcion('NORMAL', 'Día de clase normal', 'Se pasa lista como siempre.')}
+                    ${opcion('INHABIL', 'Día inhábil o feriado', 'No cuenta como día de clase ni como falta.')}
+                    ${opcion('SUSPENSION', 'Suspensión de clases', 'No cuenta como día de clase ni como falta. Indica el motivo.')}
+                    ${opcion('EN_LINEA', 'Clase en línea', 'Hubo clase en línea; se pasa lista normalmente.')}
+                    <label for="motivoDia" class="form-label mt-3 mb-1 fw-semibold" style="font-size: 0.82rem;">Motivo <span id="motivoDiaReq" class="text-danger"></span></label>
+                    <textarea id="motivoDia" class="form-control" rows="2" maxlength="255" placeholder="Ej. Suspensión por contingencia climática" style="border-radius: 0; font-size: 0.85rem;">${escHtml(actual.motivo || '')}</textarea>
+                    <label class="d-flex align-items-center gap-2 mt-3" style="font-size: 0.82rem; cursor: pointer;">
+                        <input type="checkbox" id="aplicarPlantelDia">
+                        Aplicar también a todos los grupos activos del plantel
+                    </label>
+                </div>`,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: 'rgb(38, 104, 123)',
+            focusConfirm: false,
+            didOpen: () => {
+                const sync = () => {
+                    const t = document.querySelector('input[name="tipoDia"]:checked')?.value;
+                    document.getElementById('motivoDiaReq').textContent = t === 'SUSPENSION' ? '(obligatorio)' : '(opcional)';
+                };
+                document.querySelectorAll('input[name="tipoDia"]').forEach(r => r.addEventListener('change', sync));
+                // Al cambiar de fecha se cargan la marca y el motivo que ya tenga
+                document.getElementById('fechaDia').addEventListener('change', e => {
+                    const dAct = diasEspeciales[e.target.value] || {};
+                    const radio = document.querySelector(`input[name="tipoDia"][value="${dAct.tipo || 'NORMAL'}"]`);
+                    if (radio) radio.checked = true;
+                    document.getElementById('motivoDia').value = dAct.motivo || '';
+                    sync();
+                });
+                sync();
+            },
+            preConfirm: () => {
+                const tipo = document.querySelector('input[name="tipoDia"]:checked')?.value || 'NORMAL';
+                const motivo = document.getElementById('motivoDia').value.trim();
+                if (tipo === 'SUSPENSION' && !motivo) {
+                    Swal.showValidationMessage('Indica el motivo de la suspensión.');
+                    return false;
+                }
+                return { fecha: document.getElementById('fechaDia').value, tipo, motivo, aplicar_plantel: document.getElementById('aplicarPlantelDia').checked };
+            }
+        }).then(res => {
+            if (!res.isConfirmed) return;
+            const { fecha, tipo, motivo, aplicar_plantel } = res.value;
+            Swal.fire({ title: 'Guardando…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            fetch('{{ route('asistencias_alumnos.dia_especial') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: JSON.stringify({ id_grupo: grupo.id, fecha, tipo, motivo, aplicar_plantel })
+            })
+                .then(r => r.json().then(j => ({ ok: r.ok, j })))
+                .then(({ ok, j }) => {
+                    if (!ok || j.error) throw new Error(j.error || 'No se pudo guardar el día.');
+                    if (j.tipo) diasEspeciales[fecha] = { fecha, tipo: j.tipo, motivo: j.motivo || '' };
+                    else delete diasEspeciales[fecha];
+                    pintarMarcasDias();
+                    renderizar();
+                    const otros = (j.grupos_afectados || 1) - 1;
+                    Swal.fire({
+                        icon: 'success',
+                        title: j.tipo ? TIPOS_DIA[j.tipo].largo : 'Día de clase normal',
+                        text: otros > 0 ? `Se aplicó a este grupo y a ${otros} grupo(s) más del plantel.` : 'Se guardó para este grupo.',
+                        timer: 2200,
+                        showConfirmButton: false
+                    });
+                })
+                .catch(err => Swal.fire({ icon: 'error', title: 'No se guardó', text: err.message, confirmButtonColor: '#ef4444' }));
+        });
+    }
 
     let vistaActual = 'LISTADO'; // 'LISTADO' o 'MATRIZ'
     let fechaSeleccionada = '';
@@ -928,6 +1299,17 @@
             const selectFecha = document.getElementById('select-fecha');
             if (selectFecha) {
                 selectFecha.value = fechaSeleccionada;
+            }
+
+            pintarMarcasDias();
+            if (puedeMarcarDias) {
+                document.querySelectorAll('#tabla-matriz th.header-fecha-th[data-fecha]').forEach(th => {
+                    th.classList.add('fecha-marcable');
+                    th.setAttribute('role', 'button');
+                    th.setAttribute('tabindex', '0');
+                    th.addEventListener('click', () => abrirDialogoDia(th.dataset.fecha));
+                    th.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrirDialogoDia(th.dataset.fecha); } });
+                });
             }
             
             renderizar();
@@ -1047,8 +1429,18 @@
         // Acciones rápidas (Todos Asistencia, Limpiar)
         const toolbarAcciones = document.getElementById('botones-acciones-listado');
         if (toolbarAcciones) {
-            toolbarAcciones.style.display = edicionBloqueada ? 'none' : 'flex';
+            toolbarAcciones.style.display = (edicionBloqueada || esDiaSinClase(fechaSeleccionada)) ? 'none' : 'flex';
         }
+
+        // Día inhábil o suspensión: no se pasa lista en la vista Listado
+        if (btnGuardar && !edicionBloqueada && esDiaSinClase(fechaSeleccionada)) {
+            btnGuardar.disabled = true;
+            btnGuardar.className = 'btn btn-secondary py-3 px-5 fw-bold d-inline-flex align-items-center justify-content-center gap-2 shadow-sm';
+            btnGuardar.style.opacity = '0.7';
+            btnGuardar.style.cursor = 'not-allowed';
+            btnGuardar.innerHTML = `<i class="fa-solid fa-calendar-xmark me-1"></i> <span>${escHtml(TIPOS_DIA[tipoDia(fechaSeleccionada)].largo)}: sin pase de lista</span>`;
+        }
+        pintarBannerDia();
 
         // Botón agregar alumno
         const btnAgregarAlumno = document.getElementById('btn-abrir-modal-alumno');
@@ -1219,7 +1611,7 @@
                 const justificadoAdmin = record.justificado_admin || false;
                 const observaciones = record.observaciones || '';
 
-                const isDisabled = justificadoAdmin || edicionBloqueada;
+                const isDisabled = justificadoAdmin || edicionBloqueada || esDiaSinClase(fechaSeleccionada);
                 const disableAttr = isDisabled ? 'disabled' : '';
 
                 const numLista = al.numero_lista || al.num_lista || (index + 1);
@@ -1334,6 +1726,10 @@
 
     // Selecciona o deselecciona directamente un estado para un alumno
     function seleccionarEstatusListado(idAlumno, estatusDeseado) {
+        if (esDiaSinClase(fechaSeleccionada)) {
+            avisarDiaSinClase();
+            return;
+        }
         if (estaPaseBloqueado()) {
             Swal.fire({
                 icon: 'info',
@@ -1392,6 +1788,10 @@
 
     // Marcar todos los alumnos con un estado ('A' o null para limpiar)
     function marcarTodos(estatusDeseado) {
+        if (esDiaSinClase(fechaSeleccionada)) {
+            avisarDiaSinClase();
+            return;
+        }
         if (estaPaseBloqueado()) {
             Swal.fire({
                 icon: 'info',
@@ -1526,6 +1926,17 @@
                 `;
 
                 fechas.forEach((f, fIdx) => {
+                    // Día inhábil o suspensión: se muestra en cada alumno y no se pasa lista
+                    if (esDiaSinClase(f.fecha)) {
+                        const t = TIPOS_DIA[tipoDia(f.fecha)];
+                        const tdSin = document.createElement('td');
+                        tdSin.className = `p-1 celda-dia-especial ${t.clase}`;
+                        tdSin.title = descripcionDia(f.fecha);
+                        tdSin.textContent = t.corto;
+                        tr.appendChild(tdSin);
+                        return;
+                    }
+
                     const record = localState[f.fecha][al.idAlumno];
                     const estatus = record.estatus || '';
                     const justificadoAdmin = record.justificado_admin || false;
@@ -1549,6 +1960,11 @@
                     if (isEvaluation) {
                         td.style.backgroundColor = 'rgba(226, 232, 240, 0.6)';
                     }
+                    const enLinea = tipoDia(f.fecha) === 'EN_LINEA';
+                    if (enLinea) {
+                        td.classList.add('dia-en-linea');
+                        td.title = descripcionDia(f.fecha);
+                    }
 
                     let btnTitle = '';
                     if (justificadoAdmin) btnTitle = 'Justificado por Administración (Bloqueado)';
@@ -1568,6 +1984,7 @@
                                 onclick="ciclarEstatusMatriz(this, ${al.idAlumno}, '${f.fecha}')">
                             ${simbolo}
                         </button>
+                        ${enLinea ? '<div class="marca-en-linea">en línea</div>' : ''}
                     `;
                     tr.appendChild(td);
                 });
@@ -1599,6 +2016,7 @@
 
     // Cicla a través de los estados: '-' -> 'A' -> 'F' -> 'R' -> 'J' -> '-'
     function ciclarEstatusMatriz(btn, idAlumno, fecha) {
+        if (esDiaSinClase(fecha)) return;
         const record = localState[fecha][idAlumno];
         if (record.justificado_admin) return;
         if (estaPaseBloqueado(fecha)) return;
@@ -1645,6 +2063,11 @@
 
         const asistenciasToSend = [];
 
+        if (vistaActual === 'LISTADO' && esDiaSinClase(fechaSeleccionada)) {
+            avisarDiaSinClase();
+            return;
+        }
+
         if (vistaActual === 'LISTADO' && esDocente) {
             // En vista listado como docente, confirmamos estrictamente el pase de lista de la fecha seleccionada
             const fObj = fechas.find(fe => fe.fecha === fechaSeleccionada);
@@ -1667,6 +2090,7 @@
             // Recopilar todos los registros modificados del modifiedState
             for (const fecha in modifiedState) {
                 if (esDocente && estaPaseBloqueado(fecha)) continue; // Omitir fechas no autorizadas
+                if (esDiaSinClase(fecha)) continue; // Día inhábil o suspensión: no se pasa lista
 
                 for (const idAlumno in modifiedState[fecha]) {
                     const rec = modifiedState[fecha][idAlumno];
@@ -1682,7 +2106,7 @@
             }
 
             // Si modifiedState está vacío pero hay asistencias marcadas en localState para la fecha actual, incluirlas
-            if (asistenciasToSend.length === 0 && localState[fechaSeleccionada]) {
+            if (asistenciasToSend.length === 0 && localState[fechaSeleccionada] && !esDiaSinClase(fechaSeleccionada)) {
                 const fObj = fechas.find(fe => fe.fecha === fechaSeleccionada);
                 const nivelId = fObj ? fObj.id_nivel_academico : null;
                 for (const idAlumno in localState[fechaSeleccionada]) {
@@ -2049,6 +2473,10 @@
         alumnos.forEach((al, index) => {
             let cellsHtml = '';
             fechas.forEach(f => {
+                if (esDiaSinClase(f.fecha)) {
+                    cellsHtml += `<td style="border: 1px solid black; padding: 2px; text-align: center; font-size: 0.62rem; ${tipoDia(f.fecha) === 'INHABIL' ? 'background-color: #f8d7da; color: #8a1c1c;' : 'background-color: #fff3cd; color: #7a5200;'}">${TIPOS_DIA[tipoDia(f.fecha)].corto}</td>`;
+                    return;
+                }
                 const record = localState[f.fecha][al.idAlumno];
                 const estatus = record ? record.estatus : '';
                 
@@ -2057,6 +2485,7 @@
                 else if (estatus === 'F') simbolo = 'F';
                 else if (estatus === 'R') simbolo = 'R';
                 else if (estatus === 'J') simbolo = 'J';
+                if (simbolo && tipoDia(f.fecha) === 'EN_LINEA') simbolo += ' (L)';
                 
                 let cellColor = '';
                 if (estatus === 'F') cellColor = 'color: red; font-weight: bold;';
@@ -2210,6 +2639,10 @@
         alumnos.forEach((al, index) => {
             let cellsHtml = '';
             fechas.forEach(f => {
+                if (esDiaSinClase(f.fecha)) {
+                    cellsHtml += `<td style="border: 1px solid #000000; text-align: center; ${tipoDia(f.fecha) === 'INHABIL' ? 'background-color: #ff0000; color: #ffffff;' : 'background-color: #ffe699;'}">${TIPOS_DIA[tipoDia(f.fecha)].corto.toLowerCase()}</td>`;
+                    return;
+                }
                 const record = localState[f.fecha][al.idAlumno];
                 const estatus = record ? record.estatus : '';
                 
@@ -2218,6 +2651,7 @@
                 else if (estatus === 'F') simbolo = 'F';
                 else if (estatus === 'R') simbolo = 'R';
                 else if (estatus === 'J') simbolo = 'J';
+                if (simbolo && tipoDia(f.fecha) === 'EN_LINEA') simbolo += ' (en línea)';
                 
                 let cellStyle = 'border: 1px solid #000000; text-align: center;';
                 if (estatus === 'F') cellStyle += ' color: #ff0000; font-weight: bold;';

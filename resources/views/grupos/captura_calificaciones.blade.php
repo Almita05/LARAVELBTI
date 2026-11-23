@@ -386,6 +386,154 @@
     </div>
 </div>
 
+{{-- ===================== MODAL: ASISTENCIAS BTI POR PARCIAL (solo lectura) ===================== --}}
+<div class="modal fade" id="modalAsistenciasBti" tabindex="-1" aria-labelledby="modalAsistenciasBtiLabel" aria-hidden="true" style="z-index: 1250;">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="tw:min-w-0">
+                    <h5 class="modal-title" id="modalAsistenciasBtiLabel"><i class="ti ti-calendar-check"></i> Asistencias por parcial</h5>
+                    <p class="tw:m-0 tw:text-xs tw:text-slate-500">Grupo <strong id="lblAsistBtiClave" class="tw:font-mono tw:text-slate-800">---</strong></p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-body tw:bg-slate-50/70 tw:p-5">
+                <div class="tw:flex tw:flex-wrap tw:items-end tw:justify-between tw:gap-3 tw:border tw:border-slate-200 tw:bg-white tw:p-4 tw:shadow-xs">
+                    <div role="tablist" aria-label="Parcial" class="tw:inline-flex tw:border tw:border-slate-200" id="tabsParcialBti">
+                        <button type="button" role="tab" data-parcial="1" class="tab-parcial-bti tw:h-9 tw:px-4 tw:text-xs tw:font-semibold">1er parcial</button>
+                        <button type="button" role="tab" data-parcial="2" class="tab-parcial-bti tw:h-9 tw:border-l tw:border-slate-200 tw:px-4 tw:text-xs tw:font-semibold">2do parcial</button>
+                        <button type="button" role="tab" data-parcial="3" class="tab-parcial-bti tw:h-9 tw:border-l tw:border-slate-200 tw:px-4 tw:text-xs tw:font-semibold">3er parcial</button>
+                    </div>
+                    <div id="lblRangoParcialBti" class="tw:text-xs tw:text-slate-500"></div>
+                </div>
+
+                <p class="tw:mt-3 tw:mb-0 tw:text-xs tw:text-slate-500">
+                    Se calcula automáticamente del pase de lista diario (Asistencias de alumnos) dentro de las fechas del parcial,
+                    configuradas en Horarios &gt; Fechas de Periodos de Evaluación. Un retardo cuenta como asistencia; una falta justificada no.
+                    Estos valores son los que salen en la boleta.
+                </p>
+
+                <div class="tw:mt-3 tw:overflow-hidden tw:border tw:border-slate-200 tw:bg-white tw:shadow-xs">
+                    <div class="tw:max-h-[440px] tw:overflow-auto">
+                        <table class="tw:w-full tw:border-collapse">
+                            <thead class="tw:sticky tw:top-0 tw:z-10 tw:bg-slate-50">
+                                <tr class="tw:border-b tw:border-slate-200">
+                                    <th class="{{ $th }} tw:w-12 tw:text-center">#</th>
+                                    <th class="{{ $th }}">Alumno</th>
+                                    <th class="{{ $th }} tw:text-center">Clases</th>
+                                    <th class="{{ $th }} tw:text-center">Asistencias</th>
+                                    <th class="{{ $th }} tw:text-center">Retardos</th>
+                                    <th class="{{ $th }} tw:text-center">Faltas</th>
+                                    <th class="{{ $th }} tw:text-center">Justificadas</th>
+                                    <th class="{{ $th }} tw:text-center">%</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyAsistenciasBti" class="tw:divide-y tw:divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="{{ $btnSecondary }}" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==========================================
+// ASISTENCIAS BTI POR PARCIAL (calculadas del pase de lista, solo lectura)
+// ==========================================
+let asistBti = { id: null, datos: {}, parcial: '1' };
+
+function abrirModalAsistenciasBti(idGrupo, claveGrupo) {
+    asistBti = { id: idGrupo, datos: {}, parcial: '1' };
+    document.getElementById('lblAsistBtiClave').textContent = claveGrupo || '—';
+    document.getElementById('lblRangoParcialBti').textContent = '';
+    document.getElementById('tbodyAsistenciasBti').innerHTML = filaMensajeAsistBti('Calculando asistencias…');
+    pintarTabsParcialBti();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('modalAsistenciasBti')).show();
+
+    // Se consultan los tres parciales y se abre el último que ya inició
+    Promise.all(['1', '2', '3'].map(p =>
+        fetch(`/boletas/bti/asistencia/grupo/${encodeURIComponent(idGrupo)}?parcial=${p}`, { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
+            .then(r => r.json().then(d => (r.ok && d && !d.error) ? d : { error: (d && d.error) || 'No se pudo calcular la asistencia.' }))
+            .catch(() => ({ error: 'Error de conexión con el servidor.' }))
+    )).then(res => {
+        if (asistBti.id !== idGrupo) return;   // se abrió otro grupo mientras cargaba
+        ['1', '2', '3'].forEach((p, i) => { asistBti.datos[p] = res[i]; });
+        let actual = '1';
+        ['1', '2', '3'].forEach(p => { const d = asistBti.datos[p]; if (d && !d.error && d.rango && !d.rango.vacio) actual = p; });
+        mostrarParcialBti(actual);
+    });
+}
+
+function pintarTabsParcialBti() {
+    document.querySelectorAll('#tabsParcialBti .tab-parcial-bti').forEach(b => {
+        const activo = b.dataset.parcial === asistBti.parcial;
+        b.setAttribute('aria-selected', activo ? 'true' : 'false');
+        b.classList.toggle('tw:bg-brand-700', activo);
+        b.classList.toggle('tw:text-white', activo);
+        b.classList.toggle('tw:bg-white', !activo);
+        b.classList.toggle('tw:text-slate-600', !activo);
+    });
+}
+
+document.addEventListener('click', (e) => {
+    const b = e.target.closest?.('#tabsParcialBti .tab-parcial-bti');
+    if (b && asistBti.id) mostrarParcialBti(b.dataset.parcial);
+});
+
+function filaMensajeAsistBti(texto, error = false) {
+    return `<tr><td colspan="8" class="tw:py-8 tw:text-center tw:text-[0.8125rem] ${error ? 'tw:text-danger-600' : 'tw:text-slate-500'}">${escHtml(texto)}</td></tr>`;
+}
+
+function mostrarParcialBti(parcial) {
+    asistBti.parcial = parcial;
+    pintarTabsParcialBti();
+    const tbody = document.getElementById('tbodyAsistenciasBti');
+    const lbl = document.getElementById('lblRangoParcialBti');
+    const d = asistBti.datos[parcial];
+    lbl.textContent = '';
+    if (!d) { tbody.innerHTML = filaMensajeAsistBti('Calculando asistencias…'); return; }
+    if (d.error) { tbody.innerHTML = filaMensajeAsistBti(d.error, true); return; }
+
+    const fmt = iso => { const [y, m, dd] = String(iso).slice(0, 10).split('-'); return `${dd}/${m}/${y}`; };
+    const p = d.rango && d.rango.parcial;
+    const cob = d.cobertura || {};
+    if (p) {
+        lbl.innerHTML = `Periodo del <strong>${fmt(p.inicio)}</strong> al <strong>${fmt(p.fin)}</strong>`
+            + (d.rango.vacio ? '' : `<br>${cob.dias_con_pase || 0} de ${cob.dias_programados || 0} días con pase de lista${d.rango.hasta < p.fin ? ` (calculado al ${fmt(d.rango.hasta)})` : ''}`);
+    }
+    if (d.rango && d.rango.vacio) { tbody.innerHTML = filaMensajeAsistBti('Este parcial todavía no inicia.'); return; }
+
+    const alumnos = d.alumnos || [];
+    if (!alumnos.length) { tbody.innerHTML = filaMensajeAsistBti('No hay alumnos activos en este grupo.'); return; }
+
+    const td = (v, extra = '') => `<td class="tw:px-4 tw:py-2.5 tw:text-center tw:text-[0.8125rem] tw:tabular-nums ${extra}">${v}</td>`;
+    tbody.innerHTML = alumnos.map((a, i) => {
+        const sinPase = !a.dias_registrados;
+        const v = x => sinPase ? '<span class="tw:text-slate-300">—</span>' : x;
+        return `
+            <tr class="tw:transition-colors tw:hover:bg-slate-50">
+                <td class="tw:px-4 tw:py-2.5 tw:text-center tw:text-xs tw:text-slate-400 tw:tabular-nums">${i + 1}</td>
+                <td class="tw:px-4 tw:py-2.5">
+                    <div class="tw:text-[0.8125rem] tw:font-semibold tw:text-slate-900">${escHtml(a.nombreCompleto)}</div>
+                    <div class="tw:font-mono tw:text-[0.6875rem] tw:text-slate-400">${escHtml(a.numeroControl || a.idAlumno)}</div>
+                </td>
+                ${td(v(a.dias_registrados))}
+                ${td(v(a.asistencias), 'tw:font-semibold tw:text-slate-900')}
+                ${td(v(a.retardos))}
+                ${td(v(a.faltas))}
+                ${td(v(a.faltas_justificadas))}
+                ${td(sinPase || a.porcentaje_asistencia === null ? v('') : `${a.porcentaje_asistencia}%`)}
+            </tr>`;
+    }).join('');
+}
+</script>
+
 <script>
 let listaTodosGrupos = [];
 let filtroCctActual = '';
@@ -1064,6 +1212,9 @@ function renderTablaGrupos(grupos) {
         const id = Number(g.id);
         const argsAsist = [id, g.clave || '', Number(g.id_centroTrabajo ?? idCct), Number(g.id_nivel_academico || 7)]
             .map(v => escHtml(JSON.stringify(v))).join(', ');
+        // BTI: la asistencia se calcula del pase de lista diario; no se captura a mano
+        const esBtiGrupo = Number(g.id_centroTrabajo ?? idCct) === 2;
+        const argsBti = [id, g.clave || ''].map(v => escHtml(JSON.stringify(v))).join(', ');
 
         return `
         <tr class="tw:transition-colors tw:hover:bg-slate-50">
@@ -1086,7 +1237,8 @@ function renderTablaGrupos(grupos) {
                 </span>
             </td>
             <td class="tw:py-3 tw:pr-5 tw:pl-4 tw:text-right tw:align-middle tw:whitespace-nowrap">
-                <button type="button" onclick="abrirModalAsistenciasGrupo(${argsAsist})" title="Capturar asistencias del periodo"
+                <button type="button" onclick="${esBtiGrupo ? `abrirModalAsistenciasBti(${argsBti})` : `abrirModalAsistenciasGrupo(${argsAsist})`}"
+                    title="${esBtiGrupo ? 'Ver asistencias por parcial (calculadas del pase de lista)' : 'Capturar asistencias del periodo'}"
                     class="tw:mr-1.5 tw:inline-flex tw:h-8 tw:cursor-pointer tw:items-center tw:gap-1.5 tw:border tw:border-slate-200 tw:bg-white tw:px-3 tw:text-xs tw:font-semibold tw:text-slate-600 tw:transition-colors tw:hover:bg-slate-50 tw:hover:text-slate-900">
                     <i class="ti ti-calendar-check"></i> Asistencias
                 </button>
@@ -1548,8 +1700,14 @@ function renderDatosControlOficial(data) {
                     </div>
                 `;
             } else {
-                // Para BGNE: Solo Final y Extraordinario (enteros del 0 al 10)
-                const intCalif = (calif !== '' && !isNaN(calif)) ? parseInt(calif) : '';
+                // Para BGNE: Solo Final y Extraordinario (enteros del 0 al 10).
+                // La ordinaria se guarda en parcial1; `calificacion` es la efectiva (extraordinario si existe).
+                // Registros anteriores sin parcial1: la ordinaria solo se conoce si no hay extraordinario.
+                const tieneExt = a.extraordinario !== null && a.extraordinario !== undefined && a.extraordinario !== '';
+                const ordinaria = (a.parcial1 !== null && a.parcial1 !== undefined && a.parcial1 !== '')
+                    ? a.parcial1
+                    : (tieneExt ? '' : calif);
+                const intCalif = (ordinaria !== '' && !isNaN(ordinaria)) ? parseInt(ordinaria) : '';
                 const intExt = (a.extraordinario !== null && a.extraordinario !== undefined && a.extraordinario !== '' && !isNaN(a.extraordinario)) ? parseInt(a.extraordinario) : '';
                 finalInput = `
                     <div class="d-flex align-items-center justify-content-center gap-1">
@@ -1906,8 +2064,9 @@ function recalcularFilaOficial(inputEl) {
     const pFinalInp = tr.querySelector('.inp-calif-final');
     const tdLetra = tr.querySelector('.td-calif-letra');
 
-    // Si se escriben parciales y no final manual, calcular promedio de parciales en final
-    if (inputEl !== pFinalInp) {
+    // Si se escriben parciales y no final manual, calcular promedio de parciales en final.
+    // En BGNE no hay parciales: capturar el extraordinario NO debe borrar la calificación ordinaria.
+    if (inputEl !== pFinalInp && (p1Inp || p2Inp || p3Inp)) {
         const v1 = p1Inp ? parseFloat(p1Inp.value) : NaN;
         const v2 = p2Inp ? parseFloat(p2Inp.value) : NaN;
         const v3 = p3Inp ? parseFloat(p3Inp.value) : NaN;
@@ -2185,6 +2344,16 @@ function enviarPeticionGuardar(finalizar) {
             if (extInp) dataObj.extraordinario = extInp.value !== "" ? parseInt(extInp.value, 10) : null;
             if (asistInp) dataObj.asistencias = asistInp.value !== "" ? parseInt(asistInp.value, 10) : null;
             if (totAsistInp) dataObj.total_asistencias = totAsistInp.value !== "" ? parseInt(totAsistInp.value, 10) : null;
+
+            // BGNE (sin parciales ni semestral): se guardan ambas calificaciones.
+            // parcial1 = ordinaria, extraordinario = examen extra, calificacion = efectiva.
+            if (!p1Inp && !semInp) {
+                const ord = dataObj.calificacion;
+                const ext = (dataObj.extraordinario !== undefined) ? dataObj.extraordinario : null;
+                dataObj.parcial1 = ord;
+                dataObj.calificacion = (ext !== null) ? ext : ord;
+                dataObj.tipoAcreditacion = (ext !== null) ? 'EXTRAORDINARIO' : 'ORDINARIO';
+            }
 
             calificaciones.push(dataObj);
         }

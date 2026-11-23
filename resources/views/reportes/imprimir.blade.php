@@ -363,9 +363,20 @@
                                         </p>
                                     </div>
                                 </div>
-                                <button type="button" class="{{ $btnPrimary }}" onclick="generarBoletaBTIDesdeSelect()">
-                                    <i data-lucide="printer" class="tw:size-4"></i> Imprimir boleta
-                                </button>
+                                <div class="tw:flex tw:flex-wrap tw:items-end tw:gap-3">
+                                    <div>
+                                        <label for="boletaParcialSelect" class="{{ $label }}">Boleta</label>
+                                        <select id="boletaParcialSelect" class="{{ $input }}">
+                                            <option value="1">1er parcial</option>
+                                            <option value="2">2do parcial</option>
+                                            <option value="3">3er parcial</option>
+                                            <option value="FINAL">Final del semestre</option>
+                                        </select>
+                                    </div>
+                                    <button type="button" class="{{ $btnPrimary }}" onclick="generarBoletaBTIDesdeSelect()">
+                                        <i data-lucide="printer" class="tw:size-4"></i> Imprimir boleta
+                                    </button>
+                                </div>
                             </div>
                             <div class="tw:mt-4 tw:flex tw:flex-wrap tw:gap-x-6 tw:gap-y-2 tw:border-t tw:border-slate-200 tw:pt-4">
                                 <label class="tw:inline-flex tw:cursor-pointer tw:items-center tw:gap-2 tw:text-[0.8125rem] tw:text-slate-700">
@@ -378,6 +389,66 @@
                                 </label>
                             </div>
                         </div>
+                    </div>
+
+                    {{-- Boletas de todo el grupo en un solo documento --}}
+                    <div class="tw:mt-8 tw:border-t tw:border-slate-200 tw:pt-6">
+                        <p class="{{ $sectionTitle }}"><i data-lucide="users-round" class="tw:size-3.5"></i> Boletas del grupo</p>
+                        <p class="tw:m-0 tw:mb-4 tw:text-[0.8125rem] tw:text-slate-500">Genera las boletas de todos los alumnos activos del grupo en un solo documento, una hoja por alumno. Desde la ventana de impresión puedes imprimirlas o guardarlas como PDF.</p>
+
+                        <div class="tw:grid tw:grid-cols-1 tw:gap-4 tw:md:grid-cols-3">
+                            <div class="tw:relative">
+                                <label for="boletaGrupoInput" class="{{ $label }}">Grupo</label>
+                                <div class="tw:relative">
+                                    <i data-lucide="users-round" class="{{ $fieldIcon }}"></i>
+                                    <input type="text" id="boletaGrupoInput" class="{{ $inputIcon }} tw:pr-10 tw:font-mono" placeholder="Clave del grupo o nombre del alumno…" autocomplete="off"
+                                        role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="boletaGrupoLista">
+                                    <button type="button" id="boletaGrupoLimpiar" class="{{ $iconBtn }}" style="display: none;" aria-label="Limpiar grupo" title="Limpiar">
+                                        <i data-lucide="x" class="tw:mx-auto tw:size-4"></i>
+                                    </button>
+                                </div>
+                                <div id="boletaGrupoLista" role="listbox" class="{{ $sugerencias }}" style="display: none;"></div>
+                            </div>
+                            <div>
+                                <label for="boletaGrupoSemestreSelect" class="{{ $label }}">Semestre</label>
+                                <select id="boletaGrupoSemestreSelect" class="{{ $input }}">
+                                    <option value="7">1er semestre</option>
+                                    <option value="8">2° semestre</option>
+                                    <option value="9" selected>3er semestre</option>
+                                    <option value="10">4° semestre</option>
+                                    <option value="11">5° semestre</option>
+                                    <option value="12">6° semestre</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="boletaGrupoParcialSelect" class="{{ $label }}">Boleta</label>
+                                <select id="boletaGrupoParcialSelect" class="{{ $input }}">
+                                    <option value="1">1er parcial</option>
+                                    <option value="2">2do parcial</option>
+                                    <option value="3">3er parcial</option>
+                                    <option value="FINAL">Final del semestre</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="tw:mt-4 tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-4">
+                            <div class="tw:flex tw:flex-wrap tw:gap-x-6 tw:gap-y-2">
+                                <label class="tw:inline-flex tw:cursor-pointer tw:items-center tw:gap-2 tw:text-[0.8125rem] tw:text-slate-700">
+                                    <input type="checkbox" id="chkBoletaGrupoAsistencias" class="tw:size-4 tw:cursor-pointer tw:accent-brand-700" checked>
+                                    Incluir asistencias
+                                </label>
+                                <label class="tw:inline-flex tw:cursor-pointer tw:items-center tw:gap-2 tw:text-[0.8125rem] tw:text-slate-700">
+                                    <input type="checkbox" id="chkBoletaGrupoReportes" class="tw:size-4 tw:cursor-pointer tw:accent-brand-700" checked>
+                                    Incluir reportes de conducta
+                                </label>
+                            </div>
+                            <button type="button" id="btnBoletasGrupo" class="{{ $btnPrimary }}" onclick="generarBoletasGrupoBTI()">
+                                <i data-lucide="printer" class="tw:size-4"></i> Imprimir boletas del grupo
+                            </button>
+                        </div>
+                        <p id="boletaGrupoResumen" class="tw:m-0 tw:mt-3 tw:flex tw:items-center tw:gap-2 tw:text-[0.8125rem] tw:text-slate-500">
+                            <i data-lucide="info" class="tw:size-4 tw:shrink-0"></i> Elige un grupo para ver cuántas boletas se generarán.
+                        </p>
                     </div>
                 </div>
 
@@ -1654,6 +1725,9 @@
     })();
 </script>
 
+{{-- Boleta de calificaciones BTI (formato institucional, compartida con alumnos/index) --}}
+@include('partials.boleta_bti_script')
+
 <!-- LÓGICA DE NEGOCIO PARA SELECCIÓN DE CCT Y FORMATOS CONDICIONALES -->
 <script>
     // Configuración de Submódulos autorizados por CCT
@@ -2492,6 +2566,9 @@
                 
                 const semestre = document.getElementById('boletaSemestreSelect').value;
                 document.getElementById('lbl-boleta-semestre-val').innerText = semestre;
+                // Sugerir el parcial en curso según las fechas del grupo
+                const selParcial = document.getElementById('boletaParcialSelect');
+                if (selParcial && window.parcialActualBTI) selParcial.value = String(window.parcialActualBTI(data));
                 document.getElementById('boleta-tabla-resultados').style.display = 'block';
             });
         });
@@ -3252,8 +3329,13 @@
                     `;
                 } else {
                     const califVal = (m.calificacion !== null && m.calificacion !== undefined) ? m.calificacion : '';
+                    const tieneExt = m.extraordinario !== null && m.extraordinario !== undefined;
                     htmlMaterias += `
-                        <tr data-materia-id="${m.idMateria}" data-nivel="${p.idNivel}">
+                        <tr data-materia-id="${m.idMateria}" data-nivel="${p.idNivel}"
+                            data-materia-calif-id="${m.idMateriaCalificacion || ''}"
+                            data-tipo="${m.tipoAcreditacion || ''}"
+                            data-tiene-ext="${tieneExt ? '1' : '0'}"
+                            data-bgne="${isBti ? '0' : '1'}">
                             <td class="px-2 py-1 align-middle text-uppercase fw-semibold" style="font-size: 0.78rem; border-color: #cbd5e1;">
                                 ${m.nombreMateria}
                             </td>
@@ -3436,12 +3518,25 @@ window.guardarCalificacionesKardex = function() {
             calif = parseFloat(valStr);
         }
 
-        calificaciones.push({
-            idMateria: parseInt(idMateria),
+        // Conservar el tipo del registro existente (no convertir un extraordinario en ordinario)
+        const tipoPrevio = (tr.dataset.tipo || '').toUpperCase();
+        const tieneExt = tr.dataset.tieneExt === '1';
+        const item = {
+            // En BGNE la calificación puede estar registrada bajo otra idMateria con el mismo nombre
+            idMateria: parseInt(tr.dataset.materiaCalifId || idMateria),
             id_nivel_academico: parseInt(idNivel || finalInp.dataset.nivel),
             calificacion: calif,
-            tipoAcreditacion: 'ORDINARIO'
-        });
+            tipoAcreditacion: tieneExt ? 'EXTRAORDINARIO' : (tipoPrevio && tipoPrevio !== 'EQUIVALENCIA' ? tipoPrevio : 'ORDINARIO')
+        };
+
+        // BGNE: el kárdex muestra la calificación efectiva. Si hay extraordinario, lo que se edita
+        // es el extraordinario; si no, la ordinaria (parcial1). La otra se conserva.
+        if (tr.dataset.bgne === '1') {
+            if (tieneExt) item.extraordinario = calif;
+            else item.parcial1 = calif;
+        }
+
+        calificaciones.push(item);
     });
 
     btn.disabled = true;
@@ -3733,446 +3828,6 @@ window.imprimirKardex = function() {
     }, 450);
 };
 
-        window.imprimirBoletaBTISemestre = function(data, idNivelSemestre, reportesCounts, opciones = {}) {
-        const al = data.alumno;
-        const repCounts = reportesCounts || { 1: 0, 2: 0, 3: 0 };
-        const totalReportes = (repCounts[1] || 0) + (repCounts[2] || 0) + (repCounts[3] || 0);
-
-        const incAsist = opciones.incluirAsistencias !== false;
-        const incRep = opciones.incluirReportes !== false;
-
-        let boxReportesHtml = '';
-        if (incRep) {
-            if (totalReportes > 0) {
-                boxReportesHtml = `
-                    <div class="rp-box bo-side-box">
-                        <div class="rp-box-h">Conducta y disciplina</div>
-                        <div class="rp-box-b rp-stat">
-                            <div class="v sm rp-fail">${totalReportes} reporte${totalReportes > 1 ? 's' : ''}</div>
-                            <div class="s" style="color: #9a2a1f;">Acumulado${totalReportes > 1 ? 's' : ''} en el semestre</div>
-                            <div class="bo-rep-parciales">
-                                <span class="rp-chip ${(repCounts[1] || 0) > 0 ? 'alert' : ''}">P1: ${repCounts[1] || 0}</span>
-                                <span class="rp-chip ${(repCounts[2] || 0) > 0 ? 'alert' : ''}">P2: ${repCounts[2] || 0}</span>
-                                <span class="rp-chip ${(repCounts[3] || 0) > 0 ? 'alert' : ''}">P3: ${repCounts[3] || 0}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                boxReportesHtml = `
-                    <div class="rp-box bo-side-box">
-                        <div class="rp-box-h">Conducta y disciplina</div>
-                        <div class="rp-box-b rp-stat">
-                            <div class="v sm">0</div>
-                            <div class="s">Reportes de indisciplina</div>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        const periodos = data.periodos || [];
-        const p = periodos.find(x => x.idNivel === idNivelSemestre);
-        const materias = p ? p.materias || [] : [];
-
-        const semestresNombres = {
-            7: 'PRIMER',
-            8: 'SEGUNDO',
-            9: 'TERCER',
-            10: 'CUARTO',
-            11: 'QUINTO',
-            12: 'SEXTO'
-        };
-        const semestreNombreLargo = semestresNombres[idNivelSemestre] || 'SEMESTRE';
-
-        let filasMateriasHtml = '';
-        let p1Vals = []; let p2Vals = []; let p3Vals = []; let semVals = []; let extVals = []; let finalVals = [];
-        let totalAsist = 0; let totalTotAsist = 0;
-        let allAsistVals = [];
-        let allTotVals = [];
-
-        const formatNota = (val, isExtra = false) => {
-            if (val === null || val === undefined || isNaN(val)) {
-                return {
-                    text: isExtra ? '0.0' : '—',
-                    style: ''
-                };
-            }
-            const num = parseFloat(val);
-            const text = num.toFixed(1);
-            const style = num <= 5.0 ? 'color: #b42318; font-weight: bold;' : '';
-            return { text, style, num };
-        };
-
-        materias.forEach(m => {
-            const isEquiv = m.es_equivalencia === true;
-            if (isEquiv) {
-                filasMateriasHtml += `
-                    <tr>
-                        <td class="mat">${m.nombreMateria}</td>
-                        <td colspan="5" class="c rp-equiv">EQUIVALENCIA</td>
-                        <td class="n fin">—</td>
-                    </tr>
-                `;
-                return;
-            }
-
-            const p1 = (m.parcial1 !== null && m.parcial1 !== undefined && m.parcial1 !== '') ? parseFloat(m.parcial1) : null;
-            const p2 = (m.parcial2 !== null && m.parcial2 !== undefined && m.parcial2 !== '') ? parseFloat(m.parcial2) : null;
-            const p3 = (m.parcial3 !== null && m.parcial3 !== undefined && m.parcial3 !== '') ? parseFloat(m.parcial3) : null;
-            const sem = (m.semestral !== null && m.semestral !== undefined && m.semestral !== '') ? parseFloat(m.semestral) : null;
-            const ext = (m.extraordinario !== null && m.extraordinario !== undefined && m.extraordinario !== '') ? parseFloat(m.extraordinario) : null;
-            const finalVal = (m.calificacion !== null && m.calificacion !== undefined && m.calificacion !== '') ? parseFloat(m.calificacion) : null;
-
-            const parseVal = (v, arr) => { if (v !== null && !isNaN(v)) arr.push(v); };
-            parseVal(p1, p1Vals);
-            parseVal(p2, p2Vals);
-            parseVal(p3, p3Vals);
-            parseVal(sem, semVals);
-            parseVal(ext, extVals);
-            parseVal(finalVal, finalVals);
-
-            if (m.asistencias !== null && m.asistencias !== undefined) {
-                const a = parseInt(m.asistencias) || 0;
-                totalAsist += a;
-                allAsistVals.push(a);
-            }
-            if (m.total_asistencias !== null && m.total_asistencias !== undefined) {
-                const t = parseInt(m.total_asistencias) || 0;
-                totalTotAsist += t;
-                allTotVals.push(t);
-            }
-
-            const c1 = formatNota(p1);
-            const c2 = formatNota(p2);
-            const c3 = formatNota(p3);
-            const cSem = formatNota(sem);
-            const cExt = formatNota(ext, true);
-            const cFinal = formatNota(finalVal);
-
-            filasMateriasHtml += `
-                <tr>
-                    <td class="mat">${m.nombreMateria}</td>
-                    <td class="n" style="${c1.style}">${c1.text}</td>
-                    <td class="n" style="${c2.style}">${c2.text}</td>
-                    <td class="n" style="${c3.style}">${c3.text}</td>
-                    <td class="n" style="${cSem.style}">${cSem.text}</td>
-                    <td class="n bo-sep" style="${cExt.style}">${cExt.text}</td>
-                    <td class="n fin bo-sep" style="${cFinal.style}">${cFinal.text}</td>
-                </tr>
-            `;
-        });
-
-        const getAvg = (arr) => arr.length > 0 ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '—';
-
-        const p1Avg = getAvg(p1Vals);
-        const p2Avg = getAvg(p2Vals);
-        const p3Avg = getAvg(p3Vals);
-        const semAvg = getAvg(semVals);
-        const extAvg = getAvg(extVals);
-        const finalAvg = getAvg(finalVals);
-
-        const formatAvgStyle = (avgStr, defaultColor = '#12393f') => {
-            if (avgStr === '—' || isNaN(avgStr)) return `color: ${defaultColor};`;
-            const n = parseFloat(avgStr);
-            return n <= 5.0 ? 'color: #b42318; font-weight: bold;' : `color: ${defaultColor};`;
-        };
-
-        const p1AvgStyle = formatAvgStyle(p1Avg);
-        const p2AvgStyle = formatAvgStyle(p2Avg);
-        const p3AvgStyle = formatAvgStyle(p3Avg);
-        const semAvgStyle = formatAvgStyle(semAvg);
-        const extAvgStyle = formatAvgStyle(extAvg);
-        const finalAvgStyle = formatAvgStyle(finalAvg, '#12393f');
-
-        const badgeFinalColor = (finalAvg !== '—' && !isNaN(finalAvg) && parseFloat(finalAvg) <= 5.0) ? '#b42318' : '#12393f';
-
-        const allSameTot = allTotVals.length > 0 && allTotVals.every(v => v === allTotVals[0]);
-        const allSameAsist = allAsistVals.length > 0 && allAsistVals.every(v => v === allAsistVals[0]);
-
-        const displayAsist = (allSameTot && allSameAsist && allAsistVals.length > 0) ? allAsistVals[0] : totalAsist;
-        const displayTotAsist = (allSameTot && allTotVals.length > 0) ? allTotVals[0] : totalTotAsist;
-        const pctAsist = displayTotAsist > 0 ? Math.round((displayAsist / displayTotAsist) * 100) : 0;
-
-        let badgesHtml = '';
-        if (incAsist) {
-            badgesHtml = `
-                <div class="bo-stats">
-                    <div class="rp-box">
-                        <div class="rp-box-h">Asistencias</div>
-                        <div class="rp-box-b rp-stat">
-                            <div class="v sm">${displayAsist} / ${displayTotAsist}</div>
-                            <div class="s">${pctAsist}% asistencia</div>
-                            <div class="h">(Detalle en hoja 2)</div>
-                        </div>
-                    </div>
-                    <div class="rp-box">
-                        <div class="rp-box-h">Promedio final</div>
-                        <div class="rp-box-b rp-stat">
-                            <div class="v" style="color: ${badgeFinalColor};">${finalAvg}</div>
-                            <div class="s">Del semestre</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else {
-            badgesHtml = `
-                <div class="rp-box bo-side-box">
-                    <div class="rp-box-h">Promedio final del semestre</div>
-                    <div class="rp-box-b rp-stat">
-                        <div class="v" style="font-size: 18pt; color: ${badgeFinalColor};">${finalAvg}</div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Datos de fechas de periodos de evaluación configuradas para el grupo
-        const pe = data.periodosEvaluacion || opciones.periodosEvaluacion || {};
-        const p1RangoText = pe.p1_rango || (pe.p1_inicio && pe.p1_fin ? `${pe.p1_inicio} al ${pe.p1_fin}` : '01/09/2025 al 10/10/2025');
-        const p2RangoText = pe.p2_rango || (pe.p2_inicio && pe.p2_fin ? `${pe.p2_inicio} al ${pe.p2_fin}` : '13/10/2025 al 21/11/2025');
-        const p3RangoText = pe.p3_rango || (pe.p3_inicio && pe.p3_fin ? `${pe.p3_inicio} al ${pe.p3_fin}` : '24/11/2025 al 16/01/2026');
-
-        const incidenciasAsistencia = opciones.incidenciasAsistencia || {
-            1: {
-                inicio: pe.p1_inicio || '01/09/2025',
-                fin: pe.p1_fin || '10/10/2025',
-                asistencias: 48,
-                total: 50,
-                pct: 96,
-                faltas: ['12 de Septiembre, 2025', '25 de Septiembre, 2025'],
-                retardos: ['18 de Septiembre, 2025'],
-                justificantes: [{ fecha: '29 de Septiembre, 2025', motivo: 'Cita Médica' }]
-            },
-            2: {
-                inicio: pe.p2_inicio || '13/10/2025',
-                fin: pe.p2_fin || '21/11/2025',
-                asistencias: 50,
-                total: 50,
-                pct: 100,
-                faltas: [],
-                retardos: [],
-                justificantes: []
-            },
-            3: {
-                inicio: pe.p3_inicio || '24/11/2025',
-                fin: pe.p3_fin || '16/01/2026',
-                asistencias: 47,
-                total: 50,
-                pct: 94,
-                faltas: ['05 de Diciembre, 2025'],
-                retardos: ['02 de Diciembre, 2025', '10 de Diciembre, 2025'],
-                justificantes: []
-            }
-        };
-
-        const renderListaFechas = (items, tipo) => {
-            if (!items || items.length === 0) {
-                const txt = (tipo === 'retardos' || tipo === 'justificantes') ? `Sin ${tipo} registrados` : `Sin ${tipo} registradas`;
-                return `<div class="bo-vacio">${txt}</div>`;
-            }
-            return items.map(item => {
-                if (typeof item === 'object') {
-                    return `<div class="bo-fecha">${item.fecha} <span>(${item.motivo})</span></div>`;
-                }
-                return `<div class="bo-fecha">${item}</div>`;
-            }).join('');
-        };
-
-        const totFaltas = (incidenciasAsistencia[1]?.faltas?.length || 0) + (incidenciasAsistencia[2]?.faltas?.length || 0) + (incidenciasAsistencia[3]?.faltas?.length || 0);
-        const totRetardos = (incidenciasAsistencia[1]?.retardos?.length || 0) + (incidenciasAsistencia[2]?.retardos?.length || 0) + (incidenciasAsistencia[3]?.retardos?.length || 0);
-        const totJustif = (incidenciasAsistencia[1]?.justificantes?.length || 0) + (incidenciasAsistencia[2]?.justificantes?.length || 0) + (incidenciasAsistencia[3]?.justificantes?.length || 0);
-        const totAsist = (incidenciasAsistencia[1]?.asistencias || 0) + (incidenciasAsistencia[2]?.asistencias || 0) + (incidenciasAsistencia[3]?.asistencias || 0);
-        const totTotalAsist = (incidenciasAsistencia[1]?.total || 0) + (incidenciasAsistencia[2]?.total || 0) + (incidenciasAsistencia[3]?.total || 0);
-        const pctGlobal = totTotalAsist > 0 ? ((totAsist / totTotalAsist) * 100).toFixed(1) : '100.0';
-
-        const nombreAlumno = `${al.apPaterno || ''} ${al.apMaterno || ''} ${al.nombre || ''}`;
-        const fechaLarga = new Date().toLocaleDateString('es-MX', {day: 'numeric', month: 'long', year: 'numeric'}).toUpperCase();
-
-        // Columna de un parcial en el anexo de asistencia (hoja 2)
-        const renderParcialAnexo = (n, titulo, iniDef, finDef) => {
-            const inc = incidenciasAsistencia[n] || {};
-            const bloque = (label, lista, tipo) => `
-                <div class="bo-inc">
-                    <div class="bo-inc-h">
-                        <span>${label}</span>
-                        <span class="rp-chip ${(lista?.length || 0) > 0 && tipo !== 'justificantes' ? 'alert' : ''}">${lista?.length || 0}</span>
-                    </div>
-                    ${renderListaFechas(lista, tipo)}
-                </div>`;
-            return `
-                <div class="bo-parcial">
-                    <div class="bo-parcial-h">
-                        ${titulo}
-                        <div>${inc.inicio || iniDef} al ${inc.fin || finDef}</div>
-                    </div>
-                    <div class="bo-parcial-asist">
-                        <span class="rp-label">Asistencia del periodo</span>
-                        <strong>${inc.asistencias || 0} / ${inc.total || 0}</strong>
-                        <span class="bo-pct">${inc.pct || 0}%</span>
-                    </div>
-                    ${bloque('Faltas', inc.faltas, 'faltas')}
-                    ${bloque('Retardos', inc.retardos, 'retardos')}
-                    ${bloque('Justificantes', inc.justificantes, 'justificantes')}
-                </div>`;
-        };
-
-        const cuerpoBoleta = `
-            <style>
-                .bo-periodos { display: flex; border: .6pt solid #b9c9cc; background: #f4f8f8; margin-bottom: 3.5mm; }
-                .bo-periodos > div { flex: 1; padding: 1.4mm 2.5mm; border-left: .6pt solid #b9c9cc; }
-                .bo-periodos > div:first-child { border-left: 1.4mm solid #c9a24b; }
-                .bo-periodos .v { display: block; margin-top: .5mm; font-size: 7.8pt; font-weight: bold; color: #12393f; }
-                .bo-main { display: flex; gap: 4mm; align-items: flex-start; }
-                .bo-main > .bo-grades { flex: 1; min-width: 0; }
-                .bo-main > .bo-side { width: 56mm; display: flex; flex-direction: column; gap: 3mm; }
-                .bo-table td { padding: 1.6mm 1.6mm; }
-                .bo-table td.mat { font-weight: bold; font-size: 7pt; }
-                .bo-table td.n { font-size: 8.4pt; }
-                .bo-table .bo-sep { border-left: 1pt solid #26687B !important; }
-                .bo-stats { display: flex; gap: 2mm; }
-                .bo-stats .rp-box { flex: 1; }
-                .bo-rep-parciales { display: flex; justify-content: center; gap: 1.2mm; margin-top: 1.6mm; }
-                .bo-fecha-doc { font-size: 6.8pt; font-weight: bold; letter-spacing: .5px; color: #12393f; text-align: center; border: .6pt solid #b9c9cc; border-left: 1.4mm solid #c9a24b; background: #fbf8ef; padding: 1.4mm 2mm; }
-                .bo-obs { margin-top: 5mm; }
-                .bo-obs-area { border: 1pt solid #26687B; border-top: none; height: 16mm; background: repeating-linear-gradient(to bottom, transparent 0, transparent 5.2mm, #dfe8ea 5.2mm, #dfe8ea 5.4mm); }
-                .bo-anexo-grid { display: flex; border: 1pt solid #26687B; }
-                .bo-parcial { flex: 1; border-left: .6pt solid #a9bcc0; display: flex; flex-direction: column; }
-                .bo-parcial:first-child { border-left: none; }
-                .bo-parcial-h { background: #dceaec; color: #12393f; text-align: center; font-size: 8.4pt; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; padding: 1.8mm 1mm; border-bottom: .6pt solid #a9bcc0; }
-                .bo-parcial-h div { font-size: 6.4pt; font-weight: bold; letter-spacing: .4px; color: #4c6266; margin-top: .4mm; }
-                .bo-parcial-asist { text-align: center; padding: 2mm 1mm; border-bottom: .6pt solid #a9bcc0; background: #f4f8f8; }
-                .bo-parcial-asist strong { display: block; font-size: 12pt; color: #12393f; margin-top: .5mm; }
-                .bo-pct { font-size: 6.6pt; font-weight: bold; color: #26687B; }
-                .bo-inc { padding: 2mm 3mm; border-bottom: .5pt solid #e1eaec; }
-                .bo-inc:last-child { border-bottom: none; flex: 1; }
-                .bo-inc-h { display: flex; justify-content: space-between; align-items: center; font-size: 6.8pt; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; color: #12393f; margin-bottom: 1mm; }
-                .bo-fecha { font-size: 7.2pt; padding-left: 2.6mm; position: relative; line-height: 1.5; }
-                .bo-fecha::before { content: ""; position: absolute; left: 0; top: 1.5mm; width: 1.1mm; height: 1.1mm; background: #c9a24b; }
-                .bo-fecha span { font-size: 6.6pt; color: #5b6b6e; }
-                .bo-vacio { font-size: 6.8pt; color: #7a8a8d; font-style: italic; }
-            </style>
-
-            ${RP.head({
-                institucion: 'Dirección General de Educación Tecnológica Industrial y de Servicios',
-                titulo: `Boleta de calificaciones del ${semestreNombreLargo} semestre`,
-                lineas: ['Educación Media Superior · Ciclo escolar 2025-2026'],
-                tag: al.claveCentroTrabajo || '21PCT0073R',
-                tagSub: 'Ciclo 2025-2026'
-            })}
-
-            ${RP.meta([
-                { label: 'Datos del alumno(a), Apellido paterno, materno y nombre', value: nombreAlumno, flex: 1, lg: true }
-            ])}
-            ${RP.meta([
-                { label: 'Datos de la escuela', value: al.nombreCentroTrabajo || 'BACHILLERATO TECNOLÓGICO INTERAMERICANO', flex: 3 },
-                { label: 'Grupo', value: al.nombreGrupoTexto || '—', flex: .8 },
-                { label: 'Turno', value: al.modalidadHorario || 'MATUTINO', flex: 1.1 },
-                { label: 'CCT', value: al.claveCentroTrabajo || '21PCT0073R', flex: 1.1 }
-            ])}
-
-            <div class="bo-periodos">
-                <div><span class="rp-label">Periodos de evaluación parcial</span><span class="v">Fechas</span></div>
-                <div><span class="rp-label">1er. parcial</span><span class="v">${p1RangoText}</span></div>
-                <div><span class="rp-label">2do. parcial</span><span class="v">${p2RangoText}</span></div>
-                <div><span class="rp-label">3er. parcial</span><span class="v">${p3RangoText}</span></div>
-            </div>
-
-            <div class="bo-main">
-                <div class="bo-grades">
-                    <table class="rp-table bo-table">
-                        <thead>
-                            <tr>
-                                <th rowspan="2" class="l">Asignaturas / áreas</th>
-                                <th colspan="4">Periodos de evaluación ordinaria</th>
-                                <th rowspan="2" class="bo-sep" style="width: 15mm;">Extra&shy;ordinario</th>
-                                <th rowspan="2" class="bo-sep" style="width: 16mm;">Promedio final / materia</th>
-                            </tr>
-                            <tr class="sub">
-                                <th style="width: 11mm;">1er. parcial</th>
-                                <th style="width: 11mm;">2do. parcial</th>
-                                <th style="width: 11mm;">3er. parcial</th>
-                                <th style="width: 14mm;">Semestral</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${filasMateriasHtml}
-                            <tr class="tot">
-                                <td class="lbl">Promedio</td>
-                                <td class="n" style="${p1AvgStyle}">${p1Avg}</td>
-                                <td class="n" style="${p2AvgStyle}">${p2Avg}</td>
-                                <td class="n" style="${p3AvgStyle}">${p3Avg}</td>
-                                <td class="n" style="${semAvgStyle}">${semAvg}</td>
-                                <td class="n bo-sep" style="${extAvgStyle}">${extAvg}</td>
-                                <td class="n bo-sep" style="background: #f3e4bb !important; ${finalAvgStyle}">${finalAvg}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="bo-side">
-                    ${badgesHtml}
-                    ${boxReportesHtml}
-                    <div style="margin-top: 2mm;">
-                        ${RP.firmas([{ nombre: 'Ing. Fausto Leyva Flores', rol: 'Director' }], '12mm')}
-                    </div>
-                    <div class="bo-fecha-doc">TEZIUTLÁN PUEBLA A ${fechaLarga}</div>
-                </div>
-            </div>
-
-            <div class="bo-obs">
-                <table class="rp-table" style="border-bottom: none;">
-                    <thead><tr><th>Observaciones o recomendaciones de la docente o del docente</th></tr></thead>
-                </table>
-                <div class="bo-obs-area"></div>
-            </div>
-
-            ${incAsist ? `
-                <div class="rp-page-break"></div>
-
-                ${RP.head({
-                    titulo: 'Reporte detallado de asistencia, puntualidad e incidencias',
-                    lineas: [`Anexo a la boleta de calificaciones — ${semestreNombreLargo} semestre`],
-                    tag: 'Hoja 2 · Anexo',
-                    tagSub: 'Ciclo 2025-2026'
-                })}
-
-                ${RP.meta([
-                    { label: 'Alumno', value: nombreAlumno, flex: 2.6 },
-                    { label: 'Matrícula', value: al.numeroControl || al.idAlumno || '—', flex: 1 },
-                    { label: 'Grupo', value: `${al.nombreGrupoTexto || '—'} (${al.modalidadHorario || 'MATUTINO'})`, flex: 1.3 },
-                    { label: 'Ciclo', value: '2025-2026', flex: .9 }
-                ])}
-
-                <table class="rp-table" style="border-bottom: none;">
-                    <thead><tr><th>Desglose de incidencias por periodo parcial</th></tr></thead>
-                </table>
-                <div class="bo-anexo-grid">
-                    ${renderParcialAnexo(1, '1er. parcial', '01/09/2025', '10/10/2025')}
-                    ${renderParcialAnexo(2, '2do. parcial', '13/10/2025', '21/11/2025')}
-                    ${renderParcialAnexo(3, '3er. parcial', '24/11/2025', '16/01/2026')}
-                </div>
-
-                <div style="margin-top: 18mm; padding: 0 6mm;">
-                    ${RP.firmas([
-                        { rol: 'Prefectura / Control escolar', detalle: 'Responsable de asistencia' },
-                        'sello:Sello escolar',
-                        { rol: 'Padre de familia o tutor', detalle: 'Firma de enterado' }
-                    ], '14mm')}
-                </div>
-
-                ${RP.foot('Documento oficial anexo', `Teziutlán, Puebla a ${fechaLarga}`)}
-            ` : ''}
-        `;
-
-        const win = window.open('', '', 'height=850,width=1100');
-        win.document.write(RP.documento(`Boleta de Calificaciones - ${semestreNombreLargo} Semestre - ${al.nombre}`, cuerpoBoleta, { margin: '10mm 11mm' }));
-        win.document.close();
-        win.focus();
-        setTimeout(() => {
-            win.print();
-            win.close();
-        }, 400);
-    };
 
     function promptBoletaSemestreDespuesKardex() {
         if (!datosKardexActual) {
@@ -4271,6 +3926,7 @@ window.imprimirKardex = function() {
         const chkAsist = document.getElementById('chkBoletaIncluirAsistencias');
         const chkRep = document.getElementById('chkBoletaIncluirReportes');
         const opciones = {
+            parcial: document.getElementById('boletaParcialSelect')?.value || 'FINAL',
             incluirAsistencias: chkAsist ? chkAsist.checked : true,
             incluirReportes: chkRep ? chkRep.checked : true
         };
@@ -6126,6 +5782,105 @@ window.imprimirKardex = function() {
     }
 
     document.addEventListener('DOMContentLoaded', initActasOrdinario);
+
+    // ---------------------------------------------------------------
+    // Boletas BTI de todo un grupo (pestaña Boleta de calificaciones)
+    // ---------------------------------------------------------------
+    const boletasGrupo = { combo: null, alumnos: [], req: 0 };
+
+    function pintarResumenBoletasGrupo(icon, html, tono = 'tw:text-slate-500') {
+        const el = document.getElementById('boletaGrupoResumen');
+        if (!el) return;
+        el.className = `tw:m-0 tw:mt-3 tw:flex tw:items-center tw:gap-2 tw:text-[0.8125rem] ${tono}`;
+        el.innerHTML = `<i data-lucide="${icon}" class="tw:size-4 tw:shrink-0"></i> <span>${html}</span>`;
+        if (window.lucide?.createIcons) lucide.createIcons();
+    }
+
+    function onBoletaGrupoChange(grupo) {
+        boletasGrupo.alumnos = [];
+        if (!grupo) return pintarResumenBoletasGrupo('info', 'Elige un grupo para ver cuántas boletas se generarán.');
+
+        // Proponer el semestre del grupo (7 a 12 = 1er a 6to semestre)
+        const g = (window.gruposDb || []).find(x => String(x.id) === String(grupo.value));
+        const nivel = Number(g?.id_nivel ?? g?.id_nivel_academico ?? g?.idNivel);
+        const selSem = document.getElementById('boletaGrupoSemestreSelect');
+        if (selSem && nivel >= 7 && nivel <= 12) selSem.value = String(nivel);
+
+        const req = ++boletasGrupo.req;
+        pintarResumenBoletasGrupo('loader', 'Consultando alumnos del grupo…');
+        fetch(`/reportes/grupo/${encodeURIComponent(grupo.value)}/alumnos`, { headers: { Accept: 'application/json' } })
+            .then(r => r.json())
+            .then(resp => {
+                if (req !== boletasGrupo.req) return; // el usuario ya cambió de grupo
+                const lista = (resp?.data || []).filter(a => a && a.idAlumno != null);
+                lista.sort((a, b) => `${a.apPaterno || ''} ${a.apMaterno || ''} ${a.nombre || ''}`.localeCompare(`${b.apPaterno || ''} ${b.apMaterno || ''} ${b.nombre || ''}`, 'es'));
+                boletasGrupo.alumnos = lista;
+                lista.length
+                    ? pintarResumenBoletasGrupo('users-round', `<strong class="tw:font-semibold tw:text-slate-900">${lista.length} boletas</strong> se generarán para el grupo ${escGrupo(grupo.label)}, una por alumno activo.`, 'tw:text-slate-600')
+                    : pintarResumenBoletasGrupo('triangle-alert', `El grupo ${escGrupo(grupo.label)} no tiene alumnos activos.`, 'tw:text-warning-600');
+            })
+            .catch(() => { if (req === boletasGrupo.req) pintarResumenBoletasGrupo('circle-alert', 'No se pudo consultar la lista de alumnos del grupo.', 'tw:text-danger-600'); });
+    }
+
+    function initBoletasGrupo() {
+        if (!document.getElementById('boletaGrupoInput')) return;
+        boletasGrupo.combo = crearCombo({
+            id: 'boletaGrupo',
+            mono: true,
+            remoto: buscarAlumnosParaGrupo(2),
+            getItems: () => (window.gruposDb || [])
+                .filter(g => (g.id_centroTrabajo ?? g.idCentroTrabajo ?? g.id_centro_trabajo) == 2)
+                .map(g => ({ value: String(g.id), label: g.clave, sub: g.modalidadHorario || '' })),
+            onChange: onBoletaGrupoChange,
+        });
+    }
+    document.addEventListener('DOMContentLoaded', initBoletasGrupo);
+
+    async function generarBoletasGrupoBTI() {
+        const grupo = boletasGrupo.combo?.valor;
+        if (!grupo) {
+            Swal.fire({ icon: 'warning', title: 'Elige un grupo', text: 'Las boletas se generan para los alumnos del grupo seleccionado.', confirmButtonColor: '#26687B' })
+                .then(() => boletasGrupo.combo?.input?.focus());
+            return;
+        }
+        if (!boletasGrupo.alumnos.length) {
+            Swal.fire({ icon: 'info', title: 'Sin alumnos', text: `El grupo ${grupo.label} no tiene alumnos activos o aún se está consultando la lista.`, confirmButtonColor: '#26687B' });
+            return;
+        }
+
+        const btn = document.getElementById('btnBoletasGrupo');
+        const opciones = {
+            parcial: document.getElementById('boletaGrupoParcialSelect').value || 'FINAL',
+            incluirAsistencias: document.getElementById('chkBoletaGrupoAsistencias').checked,
+            incluirReportes: document.getElementById('chkBoletaGrupoReportes').checked,
+        };
+        const idNivel = parseInt(document.getElementById('boletaGrupoSemestreSelect').value, 10) || 9;
+
+        btn.disabled = true;
+        // La ventana se abre dentro de la función, aún en el clic del usuario, para que no la bloquee el navegador
+        const promesa = imprimirBoletasBTIGrupo(boletasGrupo.alumnos, { id: grupo.value, clave: grupo.label }, idNivel, opciones,
+            (hechos, total) => pintarResumenBoletasGrupo('loader', `Generando boletas: ${hechos} de ${total}…`, 'tw:text-slate-600'));
+        try {
+            const r = await promesa;
+            if (!r) return;
+            if (!r.generadas) {
+                pintarResumenBoletasGrupo('circle-alert', 'No se pudo generar ninguna boleta.', 'tw:text-danger-600');
+                Swal.fire({ icon: 'error', title: 'Sin boletas', text: 'No se pudo consultar el kárdex de ningún alumno del grupo.', confirmButtonColor: '#26687B' });
+                return;
+            }
+            pintarResumenBoletasGrupo('circle-check', `<strong class="tw:font-semibold tw:text-slate-900">${r.generadas} boletas</strong> generadas para el grupo ${escGrupo(grupo.label)}.`, 'tw:text-success-700');
+            if (r.fallidas.length) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: `${r.fallidas.length} boleta(s) sin generar`,
+                    html: `No se pudo consultar el kárdex de:<br><br>${r.fallidas.map(escGrupo).join('<br>')}`,
+                    confirmButtonColor: '#26687B',
+                });
+            }
+        } finally {
+            btn.disabled = false;
+        }
+    }
 
     // ==========================================
     // ACTAS ORDINARIO (BGNE): por trimestre / módulo

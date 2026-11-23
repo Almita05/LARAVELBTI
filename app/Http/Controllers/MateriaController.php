@@ -30,7 +30,7 @@ class MateriaController extends Controller
    
 public function store(Request $request)
 {
-    $request->merge(json_decode($request->getContent(), true));
+    $request->merge(\App\Http\Middleware\LimpiarEntradaHtml::limpiarArreglo(json_decode($request->getContent(), true)));
 
     $url = config('services.api.base_url') . '/createMateria';
 
@@ -92,7 +92,7 @@ public function show($id)
 
 public function update(Request $request, $id)
 {
-    $request->merge(json_decode($request->getContent(), true));
+    $request->merge(\App\Http\Middleware\LimpiarEntradaHtml::limpiarArreglo(json_decode($request->getContent(), true)));
 
     $url = config('services.api.base_url') . '/updateMateria/' . $id;
 

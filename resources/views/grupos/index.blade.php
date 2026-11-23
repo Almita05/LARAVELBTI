@@ -689,12 +689,12 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <span>Captura calificaciones</span>
                             </a>
                         </li>
-                        <li>
+                        ${Number(grupo.id_centroTrabajo) === 2 ? '' : `<li>
                             <button type="button" class="dropdown-item" onclick="abrirModalAsistenciasGrupo(${grupo.id}, '${grupo.clave}', ${grupo.id_centroTrabajo}, ${grupo.id_nivel_academico || 7})">
                                 <i class="ti ti-calendar-stats"></i>
                                 <span>Capturar asistencias</span>
                             </button>
-                        </li>
+                        </li>`}
                     </ul>
                 </div>
             `;
@@ -717,12 +717,12 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <span>Captura calificaciones</span>
                             </a>
                         </li>
-                        <li>
+                        ${Number(grupo.id_centroTrabajo) === 2 ? '' : `<li>
                             <button type="button" class="dropdown-item" onclick="abrirModalAsistenciasGrupo(${grupo.id}, '${grupo.clave}', ${grupo.id_centroTrabajo}, ${grupo.id_nivel_academico || 7})">
                                 <i class="ti ti-calendar-stats"></i>
                                 <span>Capturar asistencias</span>
                             </button>
-                        </li>
+                        </li>`}
                         <li><hr class="dropdown-divider my-1" style="border-color: #F1F5F9;"></li>
                         <li>
                             <button type="button" class="dropdown-item" onclick="verGrupo(${grupo.id})">

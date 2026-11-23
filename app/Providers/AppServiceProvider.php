@@ -3,7 +3,10 @@
 namespace App\Providers;
 
 use App\Auth\ApiUserProvider;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
@@ -29,6 +32,16 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->autenticarLlamadasApi();
+
+        // Login: máx. 10 intentos por minuto por IP y 5 por minuto por usuario
+        // (frena fuerza bruta contra una cuenta aunque el atacante cambie de IP)
+        RateLimiter::for('login', function (Request $request) {
+            $usuario = mb_strtolower(trim((string) $request->input('usuario')));
+            return [
+                Limit::perMinute(10)->by('ip:' . $request->ip()),
+                Limit::perMinute(5)->by('usuario:' . $usuario),
+            ];
+        });
 
         // Usuarios administrativos (tb_users) autenticados a través de la API, no de la BD
         Auth::provider('api', fn ($app, array $config) => new ApiUserProvider());

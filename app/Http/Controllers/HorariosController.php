@@ -43,7 +43,7 @@ class HorariosController extends Controller
 
     public function store(Request $request)
     {
-        $request->merge(json_decode($request->getContent(), true));
+        $request->merge(\App\Http\Middleware\LimpiarEntradaHtml::limpiarArreglo(json_decode($request->getContent(), true)));
 
         $url = config('services.api.base_url') . '/createHorarioGrupo';
 
@@ -87,7 +87,7 @@ class HorariosController extends Controller
 
     public function validar(Request $request)
     {
-        $request->merge(json_decode($request->getContent(), true));
+        $request->merge(\App\Http\Middleware\LimpiarEntradaHtml::limpiarArreglo(json_decode($request->getContent(), true)));
 
         $url = config('services.api.base_url') . '/validacionHorario';
 

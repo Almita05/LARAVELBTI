@@ -68,6 +68,16 @@ class AsistenciaDocenteController extends Controller
             return response()->json(['error' => 'No se recibió ningún archivo'], 400);
         }
 
+        // Solo Excel del biométrico y de tamaño razonable (la API también valida la extensión)
+        $archivo = $request->file('file');
+        $ext = strtolower($archivo->getClientOriginalExtension());
+        if (!$archivo->isValid() || !in_array($ext, ['xlsx', 'xls'], true)) {
+            return response()->json(['error' => 'El archivo debe ser un Excel (.xlsx o .xls).'], 422);
+        }
+        if ($archivo->getSize() > 20 * 1024 * 1024) {
+            return response()->json(['error' => 'El archivo no puede superar los 20 MB.'], 422);
+        }
+
         $file = $request->file('file');
         $originalName = $file->getClientOriginalName();
         $filePath = $file->getPathname();
