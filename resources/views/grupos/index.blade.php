@@ -90,8 +90,8 @@
                         <th>CCT</th>
                         <th>Semestre / Trimestre</th>
                         <th>Progreso Periodo</th>
-                        <th>Fecha Inicio</th>
-                        <th>Fecha Fin</th>
+                        <th>Inicio Periodo</th>
+                        <th>Fin Periodo</th>
                         <th>Estatus</th>
                         <th style="text-align: right; padding-right: 20px;">Acciones</th>
                     </tr>
@@ -785,8 +785,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     <td>${cctBadge}</td>
                     <td><span class="badge-soft badge-soft-inf">${nivelNombre}</span></td>
                     <td>${progresoHtml}</td>
-                    <td><span style="font-size: 0.8125rem; color: var(--text-secondary);">${formatearFecha(grupo.fechaInicio)}</span></td>
-                    <td><span style="font-size: 0.8125rem; color: var(--text-secondary);">${formatearFecha(grupo.fechaFin)}</span></td>
+                    <td><span style="font-size: 0.8125rem; color: var(--text-secondary);" title="Inicio del grupo: ${formatearFecha(grupo.fechaInicio)}">${progreso.inicioPeriodo}</span></td>
+                    <td><span style="font-size: 0.8125rem; color: var(--text-secondary);" title="Fin del grupo: ${formatearFecha(grupo.fechaFin)}">${progreso.finPeriodo}</span></td>
                     <td>${statusBadge}</td>
                     <td style="text-align: right; padding-right: 20px;">
                         <div class="actions-cell" style="justify-content: flex-end;">${actionButtons}</div>
