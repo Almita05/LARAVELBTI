@@ -292,7 +292,17 @@ class AsistenciaAlumnoController extends Controller
             ]);
             $json = $response->json() ?: [];
             if (!$response->successful() || isset($json['error'])) {
-                return response()->json(['error' => $json['error'] ?? 'No se pudo guardar el día en el servidor escolar.'], $response->successful() ? 400 : $response->status());
+                if (!isset($json['error'])) {
+                    // Respuesta sin JSON (p. ej. 404 si la API no tiene la ruta de días especiales)
+                    \Log::warning('Día especial: respuesta inesperada de la API', [
+                        'status' => $response->status(),
+                        'body' => mb_substr($response->body(), 0, 300),
+                    ]);
+                }
+                $mensaje = $json['error'] ?? ($response->status() === 404
+                    ? 'El servidor escolar no tiene habilitados los días especiales (HTTP 404). Hay que actualizar y reiniciar la API.'
+                    : 'No se pudo guardar el día en el servidor escolar (HTTP ' . $response->status() . ').');
+                return response()->json(['error' => $mensaje], $response->successful() ? 400 : $response->status());
             }
             return response()->json($json);
         } catch (\Throwable $e) {
