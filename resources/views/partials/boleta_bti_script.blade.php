@@ -523,11 +523,12 @@
     function lanzarImpresion(win) {
         win.focus();
         const imprimir = () => setTimeout(() => win.print(), 150);
-        if (win.document.fonts && win.document.fonts.ready) {
-            win.document.fonts.ready.then(imprimir).catch(imprimir);
-        } else {
-            setTimeout(imprimir, 500);
-        }
+        // Esperar fuentes y logos; si algo no carga, se imprime de todos modos (máximo 5 s)
+        const fuentes = (win.document.fonts && win.document.fonts.ready) ? win.document.fonts.ready.catch(() => {}) : Promise.resolve();
+        const imagenes = Array.from(win.document.images || []).map(img => img.complete ? Promise.resolve()
+            : new Promise(ok => { img.addEventListener('load', ok, { once: true }); img.addEventListener('error', ok, { once: true }); }));
+        const limite = new Promise(ok => setTimeout(ok, 5000));
+        Promise.race([Promise.all([fuentes, ...imagenes]), limite]).then(imprimir);
     }
 
     window.imprimirBoletaBTISemestre = async function (data, idNivelSemestre, reportesCounts, opciones = {}) {
