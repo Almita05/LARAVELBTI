@@ -361,18 +361,11 @@
                 cuerpo = `<div>Sin pase de lista diario registrado en este parcial.</div>`;
             } else {
                 const hist = (pase.historial || []).slice().sort((a, b) => a.fecha.localeCompare(b.fecha));
-                const justif = {};
-                (pase.faltas || []).forEach(f => { justif[f.fecha] = f; });
                 const de = e => hist.filter(h => h.estatus === e);
                 const lista = arr => arr.length ? arr.map(h => fechaCorta(h.fecha)).join(', ') : 'Ninguna';
-                const listaJ = arr => arr.length ? arr.map(h => {
-                    const j = justif[h.fecha];
-                    const det = [h.observaciones, j && j.fecha_justificacion ? `justificada el ${fechaCorta(j.fecha_justificacion)}` : ''].filter(Boolean).join(', ');
-                    return `${fechaCorta(h.fecha)}${det ? ` (${esc(det)})` : ''}`;
-                }).join('; ') : 'Ninguna';
                 cuerpo = `
                     <div><b>Faltas</b>${lista(de('F'))}</div>
-                    <div><b>Faltas justificadas</b>${listaJ(de('J'))}</div>
+                    <div><b>Faltas justificadas</b>${lista(de('J'))}</div>
                     <div><b>Retardos</b>${lista(de('R')).replace('Ninguna', 'Ninguno')}</div>
                     ${hist.some(h => h.en_linea) ? `<div><b>Clases en línea</b>${lista(hist.filter(h => h.en_linea))}</div>` : ''}`;
             }
