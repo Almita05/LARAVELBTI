@@ -258,6 +258,10 @@
                                     </div>
                                     @endforeach
                                 </div>
+                                <p id="notaCapturaAutoBgne" class="tw:m-0 tw:mt-2 tw:text-xs tw:text-slate-500" style="display: none;">
+                                    Calificación final sin fechas = automático: los docentes capturan desde el día en que termina cada trimestre y hasta 6 días después.
+                                    Si pones fechas, mandan esas.
+                                </p>
                             </div>
 
                             <footer class="tw:mt-4 tw:flex tw:items-center tw:justify-end tw:gap-3 tw:border-t tw:border-slate-100 tw:bg-slate-50/60 tw:px-6 tw:py-4">
@@ -934,6 +938,7 @@ const PERIODOS = [
 let listadoCcts = [];
 let listadoGruposCct = [];
 let grupoConfiguracionActualId = null;
+let grupoConfigEsBgne = false;
 
 function mostrarAjustes(visible) {
     document.getElementById('cardAjustesGrupo').style.display = visible ? 'block' : 'none';
@@ -989,7 +994,9 @@ function calendarioGrupo(g) {
     for (let nivel = 1; nivel <= 6; nivel++) {
         if (fin && ini > fin) break;
         const finP = new Date(ini.getTime() + 12 * 7 * DIA);   // 13 semanas
-        periodos.push({ idNivel: nivel, nombre: `${ORDINAL[nivel]} trimestre`, ini, fin: finP });
+        // Captura de calificaciones (regla BGNE, misma que la API): del fin del trimestre a 6 días después
+        const abre = (fin && finP > fin) ? fin : finP;
+        periodos.push({ idNivel: nivel, nombre: `${ORDINAL[nivel]} trimestre`, ini, fin: finP, capIni: abre, capFin: new Date(abre.getTime() + 6 * DIA) });
         if (fin && finP >= fin) break;
         ini = new Date(finP.getTime() + 7 * DIA);
     }
@@ -1030,6 +1037,7 @@ function pintarInfoGrupo(g) {
                     <span class="tw:px-2 tw:py-0.5 tw:text-[0.625rem] tw:font-semibold ${e.chip}">${e.txt}</span>
                 </div>
                 <div class="tw:mt-0.5 tw:font-mono tw:text-[0.6875rem] tw:text-slate-500">${fechaDMY(p.ini)} al ${fechaDMY(p.fin)}</div>
+                ${p.capIni ? `<div class="tw:mt-0.5 tw:text-[0.6875rem] tw:text-slate-500">Captura: <span class="tw:font-mono">${fechaDMY(p.capIni)} al ${fechaDMY(p.capFin)}</span></div>` : ''}
             </div>`;
     }).join('');
     cont.style.display = 'block';
@@ -1137,6 +1145,8 @@ function cargarConfiguracionGrupo(idGrupo) {
                 document.getElementById(id).style.display = isBgne ? 'none' : 'block';
             });
             document.getElementById('lblGrupoP1Title').textContent = isBgne ? 'Calificación final de la asignatura' : '1er parcial';
+            document.getElementById('notaCapturaAutoBgne').style.display = isBgne ? 'block' : 'none';
+            grupoConfigEsBgne = isBgne;
 
             document.getElementById('checkGrupoHabilitada').checked = c.captura_habilitada == 1;
             PERIODOS.forEach(({ key, cap }) => {
@@ -1186,6 +1196,8 @@ function validarConfiguracionGrupo() {
         const ini = document.getElementById(`inputGrupo${cap}Inicio`).value;
         const fin = document.getElementById(`inputGrupo${cap}Fin`).value;
         const titulo = cap === 'P1' ? document.getElementById('lblGrupoP1Title').textContent.trim() : nombre;
+        // BGNE: la calificación final sin fechas usa la ventana automática (semana posterior a cada trimestre)
+        if (cap === 'P1' && grupoConfigEsBgne && !ini && !fin) return;
         if (!ini || !fin) errores.push(`${titulo}: indica fecha de inicio y de fin.`);
         else if (ini > fin) errores.push(`${titulo}: la fecha de fin es anterior a la de inicio.`);
     });
