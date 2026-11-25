@@ -150,6 +150,7 @@
         .tabla td.mat { text-transform: uppercase; }
         .tabla td.n { text-align: center; width: 15mm; font-variant-numeric: tabular-nums; }
         .tabla td.fin { font-weight: 700; }
+        .tabla td.per { font-size: 6.8pt; line-height: 1.15; white-space: nowrap; }
         .tabla td.rep { font-weight: 700; color: #a11; }
         .tabla tr.total td { font-weight: 700; background: #f4f4f4; }
         .tabla tr.total td.et { text-align: right; text-transform: uppercase; font-size: 7.4pt; }
@@ -324,10 +325,24 @@
             const notaManual = manuales.length
                 ? `<div class="nota">${manuales.map(k => ORD[k]).join(' y ')} parcial: sin pase de lista diario, se muestra la asistencia capturada manualmente.</div>`
                 : '';
+            // Fechas de cada parcial (Horarios > Fechas de Periodos de Evaluación del grupo)
+            const peA = data.periodosEvaluacion || {};
+            const rangoDe = k => {
+                const rp = pases[k] && pases[k].rango && pases[k].rango.parcial;
+                if (rp && rp.inicio && rp.fin) return { ini: fechaCorta(rp.inicio), fin: fechaCorta(rp.fin) };
+                const ini = peA[`p${k}_inicio`], fin = peA[`p${k}_fin`];
+                return (ini && fin) ? { ini, fin } : null;
+            };
+            const R = [1, 2, 3].map(rangoDe);
+            const celdaRango = x => `<td class="n per">${x ? `${esc(x.ini)}<br>al ${esc(x.fin)}` : ''}</td>`;
+            const filaPeriodo = R.some(Boolean)
+                ? `<tr><td>Periodo</td>${R.map(celdaRango).join('')}${celdaRango(R[0] && R[n - 1] ? { ini: R[0].ini, fin: R[n - 1].fin } : null)}</tr>`
+                : '';
             asistenciaHtml = `
                 <div class="seccion">Asistencia</div>
                 <table class="tabla">
                     <tr><th style="text-align:left;">Concepto</th><th>1er parcial</th><th>2do parcial</th><th>3er parcial</th><th>${esFinal ? 'Semestre' : 'Acumulado'}</th></tr>
+                    ${filaPeriodo}
                     ${hay ? `
                     ${fila('Clases impartidas', 'tot')}
                     ${fila('Asistencias', 'asi')}
