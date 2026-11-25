@@ -121,11 +121,12 @@
         table { border-collapse: collapse; width: 100%; }
 
         /* Membrete */
-        .membrete { display: grid; grid-template-columns: 22mm 1fr 34mm; align-items: center; gap: 4mm; }
+        .membrete { display: grid; grid-template-columns: 22mm 1fr 28mm 22mm; align-items: center; gap: 3mm; }
         .membrete img { width: 20mm; height: 20mm; object-fit: contain; }
+        .membrete img.logo-dgeti { justify-self: end; }
         .membrete-centro { text-align: center; }
         .membrete-dep { font-size: 7.4pt; text-transform: uppercase; color: #333; }
-        .membrete-esc { font-size: 13pt; font-weight: 700; text-transform: uppercase; margin: .6mm 0; color: #000; }
+        .membrete-esc { font-size: 10.5pt; font-weight: 700; text-transform: uppercase; margin: .6mm 0; color: #000; }
         .membrete-dom { font-size: 7pt; color: #444; }
         .membrete-ciclo { border: .75pt solid #000; text-align: center; }
         .membrete-ciclo div:first-child { font-size: 6.6pt; text-transform: uppercase; border-bottom: .75pt solid #000; padding: .8mm 0; background: #ececec; }
@@ -175,11 +176,10 @@
         .obs div.rep-ind b { font-size: 6.6pt; text-transform: uppercase; color: #333; margin-right: 1.5mm; }
 
         /* Firmas */
-        .firmas { display: grid; grid-template-columns: 70mm 30mm; justify-content: center; gap: 8mm; align-items: end; margin-top: 6mm; }
+        .firmas { display: grid; grid-template-columns: 70mm; justify-content: center; margin-top: 14mm; }
         .firma { text-align: center; font-size: 7.6pt; }
         .firma .linea { border-top: .75pt solid #000; padding-top: 1mm; }
         .firma .nom { font-weight: 700; text-transform: uppercase; }
-        .sello { height: 20mm; border: .5pt solid #888; display: flex; align-items: center; justify-content: center; font-size: 6.6pt; color: #777; text-transform: uppercase; }
 
         .pie { display: flex; justify-content: space-between; border-top: .5pt solid #000; margin-top: 4mm; padding-top: 1.2mm; font-size: 7pt; color: #333; }
     `;
@@ -190,11 +190,12 @@
                 <img src="${location.origin}/img/logo.png" alt="">
                 <div class="membrete-centro">
                     <div class="membrete-dep">Dirección General de Educación Tecnológica Industrial y de Servicios</div>
-                    <div class="membrete-esc">${esc(al.nombreCentroTrabajo || ESCUELA)}</div>
+                    <div class="membrete-esc">${ESCUELA}</div>
                     <div class="membrete-dom">C.C.T. ${esc(al.claveCentroTrabajo || CCT_DEFAULT)}</div>
                     <div class="membrete-dom">${DOMICILIO}</div>
                 </div>
                 <div class="membrete-ciclo"><div>Ciclo escolar</div><div>${esc(ciclo)}</div></div>
+                <img class="logo-dgeti" src="${location.origin}/img/logoDgeti.png" alt="">
             </div>
             <div class="filete"></div>`;
     }
@@ -459,7 +460,6 @@
 
             <div class="firmas">
                 <div class="firma"><div class="linea"><div class="nom">${esc(DIRECTOR)}</div>Director</div></div>
-                <div class="sello">Sello</div>
             </div>
 
             <div class="pie">
