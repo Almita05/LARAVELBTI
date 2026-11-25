@@ -4,25 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 
-class PermisosCapturaController extends Controller implements HasMiddleware
+/**
+ * Acceso controlado en routes/web.php con los middleware "sin.docente" y
+ * "permiso:docentes_permisos_captura" (matriz de Gestión de personal).
+ */
+class PermisosCapturaController extends Controller
 {
-    public static function middleware(): array
-    {
-        return [
-            new Middleware(function ($request, $next) {
-                $rol = strtoupper(session('rol') ?? '');
-                $permitidos = ['ADMIN', 'COORDINADOR', 'COORDINACION', 'COORDINADOR ACADÉMICO', 'COORDINADOR ACADEMICO', 'CONTROL ESCOLAR', 'DIRECTOR'];
-                if (!in_array($rol, $permitidos)) {
-                    abort(403, 'Acceso denegado. No tienes permisos para gestionar configuraciones de captura.');
-                }
-                return $next($request);
-            }),
-        ];
-    }
-
     public function index()
     {
         return view('permisos_captura.index');
