@@ -189,6 +189,28 @@
                                 <p class="tw:m-0 tw:mt-0.5 tw:text-[0.8125rem] tw:text-slate-500">Habilitación y fechas límite de captura para los docentes de este grupo.</p>
                             </header>
 
+                            {{-- Información del grupo (mismo calendario que Horarios) --}}
+                            <div id="infoGrupoConfig" class="tw:border-b tw:border-slate-100 tw:px-6 tw:py-5" style="display: none;">
+                                <dl class="tw:m-0 tw:grid tw:grid-cols-1 tw:gap-4 tw:sm:grid-cols-3">
+                                    <div>
+                                        <dt class="tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.08em] tw:text-slate-400">Inicio del grupo</dt>
+                                        <dd id="infoGrupoInicio" class="tw:m-0 tw:mt-1 tw:font-mono tw:text-sm tw:font-semibold tw:text-slate-900">—</dd>
+                                    </div>
+                                    <div>
+                                        <dt class="tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.08em] tw:text-slate-400">Fin del grupo</dt>
+                                        <dd id="infoGrupoFin" class="tw:m-0 tw:mt-1 tw:font-mono tw:text-sm tw:font-semibold tw:text-slate-900">—</dd>
+                                    </div>
+                                    <div>
+                                        <dt id="infoGrupoActualEt" class="tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.08em] tw:text-slate-400">Periodo actual</dt>
+                                        <dd id="infoGrupoActual" class="tw:m-0 tw:mt-1 tw:text-sm tw:font-semibold tw:text-brand-700">—</dd>
+                                    </div>
+                                </dl>
+                                <div id="infoGrupoPeriodosWrap" class="tw:mt-4">
+                                    <p id="infoGrupoPeriodosEt" class="tw:m-0 tw:mb-2 tw:text-[0.6875rem] tw:font-semibold tw:uppercase tw:tracking-[0.08em] tw:text-slate-400">Trimestres del grupo</p>
+                                    <div id="infoGrupoPeriodos" class="tw:grid tw:grid-cols-1 tw:gap-2 tw:sm:grid-cols-2 tw:xl:grid-cols-3"></div>
+                                </div>
+                            </div>
+
                             {{-- Interruptor general --}}
                             <div class="tw:flex tw:items-center tw:justify-between tw:gap-4 tw:border-b tw:border-slate-100 tw:bg-slate-50/60 tw:px-6 tw:py-4">
                                 <div>
@@ -200,10 +222,11 @@
 
                             <div class="tw:px-6 tw:py-5" id="divGrupoSemestreHabilitado">
                                 <label for="selectGrupoNivelCaptura" class="{{ $label }}">Semestre habilitado para captura</label>
-                                <select id="selectGrupoNivelCaptura" class="{{ $input }} tw:sm:max-w-sm">
+                                <select id="selectGrupoNivelCaptura" class="{{ $input }} tw:sm:max-w-sm" onchange="avisarNivelDistinto()">
                                     <option value="">Selecciona un semestre…</option>
                                 </select>
                                 <p class="tw:m-0 tw:mt-1.5 tw:text-xs tw:text-slate-500">Solo se podrán capturar asignaturas de este semestre o nivel.</p>
+                                <p id="avisoNivelDistinto" class="tw:m-0 tw:mt-1.5 tw:text-xs tw:font-semibold tw:text-warning-600" style="display: none;"></p>
                             </div>
 
                             {{-- Periodos --}}
@@ -917,6 +940,115 @@ function mostrarAjustes(visible) {
     document.getElementById('vacioAjustesGrupo').style.display = visible ? 'none' : 'block';
 }
 
+// ---- Información del grupo: fechas y calendario de periodos (mismo cálculo que Horarios) ----
+let periodoActualGrupo = null;   // { idNivel, nombre } del periodo en curso
+
+// Fecha de la API ("2026-08-25", "2026-08-25 00:00:00" o "Mon, 25 Aug 2026 00:00:00 GMT") → Date UTC
+function fechaUTC(v) {
+    if (!v) return null;
+    const s = String(v).trim();
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+        const [y, m, d] = s.slice(0, 10).split('-').map(Number);
+        return new Date(Date.UTC(y, m - 1, d));
+    }
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return null;
+    return (s.includes('GMT') || s.endsWith('Z'))
+        ? new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()))
+        : new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+}
+const fechaDMY = d => d ? `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}` : '—';
+const ORDINAL = { 1: '1er', 2: '2do', 3: '3er', 4: '4to', 5: '5to', 6: '6to' };
+
+/**
+ * Periodos del grupo. Trimestral (BGNE): trimestres de 13 semanas desde la fecha de inicio,
+ * cada uno empieza una semana después de que termina el anterior, hasta la fecha fin del grupo.
+ * Semestral (BTI): un solo periodo con las fechas del grupo.
+ */
+function calendarioGrupo(g) {
+    const inicio = fechaUTC(g.fechaInicio);
+    const fin = fechaUTC(g.fechaFin);
+    if (!inicio) return { trimestral: false, periodos: [], actual: null };
+
+    let tipo = g.id_tipoPeriodo;
+    if (tipo === null || tipo === undefined) tipo = (g.id_nivel_academico >= 7) ? 1 : 2;
+    const hoy = new Date();
+    const hoyUTC = new Date(Date.UTC(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()));
+    const DIA = 24 * 60 * 60 * 1000;
+
+    if (Number(tipo) !== 2) {
+        const nivel = Number(g.id_nivel_academico) || 7;
+        const num = nivel - 6;
+        const p = { idNivel: nivel, nombre: `${ORDINAL[num] || num + '°'} semestre`, ini: inicio, fin: fin || inicio };
+        p.estado = (fin && hoyUTC > fin) ? 'fin' : (hoyUTC < inicio ? 'proximo' : 'actual');
+        return { trimestral: false, periodos: [p], actual: p };
+    }
+
+    const periodos = [];
+    let ini = inicio;
+    for (let nivel = 1; nivel <= 6; nivel++) {
+        if (fin && ini > fin) break;
+        const finP = new Date(ini.getTime() + 12 * 7 * DIA);   // 13 semanas
+        periodos.push({ idNivel: nivel, nombre: `${ORDINAL[nivel]} trimestre`, ini, fin: finP });
+        if (fin && finP >= fin) break;
+        ini = new Date(finP.getTime() + 7 * DIA);
+    }
+    // En curso: el primero que no ha terminado (en la semana entre trimestres cuenta el siguiente)
+    const actual = periodos.find(p => hoyUTC <= p.fin) || periodos[periodos.length - 1] || null;
+    periodos.forEach(p => {
+        p.estado = p === actual ? (hoyUTC < p.ini ? 'proximo' : 'actual') : (p.idNivel < actual.idNivel ? 'fin' : 'proximo');
+    });
+    return { trimestral: true, periodos, actual };
+}
+
+function pintarInfoGrupo(g) {
+    const cont = document.getElementById('infoGrupoConfig');
+    if (!g) { cont.style.display = 'none'; periodoActualGrupo = null; return; }
+
+    const cal = calendarioGrupo(g);
+    periodoActualGrupo = cal.actual;
+    document.getElementById('infoGrupoInicio').textContent = fechaDMY(fechaUTC(g.fechaInicio));
+    document.getElementById('infoGrupoFin').textContent = fechaDMY(fechaUTC(g.fechaFin));
+    document.getElementById('infoGrupoActualEt').textContent = cal.trimestral ? 'Trimestre actual' : 'Semestre actual';
+    document.getElementById('infoGrupoActual').textContent = cal.actual
+        ? cal.actual.nombre.charAt(0).toUpperCase() + cal.actual.nombre.slice(1) + (cal.actual.estado === 'fin' ? ' (finalizado)' : (cal.actual.estado === 'proximo' ? ' (por iniciar)' : ''))
+        : '—';
+
+    const ESTADO = {
+        actual:  { txt: 'En curso',   chip: 'tw:bg-success-100 tw:text-success-700', caja: 'tw:border tw:border-brand-200 tw:bg-brand-50' },
+        fin:     { txt: 'Finalizado', chip: 'tw:text-slate-500',                     caja: 'tw:border tw:border-dashed tw:border-slate-200' },
+        proximo: { txt: 'Próximo',    chip: 'tw:text-slate-500',                     caja: 'tw:border tw:border-slate-200' },
+    };
+    const wrap = document.getElementById('infoGrupoPeriodosWrap');
+    wrap.style.display = cal.trimestral && cal.periodos.length ? 'block' : 'none';
+    document.getElementById('infoGrupoPeriodos').innerHTML = cal.periodos.map(p => {
+        const e = ESTADO[p.estado];
+        return `
+            <div class="${e.caja} tw:px-3 tw:py-2">
+                <div class="tw:flex tw:items-center tw:justify-between tw:gap-2">
+                    <span class="tw:text-xs tw:font-semibold tw:text-slate-900">${esc(p.nombre.charAt(0).toUpperCase() + p.nombre.slice(1))}</span>
+                    <span class="tw:px-2 tw:py-0.5 tw:text-[0.625rem] tw:font-semibold ${e.chip}">${e.txt}</span>
+                </div>
+                <div class="tw:mt-0.5 tw:font-mono tw:text-[0.6875rem] tw:text-slate-500">${fechaDMY(p.ini)} al ${fechaDMY(p.fin)}</div>
+            </div>`;
+    }).join('');
+    cont.style.display = 'block';
+    avisarNivelDistinto();
+}
+
+// Aviso si el semestre/trimestre habilitado para captura no es el que el grupo cursa ahora
+function avisarNivelDistinto() {
+    const aviso = document.getElementById('avisoNivelDistinto');
+    const sel = document.getElementById('selectGrupoNivelCaptura');
+    const elegido = sel.value;
+    if (!periodoActualGrupo || !elegido || Number(elegido) === Number(periodoActualGrupo.idNivel)) {
+        aviso.style.display = 'none';
+        return;
+    }
+    aviso.textContent = `El grupo cursa actualmente el ${periodoActualGrupo.nombre}; el periodo habilitado para captura es otro.`;
+    aviso.style.display = 'block';
+}
+
 function cargarCctConfigList() {
     const selectCct = document.getElementById('selectCctConfig');
     const selectGrupo = document.getElementById('selectGrupoConfig');
@@ -978,6 +1110,13 @@ function cargarConfiguracionGrupo(idGrupo) {
     const selectedGrupo = listadoGruposCct.find(g => g.id == idGrupo);
     document.getElementById('lblGrupoNombreTitle').textContent = `Grupo ${selectedGrupo ? selectedGrupo.clave : '—'}`;
 
+    // Fechas del grupo y sus periodos (si falla, la configuración se muestra igual)
+    pintarInfoGrupo(null);
+    const idPedido = grupoConfiguracionActualId;
+    fetchJson(`/grupos/${encodeURIComponent(idGrupo)}`)
+        .then(r => { if (grupoConfiguracionActualId === idPedido && r && r.success && r.data) pintarInfoGrupo(r.data); })
+        .catch(err => console.error('Error al cargar datos del grupo:', err));
+
     fetchJson(`/permisos-captura/grupo-config/${encodeURIComponent(idGrupo)}`)
         .then(resp => {
             if (!(resp && resp.success && resp.config)) {
@@ -990,6 +1129,7 @@ function cargarConfiguracionGrupo(idGrupo) {
             selectNivel.innerHTML = '<option value="">Selecciona un semestre…</option>' +
                 (resp.levels || []).map(l => `<option value="${esc(l.id)}">${esc(l.nombre)}</option>`).join('');
             selectNivel.value = c.id_nivel_academico || '';
+            avisarNivelDistinto();
 
             // BGNE solo maneja una calificación final (sin P2, P3 ni semestral)
             const isBgne = resp.isBgne === true;
