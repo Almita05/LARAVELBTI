@@ -239,24 +239,32 @@
     // Solo si el parcial no tiene pase de lista se usa la captura provisional de Captura de Calificaciones,
     // que no trae retardos ni justificantes (se dejan vacíos, no en cero).
     function asistenciaDeParcial(data, idNivel, k, pase) {
-        const r = (pase && pase.resumen && pase.resumen.dias_registrados > 0) ? pase.resumen : null;
+        // Clases impartidas = días que el grupo tuvo clase en el parcial, aunque el alumno no tenga
+        // marca (p. ej. se inscribió después de iniciado el semestre). Esos días no son falta:
+        // van en "Sin registro" y no entran al porcentaje, que se calcula sobre los días registrados.
+        const res = pase && pase.resumen;
+        const sinReg = res ? (Number(res.sin_registro) || 0) : 0;
+        const r = (res && (res.dias_registrados + sinReg) > 0) ? res : null;
         if (r) {
             return {
-                tot: r.dias_registrados,
+                tot: r.dias_registrados + sinReg,
+                base: r.dias_registrados,
                 asi: r.asistencias,
                 fal: r.faltas,
                 ret: r.retardos,
                 jus: r.faltas_justificadas,
+                sinr: sinReg,
                 origen: 'pase',
             };
         }
         const d = (((data.asistenciasParciales || {})[String(idNivel)]) || {})[String(k)] || {};
         const tot = num(d.total_asistencias), asi = num(d.asistencias);
         return {
-            tot, asi,
+            tot, asi, base: tot,
             fal: (tot !== null && asi !== null) ? Math.max(0, tot - asi) : null,
             ret: null,
             jus: null,
+            sinr: null,
             origen: (tot !== null || asi !== null) ? 'manual' : null,
         };
     }
@@ -315,9 +323,10 @@
         // ---- Asistencia por parcial (hasta el que se entrega) ----
         let asistenciaHtml = '';
         if (incAsist) {
-            const P = [1, 2, 3].map(k => k <= n ? asistenciaDeParcial(data, idNivelSemestre, k, pases[k]) : { tot: null, asi: null, fal: null, ret: null, jus: null });
+            const P = [1, 2, 3].map(k => k <= n ? asistenciaDeParcial(data, idNivelSemestre, k, pases[k]) : { tot: null, base: null, asi: null, fal: null, ret: null, jus: null, sinr: null });
             const suma = campo => { const vals = P.map(x => x[campo]).filter(x => x !== null && x !== undefined); return vals.length ? vals.reduce((a, b) => a + b, 0) : null; };
-            const S = { tot: suma('tot'), asi: suma('asi'), fal: suma('fal'), ret: suma('ret'), jus: suma('jus') };
+            const S = { tot: suma('tot'), base: suma('base'), asi: suma('asi'), fal: suma('fal'), ret: suma('ret'), jus: suma('jus'), sinr: suma('sinr') };
+            const haySinRegistro = (S.sinr || 0) > 0;
             const hay = P.some(x => x.tot !== null || x.asi !== null);
             const c = x => `<td class="n">${x === null || x === undefined ? '' : x}</td>`;
             const fila = (et, campo) => `<tr><td>${et}</td>${P.map(x => c(x[campo])).join('')}${c(S[campo])}</tr>`;
@@ -350,10 +359,12 @@
                     ${fila('Retardos', 'ret')}
                     ${fila('Faltas', 'fal')}
                     ${fila('Faltas justificadas', 'jus')}
-                    <tr class="total"><td class="et">Asistencia</td>${P.map(x => `<td class="n fin">${pctTxt(x.asi, x.tot)}</td>`).join('')}<td class="n fin">${pctTxt(S.asi, S.tot)}</td></tr>
+                    ${haySinRegistro ? fila('Sin registro', 'sinr') : ''}
+                    <tr class="total"><td class="et">Asistencia</td>${P.map(x => `<td class="n fin">${pctTxt(x.asi, x.base)}</td>`).join('')}<td class="n fin">${pctTxt(S.asi, S.base)}</td></tr>
                     ` : asistenciaAnterior(materias, esFinal)}
                 </table>
-                ${hay ? notaManual : ''}`;
+                ${hay ? notaManual : ''}
+                ${hay && haySinRegistro ? `<div class="nota">Sin registro: días de clase del grupo en los que el alumno no tiene pase de lista (por ejemplo, porque aún no estaba inscrito). No cuentan como faltas ni para el porcentaje.</div>` : ''}`;
         }
 
         // ---- Conducta ----
