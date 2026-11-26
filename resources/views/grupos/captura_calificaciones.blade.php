@@ -1090,6 +1090,11 @@ function renderDatosControlOficial(data) {
         return;
     }
 
+    // Las observaciones son por parcial: la columna muestra y guarda las del parcial habilitado
+    const phObs = data.periodo_observaciones
+        ? `Observación (${escHtml(String(data.periodo_observaciones.nombre).toLowerCase())})…`
+        : 'Opcional...';
+
     let html = '';
     alumnos.forEach((a, idx) => {
         const calif = a.calificacion !== null && a.calificacion !== undefined ? a.calificacion : '';
@@ -1191,7 +1196,7 @@ function renderDatosControlOficial(data) {
                 <td style="background-color: #EFF6F7; text-align: center;">${finalInput}</td>
                 <td class="text-center fw-bold td-calif-letra" style="font-size: 0.78rem;">${califLetra}</td>
                 ${mostrarAsistencias ? `<td class="td-asistencias" style="background-color: #f8fafc; text-align: center;">${asistInput}</td>` : ''}
-                <td><input type="text" class="input-observaciones-celda inp-obs" value="${escHtml(obs)}" placeholder="Opcional..." ${isEquiv ? 'disabled' : ''} ${disAttr}></td>
+                <td><input type="text" class="input-observaciones-celda inp-obs" value="${escHtml(obs)}" placeholder="${phObs}" ${isEquiv ? 'disabled' : ''} ${disAttr}></td>
             </tr>
             `;
         } else {
@@ -1205,7 +1210,7 @@ function renderDatosControlOficial(data) {
                 <td style="background-color: #EFF6F7; text-align: center;">${finalInput}</td>
                 <td style="background-color: #FFFBEB; text-align: center;">${extInput}</td>
                 <td class="text-center fw-bold td-calif-letra" style="font-size: 0.78rem;">${califLetra}</td>
-                <td><input type="text" class="input-observaciones-celda inp-obs" value="${escHtml(obs)}" placeholder="Opcional..." ${isEquiv ? 'disabled' : ''} ${disAttr}></td>
+                <td><input type="text" class="input-observaciones-celda inp-obs" value="${escHtml(obs)}" placeholder="${phObs}" ${isEquiv ? 'disabled' : ''} ${disAttr}></td>
             </tr>
             `;
         }
