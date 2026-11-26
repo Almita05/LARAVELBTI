@@ -309,9 +309,14 @@
 
     // ---------------------------------------------------------------
     fetch('/docentes/pendientes/datos', { headers: { 'Accept': 'application/json' }, cache: 'no-store' })
-        .then(r => r.json())
+        .then(async r => {
+            const data = await r.json().catch(() => ({}));
+            // Sin la clave "grupos" es un error (API caída, desactualizada o sin docente en sesión), no "sin grupos"
+            if (!r.ok || !Array.isArray(data.grupos)) throw new Error(data.error || `HTTP ${r.status}`);
+            return data;
+        })
         .then(data => {
-            grupos = Array.isArray(data.grupos) ? data.grupos : [];
+            grupos = data.grupos;
             pintarKpis();
             pintarProrrogas(data.prorrogas || []);
             pintarFiltros();

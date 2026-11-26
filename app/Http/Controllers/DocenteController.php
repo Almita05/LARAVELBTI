@@ -233,24 +233,25 @@ public function getPendingItems()
     }
 
     if (!$idDocente) {
-        return response()->json([
-            'prorrogas' => [],
-            'por_finalizar' => [],
-            'calificaciones_pendientes' => []
-        ]);
+        return response()->json(['error' => 'No hay un docente en la sesión.'], 400);
     }
 
     $url = config('services.api.base_url') . '/docentes/' . $idDocente . '/pendientes';
-    $response = Http::get($url);
-
-    if ($response->failed()) {
-        return response()->json([
-            'prorrogas' => [],
-            'por_finalizar' => [],
-            'calificaciones_pendientes' => []
-        ], $response->status());
+    try {
+        $response = Http::timeout(60)->get($url);
+    } catch (\Throwable $e) {
+        \Log::error('Pendientes docente: API no disponible', ['id_docente' => $idDocente, 'error' => $e->getMessage()]);
+        return response()->json(['error' => 'No se pudo conectar con el servidor.'], 502);
     }
 
-    return response()->json($response->json());
+    $data = $response->json();
+    if ($response->failed() || !is_array($data) || !array_key_exists('grupos', $data)) {
+        \Log::error('Pendientes docente: respuesta inválida de la API', [
+            'id_docente' => $idDocente, 'status' => $response->status(), 'body' => mb_substr($response->body(), 0, 500),
+        ]);
+        return response()->json(['error' => $data['error'] ?? 'La API no devolvió los grupos del docente.'], 502);
+    }
+
+    return response()->json($data);
 }
 }
