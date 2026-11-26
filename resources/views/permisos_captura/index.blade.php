@@ -181,6 +181,11 @@
                                 .combo-grupo__lista li { padding: .5rem .75rem; font-size: .875rem; color: #0f172a; cursor: pointer; }
                                 .combo-grupo__lista li.activo, .combo-grupo__lista li:hover { background: #f1f5f9; }
                                 .combo-grupo__lista li.vacio { color: #94a3b8; cursor: default; background: transparent; }
+                                .estado-periodo { display: inline-block; margin-top: .25rem; padding: .0625rem .5rem; font-size: .6875rem; font-weight: 600; line-height: 1.4; border: 1px solid #e2e8f0; color: #64748b; background: #f8fafc; }
+                                .estado-periodo:empty { display: none; }
+                                .estado-periodo.abierto { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
+                                .estado-periodo.proximo { color: #1d4ed8; background: #eff6ff; border-color: #bfdbfe; }
+                                .estado-periodo.cerrado { color: #b45309; background: #fffbeb; border-color: #fde68a; }
                             </style>
                         </div>
                     </div>
@@ -258,16 +263,17 @@
                                     <div class="card-periodo-ajuste tw:border-slate-100 tw:transition-opacity tw:not-first:border-t" id="{{ $p['card'] }}">
                                         <div class="tw:grid tw:grid-cols-[44px_minmax(0,1fr)] tw:items-center tw:gap-x-4 tw:gap-y-2 tw:px-4 tw:py-3 tw:sm:grid-cols-[44px_minmax(0,1fr)_150px_150px]">
                                             <x-ui.switch id="checkGrupo{{ $p['cap'] }}" class="switch-grupo-sub" :label="$p['titulo']" onchange="toggleFilaFecha('{{ $p['key'] }}', this.checked)" />
-                                            <span class="tw:flex tw:min-w-0 tw:items-center tw:gap-2 tw:text-sm tw:font-medium tw:text-slate-800" @isset($p['tituloId']) id="{{ $p['tituloId'] }}" @endisset>
-                                                {{ $p['titulo'] }}
-                                            </span>
+                                            <div class="tw:min-w-0">
+                                                <span class="tw:block tw:text-sm tw:font-medium tw:text-slate-800" @isset($p['tituloId']) id="{{ $p['tituloId'] }}" @endisset>{{ $p['titulo'] }}</span>
+                                                <span id="estadoGrupo{{ $p['cap'] }}" class="estado-periodo"></span>
+                                            </div>
                                             <div class="tw:col-start-2 tw:sm:col-start-auto">
                                                 <label for="inputGrupo{{ $p['cap'] }}Inicio" class="tw:mb-1 tw:block tw:text-[0.6875rem] tw:text-slate-500 tw:sm:sr-only">Inicio</label>
-                                                <input type="date" id="inputGrupo{{ $p['cap'] }}Inicio" class="{{ $inputSm }}">
+                                                <input type="date" id="inputGrupo{{ $p['cap'] }}Inicio" class="{{ $inputSm }}" onchange="actualizarEstadosPeriodos()">
                                             </div>
                                             <div class="tw:col-start-2 tw:sm:col-start-auto">
                                                 <label for="inputGrupo{{ $p['cap'] }}Fin" class="tw:mb-1 tw:block tw:text-[0.6875rem] tw:text-slate-500 tw:sm:sr-only">Fin (límite)</label>
-                                                <input type="date" id="inputGrupo{{ $p['cap'] }}Fin" class="{{ $inputSm }}">
+                                                <input type="date" id="inputGrupo{{ $p['cap'] }}Fin" class="{{ $inputSm }}" onchange="actualizarEstadosPeriodos()">
                                             </div>
                                         </div>
                                     </div>
@@ -1280,6 +1286,7 @@ function toggleInputsGrupo(enabled) {
         card.style.opacity = enabled ? '1' : '0.55';
         card.querySelectorAll('input[type="date"]').forEach(i => i.disabled = !enabled || !sw.checked);
     });
+    actualizarEstadosPeriodos();
 }
 
 function toggleFilaFecha(periodKey, enabled) {
@@ -1288,6 +1295,33 @@ function toggleFilaFecha(periodKey, enabled) {
     ['Inicio', 'Fin'].forEach(s => {
         const inp = document.getElementById(`inputGrupo${cap}${s}`);
         if (inp) inp.disabled = !enabled || !masterEnabled;
+    });
+    actualizarEstadosPeriodos();
+}
+
+// Etiqueta de cada periodo: si hoy los docentes pueden capturar en él o por qué no.
+// Sigue la regla manual de BTI (activo + fechas que incluyan hoy), la misma que aplica el backend.
+function actualizarEstadosPeriodos() {
+    const d = new Date();
+    const hoy = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const ddmm = iso => iso ? iso.split('-').reverse().join('/') : '';
+    const master = document.getElementById('checkGrupoHabilitada').checked;
+    PERIODOS.forEach(({ cap }) => {
+        const chip = document.getElementById(`estadoGrupo${cap}`);
+        if (!chip) return;
+        const activo = document.getElementById(`checkGrupo${cap}`).checked;
+        const ini = document.getElementById(`inputGrupo${cap}Inicio`).value;
+        const fin = document.getElementById(`inputGrupo${cap}Fin`).value;
+        let txt, cls = '';
+        if (cap === 'P1' && grupoConfigEsBgne && !ini && !fin) { txt = activo && master ? 'Automática' : 'Desactivada'; }
+        else if (!master) txt = 'Captura del grupo desactivada';
+        else if (!activo) txt = 'Desactivado: no se captura';
+        else if (!ini || !fin) txt = 'Sin fechas: cerrado';
+        else if (hoy < ini) { txt = `Abre el ${ddmm(ini)}`; cls = 'proximo'; }
+        else if (hoy > fin) { txt = `Cerrado: terminó el ${ddmm(fin)}`; cls = 'cerrado'; }
+        else { txt = `Abierto hoy, hasta el ${ddmm(fin)}`; cls = 'abierto'; }
+        chip.textContent = txt;
+        chip.className = `estado-periodo ${cls}`;
     });
 }
 
