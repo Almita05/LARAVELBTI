@@ -702,12 +702,12 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <span>Captura calificaciones</span>
                             </a>
                         </li>
-                        ${Number(grupo.id_centroTrabajo) === 2 ? '' : `<li>
-                            <button type="button" class="dropdown-item" onclick="abrirModalAsistenciasGrupo(${grupo.id}, '${grupo.clave}', ${grupo.id_centroTrabajo}, ${grupo.id_nivel_academico || 7})">
-                                <i class="ti ti-calendar-stats"></i>
-                                <span>Capturar asistencias</span>
-                            </button>
-                        </li>`}
+                        <li>
+                            <a class="dropdown-item" href="/asistencias_alumnos/grupo/${grupo.id}">
+                                <i class="ti ti-calendar-check"></i>
+                                <span>Pase de lista</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             `;

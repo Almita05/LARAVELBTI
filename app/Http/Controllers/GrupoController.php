@@ -85,6 +85,11 @@ class GrupoController extends Controller
 
     public function saveAsistenciasSemestre(Request $request, $id_grupo)
     {
+        // Los totales del periodo los ajusta solo Administración; el docente registra asistencias con el pase de lista
+        if (session('rol') === 'DOCENTE') {
+            return response()->json(['message' => 'El docente registra asistencias con el pase de lista del grupo.'], 403);
+        }
+
         // Asistencias: enteros >= 0, nunca más que las clases impartidas
         $request->validate([
             'id_nivel_academico' => 'required|integer|between:1,12',
