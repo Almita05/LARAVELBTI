@@ -263,6 +263,10 @@
                                     Calificación final sin fechas = automático: los docentes capturan desde el día en que termina cada trimestre y hasta 6 días después.
                                     Si pones fechas, mandan esas.
                                 </p>
+                                <p id="notaCapturaManualBti" class="tw:m-0 tw:mt-2 tw:text-xs tw:text-slate-500" style="display: none;">
+                                    Captura manual: los docentes solo capturan en los periodos activos con fecha de inicio y fin, dentro de ese rango.
+                                    Un periodo sin fechas queda cerrado.
+                                </p>
                             </div>
 
                             <footer class="tw:mt-4 tw:flex tw:items-center tw:justify-end tw:gap-3 tw:border-t tw:border-slate-100 tw:bg-slate-50/60 tw:px-6 tw:py-4">
@@ -1165,6 +1169,7 @@ function cargarConfiguracionGrupo(idGrupo) {
             });
             document.getElementById('lblGrupoP1Title').textContent = isBgne ? 'Calificación final de la asignatura' : '1er parcial';
             document.getElementById('notaCapturaAutoBgne').style.display = isBgne ? 'block' : 'none';
+            document.getElementById('notaCapturaManualBti').style.display = isBgne ? 'none' : 'block';
             grupoConfigEsBgne = isBgne;
 
             document.getElementById('checkGrupoHabilitada').checked = c.captura_habilitada == 1;
