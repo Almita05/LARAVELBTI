@@ -164,10 +164,24 @@
                         </div>
                         <div>
                             <label for="selectGrupoConfig" class="{{ $label }}">Grupo</label>
-                            <input type="search" id="selectGrupoConfig" class="{{ $input }}" list="listaGruposConfig"
-                                   placeholder="Primero elige un plantel" autocomplete="off" disabled
-                                   oninput="seleccionarGrupoConfigPorClave(this.value)">
-                            <datalist id="listaGruposConfig"></datalist>
+                            <div class="combo-grupo">
+                                <input type="text" id="selectGrupoConfig" class="{{ $input }}" style="padding-right:2.25rem"
+                                       placeholder="Primero elige un plantel" autocomplete="off" disabled
+                                       role="combobox" aria-expanded="false" aria-controls="listaGruposConfig" aria-autocomplete="list"
+                                       onfocus="abrirListaGrupos()" onclick="abrirListaGrupos()"
+                                       oninput="filtrarListaGrupos(); seleccionarGrupoConfigPorClave(this.value)"
+                                       onkeydown="teclaListaGrupos(event)" onblur="cerrarListaGrupos()">
+                                <i data-lucide="chevron-down" class="combo-grupo__flecha"></i>
+                                <ul id="listaGruposConfig" class="combo-grupo__lista" role="listbox" hidden></ul>
+                            </div>
+                            <style>
+                                .combo-grupo { position: relative; }
+                                .combo-grupo__flecha { position: absolute; right: .75rem; top: 50%; width: 1rem; height: 1rem; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+                                .combo-grupo__lista { position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 4px); max-height: 16rem; overflow-y: auto; margin: 0; padding: .25rem 0; list-style: none; background: #fff; border: 1px solid #e2e8f0; box-shadow: 0 8px 24px rgba(15, 23, 42, .12); }
+                                .combo-grupo__lista li { padding: .5rem .75rem; font-size: .875rem; color: #0f172a; cursor: pointer; }
+                                .combo-grupo__lista li.activo, .combo-grupo__lista li:hover { background: #f1f5f9; }
+                                .combo-grupo__lista li.vacio { color: #94a3b8; cursor: default; background: transparent; }
+                            </style>
                         </div>
                     </div>
                 </aside>
@@ -1097,8 +1111,6 @@ function cargarGruposConfig(idCct) {
         .then(data => {
             listadoGruposCct = Array.isArray(data) ? data : [];
             if (listadoGruposCct.length > 0) {
-                document.getElementById('listaGruposConfig').innerHTML =
-                    listadoGruposCct.map(g => `<option value="${esc(g.clave)}"></option>`).join('');
                 selectGrupo.placeholder = 'Escribe o selecciona un grupo…';
                 selectGrupo.disabled = false;
             } else {
@@ -1116,7 +1128,79 @@ function prepararInputGrupoConfig(input, placeholder) {
     input.value = '';
     input.placeholder = placeholder;
     input.disabled = true;
-    document.getElementById('listaGruposConfig').innerHTML = '';
+    cerrarListaGrupos(true);
+}
+
+// ---- Combo de grupos: muestra la lista completa al enfocar y la filtra al escribir ----
+let indiceGrupoActivo = -1;
+
+function gruposFiltrados() {
+    const texto = (document.getElementById('selectGrupoConfig').value || '').trim().toUpperCase();
+    return texto
+        ? listadoGruposCct.filter(g => String(g.clave).toUpperCase().includes(texto))
+        : listadoGruposCct;
+}
+
+function pintarListaGrupos() {
+    const lista = document.getElementById('listaGruposConfig');
+    const grupos = gruposFiltrados();
+    lista.innerHTML = grupos.length
+        ? grupos.map((g, i) => `<li role="option" data-id="${esc(g.id)}" class="${i === indiceGrupoActivo ? 'activo' : ''}"
+                onmousedown="event.preventDefault(); elegirGrupoConfig('${esc(g.id)}')">${esc(g.clave)}</li>`).join('')
+        : '<li class="vacio">Sin coincidencias</li>';
+    const activo = lista.querySelector('li.activo');
+    if (activo) activo.scrollIntoView({ block: 'nearest' });
+}
+
+function abrirListaGrupos() {
+    const input = document.getElementById('selectGrupoConfig');
+    if (input.disabled || !listadoGruposCct.length) return;
+    indiceGrupoActivo = -1;
+    pintarListaGrupos();
+    document.getElementById('listaGruposConfig').hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+}
+
+function cerrarListaGrupos(limpiar) {
+    const lista = document.getElementById('listaGruposConfig');
+    lista.hidden = true;
+    if (limpiar) lista.innerHTML = '';
+    document.getElementById('selectGrupoConfig').setAttribute('aria-expanded', 'false');
+    indiceGrupoActivo = -1;
+}
+
+function filtrarListaGrupos() {
+    if (document.getElementById('listaGruposConfig').hidden) abrirListaGrupos();
+    indiceGrupoActivo = -1;
+    pintarListaGrupos();
+}
+
+function elegirGrupoConfig(idGrupo) {
+    const grupo = listadoGruposCct.find(g => String(g.id) === String(idGrupo));
+    if (!grupo) return;
+    document.getElementById('selectGrupoConfig').value = grupo.clave;
+    cerrarListaGrupos();
+    seleccionarGrupoConfigPorClave(grupo.clave);
+}
+
+function teclaListaGrupos(e) {
+    const lista = document.getElementById('listaGruposConfig');
+    const grupos = gruposFiltrados();
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (lista.hidden) { abrirListaGrupos(); }
+        if (!grupos.length) return;
+        const paso = e.key === 'ArrowDown' ? 1 : -1;
+        indiceGrupoActivo = (indiceGrupoActivo + paso + grupos.length) % grupos.length;
+        pintarListaGrupos();
+    } else if (e.key === 'Enter') {
+        if (lista.hidden) return;
+        e.preventDefault();
+        const grupo = grupos[indiceGrupoActivo] || (grupos.length === 1 ? grupos[0] : null);
+        if (grupo) elegirGrupoConfig(grupo.id);
+    } else if (e.key === 'Escape') {
+        cerrarListaGrupos();
+    }
 }
 
 // El admin escribe la clave; al coincidir exactamente con un grupo (sin importar mayúsculas) se carga.
