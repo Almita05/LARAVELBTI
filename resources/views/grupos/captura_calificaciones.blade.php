@@ -116,6 +116,9 @@
 }
 .btn-equiv:hover:not(:disabled) { background: #FEF3C7; }
 .btn-equiv:disabled { opacity: .4; cursor: not-allowed; }
+@if(session('rol') === 'DOCENTE')
+.btn-equiv, .btn-equiv-undo { display: none !important; }
+@endif
 .btn-equiv-undo {
     display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 0;
     border: 0; background: transparent; color: #94A3B8; cursor: pointer;
@@ -523,14 +526,17 @@ function numeroALetrasCalificacion(num) {
     return nombres[n] || String(n);
 }
 
+// Las equivalencias las gestiona solo la administración; el docente no ve los botones EQUIV
+const ES_DOCENTE_CAPTURA = @json(session('rol') === 'DOCENTE');
+
 // Prevención estricta de decimales en teclas (solo enteros 0 al 10 o conmutación por tecla 'E')
 function prevenirDecimales(event) {
     const allowedKeys = ['Backspace', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'Delete'];
     if (allowedKeys.includes(event.key)) return;
     if (event.ctrlKey || event.metaKey) return;
 
-    // Si presiona 'e' o 'E', permitir conmutar a modo EQUIV
-    if (event.key === 'e' || event.key === 'E') {
+    // Si presiona 'e' o 'E', permitir conmutar a modo EQUIV (solo administración)
+    if ((event.key === 'e' || event.key === 'E') && !ES_DOCENTE_CAPTURA) {
         event.preventDefault();
         const tr = event.target.closest('tr');
         if (tr) {
@@ -1233,6 +1239,7 @@ function renderDatosControlOficial(data) {
 // CONMUTACIÓN MANUAL DE EQUIVALENCIA
 // ==========================================
 function conmutarEquivalenciaFila(tr, aEquiv) {
+    if (ES_DOCENTE_CAPTURA) return;   // Las equivalencias las marca solo la administración
     if (!tr) return;
     const isSoloLectura = datosGrupoMateriaActual && datosGrupoMateriaActual.solo_lectura === true;
     if (isSoloLectura) return;
