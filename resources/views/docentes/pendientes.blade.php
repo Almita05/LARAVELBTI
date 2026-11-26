@@ -37,6 +37,13 @@
 .pd-fechas { display: flex; gap: 8px; align-items: baseline; margin: 0 16px 10px; padding: 8px 10px; background: var(--pd-bg); font-size: .75rem; color: var(--pd-text); font-variant-numeric: tabular-nums; }
 .pd-fechas i { color: var(--pd-muted); }
 .pd-fechas b { color: var(--pd-ink); font-weight: 600; }
+.pd-calendario { margin: -4px 16px 10px; padding: 0; list-style: none; font-size: .75rem; color: var(--pd-text); font-variant-numeric: tabular-nums; }
+.pd-calendario li { display: flex; justify-content: space-between; gap: 8px; padding: 4px 10px; border-top: 1px solid var(--pd-bg); }
+.pd-calendario li:first-child { border-top: 0; }
+.pd-calendario .et { font-weight: 600; color: var(--pd-ink); }
+.pd-calendario .est { color: var(--pd-muted); white-space: nowrap; }
+.pd-calendario .est.abierta { color: #15803d; font-weight: 600; }
+.pd-calendario .est.proxima { color: #1d4ed8; }
 .pd-materia .nom small { display: block; font-weight: 500; font-size: .6875rem; color: var(--pd-ok); margin-top: 1px; }
 .pd-pill { flex: none; font-size: .75rem; font-weight: 600; padding: 4px 8px; white-space: nowrap; background: var(--pd-bg); color: var(--pd-muted); text-align: right; line-height: 1.25; }
 .pd-pill small { display: block; font-weight: 500; font-size: .6875rem; opacity: .85; }
@@ -183,6 +190,16 @@
         return `<div class="pd-fechas"><i class="fa-regular fa-calendar"></i><span>${txt}</span></div>`;
     }
 
+    // BTI: todas las fechas de captura que programó la administración (si hay más de una)
+    function calendarioCaptura(c) {
+        const ps = c.periodos || [];
+        if (ps.length < 2) return '';
+        const EST = { abierta: 'Abierta', proxima: 'Próxima', cerrada: 'Cerrada' };
+        return `<ul class="pd-calendario" aria-label="Fechas de captura">${ps.map(p => `
+            <li><span><span class="et">${esc(p.etapa)}</span> · ${esc(larga(p.inicio))} al ${esc(larga(p.fin))}</span>
+                <span class="est ${esc(p.estado)}">${EST[p.estado] || ''}</span></li>`).join('')}</ul>`;
+    }
+
     function filaMateria(g, m, i) {
         const completa = m.total > 0 && m.calificados >= m.total;
         const url = `/grupos/captura_calificaciones?id_grupo=${encodeURIComponent(g.id)}&id_materia=${encodeURIComponent(m.id)}`;
@@ -214,6 +231,7 @@
                     ${pill(g)}
                 </div>
                 ${fechasCaptura(g.captura, g)}
+                ${calendarioCaptura(g.captura)}
                 ${g.materias.length
                     ? `<ul class="pd-materias">${g.materias.map((m, i) => filaMateria(g, m, i)).join('')}</ul>`
                     : '<div class="pd-sin">Sin asignaturas en tu horario.</div>'}
