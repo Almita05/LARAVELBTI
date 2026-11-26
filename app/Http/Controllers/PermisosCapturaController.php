@@ -51,6 +51,7 @@ class PermisosCapturaController extends Controller
             'id_materia' => 'required|integer',
             'fecha_limite' => 'nullable|date',
             'permitir_modificar_pasados' => 'required|boolean',
+            'periodo' => 'nullable|in:p1,p2,p3,semestral,extraordinario',
         ]);
 
         $response = Http::post(config('services.api.base_url') . '/permisos-captura', $request->all());
@@ -69,6 +70,7 @@ class PermisosCapturaController extends Controller
             'fecha_limite' => 'nullable|date',
             'permitir_modificar_pasados' => 'required|boolean',
             'habilitado' => 'required|boolean',
+            'periodo' => 'nullable|in:p1,p2,p3,semestral,extraordinario',
         ]);
 
         $response = Http::put(config('services.api.base_url') . '/permisos-captura/' . $id, $request->all());

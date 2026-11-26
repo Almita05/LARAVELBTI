@@ -97,6 +97,7 @@
     const larga = iso => { const d = aFecha(iso); return d ? `${corta(iso)}/${d.getFullYear()}` : '—'; };
     const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
     let prorrogas = {};   // "idGrupo-idMateria" → fecha límite
+    const PERIODO_PRORROGA = { p1: '1er parcial', p2: '2do parcial', p3: '3er parcial', semestral: 'examen semestral', extraordinario: 'extraordinario' };
     const enDias = (n, hoy, manana) => n === 0 ? hoy : (n === 1 ? manana : `en ${plural(n, 'día', 'días')}`);
 
     let grupos = [];
@@ -131,7 +132,7 @@
         }
         if (prorrogas && prorrogas.length) {
             html += `<div class="pd-aviso info"><i class="fa-solid fa-calendar-plus"></i><div><strong>Tienes ${plural(prorrogas.length, 'prórroga', 'prórrogas')} de captura</strong>
-                <ul>${prorrogas.map(p => `<li>${esc(p.nombre_materia)}, ${esc(p.clave_grupo)}: hasta el ${esc(corta(p.fecha_limite))}</li>`).join('')}</ul></div></div>`;
+                <ul>${prorrogas.map(p => `<li>${esc(p.nombre_materia)}, ${esc(p.clave_grupo)}${PERIODO_PRORROGA[p.periodo] ? ` (${PERIODO_PRORROGA[p.periodo]})` : ''}: hasta el ${esc(corta(p.fecha_limite))}</li>`).join('')}</ul></div></div>`;
         }
         document.getElementById('pdAvisos').innerHTML = html;
     }

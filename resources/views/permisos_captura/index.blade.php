@@ -339,6 +339,19 @@
                             </label>
                         </div>
                     </div>
+                    {{-- BTI: a qué periodo se extiende la prórroga --}}
+                    <div id="divAltaPeriodo" style="display: none;">
+                        <label for="selectAltaPeriodo" class="{{ $label }}">Periodo de la prórroga</label>
+                        <select id="selectAltaPeriodo" class="{{ $input }}">
+                            <option value="">Selecciona el periodo…</option>
+                            <option value="p1">1er parcial</option>
+                            <option value="p2">2do parcial</option>
+                            <option value="p3">3er parcial</option>
+                            <option value="semestral">Examen semestral / final</option>
+                            <option value="extraordinario">Examen extraordinario</option>
+                        </select>
+                        <p class="tw:m-0 tw:mt-1.5 tw:text-xs tw:text-slate-500">El docente solo podrá capturar este periodo, aunque esté cerrado en el grupo. Si ya lo envió, no se reabre.</p>
+                    </div>
                     <div>
                         <label for="inputAltaFechaLimite" class="{{ $label }}">Fecha límite de captura</label>
                         <input type="date" id="inputAltaFechaLimite" class="{{ $input }}" required>
@@ -388,6 +401,17 @@
                             <dd id="lblEditMateria" class="tw:m-0 tw:mt-0.5 tw:text-sm tw:font-semibold tw:text-slate-900">—</dd>
                         </div>
                     </dl>
+                    <div id="divEditPeriodo" style="display: none;">
+                        <label for="selectEditPeriodo" class="{{ $label }}">Periodo de la prórroga</label>
+                        <select id="selectEditPeriodo" class="{{ $input }}">
+                            <option value="">Selecciona el periodo…</option>
+                            <option value="p1">1er parcial</option>
+                            <option value="p2">2do parcial</option>
+                            <option value="p3">3er parcial</option>
+                            <option value="semestral">Examen semestral / final</option>
+                            <option value="extraordinario">Examen extraordinario</option>
+                        </select>
+                    </div>
                     <div>
                         <label for="inputEditFechaLimite" class="{{ $label }}">Fecha límite de captura</label>
                         <input type="date" id="inputEditFechaLimite" class="{{ $input }}" required>
@@ -670,7 +694,8 @@ function filtrarTablaPermisos() {
         return `<tr class="tw:transition-colors tw:hover:bg-slate-50">
             <td class="tw:py-3 tw:pr-4 tw:pl-5 tw:align-middle">${celdaDocente(p.nombre_docente)}</td>
             <td class="tw:px-4 tw:py-3 tw:align-middle">${celdaGrupo(p.clave_grupo)}</td>
-            <td class="tw:px-4 tw:py-3 tw:align-middle">${celdaMateria(p.nombre_materia, p.clave_materia)}</td>
+            <td class="tw:px-4 tw:py-3 tw:align-middle">${celdaMateria(p.nombre_materia, p.clave_materia)}${p.periodo && NOMBRES_PERIODO[p.periodo]
+                ? `<div class="tw:mt-0.5 tw:text-xs tw:font-semibold tw:text-brand-700">Prórroga: ${esc(NOMBRES_PERIODO[p.periodo])}</div>` : ''}</td>
             <td class="tw:px-4 tw:py-3 tw:align-middle tw:font-mono tw:text-xs tw:whitespace-nowrap tw:text-slate-600">${formatearFechaEspanol(p.fecha_limite)}</td>
             <td class="tw:px-4 tw:py-3 tw:align-middle">${pasados}</td>
             <td class="tw:px-4 tw:py-3 tw:align-middle">${badge(cfg.tono, cfg.icon, cfg.label)}</td>
@@ -718,6 +743,7 @@ async function abrirModalAlta(preset = {}) {
     document.getElementById('divCheckMateriaPasada').style.display = 'none';
     materiasCargadas = [];
     grupoCargado = null;
+    mostrarPeriodoAlta();
 
     try {
         const { docentes, grupos } = await obtenerCatalogos();
@@ -761,6 +787,7 @@ function cargarMateriasPorGrupo(idGrupo) {
         checkPasada.checked = false;
         materiasCargadas = [];
         grupoCargado = null;
+        mostrarPeriodoAlta();
     };
 
     if (!idGrupo) { limpiar('Primero elige un grupo'); return Promise.resolve(); }
@@ -773,6 +800,7 @@ function cargarMateriasPorGrupo(idGrupo) {
             if (resp && resp.success && resp.data) {
                 materiasCargadas = resp.data.materias || [];
                 grupoCargado = resp.data.grupo || null;
+                mostrarPeriodoAlta();
                 divCheck.style.display = 'block';
                 filtrarMaterias();
             } else {
@@ -821,15 +849,32 @@ function filtrarMaterias() {
     selectMateria.disabled = false;
 }
 
+// BTI: la prórroga indica a qué periodo se extiende (parcial, semestral o extraordinario)
+const esGrupoBti = g => !!g && Number(g.id_centroTrabajo) === 2;
+const NOMBRES_PERIODO = { p1: '1er parcial', p2: '2do parcial', p3: '3er parcial', semestral: 'Semestral', extraordinario: 'Extraordinario' };
+
+function mostrarPeriodoAlta() {
+    const bti = esGrupoBti(grupoCargado);
+    document.getElementById('divAltaPeriodo').style.display = bti ? 'block' : 'none';
+    const sel = document.getElementById('selectAltaPeriodo');
+    sel.required = bti;
+    if (!bti) sel.value = '';
+}
+
 function guardarNuevoPermiso() {
     const idDocente = document.getElementById('selectAltaDocente').value;
     const idGrupo = document.getElementById('selectAltaGrupo').value;
     const idMateria = document.getElementById('selectAltaMateria').value;
     const fechaLimite = document.getElementById('inputAltaFechaLimite').value;
     const checkPasados = document.getElementById('checkAltaPasados').checked ? 1 : 0;
+    const periodo = esGrupoBti(grupoCargado) ? document.getElementById('selectAltaPeriodo').value : '';
 
     if (!idDocente || !idGrupo || !idMateria || !fechaLimite) {
         Swal.fire({ icon: 'warning', title: 'Campos incompletos', text: 'Selecciona docente, grupo, asignatura y fecha límite.', confirmButtonColor: BRAND });
+        return;
+    }
+    if (esGrupoBti(grupoCargado) && !periodo) {
+        Swal.fire({ icon: 'warning', title: 'Falta el periodo', text: 'Indica a qué periodo se extiende la prórroga.', confirmButtonColor: BRAND });
         return;
     }
 
@@ -844,7 +889,8 @@ function guardarNuevoPermiso() {
             id_grupo: parseInt(idGrupo),
             id_materia: parseInt(idMateria),
             fecha_limite: fechaLimite,
-            permitir_modificar_pasados: checkPasados
+            permitir_modificar_pasados: checkPasados,
+            periodo: periodo || null
         })
     })
     .then(resp => {
@@ -878,6 +924,9 @@ function abrirModalEdicion(idPermiso) {
     document.getElementById('inputEditFechaLimite').value = permiso.fecha_limite || '';
     document.getElementById('checkEditPasados').checked = permiso.permitir_modificar_pasados == 1;
     document.getElementById('checkEditHabilitado').checked = permiso.habilitado == 1;
+    const bti = Number(permiso.id_cct_grupo) === 2;
+    document.getElementById('divEditPeriodo').style.display = bti ? 'block' : 'none';
+    document.getElementById('selectEditPeriodo').value = bti ? (permiso.periodo || '') : '';
 
     bootstrap.Modal.getOrCreateInstance(document.getElementById('modalEditarPermiso')).show();
 }
@@ -890,6 +939,12 @@ function guardarEdicionPermiso() {
         Swal.fire({ icon: 'warning', title: 'Fecha requerida', text: 'Indica la fecha límite de la prórroga.', confirmButtonColor: BRAND });
         return;
     }
+    const editBti = document.getElementById('divEditPeriodo').style.display !== 'none';
+    const periodoEdit = editBti ? document.getElementById('selectEditPeriodo').value : '';
+    if (editBti && !periodoEdit) {
+        Swal.fire({ icon: 'warning', title: 'Falta el periodo', text: 'Indica a qué periodo se extiende la prórroga.', confirmButtonColor: BRAND });
+        return;
+    }
 
     fetchJson(`/permisos-captura/${encodeURIComponent(id)}`, {
         method: 'PUT',
@@ -897,7 +952,8 @@ function guardarEdicionPermiso() {
         body: JSON.stringify({
             fecha_limite: fechaLimite,
             permitir_modificar_pasados: document.getElementById('checkEditPasados').checked ? 1 : 0,
-            habilitado: document.getElementById('checkEditHabilitado').checked ? 1 : 0
+            habilitado: document.getElementById('checkEditHabilitado').checked ? 1 : 0,
+            periodo: periodoEdit || null
         })
     })
     .then(resp => {
