@@ -72,6 +72,12 @@
                     <i class="fa-solid fa-table-cells me-1"></i>Matriz Excel
                 </button>
             </div>
+            @if(($grupo['id_centroTrabajo'] ?? null) == 3 && session('rol') !== 'DOCENTE')
+            <button type="button" class="btn btn-sm btn-outline-secondary px-3" aria-pressed="false" onclick="alternarCorregirPasadas(this)"
+                    title="En BGNE solo se pasa lista el día de hoy. Actívalo para corregir fechas anteriores." style="border-radius: 0; font-size: 0.78rem;">
+                <i class="fa-solid fa-pen-to-square me-1"></i><span>Corregir fechas anteriores</span>
+            </button>
+            @endif
         </div>
     </div>
 
@@ -493,6 +499,7 @@
 
     /* Botones circulares de la matriz */
     /* Días especiales del calendario: inhábil, suspensión, en línea */
+    #tabla-matriz th.col-hoy { background-color: #26687B !important; color: #ffffff !important; }
     #tabla-matriz th.fecha-marcable { cursor: pointer; }
     #tabla-matriz th.fecha-marcable:hover { background-color: #e6eff1 !important; }
     #tabla-matriz th.fecha-marcable:focus-visible { outline: 2px solid #26687B; outline-offset: -2px; }
@@ -1025,6 +1032,23 @@
 
     const grupo = @json($grupo);
 
+    // BGNE (una materia por hora): el pase de lista se hace en la matriz y solo se edita el día de hoy.
+    //   Docente: su clase de hoy (puede corregirla durante el día); otras fechas solo con reapertura.
+    //   Pase general: hoy; Administración puede activar "Corregir fechas anteriores" para ajustar otras.
+    const ES_BGNE = Number(grupo.id_centroTrabajo) === 3;
+    let corregirPasadas = false;
+    function fechaHoyStr() {
+        const n = new Date();
+        return n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-' + String(n.getDate()).padStart(2, '0');
+    }
+    function alternarCorregirPasadas(btn) {
+        corregirPasadas = !corregirPasadas;
+        btn.classList.toggle('active', corregirPasadas);
+        btn.setAttribute('aria-pressed', String(corregirPasadas));
+        btn.querySelector('span').textContent = corregirPasadas ? 'Bloquear fechas anteriores' : 'Corregir fechas anteriores';
+        renderizar();
+    }
+
     // ---------------------------------------------------------------
     // Días especiales del calendario del grupo
     //   INHABIL / SUSPENSION: no hay clase; no cuenta como día de clase ni como falta.
@@ -1312,6 +1336,16 @@
                 });
             }
             
+            if (ES_BGNE) {
+                cambiarVista('MATRIZ');
+                const thHoy = document.querySelector(`#tabla-matriz th.header-fecha-th[data-fecha="${fechaHoyStr()}"]`);
+                if (thHoy) {
+                    thHoy.classList.add('col-hoy');
+                    thHoy.title = 'Hoy: aquí se pasa lista';
+                    setTimeout(() => thHoy.scrollIntoView({ block: 'nearest', inline: 'center' }), 60);
+                }
+            }
+
             renderizar();
         } catch (e) {
             console.error("Error en la inicialización (init):", e);
@@ -1338,7 +1372,11 @@
         const fechaTarget = fecha || fechaSeleccionada;
         const userRole = @json(session('rol'));
         const esDocente = (userRole === 'DOCENTE');
-        if (!esDocente) return false; // Administradores y directivos tienen edición completa permitida
+        if (!esDocente) {
+            // BGNE: solo hoy, salvo que Administración active "Corregir fechas anteriores"
+            if (ES_BGNE) return !(fechaTarget === fechaHoyStr() || corregirPasadas);
+            return false; // Administradores y directivos tienen edición completa permitida
+        }
 
         // Si la administración otorgó permiso de reapertura para esta fecha, NO está bloqueado
         if (reaperturasActivas.includes(fechaTarget)) {
@@ -1349,6 +1387,7 @@
         const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
         const esHoy = (fechaTarget === todayStr);
         if (!esHoy) return true; // Docente no puede modificar fechas pasadas o futuras sin reapertura
+        if (ES_BGNE) return false; // BGNE: el docente puede corregir su pase durante el día de su clase
 
         // Si ya existen asistencias guardadas con estatus no nulo para esta fecha en la base de datos (excluyendo justificaciones de admin)
         const yaEnviado = asistenciasGuardadas.some(as => as.fecha === fechaTarget && as.estatus !== null && as.estatus !== '' && !as.justificado_admin);
@@ -1393,9 +1432,14 @@
                 btnGuardar.className = 'btn btn-secondary py-3 px-5 fw-bold d-inline-flex align-items-center justify-content-center gap-2 shadow-sm';
                 btnGuardar.style.opacity = '0.7';
                 btnGuardar.style.cursor = 'not-allowed';
-                btnGuardar.innerHTML = '<i class="fa-solid fa-lock me-1"></i> <span>Pase de Lista Enviado (Cerrado)</span>';
+                const noEsHoyBgne = ES_BGNE && fechaSeleccionada !== fechaHoyStr();
+                btnGuardar.innerHTML = noEsHoyBgne
+                    ? '<i class="fa-solid fa-lock me-1"></i> <span>Solo se pasa lista el día de la clase</span>'
+                    : '<i class="fa-solid fa-lock me-1"></i> <span>Pase de Lista Enviado (Cerrado)</span>';
                 if (msgBloqueado) {
-                    msgBloqueado.innerHTML = '<span class="badge bg-secondary-subtle text-secondary border px-3 py-2 rounded-pill"><i class="fa-solid fa-lock me-1"></i>El pase de lista de esta fecha ya fue enviado y se encuentra bloqueado para docentes. Para modificaciones, solicita apoyo a la administración.</span>';
+                    msgBloqueado.innerHTML = noEsHoyBgne
+                        ? '<span class="badge bg-secondary-subtle text-secondary border px-3 py-2 rounded-pill"><i class="fa-solid fa-lock me-1"></i>Esta fecha no es hoy: queda de solo lectura. Para modificarla, solicita apoyo a la administración.</span>'
+                        : '<span class="badge bg-secondary-subtle text-secondary border px-3 py-2 rounded-pill"><i class="fa-solid fa-lock me-1"></i>El pase de lista de esta fecha ya fue enviado y se encuentra bloqueado para docentes. Para modificaciones, solicita apoyo a la administración.</span>';
                 }
             } else {
                 btnGuardar.disabled = false;
@@ -2089,7 +2133,7 @@
         } else {
             // Recopilar todos los registros modificados del modifiedState
             for (const fecha in modifiedState) {
-                if (esDocente && estaPaseBloqueado(fecha)) continue; // Omitir fechas no autorizadas
+                if ((esDocente || ES_BGNE) && estaPaseBloqueado(fecha)) continue; // Omitir fechas no autorizadas
                 if (esDiaSinClase(fecha)) continue; // Día inhábil o suspensión: no se pasa lista
 
                 for (const idAlumno in modifiedState[fecha]) {
