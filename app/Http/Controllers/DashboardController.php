@@ -53,14 +53,16 @@ class DashboardController extends Controller
             $totalGrupos = DB::table('tb_grupos')->count();
             $totalMaterias = DB::table('tb_materias')->count();
 
-            // Asistencias
+            // Asistencias (solo pase general: el pase de los docentes es un registro aparte)
             $asistencias = DB::table('tb_asistencias_alumnos')->selectRaw("
                 COUNT(*) as total,
                 SUM(CASE WHEN estatus = 'A' THEN 1 ELSE 0 END) as presentes,
                 SUM(CASE WHEN estatus = 'F' THEN 1 ELSE 0 END) as faltas,
                 SUM(CASE WHEN estatus = 'R' THEN 1 ELSE 0 END) as retardos,
                 SUM(CASE WHEN estatus = 'J' THEN 1 ELSE 0 END) as justificaciones
-            ")->first();
+            ")->where(function ($q) {
+                $q->whereNull('es_pase_general')->orWhere('es_pase_general', 1);
+            })->first();
 
             $totAsist = (int)($asistencias->total ?? 0);
             $presentes = (int)($asistencias->presentes ?? 0);

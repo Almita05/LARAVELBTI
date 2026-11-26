@@ -103,33 +103,9 @@ class AsistenciaAlumnoController extends Controller
             if ($esGeneral) {
                 $selected_materia_id = 'general';
 
-                // Consolidar asistencias del grupo para la vista general si la BD directa está disponible
-                try {
-                    $asistenciasRaw = \Illuminate\Support\Facades\DB::table('tb_asistencias_alumnos')
-                        ->where('id_grupo', $id_grupo)
-                        ->select('id_alumno', 'fecha', 'id_nivel_academico', 'estatus', 'observaciones')
-                        ->orderBy('updated_at', 'desc')
-                        ->get();
-
-                    if ($asistenciasRaw->isNotEmpty()) {
-                        $mapAsistencias = [];
-                        foreach ($asistenciasRaw as $ar) {
-                            $key = $ar->fecha . '_' . $ar->id_alumno;
-                            if (!isset($mapAsistencias[$key])) {
-                                $mapAsistencias[$key] = [
-                                    'id_alumno' => $ar->id_alumno,
-                                    'fecha' => $ar->fecha,
-                                    'id_nivel_academico' => $ar->id_nivel_academico,
-                                    'estatus' => $ar->estatus,
-                                    'observaciones' => $ar->observaciones
-                                ];
-                            }
-                        }
-                        $asistencias = array_values($mapAsistencias);
-                    }
-                } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::warning("Direct DB query in grupoGrid failed: " . $e->getMessage() . ". Using API attendance data.");
-                }
+                // Las marcas del pase general vienen ya resueltas por la API (solo pase general,
+                // justificaciones incluidas). No se consulta la tabla directamente: mezclaría el
+                // pase de los docentes, que es un registro aparte.
             } else {
                 // Validación para docentes o materias individuales seleccionadas
                 if (!empty($materias)) {
