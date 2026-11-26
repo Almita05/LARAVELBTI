@@ -165,13 +165,11 @@
         if (le) {
             const periodo = g.periodo && g.periodo.nombre ? `El ${esc(g.periodo.nombre)}` : 'El grupo';
             txt = `${periodo} termina el <b>${esc(larga(le.fin_periodo))}</b>; la fecha límite para capturar es el <b>${esc(larga(le.limite))}</b> (6 días después).`;
-            if (c.estado === 'deshabilitada') txt += ' Por ahora la administración tiene la captura desactivada.';
-            else if (c.estado === 'sin_fechas') txt += ' La administración habilitará la captura.';
         } else if (c.estado === 'sin_fechas') {
             txt = 'La administración aún no habilita las fechas de captura de este grupo.';
         } else if (c.estado === 'deshabilitada') {
             txt = c.inicio && c.fin
-                ? `Captura${etapa}: programada ${del()}, pero la administración la tiene desactivada.`
+                ? `Captura${etapa}: se habilita el <b>${esc(larga(c.inicio))}</b> y cierra el <b>${esc(larga(c.fin))}</b>`
                 : 'La administración tiene desactivada la captura de este grupo y aún no hay fechas programadas.';
         } else if (!c.inicio || !c.fin) {
             return '';
