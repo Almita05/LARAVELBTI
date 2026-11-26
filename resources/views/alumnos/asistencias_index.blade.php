@@ -552,16 +552,16 @@
                     $diasLabel = implode(', ', $dias);
                 }
 
-                // Detección de Turno / Modalidad (Mañana o Tarde)
+                // Detección de Turno / Modalidad (Matutino o Vespertino)
                 $modRaw = strtoupper(trim($grupo['modalidadHorario'] ?? ''));
                 $esTarde = str_contains($modRaw, 'TARDE') || str_contains($modRaw, 'VESPERTINO');
                 $esManana = str_contains($modRaw, 'MAÑANA') || str_contains($modRaw, 'MANANA') || str_contains($modRaw, 'MATUTINO') || str_contains($modRaw, 'MAANA');
 
                 if ($esTarde) {
-                    $turnoLabel = 'Tarde';
+                    $turnoLabel = 'Vespertino';
                     $turnoBadgeStyle = 'background-color: #FFEDD5; color: #C2410C; border: 1px solid #FED7AA; font-weight: 600;';
                 } elseif ($esManana) {
-                    $turnoLabel = 'Mañana';
+                    $turnoLabel = 'Matutino';
                     $turnoBadgeStyle = 'background-color: #FEF3C7; color: #B45309; border: 1px solid #FDE68A; font-weight: 600;';
                 } else {
                     $turnoLabel = !empty($modRaw) ? ucwords(strtolower($modRaw)) : '';
@@ -591,11 +591,11 @@
                             </div>
                             @if($status == 'FINALIZADO')
                                 <span class="status-badge-fin">
-                                    <i class="ti ti-circle-check" style="font-size: 13px;"></i>FINALIZADO
+                                    FINALIZADO
                                 </span>
                             @elseif($status == 'PENDIENTE')
                                 <span class="status-badge-pend">
-                                    <i class="ti ti-clock" style="font-size: 13px;"></i>PENDIENTE HOY
+                                    PENDIENTE HOY
                                 </span>
                             @else
                                 <span class="status-badge-noprog">
@@ -607,19 +607,15 @@
                         <!-- Detalles del Grupo -->
                         <div class="metadata-list flex-grow-1">
                             <div class="metadata-item">
-                                <i class="ti ti-calendar-event metadata-icon"></i>
                                 <span style="font-weight: 500;">{{ $diasLabel }}</span>
                             </div>
                             <div class="metadata-item">
-                                <i class="ti ti-school metadata-icon"></i>
                                 <span style="font-weight: 500;">{{ $grupo['nombre_nivel'] ?? 'Sin nivel académico' }}</span>
                             </div>
                             <div class="metadata-item">
-                                <i class="ti ti-users metadata-icon"></i>
                                 <span style="font-weight: 500;">{{ $grupo['alumnos_count'] ?? 0 }} Alumnos Inscritos</span>
                             </div>
                             <div class="metadata-item">
-                                <i class="ti ti-door metadata-icon"></i>
                                 <span style="font-weight: 500;">Aula: {{ $grupo['aula'] ?? 'Sin asignar' }}</span>
                             </div>
                         </div>
@@ -631,11 +627,11 @@
                         <div>
                             @if($status == 'PENDIENTE')
                                 <a href="{{ route('asistencias_alumnos.grupo', $grupo['id']) }}" class="btn-pasar-lista">
-                                    <i class="ti ti-checklist" style="font-size: 16px;"></i>Pasar Lista de Hoy
+                                    Pasar Lista de Hoy
                                 </a>
                             @else
                                 <a href="{{ route('asistencias_alumnos.grupo', $grupo['id']) }}" class="btn-matriz">
-                                    <i class="ti ti-table-options" style="font-size: 16px;"></i>Ver Historial y Matriz
+                                    Ver Historial y Matriz
                                 </a>
                             @endif
                         </div>
