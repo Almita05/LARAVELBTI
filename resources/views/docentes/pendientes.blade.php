@@ -34,6 +34,10 @@
 .pd-card-head .sub { font-size: .75rem; color: var(--pd-muted); margin-top: 2px; }
 .pd-chip { font-size: .625rem; font-weight: 700; letter-spacing: .06em; padding: 1px 5px; border: 1px solid var(--pd-line); color: var(--pd-muted); vertical-align: middle; margin-left: 6px; }
 
+.pd-fechas { display: flex; gap: 8px; align-items: baseline; margin: 0 16px 10px; padding: 8px 10px; background: var(--pd-bg); font-size: .75rem; color: var(--pd-text); font-variant-numeric: tabular-nums; }
+.pd-fechas i { color: var(--pd-muted); }
+.pd-fechas b { color: var(--pd-ink); font-weight: 600; }
+.pd-materia .nom small { display: block; font-weight: 500; font-size: .6875rem; color: var(--pd-ok); margin-top: 1px; }
 .pd-pill { flex: none; font-size: .75rem; font-weight: 600; padding: 4px 8px; white-space: nowrap; background: var(--pd-bg); color: var(--pd-muted); text-align: right; line-height: 1.25; }
 .pd-pill small { display: block; font-weight: 500; font-size: .6875rem; opacity: .85; }
 .pd-pill.abierta { background: var(--pd-ok-soft); color: var(--pd-ok); }
@@ -83,7 +87,9 @@
     const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const aFecha = iso => { if (!iso) return null; const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number); return new Date(y, m - 1, d); };
     const corta = iso => { const d = aFecha(iso); return d ? `${DIAS[d.getDay()]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}` : '—'; };
+    const larga = iso => { const d = aFecha(iso); return d ? `${corta(iso)}/${d.getFullYear()}` : '—'; };
     const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
+    let prorrogas = {};   // "idGrupo-idMateria" → fecha límite
     const enDias = (n, hoy, manana) => n === 0 ? hoy : (n === 1 ? manana : `en ${plural(n, 'día', 'días')}`);
 
     let grupos = [];
@@ -127,16 +133,16 @@
     function pill(g) {
         const c = g.captura;
         if (abierta(g)) {
-            return `<span class="pd-pill ${urgente(g) ? 'urgente' : 'abierta'}" title="${esc(c.etapa)}">Cierra ${enDias(c.dias_restantes, 'hoy', 'mañana')}<small>hasta el ${esc(corta(c.fin))}</small></span>`;
+            return `<span class="pd-pill ${urgente(g) ? 'urgente' : 'abierta'}">${c.dias_restantes === 0 ? 'Último día' : (c.dias_restantes === 1 ? 'Cierra mañana' : `Quedan ${c.dias_restantes} días`)}</span>`;
         }
         // Fuera de las fechas del grupo pero con alguna asignatura habilitada (p. ej. por prórroga)
         if (puede(g) && g.materias.length) return `<span class="pd-pill abierta">Puedes capturar</span>`;
         // Ventana abierta pero todas sus asignaturas bloqueadas (ya enviadas, desactivadas…): no hay nada que hacer
         if (c.estado === 'abierta' || c.estado === 'sin_fechas') return `<span class="pd-pill" title="Toca «Bloqueada» en la asignatura para ver el motivo.">Captura bloqueada</span>`;
         if (c.estado === 'proxima') {
-            return `<span class="pd-pill" title="${esc(c.etapa)}: del ${esc(corta(c.inicio))} al ${esc(corta(c.fin))}">Captura abre ${enDias(c.dias_para_abrir, 'hoy', 'mañana')}<small>${esc(corta(c.inicio))}</small></span>`;
+            return `<span class="pd-pill">Captura abre ${enDias(c.dias_para_abrir, 'hoy', 'mañana')}</span>`;
         }
-        if (c.estado === 'cerrada') return `<span class="pd-pill" title="Cerró el ${esc(corta(c.fin))}. Si te falta capturar, solicita una prórroga.">Captura cerrada</span>`;
+        if (c.estado === 'cerrada') return `<span class="pd-pill" title="Si te falta capturar, solicita una prórroga.">Captura cerrada</span>`;
         if (c.estado === 'deshabilitada') return `<span class="pd-pill">Captura desactivada</span>`;
         return `<span class="pd-pill abierta">Captura abierta</span>`;
     }
@@ -148,6 +154,17 @@
         if (p.estado === 'por_iniciar') return `${esc(nombre)} · inicia el ${esc(corta(p.inicio))}`;
         if (p.estado === 'terminado') return `${esc(nombre)} · terminado`;
         return `${esc(nombre)} · semana ${p.semana} de ${p.semanas}`;
+    }
+
+    // Ventana de captura del grupo: cuándo se habilitó y cuándo cierra
+    function fechasCaptura(c) {
+        if (!c.inicio || !c.fin || !['abierta', 'proxima', 'cerrada'].includes(c.estado)) return '';
+        const etapa = c.etapa ? ` (${esc(c.etapa.toLowerCase())})` : '';
+        let txt;
+        if (c.estado === 'abierta') txt = `Captura${etapa}: se habilitó el <b>${esc(larga(c.inicio))}</b> y cierra el <b>${esc(larga(c.fin))}</b>`;
+        else if (c.estado === 'proxima') txt = `Captura${etapa}: se habilita el <b>${esc(larga(c.inicio))}</b> y cierra el <b>${esc(larga(c.fin))}</b>`;
+        else txt = `Captura${etapa}: estuvo habilitada del <b>${esc(larga(c.inicio))}</b> al <b>${esc(larga(c.fin))}</b>`;
+        return `<div class="pd-fechas"><i class="fa-regular fa-calendar"></i><span>${txt}</span></div>`;
     }
 
     function filaMateria(g, m, i) {
@@ -162,7 +179,7 @@
             : (completa ? `<i class="fa-solid fa-check"></i> ${m.calificados}/${m.total}` : `${m.calificados}/${m.total}`);
         return `
             <li class="pd-materia">
-                <div class="nom">${esc(m.nombre)}</div>
+                <div class="nom">${esc(m.nombre)}${prorrogas[`${g.id}-${m.id}`] && !m.bloqueado ? `<small>Prórroga hasta el ${esc(larga(prorrogas[`${g.id}-${m.id}`]))}</small>` : ''}</div>
                 <div class="cuenta ${completa ? 'ok' : ''}" title="Alumnos calificados">${cuenta}</div>
                 <div>${accion}</div>
                 ${m.bloqueado && m.motivo ? `<div class="motivo" id="${idMotivo}" hidden>${esc(m.motivo)}</div>` : ''}
@@ -180,6 +197,7 @@
                     </div>
                     ${pill(g)}
                 </div>
+                ${fechasCaptura(g.captura)}
                 ${g.materias.length
                     ? `<ul class="pd-materias">${g.materias.map((m, i) => filaMateria(g, m, i)).join('')}</ul>`
                     : '<div class="pd-sin">Sin asignaturas en tu horario.</div>'}
@@ -213,6 +231,7 @@
         })
         .then(data => {
             grupos = data.grupos;
+            (data.prorrogas || []).forEach(p => { prorrogas[`${p.id_grupo}-${p.id_materia}`] = p.fecha_limite; });
             pintarEncabezado(data.prorrogas || []);
             pintarGrupos();
         })
