@@ -158,12 +158,24 @@
 
     // Ventana de captura del grupo: cuándo se habilitó y cuándo cierra
     function fechasCaptura(c) {
-        if (!c.inicio || !c.fin || !['abierta', 'proxima', 'cerrada'].includes(c.estado)) return '';
         const etapa = c.etapa ? ` (${esc(c.etapa.toLowerCase())})` : '';
+        const del = () => `del <b>${esc(larga(c.inicio))}</b> al <b>${esc(larga(c.fin))}</b>`;
         let txt;
-        if (c.estado === 'abierta') txt = `Captura${etapa}: se habilitó el <b>${esc(larga(c.inicio))}</b> y cierra el <b>${esc(larga(c.fin))}</b>`;
-        else if (c.estado === 'proxima') txt = `Captura${etapa}: se habilita el <b>${esc(larga(c.inicio))}</b> y cierra el <b>${esc(larga(c.fin))}</b>`;
-        else txt = `Captura${etapa}: estuvo habilitada del <b>${esc(larga(c.inicio))}</b> al <b>${esc(larga(c.fin))}</b>`;
+        if (c.estado === 'sin_fechas') {
+            txt = 'La administración aún no habilita las fechas de captura de este grupo.';
+        } else if (c.estado === 'deshabilitada') {
+            txt = c.inicio && c.fin
+                ? `Captura${etapa}: programada ${del()}, pero la administración la tiene desactivada.`
+                : 'La administración tiene desactivada la captura de este grupo y aún no hay fechas programadas.';
+        } else if (!c.inicio || !c.fin) {
+            return '';
+        } else if (c.estado === 'abierta') {
+            txt = `Captura${etapa}: se habilitó el <b>${esc(larga(c.inicio))}</b> y cierra el <b>${esc(larga(c.fin))}</b>`;
+        } else if (c.estado === 'proxima') {
+            txt = `Captura${etapa}: se habilita el <b>${esc(larga(c.inicio))}</b> y cierra el <b>${esc(larga(c.fin))}</b>`;
+        } else {
+            txt = `Captura${etapa}: estuvo habilitada ${del()}. Aún no hay fechas para la siguiente captura.`;
+        }
         return `<div class="pd-fechas"><i class="fa-regular fa-calendar"></i><span>${txt}</span></div>`;
     }
 
