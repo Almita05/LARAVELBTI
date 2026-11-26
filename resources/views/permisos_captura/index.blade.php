@@ -164,9 +164,10 @@
                         </div>
                         <div>
                             <label for="selectGrupoConfig" class="{{ $label }}">Grupo</label>
-                            <select id="selectGrupoConfig" class="{{ $input }}" onchange="cargarConfiguracionGrupo(this.value)" disabled>
-                                <option value="">Primero elige un plantel</option>
-                            </select>
+                            <input type="search" id="selectGrupoConfig" class="{{ $input }}" list="listaGruposConfig"
+                                   placeholder="Primero elige un plantel" autocomplete="off" disabled
+                                   oninput="seleccionarGrupoConfigPorClave(this.value)">
+                            <datalist id="listaGruposConfig"></datalist>
                         </div>
                     </div>
                 </aside>
@@ -1061,8 +1062,7 @@ function cargarCctConfigList() {
     const selectCct = document.getElementById('selectCctConfig');
     const selectGrupo = document.getElementById('selectGrupoConfig');
     mostrarAjustes(false);
-    selectGrupo.innerHTML = '<option value="">Primero elige un plantel</option>';
-    selectGrupo.disabled = true;
+    prepararInputGrupoConfig(selectGrupo, 'Primero elige un plantel');
 
     fetchJson('/permisos-captura/ccts')
         .then(data => {
@@ -1081,30 +1081,49 @@ function cargarGruposConfig(idCct) {
     mostrarAjustes(false);
     grupoConfiguracionActualId = null;
 
+    listadoGruposCct = [];
     if (!idCct) {
-        selectGrupo.innerHTML = '<option value="">Primero elige un plantel</option>';
-        selectGrupo.disabled = true;
+        prepararInputGrupoConfig(selectGrupo, 'Primero elige un plantel');
         return;
     }
 
-    selectGrupo.innerHTML = '<option value="">Cargando grupos…</option>';
-    selectGrupo.disabled = true;
+    prepararInputGrupoConfig(selectGrupo, 'Cargando grupos…');
 
     fetchJson(`/permisos-captura/cct/${encodeURIComponent(idCct)}/grupos`)
         .then(data => {
             listadoGruposCct = Array.isArray(data) ? data : [];
             if (listadoGruposCct.length > 0) {
-                selectGrupo.innerHTML = '<option value="">Selecciona un grupo…</option>' +
-                    listadoGruposCct.map(g => `<option value="${esc(g.id)}">${esc(g.clave)}</option>`).join('');
+                document.getElementById('listaGruposConfig').innerHTML =
+                    listadoGruposCct.map(g => `<option value="${esc(g.clave)}"></option>`).join('');
+                selectGrupo.placeholder = 'Escribe o selecciona un grupo…';
                 selectGrupo.disabled = false;
             } else {
-                selectGrupo.innerHTML = '<option value="">No hay grupos activos en este plantel</option>';
+                selectGrupo.placeholder = 'No hay grupos activos en este plantel';
             }
         })
         .catch(err => {
             console.error('Error al cargar grupos del CCT:', err);
-            selectGrupo.innerHTML = '<option value="">Error al cargar grupos</option>';
+            selectGrupo.placeholder = 'Error al cargar grupos';
         });
+}
+
+// Limpia el buscador de grupo y lo deja deshabilitado con el texto indicado.
+function prepararInputGrupoConfig(input, placeholder) {
+    input.value = '';
+    input.placeholder = placeholder;
+    input.disabled = true;
+    document.getElementById('listaGruposConfig').innerHTML = '';
+}
+
+// El admin escribe la clave; al coincidir exactamente con un grupo (sin importar mayúsculas) se carga.
+function seleccionarGrupoConfigPorClave(texto) {
+    const clave = (texto || '').trim().toUpperCase();
+    const grupo = listadoGruposCct.find(g => String(g.clave).toUpperCase() === clave);
+    if (grupo) {
+        if (grupoConfiguracionActualId !== Number(grupo.id)) cargarConfiguracionGrupo(grupo.id);
+    } else if (grupoConfiguracionActualId !== null) {
+        cargarConfiguracionGrupo('');
+    }
 }
 
 function cargarConfiguracionGrupo(idGrupo) {
