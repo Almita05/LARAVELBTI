@@ -324,7 +324,7 @@
         })
         .catch(err => {
             console.error('Error al cargar pendientes:', err);
-            document.getElementById('pdGrupos').innerHTML = `<div class="pd-vacio" style="grid-column: 1 / -1;"><i class="fa-solid fa-triangle-exclamation"></i>No se pudo cargar la información. Recarga la página para intentarlo de nuevo.</div>`;
+            document.getElementById('pdGrupos').innerHTML = `<div class="pd-vacio" style="grid-column: 1 / -1;"><i class="fa-solid fa-triangle-exclamation"></i>No se pudo cargar la información. Recarga la página para intentarlo de nuevo.<br><small style="opacity:.7">${String(err && err.message || '').replace(/[<>&"]/g, '')}</small></div>`;
         });
 })();
 </script>
