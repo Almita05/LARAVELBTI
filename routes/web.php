@@ -235,6 +235,12 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () use ($FO
 */
 Route::middleware('auth.session')->group(function () use ($FORMATOS) {
 
+    // Métricas del plantel (solo Administración)
+    Route::middleware('solo.admin')->group(function () {
+        Route::get('/metricas', [\App\Http\Controllers\MetricasController::class, 'index'])->name('metricas');
+        Route::get('/metricas/datos', [\App\Http\Controllers\MetricasController::class, 'datos'])->name('metricas.datos');
+    });
+
     // Alumnos
     Route::get('/alumnos', [AlumnoController::class, 'index'])->middleware('permiso:alumnos_list')->name('alumnos');
     Route::get('/alumnos/lista', [AlumnoController::class, 'lista']); // búsqueda compartida (imprimir, actas, boletas…)

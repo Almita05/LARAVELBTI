@@ -29,6 +29,10 @@ $is = fn (...$routes) => request()->routeIs(...$routes);
         <x-sidebar.item :href="route('home')" icon="layout-dashboard" label="Dashboard" :active="$is('home')" />
     @endif
 
+    @if($rol=='ADMIN')
+        <x-sidebar.item :href="route('metricas')" icon="chart-line" label="Métricas" :active="$is('metricas')" />
+    @endif
+
     @if($rol=='ADMIN' || $rol=='PERSONAL')
         @if(has_perm('notificaciones', 'ver'))
         <x-sidebar.item :href="route('notificaciones')" icon="bell" label="Avisos y Pendientes" :active="$is('notificaciones')">
