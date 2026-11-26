@@ -57,9 +57,14 @@
 
         <!-- VISTA 1: PORCENTAJE POR ASIGNATURA -->
         <div id="vista-materias">
+            <div id="aviso-pases-docentes" class="d-none mb-3"></div>
             <div class="row g-4" id="grid-materias">
                 <!-- Renderizado dinámicamente con JS -->
             </div>
+            <p class="text-muted mt-3 mb-0" style="font-size: 0.72rem;">
+                «Pase del docente» cuenta solo las clases en que el docente pasó lista en su materia (registro aparte del pase general),
+                desde que los dos pases se guardan por separado. El porcentaje grande de cada tarjeta combina el pase del docente y, si no lo hubo, el general.
+            </p>
         </div>
 
         <!-- VISTA 2: HISTORIAL POR ALUMNO -->
@@ -292,7 +297,7 @@
                 document.getElementById('seccion-reporte').classList.remove('d-none');
 
                 // Renderizar materias
-                renderizarMateriasReporte(data.materias_reporte || []);
+                renderizarMateriasReporte(data.materias_reporte || [], data.grupo || {});
 
                 // Poblar select de alumnos
                 poblarSelectAlumnos(data.alumnos || []);
@@ -308,9 +313,55 @@
             });
     }
 
-    function renderizarMateriasReporte(materias) {
+    // Fechas cortas dd/mm para la lista de clases sin pase
+    const fechaCortaRep = iso => { const [y, m, d] = String(iso).split('-'); return `${d}/${m}`; };
+    const escRep = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // Bloque "Pase del docente" de cada tarjeta: clases con pase / programadas, pendientes y acceso a su matriz
+    function bloquePaseDocente(mat, grupo) {
+        const sd = mat.seguimiento_docente;
+        if (!sd) return '';
+        const prog = sd.clases_programadas, hechos = sd.pases_realizados;
+        const pct = prog ? Math.round(hechos * 100 / prog) : 0;
+        const color = !prog ? '#cbd5e1' : (hechos >= prog ? 'rgb(49, 125, 146)' : (pct >= 70 ? '#eab308' : '#dc2626'));
+        const pend = sd.fechas_pendientes || [];
+        const listaPend = pend.length
+            ? `<div class="mt-2" style="font-size: 0.7rem; color: #b91c1c;">Sin pase: ${pend.slice(-6).map(fechaCortaRep).join(', ')}${pend.length > 6 ? ` y ${pend.length - 6} más` : ''}</div>`
+            : '';
+        const urlMatriz = `/asistencias_alumnos/grupo/${encodeURIComponent(grupo.id)}?id_materia=${encodeURIComponent(mat.id_materia)}`;
+        return `
+            <div class="mt-3 pt-3 border-top" style="border-color: rgba(49,125,146,0.1) !important;">
+                <div class="d-flex justify-content-between align-items-baseline">
+                    <span class="text-muted uppercase fw-bold" style="font-size: 0.65rem; letter-spacing: 0.5px;">PASE DEL DOCENTE</span>
+                    <span class="fw-bold" style="font-size: 0.78rem; color: ${color};">${prog ? `${hechos} de ${prog} clases` : 'Sin clases a la fecha'}</span>
+                </div>
+                <div class="mt-1" style="height: 6px; background: #e2e8f0;" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Clases con pase del docente">
+                    <div style="height: 6px; width: ${pct}%; background: ${color};"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-2 text-muted" style="font-size: 0.7rem;">
+                    <span>Asistencia en su pase: <b class="text-dark">${sd.porcentaje_docente !== null ? sd.porcentaje_docente + '%' : '—'}</b></span>
+                    <span>Último pase: <b class="text-dark">${sd.ultimo_pase ? fechaCortaRep(sd.ultimo_pase) : '—'}</b></span>
+                </div>
+                ${listaPend}
+                <a href="${urlMatriz}" class="btn btn-sm btn-outline-secondary w-100 mt-3" style="border-radius: 0; font-size: 0.75rem;">Ver matriz de la materia</a>
+            </div>`;
+    }
+
+    // Aviso del grupo: materias con clases sin pase del docente
+    function pintarAvisoPases(materias) {
+        const aviso = document.getElementById('aviso-pases-docentes');
+        const conPend = materias.filter(m => m.seguimiento_docente && (m.seguimiento_docente.fechas_pendientes || []).length);
+        if (!conPend.length) { aviso.classList.add('d-none'); aviso.innerHTML = ''; return; }
+        aviso.className = 'alert alert-warning mb-3';
+        aviso.style.borderRadius = '0';
+        aviso.innerHTML = `<b>${conPend.length === 1 ? '1 materia tiene' : conPend.length + ' materias tienen'} clases sin pase de lista del docente:</b> `
+            + conPend.map(m => `${escRep(m.nombreMateria)} (${m.seguimiento_docente.fechas_pendientes.length})`).join(', ');
+    }
+
+    function renderizarMateriasReporte(materias, grupo = {}) {
         const grid = document.getElementById('grid-materias');
         grid.innerHTML = '';
+        pintarAvisoPases(materias || []);
 
         if (!materias || materias.length === 0) {
             grid.innerHTML = '<div class="col-12 text-center text-muted py-5">No hay asignaturas registradas en el horario de este grupo.</div>';
@@ -379,6 +430,7 @@
                                 </div>
                             </div>
                         </div>
+                        ${bloquePaseDocente(mat, grupo)}
                     </div>
                 </div>
             `;
