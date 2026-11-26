@@ -28,12 +28,18 @@
 
     <div class="glass-card">
 
-        <div class="grupos-filter-bar">
+        <div class="grupos-filter-bar" @if(session('rol') === 'DOCENTE') style="grid-template-columns: minmax(0, 32rem);" @endif>
             <!-- Buscador -->
             <div>
+                @if(session('rol') === 'DOCENTE')
+                <label class="grupos-filter-label" for="buscadorGrupos">Buscar por alumno o clave del grupo</label>
+                <input type="search" id="buscadorGrupos" class="form-control-saas" placeholder="Nombre o número de control del alumno…" autocomplete="off">
+                @else
                 <label class="grupos-filter-label" for="buscadorGrupos">Buscar por Clave</label>
                 <input type="text" id="buscadorGrupos" class="form-control-saas" placeholder="Ej. 1A-2026...">
+                @endif
             </div>
+            @if(session('rol') !== 'DOCENTE')
             <!-- CCT -->
             <div>
                 <label class="grupos-filter-label" for="filtroCCT">CCT (Centro de Trabajo)</label>
@@ -76,6 +82,7 @@
                     <option value="INACTIVO">Inactivo</option>
                 </select>
             </div>
+            @endif
         </div>
 
         <div class="table-responsive">
@@ -422,10 +429,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
         document.getElementById('loading').style.display = 'block';
 
-        const cct = document.getElementById('filtroCCT').value;
-        const dia = document.getElementById('filtroDia').value;
-        const horario = document.getElementById('filtroHorario').value;
-        const status = document.getElementById('filtroStatus').value;
+        // Los docentes no tienen filtros: solo ven sus grupos activos
+        const valor = (id, porDefecto = '') => { const el = document.getElementById(id); return el ? el.value : porDefecto; };
+        const cct = valor('filtroCCT');
+        const dia = valor('filtroDia');
+        const horario = valor('filtroHorario');
+        const status = valor('filtroStatus', 'ACTIVO');
 
         let query = `/grupos/lista?page=${pagina}&search=${encodeURIComponent(search)}`;
         if (cct) query += `&id_centro_trabajo=${cct}`;
@@ -445,16 +454,20 @@ document.addEventListener("DOMContentLoaded", function() {
             });
     }
 
+    let esperaBusqueda;
     document.getElementById('buscadorGrupos').addEventListener('input', (e) => {
-        search = e.target.value.toLowerCase();
-        pagina = 1;
-        cargarGrupos();
+        clearTimeout(esperaBusqueda);
+        esperaBusqueda = setTimeout(() => {
+            search = e.target.value.trim().toLowerCase();
+            pagina = 1;
+            cargarGrupos();
+        }, 300);
     });
 
-    document.getElementById('filtroCCT').addEventListener('change', resetAndCargar);
-    document.getElementById('filtroDia').addEventListener('change', resetAndCargar);
-    document.getElementById('filtroHorario').addEventListener('change', resetAndCargar);
-    document.getElementById('filtroStatus').addEventListener('change', resetAndCargar);
+    ['filtroCCT', 'filtroDia', 'filtroHorario', 'filtroStatus'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', resetAndCargar);
+    });
 
     function resetAndCargar() {
         pagina = 1;
