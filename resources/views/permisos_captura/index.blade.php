@@ -260,12 +260,12 @@
                                     @endforeach
                                 </div>
                                 <p id="notaCapturaAutoBgne" class="tw:m-0 tw:mt-2 tw:text-xs tw:text-slate-500" style="display: none;">
-                                    Calificación final sin fechas = automático: los docentes capturan desde el día en que termina cada trimestre y hasta 6 días después.
-                                    Si pones fechas, mandan esas.
+                                    Calificación final automática: los docentes capturan desde el día en que termina cada trimestre y hasta 6 días después.
+                                    Las fechas manuales solo sirven para alargar el cierre (fecha fin posterior); nunca abren la captura antes de que termine el trimestre.
                                 </p>
                                 <p id="notaCapturaManualBti" class="tw:m-0 tw:mt-2 tw:text-xs tw:text-slate-500" style="display: none;">
-                                    Apertura manual: los docentes solo capturan en los periodos activos a partir de su fecha de inicio.
-                                    Sin fecha fin, la captura cierra sola 6 días después del fin del grupo. Un periodo sin fecha de inicio queda cerrado.
+                                    Captura manual: los docentes solo capturan en los periodos activos con fecha de inicio y fin, dentro de ese rango.
+                                    Un periodo sin fechas queda cerrado.
                                 </p>
                             </div>
 
