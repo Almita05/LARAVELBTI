@@ -264,8 +264,8 @@
                                     Si pones fechas, mandan esas.
                                 </p>
                                 <p id="notaCapturaManualBti" class="tw:m-0 tw:mt-2 tw:text-xs tw:text-slate-500" style="display: none;">
-                                    Captura manual: los docentes solo capturan en los periodos activos con fecha de inicio y fin, dentro de ese rango.
-                                    Un periodo sin fechas queda cerrado.
+                                    Apertura manual: los docentes solo capturan en los periodos activos a partir de su fecha de inicio.
+                                    Sin fecha fin, la captura cierra sola 6 días después del fin del grupo. Un periodo sin fecha de inicio queda cerrado.
                                 </p>
                             </div>
 

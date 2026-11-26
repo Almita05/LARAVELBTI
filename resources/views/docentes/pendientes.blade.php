@@ -157,11 +157,17 @@
     }
 
     // Ventana de captura del grupo: cuándo se habilitó y cuándo cierra
-    function fechasCaptura(c) {
+    function fechasCaptura(c, g) {
         const etapa = c.etapa ? ` (${esc(c.etapa.toLowerCase())})` : '';
         const del = () => `del <b>${esc(larga(c.inicio))}</b> al <b>${esc(larga(c.fin))}</b>`;
         let txt;
-        if (c.estado === 'sin_fechas') {
+        const le = c.limite_estimado;
+        if (le) {
+            const periodo = g.periodo && g.periodo.nombre ? `El ${esc(g.periodo.nombre)}` : 'El grupo';
+            txt = `${periodo} termina el <b>${esc(larga(le.fin_periodo))}</b>; la fecha límite para capturar es el <b>${esc(larga(le.limite))}</b> (6 días después).`;
+            if (c.estado === 'deshabilitada') txt += ' Por ahora la administración tiene la captura desactivada.';
+            else if (c.estado === 'sin_fechas') txt += ' La administración habilitará la captura.';
+        } else if (c.estado === 'sin_fechas') {
             txt = 'La administración aún no habilita las fechas de captura de este grupo.';
         } else if (c.estado === 'deshabilitada') {
             txt = c.inicio && c.fin
@@ -209,7 +215,7 @@
                     </div>
                     ${pill(g)}
                 </div>
-                ${fechasCaptura(g.captura)}
+                ${fechasCaptura(g.captura, g)}
                 ${g.materias.length
                     ? `<ul class="pd-materias">${g.materias.map((m, i) => filaMateria(g, m, i)).join('')}</ul>`
                     : '<div class="pd-sin">Sin asignaturas en tu horario.</div>'}
