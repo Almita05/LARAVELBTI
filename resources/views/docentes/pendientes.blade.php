@@ -88,12 +88,16 @@
 
     let grupos = [];
     const porCapturar = g => g.materias.filter(m => !m.bloqueado && m.total > 0 && m.calificados < m.total);
-    const urgente = c => c.estado === 'abierta' && c.dias_restantes <= 2;
+    // Lo que manda es si el docente puede capturar alguna asignatura, no solo las fechas del grupo
+    const puede = g => g.materias.some(m => !m.bloqueado);
+    const abierta = g => g.captura.estado === 'abierta' && puede(g);
+    const urgente = g => abierta(g) && g.captura.dias_restantes <= 2;
 
     // Orden: primero la captura abierta que cierra antes, luego la que está por abrir, después el resto
     const PESO = { abierta: 0, sin_fechas: 1, proxima: 2, cerrada: 3, deshabilitada: 4 };
+    const peso = g => abierta(g) ? 0 : (puede(g) ? 1 : (g.captura.estado === 'proxima' ? 2 : 3 + (PESO[g.captura.estado] ?? 2)));
     const ordenar = arr => arr.slice().sort((a, b) =>
-        (PESO[a.captura.estado] ?? 5) - (PESO[b.captura.estado] ?? 5) ||
+        peso(a) - peso(b) ||
         (a.captura.dias_restantes ?? a.captura.dias_para_abrir ?? 999) - (b.captura.dias_restantes ?? b.captura.dias_para_abrir ?? 999) ||
         String(a.clave).localeCompare(String(b.clave)));
 
@@ -105,7 +109,7 @@
             : '';
 
         let html = '';
-        const urg = grupos.filter(g => urgente(g.captura));
+        const urg = grupos.filter(urgente);
         if (urg.length) {
             const hoy = urg.filter(g => g.captura.dias_restantes === 0).length;
             html += `<div class="pd-aviso urgente"><i class="fa-solid fa-clock"></i><div><strong>${hoy
@@ -120,10 +124,15 @@
     }
 
     // Etiqueta con el estado de la captura del grupo
-    function pill(c) {
-        if (c.estado === 'abierta') {
-            return `<span class="pd-pill ${urgente(c) ? 'urgente' : 'abierta'}" title="${esc(c.etapa)}">Cierra ${enDias(c.dias_restantes, 'hoy', 'mañana')}<small>hasta el ${esc(corta(c.fin))}</small></span>`;
+    function pill(g) {
+        const c = g.captura;
+        if (abierta(g)) {
+            return `<span class="pd-pill ${urgente(g) ? 'urgente' : 'abierta'}" title="${esc(c.etapa)}">Cierra ${enDias(c.dias_restantes, 'hoy', 'mañana')}<small>hasta el ${esc(corta(c.fin))}</small></span>`;
         }
+        // Fuera de las fechas del grupo pero con alguna asignatura habilitada (p. ej. por prórroga)
+        if (puede(g) && g.materias.length) return `<span class="pd-pill abierta">Puedes capturar</span>`;
+        // Ventana abierta pero todas sus asignaturas bloqueadas (ya enviadas, desactivadas…): no hay nada que hacer
+        if (c.estado === 'abierta' || c.estado === 'sin_fechas') return `<span class="pd-pill" title="Toca «Bloqueada» en la asignatura para ver el motivo.">Captura bloqueada</span>`;
         if (c.estado === 'proxima') {
             return `<span class="pd-pill" title="${esc(c.etapa)}: del ${esc(corta(c.inicio))} al ${esc(corta(c.fin))}">Captura abre ${enDias(c.dias_para_abrir, 'hoy', 'mañana')}<small>${esc(corta(c.inicio))}</small></span>`;
         }
@@ -161,8 +170,7 @@
     }
 
     function tarjeta(g) {
-        const c = g.captura;
-        const clase = urgente(c) ? 'urgente' : (c.estado === 'abierta' || c.estado === 'sin_fechas' ? 'abierta' : '');
+        const clase = urgente(g) ? 'urgente' : (puede(g) ? 'abierta' : '');
         return `
             <article class="pd-card ${clase}" aria-label="Grupo ${esc(g.clave)}">
                 <div class="pd-card-head">
@@ -170,7 +178,7 @@
                         <h2>${esc(g.clave)}${g.plantel ? `<span class="pd-chip">${esc(g.plantel)}</span>` : ''}</h2>
                         <div class="sub">${subtitulo(g)}</div>
                     </div>
-                    ${pill(c)}
+                    ${pill(g)}
                 </div>
                 ${g.materias.length
                     ? `<ul class="pd-materias">${g.materias.map((m, i) => filaMateria(g, m, i)).join('')}</ul>`
