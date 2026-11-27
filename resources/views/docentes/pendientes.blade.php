@@ -24,6 +24,15 @@
 .pd-aviso.info { background: var(--pd-brand-soft); border-color: #c9dde2; color: var(--pd-brand-2); }
 .pd-aviso ul { margin: 4px 0 0; padding-left: 18px; }
 
+/* Filtro por centro de trabajo */
+.pd-filtro { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+.pd-filtro:empty { display: none; }
+.pd-filtro-btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; font-size: .8125rem; font-weight: 600; border: 1px solid var(--pd-line); background: #fff; color: var(--pd-text); cursor: pointer; }
+.pd-filtro-btn span { font-size: .6875rem; font-weight: 600; color: var(--pd-muted); font-variant-numeric: tabular-nums; }
+.pd-filtro-btn:hover { background: var(--pd-bg); }
+.pd-filtro-btn[aria-pressed="true"] { background: var(--pd-brand); border-color: var(--pd-brand); color: #fff; }
+.pd-filtro-btn[aria-pressed="true"] span { color: rgba(255, 255, 255, .8); }
+
 /* Tarjetas */
 .pd-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; margin-top: 18px; }
 .pd-card { background: #fff; border: 1px solid var(--pd-line); border-left: 3px solid var(--pd-line); }
@@ -76,6 +85,8 @@
 
     <div id="pdAvisos" aria-live="polite"></div>
 
+    <div class="pd-filtro" id="pdFiltro" role="group" aria-label="Filtrar por centro de trabajo"></div>
+
     <div class="pd-grid" id="pdGrupos">
         <div class="pd-cargando"></div>
         <div class="pd-cargando"></div>
@@ -103,10 +114,36 @@
     // Orden: primero la captura abierta que cierra antes, luego la que está por abrir, después el resto
     const PESO = { abierta: 0, sin_fechas: 1, proxima: 2, cerrada: 3, deshabilitada: 4 };
     const peso = g => abierta(g) ? 0 : (puede(g) ? 1 : (g.captura.estado === 'proxima' ? 2 : 3 + (PESO[g.captura.estado] ?? 2)));
+    // Dentro de cada estado, por semestre/trimestre de menor a mayor
+    const nivel = g => Number(g.numero_nivel) || 99;
     const ordenar = arr => arr.slice().sort((a, b) =>
         peso(a) - peso(b) ||
+        nivel(a) - nivel(b) ||
         (a.captura.dias_restantes ?? a.captura.dias_para_abrir ?? 999) - (b.captura.dias_restantes ?? b.captura.dias_para_abrir ?? 999) ||
         String(a.clave).localeCompare(String(b.clave)));
+
+    // Filtro por centro de trabajo (Todos / BTI / BGNE)
+    let filtroPlantel = '';
+    try { filtroPlantel = localStorage.getItem('pdFiltroPlantel') || ''; } catch (e) {}
+    function pintarFiltro() {
+        const planteles = [...new Set(grupos.map(g => g.plantel).filter(Boolean))].sort();
+        const cont = document.getElementById('pdFiltro');
+        if (planteles.length < 2) { cont.innerHTML = ''; filtroPlantel = ''; return; }
+        if (filtroPlantel && !planteles.includes(filtroPlantel)) filtroPlantel = '';
+        const btn = (valor, texto) => {
+            const n = valor ? grupos.filter(g => g.plantel === valor).length : grupos.length;
+            return `<button type="button" class="pd-filtro-btn" data-plantel="${esc(valor)}" aria-pressed="${filtroPlantel === valor}">${esc(texto)} <span>${n}</span></button>`;
+        };
+        cont.innerHTML = btn('', 'Todos') + planteles.map(p => btn(p, p)).join('');
+    }
+    document.addEventListener('click', e => {
+        const b = e.target.closest('.pd-filtro-btn');
+        if (!b) return;
+        filtroPlantel = b.dataset.plantel;
+        try { localStorage.setItem('pdFiltroPlantel', filtroPlantel); } catch (err) {}
+        pintarFiltro();
+        pintarGrupos();
+    });
 
     // ---------------------------------------------------------------
     function pintarEncabezado(prorrogas) {
@@ -227,7 +264,8 @@
     function pintarGrupos() {
         const cont = document.getElementById('pdGrupos');
         // Separar cada grupo en una tarjeta por asignatura (mismo grupo, captura y periodo)
-        const tarjetas = grupos.flatMap(g => g.materias.length
+        const visibles = filtroPlantel ? grupos.filter(g => g.plantel === filtroPlantel) : grupos;
+        const tarjetas = visibles.flatMap(g => g.materias.length
             ? g.materias.map(m => ({ ...g, materias: [m] }))
             : [g]);
         cont.innerHTML = tarjetas.length
@@ -257,6 +295,7 @@
             grupos = data.grupos;
             (data.prorrogas || []).forEach(p => { prorrogas[`${p.id_grupo}-${p.id_materia}`] = p.fecha_limite; });
             pintarEncabezado(data.prorrogas || []);
+            pintarFiltro();
             pintarGrupos();
         })
         .catch(err => {
