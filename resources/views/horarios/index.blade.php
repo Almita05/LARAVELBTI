@@ -1059,10 +1059,6 @@
                             <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
                                 <i class="ti ti-number-1 me-1" style="color: #26687B;"></i> Primer Parcial (1ER. PARCIAL)
                             </span>
-                            <div class="form-check form-switch mb-0">
-                                <input class="form-check-input" type="checkbox" id="evalP1Habilitado" checked>
-                                <label class="form-check-label text-secondary small" for="evalP1Habilitado">Habilitar captura</label>
-                            </div>
                         </div>
                         <div class="card-body p-3">
                             <div class="row g-3">
@@ -1084,10 +1080,6 @@
                             <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
                                 <i class="ti ti-number-2 me-1" style="color: #26687B;"></i> Segundo Parcial (2DO. PARCIAL)
                             </span>
-                            <div class="form-check form-switch mb-0">
-                                <input class="form-check-input" type="checkbox" id="evalP2Habilitado" checked>
-                                <label class="form-check-label text-secondary small" for="evalP2Habilitado">Habilitar captura</label>
-                            </div>
                         </div>
                         <div class="card-body p-3">
                             <div class="row g-3">
@@ -1109,10 +1101,6 @@
                             <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
                                 <i class="ti ti-number-3 me-1" style="color: #26687B;"></i> Tercer Parcial (3ER. PARCIAL)
                             </span>
-                            <div class="form-check form-switch mb-0">
-                                <input class="form-check-input" type="checkbox" id="evalP3Habilitado" checked>
-                                <label class="form-check-label text-secondary small" for="evalP3Habilitado">Habilitar captura</label>
-                            </div>
                         </div>
                         <div class="card-body p-3">
                             <div class="row g-3">
@@ -1136,9 +1124,6 @@
                                     <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
                                         <i class="ti ti-school me-1" style="color: #0284c7;"></i> Examen Semestral
                                     </span>
-                                    <div class="form-check form-switch mb-0">
-                                        <input class="form-check-input" type="checkbox" id="evalSemestralHabilitado" checked>
-                                    </div>
                                 </div>
                                 <div class="card-body p-3">
                                     <div class="mb-2">
@@ -1159,9 +1144,6 @@
                                     <span class="fw-bold" style="font-size: 0.85rem; color: #0F172A;">
                                         <i class="ti ti-file-text me-1" style="color: #d97706;"></i> Extraordinario
                                     </span>
-                                    <div class="form-check form-switch mb-0">
-                                        <input class="form-check-input" type="checkbox" id="evalExtraordinarioHabilitado" checked>
-                                    </div>
                                 </div>
                                 <div class="card-body p-3">
                                     <div class="mb-2">
@@ -1793,6 +1775,17 @@ document.addEventListener("DOMContentLoaded", function() {
                 "12:10 - 13:00",
                 "13:00 - 13:50"
             ];
+            // Informática y Computación (CCT 1) escolarizado: la jornada sigue en bloques de 50 min hasta las 7 pm
+            if (parseInt(group.id_centroTrabajo || group.idCentroTrabajo || 0) === 1) {
+                timeBlocks.push(
+                    "13:50 - 14:40",
+                    "14:40 - 15:30",
+                    "15:30 - 16:20",
+                    "16:20 - 17:10",
+                    "17:10 - 18:00",
+                    "18:00 - 18:50"
+                );
+            }
         }
 
         // Generar cabecera y grilla dinámicamente
@@ -2062,23 +2055,18 @@ document.addEventListener("DOMContentLoaded", function() {
         const cfg = window.currentGrupoConfig || {};
         document.getElementById("evalP1FechaInicio").value = cfg.p1_fecha_inicio ? cfg.p1_fecha_inicio.substring(0, 10) : '';
         document.getElementById("evalP1FechaFin").value = cfg.p1_fecha_fin ? cfg.p1_fecha_fin.substring(0, 10) : '';
-        document.getElementById("evalP1Habilitado").checked = cfg.p1_habilitado === undefined ? true : (cfg.p1_habilitado == 1);
 
         document.getElementById("evalP2FechaInicio").value = cfg.p2_fecha_inicio ? cfg.p2_fecha_inicio.substring(0, 10) : '';
         document.getElementById("evalP2FechaFin").value = cfg.p2_fecha_fin ? cfg.p2_fecha_fin.substring(0, 10) : '';
-        document.getElementById("evalP2Habilitado").checked = cfg.p2_habilitado === undefined ? true : (cfg.p2_habilitado == 1);
 
         document.getElementById("evalP3FechaInicio").value = cfg.p3_fecha_inicio ? cfg.p3_fecha_inicio.substring(0, 10) : '';
         document.getElementById("evalP3FechaFin").value = cfg.p3_fecha_fin ? cfg.p3_fecha_fin.substring(0, 10) : '';
-        document.getElementById("evalP3Habilitado").checked = cfg.p3_habilitado === undefined ? true : (cfg.p3_habilitado == 1);
 
         document.getElementById("evalSemestralFechaInicio").value = cfg.semestral_fecha_inicio ? cfg.semestral_fecha_inicio.substring(0, 10) : '';
         document.getElementById("evalSemestralFechaFin").value = cfg.semestral_fecha_fin ? cfg.semestral_fecha_fin.substring(0, 10) : '';
-        document.getElementById("evalSemestralHabilitado").checked = cfg.semestral_habilitado === undefined ? true : (cfg.semestral_habilitado == 1);
 
         document.getElementById("evalExtraordinarioFechaInicio").value = cfg.extraordinario_fecha_inicio ? cfg.extraordinario_fecha_inicio.substring(0, 10) : '';
         document.getElementById("evalExtraordinarioFechaFin").value = cfg.extraordinario_fecha_fin ? cfg.extraordinario_fecha_fin.substring(0, 10) : '';
-        document.getElementById("evalExtraordinarioHabilitado").checked = cfg.extraordinario_habilitado === undefined ? true : (cfg.extraordinario_habilitado == 1);
 
         const modalEl = document.getElementById("modalFechasPeriodosEvaluacion");
         let modalInstance = bootstrap.Modal.getInstance(modalEl);
@@ -2099,20 +2087,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const payload = {
             id_nivel_academico: selectedPeriodNivel || activeGroup.id_nivel_academico,
-            captura_habilitada: 1,
-            p1_habilitado: document.getElementById("evalP1Habilitado").checked ? 1 : 0,
             p1_fecha_inicio: document.getElementById("evalP1FechaInicio").value || null,
             p1_fecha_fin: document.getElementById("evalP1FechaFin").value || null,
-            p2_habilitado: document.getElementById("evalP2Habilitado").checked ? 1 : 0,
             p2_fecha_inicio: document.getElementById("evalP2FechaInicio").value || null,
             p2_fecha_fin: document.getElementById("evalP2FechaFin").value || null,
-            p3_habilitado: document.getElementById("evalP3Habilitado").checked ? 1 : 0,
             p3_fecha_inicio: document.getElementById("evalP3FechaInicio").value || null,
             p3_fecha_fin: document.getElementById("evalP3FechaFin").value || null,
-            semestral_habilitado: document.getElementById("evalSemestralHabilitado").checked ? 1 : 0,
             semestral_fecha_inicio: document.getElementById("evalSemestralFechaInicio").value || null,
             semestral_fecha_fin: document.getElementById("evalSemestralFechaFin").value || null,
-            extraordinario_habilitado: document.getElementById("evalExtraordinarioHabilitado").checked ? 1 : 0,
             extraordinario_fecha_inicio: document.getElementById("evalExtraordinarioFechaInicio").value || null,
             extraordinario_fecha_fin: document.getElementById("evalExtraordinarioFechaFin").value || null,
             replicar_mismo_semestre: document.getElementById("evalReplicarMismoSemestre").checked ? 1 : 0
