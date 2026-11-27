@@ -674,16 +674,15 @@ function celdaEstadoCaptura(idGrupo, grupoActivo) {
     if (estadoCapturaGrupos === null) return '<span class="tw:text-xs tw:text-slate-400">…</span>';
     const e = estadoCapturaGrupos[idGrupo] || estadoCapturaGrupos[String(idGrupo)];
     const sufijo = grupoActivo ? '' : ' · grupo inactivo';
-    if (!e) return chip('', 'Sin información', grupoActivo ? '' : 'Grupo inactivo');
-    const etapas = (e.etapas || []).join(', ');
-    switch (e.estado) {
-        case 'abierta':  return chip('abierta', 'Abierta', `${etapas}${e.fin ? ` · hasta el ${ddmm(e.fin)}` : ''}${sufijo}`);
-        case 'bloqueada': return chip('cerrada', 'Bloqueada', `${e.motivo || etapas}${sufijo}`);
-        case 'proxima':  return chip('proxima', `Abre el ${ddmm(e.inicio)}`, `${etapas}${sufijo}`);
-        case 'deshabilitada': return chip('cerrada', 'Desactivada', `La administración la desactivó${sufijo}`);
-        case 'sin_fechas': return chip('', 'Sin fechas', `No se han configurado periodos${sufijo}`);
-        default:         return chip('cerrada', 'Cerrada', `Ningún periodo abierto${sufijo}`);
+    const etapas = e ? (e.etapas || []).join(', ') : '';
+    // Solo dos estados: Abierta (hoy se puede capturar) o Desactivada (cualquier otro caso)
+    if (e && e.estado === 'abierta') {
+        return chip('abierta', 'Abierta', `${etapas}${e.fin ? ` · hasta el ${ddmm(e.fin)}` : ''}${sufijo}`);
     }
+    let detalle = '';
+    if (e && e.estado === 'bloqueada') detalle = e.motivo || '';
+    else if (e && e.estado === 'proxima') detalle = `${etapas} abre el ${ddmm(e.inicio)}`;
+    return chip('', 'Desactivada', `${detalle}${grupoActivo ? '' : (detalle ? ' · ' : '') + 'Grupo inactivo'}`);
 }
 
 function renderTablaGrupos(grupos) {
