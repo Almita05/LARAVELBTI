@@ -217,7 +217,7 @@
                     </div>
                     ${pill(g)}
                 </div>
-                ${fechasCaptura(g.captura, g)}
+                ${abierta(g) && g.plantel !== 'BGNE' ? fechasCaptura(g.captura, g) : ''}
                 ${m
                     ? `<ul class="pd-materias">${filaMateria(g, m, 0)}</ul>`
                     : '<div class="pd-sin">Sin asignaturas en tu horario.</div>'}
