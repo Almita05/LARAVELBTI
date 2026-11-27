@@ -689,17 +689,16 @@ document.addEventListener("DOMContentLoaded", function() {
             const progreso = calcularProgresoPeriodo(grupo);
             const nivelNombre = grupo.nombre_nivel || (progreso.currentNivel ? (progreso.currentNivel <= 6 ? `${progreso.currentNivel}° Trimestre` : `${progreso.currentNivel - 6}° Semestre`) : (grupo.id_nivel_academico ? (grupo.id_nivel_academico <= 6 ? `${grupo.id_nivel_academico}° Trimestre` : `${grupo.id_nivel_academico - 6}° Semestre`) : '—'));
 
-            // Docente: las tres opciones a la vista (sin menú de tres puntos)
-            const btnDocente = 'width: auto; gap: 6px; padding: 0 10px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;';
+            // Docente: las tres opciones a la vista, solo con ícono; al pasar el cursor se indica qué hace cada una
             const menuOpcionesDocente = `
-                <a class="btn-ghost-icon" style="${btnDocente}" href="/grupos/${grupo.id}/alumnos" title="Alumnos del grupo">
-                    <i class="ti ti-users"></i><span>Alumnos</span>
+                <a class="btn-ghost-icon" href="/grupos/${grupo.id}/alumnos" title="Ver los alumnos del grupo" aria-label="Ver los alumnos del grupo">
+                    <i class="ti ti-users"></i>
                 </a>
-                <a class="btn-ghost-icon" style="${btnDocente}" href="${routeCapturaBGNE}" title="Captura de calificaciones">
-                    <i class="ti ti-notes"></i><span>Calificaciones</span>
+                <a class="btn-ghost-icon" href="${routeCapturaBGNE}" title="Capturar calificaciones" aria-label="Capturar calificaciones">
+                    <i class="ti ti-notes"></i>
                 </a>
-                <a class="btn-ghost-icon" style="${btnDocente}" href="/asistencias_alumnos/grupo/${grupo.id}" title="Pase de lista">
-                    <i class="ti ti-calendar-check"></i><span>Pase de lista</span>
+                <a class="btn-ghost-icon" href="/asistencias_alumnos/grupo/${grupo.id}" title="Pasar lista" aria-label="Pasar lista">
+                    <i class="ti ti-calendar-check"></i>
                 </a>
             `;
 
