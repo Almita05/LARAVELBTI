@@ -767,15 +767,8 @@ document.addEventListener("DOMContentLoaded", function() {
     let biometricFileProcessing = false;
     let uploadedFilename = "";
 
-    // Default mock teachers fallback if database call is empty
-    const fallbackTeachers = [
-        { id: 1, name: "Marco Antonio Rosas", area: "Matemáticas" },
-        { id: 2, name: "Juan Pérez Domínguez", area: "Física" },
-        { id: 3, name: "Margarita Vázquez Patricio", area: "Química & Biología" },
-        { id: 4, name: "Brenda Denisse Martínez", area: "Lectura & Redacción" },
-        { id: 5, name: "Cristian Enrique Rodríguez", area: "Computación" },
-        { id: 6, name: "Daniel Hernández Mora", area: "Idiomas" }
-    ];
+    // Mensaje del último error al cargar las horas (null si cargó bien)
+    let errorCarga = null;
 
     // DOM selectors
     const lblPeriodDates = document.getElementById("lblPeriodDates");
@@ -857,12 +850,18 @@ document.addEventListener("DOMContentLoaded", function() {
                 const urlBiometrico = `/asistencias?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
                 
                 const [resDatos, resBiometrico] = await Promise.all([
-                    fetch(urlDatos).then(r => r.ok ? r.json() : []),
+                    // Si fallan las horas de los docentes es un error, no "sin docentes"
+                    fetch(urlDatos).then(async r => {
+                        const data = await r.json().catch(() => null);
+                        if (!r.ok || !Array.isArray(data)) throw new Error((data && data.error) || `HTTP ${r.status}`);
+                        return data;
+                    }),
                     fetch(urlBiometrico).then(r => r.ok ? r.json() : [])
                 ]);
 
                 attendanceData = resDatos;
-                biometricLogs = resBiometrico;
+                biometricLogs = Array.isArray(resBiometrico) ? resBiometrico : [];
+                errorCarga = null;
 
                 // Si ya hay registros en la base de datos, quitamos el estado de procesando
                 if (biometricLogs && biometricLogs.length > 0) {
@@ -872,16 +871,12 @@ document.addEventListener("DOMContentLoaded", function() {
                         processingAlert.style.setProperty("display", "none", "important");
                     }
                 }
-                
-                // Si el backend no regresa registros de docentes o viene vacío, usamos simulación para propósitos de diseño/demostración
-                if (!attendanceData || attendanceData.length === 0) {
-                    attendanceData = getSimulatedData(startDay, endDay);
-                    biometricLogs = [];
-                }
             } catch(e) {
-                console.error("Error al obtener datos reales, usando simulación:", e);
-                attendanceData = getSimulatedData(startDay, endDay);
+                // Sin datos inventados: se avisa del error en la tabla
+                console.error("Error al obtener las horas de los docentes:", e);
+                attendanceData = [];
                 biometricLogs = [];
+                errorCarga = (e && e.message) || 'Error desconocido';
             }
         }
 
@@ -914,27 +909,29 @@ document.addEventListener("DOMContentLoaded", function() {
             return (teacher.docente || "").toLowerCase().includes(searchQuery);
         });
 
-        if (filteredData.length === 0) {
-            bodyHtml = `
+        const escTxt = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const filaAviso = (icono, texto) => `
                 <tr>
                     <td colspan="${(endDay - startDay + 1) * 2 + 1}" class="text-center py-5 text-secondary" style="font-size: 0.9rem; background: white;">
-                        <i class="fa-solid fa-user-slash d-block fs-4 mb-2 text-muted"></i>
-                        No se encontraron docentes con el nombre "${searchQuery}".
+                        <i class="fa-solid ${icono} d-block fs-4 mb-2 text-muted"></i>
+                        ${texto}
                     </td>
                 </tr>
             `;
+
+        if (errorCarga) {
+            bodyHtml = filaAviso('fa-triangle-exclamation',
+                `No se pudieron cargar las horas de los docentes. Recarga la página para intentarlo de nuevo.<br><small style="opacity:.7">${escTxt(errorCarga)}</small>`);
+        } else if (attendanceData.length === 0) {
+            bodyHtml = filaAviso('fa-user-slash', 'No hay docentes activos para mostrar.');
+        } else if (filteredData.length === 0) {
+            bodyHtml = filaAviso('fa-user-slash', `No se encontraron docentes con el nombre "${escTxt(searchQuery)}".`);
         } else {
             filteredData.forEach(teacher => {
             const teacherName = teacher.docente || "Docente";
             const initials = teacherName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
-            
-            // Generar departamento sutil según su nombre
-            let area = "Docencia";
-            if (teacherName.toLowerCase().includes("matematicas") || teacherName.toLowerCase().includes("rodriguez") || (teacher.id_docente && teacher.id_docente % 2 === 0)) area = "Matemáticas";
-            else if (teacherName.toLowerCase().includes("fisica") || teacherName.toLowerCase().includes("perez") || (teacher.id_docente && teacher.id_docente % 3 === 0)) area = "Física";
-            else if (teacherName.toLowerCase().includes("quimica") || teacherName.toLowerCase().includes("vazquez")) area = "Química";
-            else if (teacherName.toLowerCase().includes("ingles") || teacherName.toLowerCase().includes("mora") || teacherName.toLowerCase().includes("hernandez")) area = "Idiomas";
 
+            // Sin área bajo el nombre: no hay un dato real de área por docente
             bodyHtml += `
                 <tr>
                     <td>
@@ -942,7 +939,6 @@ document.addEventListener("DOMContentLoaded", function() {
                             <div class="teacher-avatar">${initials}</div>
                             <div class="teacher-info">
                                 <span class="teacher-name">${teacherName}</span>
-                                <span class="teacher-sub">${area}</span>
                             </div>
                         </div>
                     </td>
@@ -1025,52 +1021,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         gridBody.innerHTML = bodyHtml;
-    }
-
-    // Helper para generar simulación realista si el backend no cuenta con datos para este rango
-    function getSimulatedData(startDay, endDay) {
-        const monthNumStr = String(currentMonthIdx + 1).padStart(2, '0');
-        
-        return fallbackTeachers.map(ft => {
-            const dias = [];
-            for (let d = startDay; d <= endDay; d++) {
-                const currentDayDate = new Date(currentYear, currentMonthIdx, d);
-                const dayOfWeekIdx = currentDayDate.getDay();
-                
-                let tot = 0;
-                let real = 0;
-                
-                if (dayOfWeekIdx === 6) { // Sábado
-                    if (ft.id % 2 === 0) tot = 4.0;
-                    else if (ft.id % 3 === 0) tot = 3.0;
-                } else if (dayOfWeekIdx === 0) { // Domingo
-                    if (ft.id === 3 || ft.id === 5) tot = 4.0;
-                } else { // Lunes a Viernes
-                    if (ft.id % 3 === 0 && (dayOfWeekIdx === 1 || dayOfWeekIdx === 3)) tot = 4.5;
-                    else if (ft.id % 2 === 0 && (dayOfWeekIdx === 2 || dayOfWeekIdx === 4)) tot = 5.0;
-                    else if (ft.id % 5 === 0 && dayOfWeekIdx === 5) tot = 3.5;
-                }
-
-                if (tot > 0) {
-                    const randomFactor = (ft.id * 7 + d * 13) % 100;
-                    if (randomFactor > 90) real = 0.0;
-                    else if (randomFactor > 75) real = Math.max(1.0, tot - 0.5 - (randomFactor % 3) * 0.5);
-                    else real = tot;
-                }
-
-                dias.push({
-                    fecha: `${currentYear}-${monthNumStr}-${String(d).padStart(2, '0')}`,
-                    total: tot,
-                    real: real
-                });
-            }
-            
-            return {
-                id_docente: ft.id,
-                docente: ft.name,
-                dias: dias
-            };
-        });
     }
 
     // Navigation arrow handlers (Quincena switching)
