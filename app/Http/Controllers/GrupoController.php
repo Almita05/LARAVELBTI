@@ -38,7 +38,12 @@ class GrupoController extends Controller
     // Estado de la captura de cada grupo (abierta, próxima, cerrada…) para la tabla de Captura de calificaciones
     public function estadoCapturaGrupos()
     {
-        $response = Http::get(config('services.api.base_url') . '/permisos-captura/estado-grupos');
+        // El docente ve el estado según sus asignaturas (un grupo abierto puede estar bloqueado para él)
+        $params = [];
+        if (session('rol') === 'DOCENTE' && session()->has('id_docente')) {
+            $params['id_docente'] = session('id_docente');
+        }
+        $response = Http::get(config('services.api.base_url') . '/permisos-captura/estado-grupos', $params);
         if ($response->failed()) {
             return response()->json(['error' => 'No se pudo obtener el estado de la captura.'], 500);
         }

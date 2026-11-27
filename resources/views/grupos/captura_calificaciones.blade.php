@@ -678,6 +678,7 @@ function celdaEstadoCaptura(idGrupo, grupoActivo) {
     const etapas = (e.etapas || []).join(', ');
     switch (e.estado) {
         case 'abierta':  return chip('abierta', 'Abierta', `${etapas}${e.fin ? ` · hasta el ${ddmm(e.fin)}` : ''}${sufijo}`);
+        case 'bloqueada': return chip('cerrada', 'Bloqueada', `${e.motivo || etapas}${sufijo}`);
         case 'proxima':  return chip('proxima', `Abre el ${ddmm(e.inicio)}`, `${etapas}${sufijo}`);
         case 'deshabilitada': return chip('cerrada', 'Desactivada', `La administración la desactivó${sufijo}`);
         case 'sin_fechas': return chip('', 'Sin fechas', `No se han configurado periodos${sufijo}`);
