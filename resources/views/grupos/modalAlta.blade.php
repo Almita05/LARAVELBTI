@@ -193,6 +193,15 @@
                         </small>
                     </div>
 
+                    <!-- Tipo de horario (solo CCT Informática y Computación): define las modalidades disponibles -->
+                    <div class="col-md-6" id="divTipoHorarioInf" style="display: none;">
+                        <label class="form-label" for="selectTipoHorarioInf">Tipo de horario <span class="text-danger">*</span></label>
+                        <select id="selectTipoHorarioInf" class="form-select form-select-premium">
+                            <option value="ESCOLARIZADO">Escolarizado (lunes a viernes)</option>
+                            <option value="FIN_SEMANA">Fin de semana (sábado y domingo)</option>
+                        </select>
+                    </div>
+
                     <!-- Modalidad de Horario -->
                     <div class="col-md-6">
                         <label class="form-label">Modalidad de Horario <span class="text-danger">*</span></label>

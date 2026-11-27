@@ -175,6 +175,8 @@ function setFormDisabled(disabled) {
     if (form.id_nivel_academico) form.id_nivel_academico.disabled = disabled;
     if (form.modalidadHorario) form.modalidadHorario.disabled = disabled;
     if (form.statusGrupo) form.statusGrupo.disabled = disabled;
+    const tipoInf = document.getElementById('selectTipoHorarioInf');
+    if (tipoInf) tipoInf.disabled = disabled;
     const chk = document.getElementById('chkCalcularSemanas');
     if (chk) chk.disabled = disabled;
 }
@@ -230,12 +232,24 @@ function initializeModalEvents(initialNivelId = null, selectedModalidad = null) 
 
     if (!selectCt || !chkDiv || !chk || !inputInicio || !inputFin || !selectPeriodo || !selectNivel) return;
 
+    // Modalidades de fin de semana (mismos valores que BGNE: el resto del sistema reconoce SABADO/DOMINGO)
+    const esModalidadFinSemana = v => /S[AÁ]BADO|DOMINGO/i.test(v || '');
+    const divTipoInf = document.getElementById('divTipoHorarioInf');
+    const selectTipoInf = document.getElementById('selectTipoHorarioInf');
+
     // Función para cambiar las opciones de modalidad de horario según el CCT
-    function ajustarModalidadHorario(isBgne, valorSeleccionado = null) {
+    // (Informática y Computación: según el tipo de horario elegido, escolarizado o fin de semana)
+    function ajustarModalidadHorario(isBgne, valorSeleccionado = null, isInf = false) {
         const selectModalidad = form.modalidadHorario;
         if (!selectModalidad) return;
 
         const valActual = valorSeleccionado || selectModalidad.value;
+
+        if (divTipoInf) divTipoInf.style.display = isInf ? '' : 'none';
+        if (isInf && selectTipoInf && valorSeleccionado) {
+            selectTipoInf.value = esModalidadFinSemana(valorSeleccionado) ? 'FIN_SEMANA' : 'ESCOLARIZADO';
+        }
+        const finSemana = isBgne || (isInf && selectTipoInf && selectTipoInf.value === 'FIN_SEMANA');
 
         selectModalidad.innerHTML = '';
         const defaultOpt = document.createElement('option');
@@ -243,7 +257,7 @@ function initializeModalEvents(initialNivelId = null, selectedModalidad = null) 
         defaultOpt.textContent = 'Seleccione una modalidad';
         selectModalidad.appendChild(defaultOpt);
 
-        if (isBgne) {
+        if (finSemana) {
             const opcionesBgne = [
                 { value: 'SABADO MAÑANA', text: 'SÁBADO MAÑANA' },
                 { value: 'SABADO TARDE', text: 'SÁBADO TARDE' },
@@ -291,6 +305,7 @@ function initializeModalEvents(initialNivelId = null, selectedModalidad = null) 
         const ctNombre = (selectedOption.dataset.nombre || selectedOption.textContent || '').toUpperCase();
         const idPeriodo = selectedOption.dataset.idPeriodo;
         const isBgne = ctNombre.includes('BGNE') || String(selectCt.value) === '3';
+        const isInf = ctNombre.includes('INFORM') || String(selectCt.value) === '1';
 
         // Auto-seleccionar Tipo de Periodo según el Centro de Trabajo
         if (idPeriodo) {
@@ -323,7 +338,7 @@ function initializeModalEvents(initialNivelId = null, selectedModalidad = null) 
 
         // Cargar dinámicamente las modalidades del horario
         const valActual = selectedModalidad || (form.modalidadHorario ? form.modalidadHorario.value : null);
-        ajustarModalidadHorario(isBgne, valActual);
+        ajustarModalidadHorario(isBgne, valActual, isInf);
 
         // Cargar dinámicamente los niveles académicos del CCT (Semestre para BTI / Trimestre para BGNE)
         cargarNivelesAcademicos(selectCt.value, nivelIdToSelect);
@@ -355,6 +370,11 @@ function initializeModalEvents(initialNivelId = null, selectedModalidad = null) 
         checkCt(true, null);
         calculateEndDate();
     });
+
+    // Informática y Computación: al cambiar entre escolarizado y fin de semana se recargan las modalidades
+    if (selectTipoInf) {
+        selectTipoInf.onchange = () => ajustarModalidadHorario(false, null, true);
+    }
 
     selectPeriodo.addEventListener('change', () => {
         if (selectPeriodo.value && !selectCt.value) {

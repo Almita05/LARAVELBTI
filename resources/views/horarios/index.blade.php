@@ -1761,12 +1761,14 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
 
-        // Determinar días basados en la clave del grupo (BGNE -> Sábado, Domingo; BTI y escolarizado -> Lunes a Viernes)
+        // Determinar días: BGNE y grupos de fin de semana (p. ej. Informática y Computación con modalidad
+        // SÁBADO/DOMINGO) -> Sábado y Domingo; BTI y escolarizados -> Lunes a Viernes
         const isBgne = group.clave.toUpperCase().startsWith("BGNE");
-        dayNames = isBgne ? ["Sábado", "Domingo"] : ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+        const esFinSemana = isBgne || /S[AÁ]BADO|DOMINGO/i.test(group.modalidadHorario || "");
+        dayNames = esFinSemana ? ["Sábado", "Domingo"] : ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
-        // Configurar bloques de horario basados en si es BGNE o BTI/Escolarizado
-        if (isBgne) {
+        // Configurar bloques de horario: fin de semana (09:00 a 19:00) o escolarizado (07:30 a 13:50)
+        if (esFinSemana) {
             timeBlocks = [
                 "09:00 - 10:00",
                 "10:00 - 11:00",
