@@ -332,19 +332,6 @@
     color: #334155;
 }
 
-.hour-cell.tot-val.clickable {
-    cursor: pointer;
-    color: rgb(38, 104, 123);
-    text-decoration: underline dotted;
-    transition: all 0.2s ease;
-    display: inline-block;
-}
-
-.hour-cell.tot-val.clickable:hover {
-    color: rgb(28, 79, 94);
-    transform: scale(1.08);
-}
-
 .hour-cell.real-val {
     padding: 4px;
     border-radius: 0;
@@ -384,8 +371,10 @@
 .asistencias-table td.dia-cell { padding: 5px 3px; line-height: 1.2; }
 .asistencias-table td.dia-cell .hour-cell { display: block; }
 .dia-cell .real-val { font-size: 0.82rem; font-weight: 700; color: #334155; padding: 1px 2px; }
-.dia-cell .tot-val.clickable { font-size: 0.68rem; font-weight: 500; color: #64748b; text-decoration: none; margin-top: 1px; }
-.dia-cell .tot-val.clickable:hover { color: rgb(38, 104, 123); text-decoration: underline; transform: none; }
+.dia-cell .tot-val { font-size: 0.68rem; font-weight: 500; color: #64748b; margin-top: 1px; }
+.asistencias-table td.dia-cell.clickable { cursor: pointer; }
+.asistencias-table td.dia-cell.clickable:hover { outline: 2px solid rgba(38, 104, 123, 0.45); outline-offset: -2px; }
+.asistencias-table td.dia-cell.clickable:focus-visible { outline: 2px solid rgb(38, 104, 123); outline-offset: -2px; }
 .dia-cell .real-pendiente { color: #cbd5e1; font-weight: 400; }
 .asistencias-table td.dia-cell.status-completo { background-color: rgba(16, 185, 129, 0.08); box-shadow: inset 0 -2px 0 #10b981; }
 .asistencias-table td.dia-cell.status-completo .real-val { color: #047857; }
@@ -405,16 +394,6 @@
 .quincena-cell .q-inc { font-size: 0.7rem; color: #94a3b8; }
 .quincena-cell .q-inc.con { color: #b45309; font-weight: 600; }
 
-/* REAL con biométrico: clic para ver la llegada a cada clase */
-.hour-cell.real-val.clickable {
-    cursor: pointer;
-    display: inline-block;
-}
-.hour-cell.real-val.clickable:hover,
-.hour-cell.real-val.clickable:focus-visible {
-    outline: 1px solid currentColor;
-    outline-offset: 1px;
-}
 
 /* Detalle de asistencia del día */
 .asis-marcajes { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 12px; font-size: 0.78rem; color: #64748b; }
@@ -748,62 +727,13 @@
     </div>
 </div>
 
-<!-- Detailed Schedule Modal -->
-<div class="modal-overlay" id="detailModal">
-    <div class="modal-content-card" style="max-width: 650px;">
-        <div class="modal-header-custom">
-            <h5 class="modal-title">
-                <i class="ti ti-calendar me-2" style="color: #26687B;"></i>
-                Detalle de Horario
-            </h5>
-            <button class="btn-close-modal" id="btnCloseDetailModal">
-                <i class="ti ti-x"></i>
-            </button>
-        </div>
-        <div class="modal-body-custom" style="padding: 20px;">
-            <!-- Teacher name and Date header info -->
-            <div class="d-flex align-items-center mb-3" style="gap: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
-                <div class="teacher-avatar" id="detailTeacherAvatar">MV</div>
-                <div>
-                    <h6 class="mb-0 font-weight-bold" id="detailTeacherName" style="color: #1e293b; font-size: 1rem;">Margarita Vazquez Patricio</h6>
-                    <span class="text-secondary" id="detailDateLabel" style="font-size: 0.8rem;">Sábado, 15 Ago 2026</span>
-                </div>
-            </div>
-
-            <!-- Table of classes -->
-            <div class="table-responsive-custom" style="border-radius: 0; border: 1px solid #e2e8f0; max-height: 300px; overflow-y: auto;">
-                <table class="asistencias-table mb-0" style="width: 100%;">
-                    <thead>
-                        <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                            <th class="p-2" style="font-size: 0.8rem; font-weight: 700; color: #475569;">Grupo</th>
-                            <th class="p-2" style="font-size: 0.8rem; font-weight: 700; color: #475569;">Materia</th>
-                            <th class="p-2" style="font-size: 0.8rem; font-weight: 700; color: #475569;">Aula</th>
-                            <th class="p-2" style="font-size: 0.8rem; font-weight: 700; color: #475569; text-align: center;">Horario</th>
-                            <th class="p-2" style="font-size: 0.8rem; font-weight: 700; color: #475569; text-align: center;">Horas</th>
-                        </tr>
-                    </thead>
-                    <tbody id="detailTableBody">
-                        <!-- Dynamic list of classes -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="modal-footer-custom" style="background: #f8fafc; padding: 15px 20px; border-top: 1px solid #e2e8f0; justify-content: space-between; align-items: center; display: flex;">
-            <div style="font-size: 0.85rem; color: #64748b;">
-                Suma de horas del día: <strong class="text-dark" id="detailSumLabel"></strong>
-            </div>
-            <button class="btn-action-teal" id="btnCloseDetailModalBtn">Aceptar</button>
-        </div>
-    </div>
-</div>
-
-<!-- Asistencia del día: llegada y salida en cada clase -->
+<!-- Detalle del día: horario y llegada/salida en cada clase -->
 <div class="modal-overlay" id="asisModal" role="dialog" aria-modal="true" aria-labelledby="asisModalTitle">
-    <div class="modal-content-card" style="max-width: 720px;">
+    <div class="modal-content-card" style="max-width: 820px;">
         <div class="modal-header-custom">
             <h5 class="modal-title" id="asisModalTitle">
                 <i class="ti ti-fingerprint me-2" style="color: #26687B;"></i>
-                Asistencia del día
+                Detalle del día
             </h5>
             <button class="btn-close-modal" id="btnCloseAsisModal" aria-label="Cerrar">
                 <i class="ti ti-x"></i>
@@ -1051,16 +981,11 @@ document.addEventListener("DOMContentLoaded", function() {
                         realHtml = `<span class="spinner-border spinner-border-sm text-secondary" style="width: 11px; height: 11px;" role="status"></span>`;
                     }
 
-                    const datos = `data-docente-id="${teacherId}" data-docente-name="${nombreAttr}" data-fecha="${dateString}"`;
-                    const tooltip = observations ? `title="${escTxt(observations)}"` : '';
-                    // REAL: clic para ver la llegada a cada clase (solo con registro del biométrico)
-                    const real = bioRecord
-                        ? `<span class="hour-cell real-val clickable" role="button" tabindex="0" ${datos} ${tooltip}>${realHtml}</span>`
-                        : `<span class="hour-cell real-val" ${tooltip}>${realHtml}</span>`;
-                    // Programadas: clic para ver el horario del día
-                    const tot = `<span class="hour-cell tot-val clickable" role="button" tabindex="0" ${datos} data-total="${totHours}" title="Ver horario del día">de ${formatDecimalHours(totHours)}</span>`;
-
-                    celdasDias += `<td class="dia-cell ${finSemana} ${estadoClass}">${real}${tot}</td>`;
+                    // Toda la celda abre el detalle del día (horario + llegada y salida en cada clase)
+                    const titulo = escTxt(observations ? `${observations} · Clic para ver el detalle` : 'Clic para ver el detalle del día');
+                    celdasDias += `<td class="dia-cell clickable ${finSemana} ${estadoClass}" role="button" tabindex="0" title="${titulo}"
+                        data-docente-id="${teacherId}" data-docente-name="${nombreAttr}" data-fecha="${dateString}" data-importado="${hayBiometrico ? 1 : 0}">
+                        <span class="hour-cell real-val">${realHtml}</span><span class="hour-cell tot-val">de ${formatDecimalHours(totHours)}</span></td>`;
                 }
 
                 // Celda de la quincena
@@ -1447,177 +1372,25 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
  
-    // Detail Modal Element bindings
-    const detailModal = document.getElementById("detailModal");
-    const btnCloseDetailModal = document.getElementById("btnCloseDetailModal");
-    const btnCloseDetailModalBtn = document.getElementById("btnCloseDetailModalBtn");
-    const detailTeacherAvatar = document.getElementById("detailTeacherAvatar");
-    const detailTeacherName = document.getElementById("detailTeacherName");
-    const detailDateLabel = document.getElementById("detailDateLabel");
-    const detailTableBody = document.getElementById("detailTableBody");
-    const detailSumLabel = document.getElementById("detailSumLabel");
-
-    // Click handler for grid cells via delegation
-    gridBody.addEventListener("click", function(e) {
-        const clickableCell = e.target.closest(".hour-cell.tot-val.clickable");
-        if (clickableCell) {
-            const docenteId = clickableCell.getAttribute("data-docente-id");
-            const docenteName = clickableCell.getAttribute("data-docente-name");
-            const fecha = clickableCell.getAttribute("data-fecha");
-            const totalHours = clickableCell.getAttribute("data-total");
-            openDetailModal(docenteId, docenteName, fecha, totalHours);
-        }
-    });
-
-    async function openDetailModal(docenteId, name, fechaStr, totalHours) {
-        // Initials for avatar
-        const initials = name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
-        detailTeacherAvatar.textContent = initials;
-        detailTeacherName.textContent = name;
-
-        // Human readable date string formatting
-        try {
-            const dateObj = new Date(fechaStr + 'T00:00:00');
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            let formattedDate = dateObj.toLocaleDateString('es-MX', options);
-            formattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
-            detailDateLabel.textContent = formattedDate;
-        } catch(e) {
-            detailDateLabel.textContent = fechaStr;
-        }
-
-        detailSumLabel.textContent = `${formatDecimalHours(parseFloat(totalHours))} h`;
-
-        // Render Loading inside modal table body
-        detailTableBody.innerHTML = `
-            <tr>
-                <td colspan="5" class="text-center py-4" style="background: white;">
-                    <div class="spinner-border text-secondary spinner-border-sm me-2" role="status"></div>
-                    <span class="text-secondary" style="font-size: 0.85rem;">Cargando desglose de horario...</span>
-                </td>
-            </tr>
-        `;
-
-        detailModal.classList.add("active");
-
-        try {
-            const url = `/asistencias_docentes/detalle?fecha=${fechaStr}&id_docente=${docenteId}`;
-            const response = await fetch(url);
-            if (!response.ok) throw new Error("Error en la respuesta del servidor");
-            const details = await response.json();
-
-            if (!details || details.length === 0) {
-                detailTableBody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="text-center py-4 text-secondary" style="font-size: 0.85rem; background: white;">
-                            No se encontraron detalles de clases programadas para esta fecha.
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            // Group by group + time slot + classroom to detect joint classes
-            const groupedDetails = {};
-            let sumCalculatedHours = 0;
-
-            details.forEach(item => {
-                const key = `${item.grupo}_${item.hora_inicio}_${item.hora_fin}_${item.aula || 'N/A'}`;
-                const isBti = (item.grupo || "").toUpperCase().startsWith("BTI");
-                
-                let dur = parseFloat(item.duracion || 0);
-                // En BTI cada clase/módulo (ej. 50 min) se considera como 1 hora completa (1.0 hr)
-                if (isBti && dur >= 0.7 && dur <= 1.05) {
-                    dur = 1.0;
-                }
-
-                if (!groupedDetails[key]) {
-                    groupedDetails[key] = {
-                        grupo: item.grupo,
-                        aula: item.aula || "N/A",
-                        hora_inicio: item.hora_inicio,
-                        hora_fin: item.hora_fin,
-                        duracion: dur,
-                        materias: []
-                    };
-                    sumCalculatedHours += dur;
-                }
-                groupedDetails[key].materias.push(item.materia);
-            });
-
-            // Actualizar la suma total del día con las horas calculadas
-            detailSumLabel.textContent = `${formatDecimalHours(sumCalculatedHours)} h`;
-
-            let bodyHtml = '';
-            Object.values(groupedDetails).forEach(item => {
-                const materiasHtml = item.materias.map(m => `
-                    <div style="font-size: 0.82rem; color: #334155; font-weight: 500; padding: 2px 0;">
-                        ${m}
-                    </div>
-                `).join('<div style="border-top: 1px solid #f1f5f9; margin: 2px 0;"></div>');
-
-                const grupo = item.grupo || "Grupo";
-                const aula = item.aula || "N/A";
-                const formatTime = (t) => t ? t.substring(0, 5) : "";
-                const horaStr = `${formatTime(item.hora_inicio)} - ${formatTime(item.hora_fin)}`;
-                const duration = formatDecimalHours(parseFloat(item.duracion || 0));
-
-                bodyHtml += `
-                    <tr style="border-bottom: 1px solid #f1f5f9; background: white;">
-                        <td class="p-2 align-middle text-start" style="font-size: 0.82rem; font-weight: 600; color: rgb(38, 104, 123);">${grupo}</td>
-                        <td class="p-2 align-middle text-start" style="padding-top: 8px !important; padding-bottom: 8px !important;">
-                            ${materiasHtml}
-                        </td>
-                        <td class="p-2 align-middle text-start" style="font-size: 0.82rem; color: #64748b;">${aula}</td>
-                        <td class="p-2 align-middle text-center" style="font-size: 0.82rem; color: #475569; font-family: monospace;">${horaStr}</td>
-                        <td class="p-2 align-middle text-center font-weight-bold" style="font-size: 0.82rem; color: #1e293b;">${duration} h</td>
-                    </tr>
-                `;
-            });
-            detailTableBody.innerHTML = bodyHtml;
-
-        } catch(e) {
-            console.error("Error fetching detailed schedules:", e);
-            detailTableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="text-center py-4 text-danger" style="font-size: 0.85rem; background: white;">
-                        <i class="fa-solid fa-triangle-exclamation me-1"></i>
-                        Error al cargar la información. Inténtalo de nuevo.
-                    </td>
-                </tr>
-            `;
-        }
-    }
-
-    function closeDetailModal() {
-        detailModal.classList.remove("active");
-    }
-
-    btnCloseDetailModal.addEventListener("click", closeDetailModal);
-    btnCloseDetailModalBtn.addEventListener("click", closeDetailModal);
-    detailModal.addEventListener("click", function(e) {
-        if (e.target === detailModal) {
-            closeDetailModal();
-        }
-    });
-
     // ---------------------------------------------------------------
-    // Asistencia del día: clic en el REAL → llegada y salida en cada clase
+    // Detalle del día: clic en la celda del día → clases con su horario y, si ya se importó el
+    // biométrico, a qué hora llegó y salió de cada una
     // ---------------------------------------------------------------
     const asisModal = document.getElementById("asisModal");
     const asisContenido = document.getElementById("asisContenido");
     const asisResumen = document.getElementById("asisResumen");
     const escA = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-    function abrirAsistencia(celda) {
+    function abrirDia(celda) {
         const nombre = celda.getAttribute("data-docente-name") || '';
         const fecha = celda.getAttribute("data-fecha");
+        const importado = celda.getAttribute("data-importado") === "1";
         document.getElementById("asisAvatar").textContent = nombre.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
         document.getElementById("asisNombre").textContent = nombre;
         const f = new Date(fecha + 'T00:00:00').toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         document.getElementById("asisFecha").textContent = f.charAt(0).toUpperCase() + f.slice(1);
         asisResumen.textContent = '';
-        asisContenido.innerHTML = `<div class="text-center py-4"><div class="spinner-border text-secondary spinner-border-sm me-2" role="status"></div><span class="text-secondary" style="font-size: 0.85rem;">Cargando asistencia…</span></div>`;
+        asisContenido.innerHTML = `<div class="text-center py-4"><div class="spinner-border text-secondary spinner-border-sm me-2" role="status"></div><span class="text-secondary" style="font-size: 0.85rem;">Cargando…</span></div>`;
         asisModal.classList.add("active");
 
         fetch(`/asistencias_docentes/asistencia_dia?fecha=${encodeURIComponent(fecha)}&id_docente=${encodeURIComponent(celda.getAttribute("data-docente-id"))}`,
@@ -1627,72 +1400,87 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (!r.ok || !d || !Array.isArray(d.clases)) throw new Error((d && d.error) || `HTTP ${r.status}`);
                 return d;
             })
-            .then(pintarAsistencia)
+            .then(d => pintarDia(d, importado))
             .catch(err => {
-                asisContenido.innerHTML = `<div class="text-center py-4 text-secondary" style="font-size: 0.85rem;">No se pudo cargar la asistencia del día.<br><small style="opacity:.7">${escA(err.message)}</small></div>`;
+                asisContenido.innerHTML = `<div class="text-center py-4 text-secondary" style="font-size: 0.85rem;">No se pudo cargar el detalle del día.<br><small style="opacity:.7">${escA(err.message)}</small></div>`;
             });
     }
 
-    function pintarAsistencia(d) {
+    function pintarDia(d, importado) {
         const reg = d.registro;
+        // Llegada y salida solo cuando la quincena ya tiene biométrico importado
+        const conAsistencia = importado && d.tiene_marcajes;
         let html = '';
-        if (!d.tiene_marcajes) {
+        if (!importado) {
+            html += `<div class="asis-aviso"><i class="ti ti-info-circle me-1"></i>El biométrico de esta quincena aún no se importa; solo se muestra el horario.</div>`;
+        } else if (d.sin_registro) {
+            html += `<div class="asis-aviso"><i class="ti ti-info-circle me-1"></i>No tiene marcajes en el biométrico este día.</div>`;
+        } else if (!d.tiene_marcajes) {
             html += `<div class="asis-aviso"><i class="ti ti-info-circle me-1"></i>Este día se importó antes de guardar los marcajes por hora. Vuelve a importar el biométrico de esta quincena para ver a qué hora llegó a cada clase.</div>`;
         } else {
-            html += `<div class="asis-marcajes"><span>Marcajes del día:</span>${d.marcajes.map(m => `<span class="chip">${escA(m)}</span>`).join('')}</div>`;
+            html += `<div class="asis-marcajes"><span>Marcajes del día:</span>${d.marcajes.length
+                ? d.marcajes.map(m => `<span class="chip">${escA(m)}</span>`).join('')
+                : '<span class="empty-placeholder">ninguno</span>'}</div>`;
         }
 
         const tono = e => !e ? '' : (e === 'A tiempo' ? 'ok' : (e === 'Sin marcaje' ? 'falta' : 'warn'));
-        const filas = d.clases.map(c => `
-            <tr style="border-bottom: 1px solid #f1f5f9; background: white;">
-                <td class="p-2 align-middle" style="font-size: 0.82rem;">
-                    <div style="font-weight: 600; color: rgb(38, 104, 123);">${escA(c.grupo)}</div>
-                    <div style="color: #334155;">${c.materias.map(escA).join('<br>')}</div>
-                </td>
-                <td class="p-2 align-middle text-center" style="font-size: 0.82rem; color: #475569; font-family: monospace; white-space: nowrap;">${escA(c.hora_inicio)} - ${escA(c.hora_fin)}</td>
-                <td class="p-2 align-middle text-center" style="font-size: 0.82rem; font-family: monospace; font-weight: 600; color: #1e293b;">${c.llegada ? escA(c.llegada) : '<span class="empty-placeholder">—</span>'}</td>
-                <td class="p-2 align-middle text-center" style="font-size: 0.82rem; font-family: monospace; font-weight: 600; color: #1e293b;">${c.salida ? escA(c.salida) : '<span class="empty-placeholder">—</span>'}</td>
-                <td class="p-2 align-middle" style="font-size: 0.82rem;">${c.estado ? `<span class="asis-estado ${tono(c.estado)}">${escA(c.estado)}</span>` : '<span class="empty-placeholder">—</span>'}</td>
-            </tr>`).join('');
+        const vacio = '<span class="empty-placeholder">—</span>';
+        const td = (contenido, extra = '') => `<td class="p-2 align-middle ${extra}" style="font-size: 0.82rem;">${contenido}</td>`;
+        let programadas = 0;
+        const filas = d.clases.map(c => {
+            programadas += parseFloat(c.horas || 0);
+            return `<tr style="border-bottom: 1px solid #f1f5f9; background: white;">
+                ${td(`<div style="font-weight: 600; color: rgb(38, 104, 123);">${escA(c.grupo)}</div><div style="color: #334155;">${c.materias.map(escA).join('<br>')}</div>`, 'text-start')}
+                ${td(escA(c.aula || '—'), 'text-start text-secondary')}
+                ${td(`<span style="font-family: monospace; white-space: nowrap; color: #475569;">${escA(c.hora_inicio)} - ${escA(c.hora_fin)}</span>`, 'text-center')}
+                ${td(`<span style="font-weight: 600;">${escA(formatDecimalHours(parseFloat(c.horas || 0)))}</span>`, 'text-center')}
+                ${conAsistencia ? td(`<span style="font-family: monospace; font-weight: 600;">${c.llegada ? escA(c.llegada) : vacio}</span>`, 'text-center') : ''}
+                ${conAsistencia ? td(`<span style="font-family: monospace; font-weight: 600;">${c.salida ? escA(c.salida) : vacio}</span>`, 'text-center') : ''}
+                ${conAsistencia ? td(c.estado ? `<span class="asis-estado ${tono(c.estado)}">${escA(c.estado)}</span>` : vacio, 'text-start') : ''}
+            </tr>`;
+        }).join('');
 
-        const th = 'class="p-2" style="font-size: 0.8rem; font-weight: 700; color: #475569;"';
+        const th = (t, centro) => `<th class="p-2" style="font-size: 0.78rem; font-weight: 700; color: #475569; ${centro ? 'text-align:center' : 'text-align:left'}">${t}</th>`;
         html += d.clases.length
-            ? `<div class="table-responsive-custom" style="border: 1px solid #e2e8f0; max-height: 340px; overflow-y: auto;">
+            ? `<div class="table-responsive-custom" style="border: 1px solid #e2e8f0; max-height: 360px; overflow-y: auto;">
                 <table class="asistencias-table mb-0" style="width: 100%;">
                     <thead><tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                        <th ${th}>Grupo y materia</th><th ${th} style="text-align:center">Horario</th>
-                        <th ${th} style="text-align:center">Llegó</th><th ${th} style="text-align:center">Salió</th><th ${th}>Estado</th>
+                        ${th('Grupo y materia')}${th('Aula')}${th('Horario', true)}${th('Horas', true)}
+                        ${conAsistencia ? th('Llegó', true) + th('Salió', true) + th('Estado') : ''}
                     </tr></thead>
                     <tbody>${filas}</tbody>
                 </table></div>`
             : `<div class="text-center py-4 text-secondary" style="font-size: 0.85rem;">No tiene clases programadas este día.</div>`;
 
-        if (reg && reg.observaciones) {
+        if (importado && reg && reg.observaciones) {
             html += `<div style="font-size: 0.8rem; color: #64748b; margin-top: 10px;"><strong>Observación:</strong> ${escA(reg.observaciones)}</div>`;
         }
         asisContenido.innerHTML = html;
-        asisResumen.innerHTML = reg
-            ? `Horas reales: <strong class="text-dark">${escA(formatDecimalHours(parseFloat(reg.horas_trabajadas || 0)))}</strong> · ${escA(reg.estado || '')}`
-            : '';
+
+        let resumen = `Programadas: <strong class="text-dark">${escA(formatDecimalHours(programadas))}</strong>`;
+        if (importado) {
+            resumen += ` · Reales: <strong class="text-dark">${escA(formatDecimalHours(parseFloat((reg && reg.horas_trabajadas) || 0)))}</strong>`;
+            resumen += ` · ${escA(reg ? (reg.estado || '') : 'Falta')}`;
+        }
+        asisResumen.innerHTML = resumen;
     }
 
-    function cerrarAsistencia() { asisModal.classList.remove("active"); }
-    document.getElementById("btnCloseAsisModal").addEventListener("click", cerrarAsistencia);
-    document.getElementById("btnAceptarAsisModal").addEventListener("click", cerrarAsistencia);
-    asisModal.addEventListener("click", e => { if (e.target === asisModal) cerrarAsistencia(); });
-    document.addEventListener("keydown", e => { if (e.key === "Escape" && asisModal.classList.contains("active")) cerrarAsistencia(); });
+    function cerrarDia() { asisModal.classList.remove("active"); }
+    document.getElementById("btnCloseAsisModal").addEventListener("click", cerrarDia);
+    document.getElementById("btnAceptarAsisModal").addEventListener("click", cerrarDia);
+    asisModal.addEventListener("click", e => { if (e.target === asisModal) cerrarDia(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape" && asisModal.classList.contains("active")) cerrarDia(); });
 
     gridBody.addEventListener("click", function(e) {
-        const celda = e.target.closest(".hour-cell.real-val.clickable");
-        if (celda) abrirAsistencia(celda);
+        const celda = e.target.closest("td.dia-cell.clickable");
+        if (celda) abrirDia(celda);
     });
     gridBody.addEventListener("keydown", function(e) {
         if (e.key !== "Enter" && e.key !== " ") return;
-        const real = e.target.closest(".hour-cell.real-val.clickable");
-        const tot = e.target.closest(".hour-cell.tot-val.clickable");
-        if (real) { e.preventDefault(); abrirAsistencia(real); }
-        else if (tot) { e.preventDefault(); tot.click(); }
+        const celda = e.target.closest("td.dia-cell.clickable");
+        if (celda) { e.preventDefault(); abrirDia(celda); }
     });
 });
 </script>
+
 @endsection
