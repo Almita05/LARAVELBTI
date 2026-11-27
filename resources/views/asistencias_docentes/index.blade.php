@@ -374,6 +374,26 @@
     border: 1px solid rgba(239, 68, 68, 0.15);
 }
 
+/* REAL con biométrico: clic para ver la llegada a cada clase */
+.hour-cell.real-val.clickable {
+    cursor: pointer;
+    display: inline-block;
+}
+.hour-cell.real-val.clickable:hover,
+.hour-cell.real-val.clickable:focus-visible {
+    outline: 1px solid currentColor;
+    outline-offset: 1px;
+}
+
+/* Detalle de asistencia del día */
+.asis-marcajes { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 12px; font-size: 0.78rem; color: #64748b; }
+.asis-marcajes .chip { font-family: monospace; font-size: 0.78rem; padding: 2px 6px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #334155; }
+.asis-estado { font-size: 0.75rem; font-weight: 600; padding: 2px 6px; display: inline-block; }
+.asis-estado.ok { background: rgba(16, 185, 129, 0.08); color: #059669; }
+.asis-estado.warn { background: rgba(245, 158, 11, 0.1); color: #b45309; }
+.asis-estado.falta { background: rgba(239, 68, 68, 0.08); color: #dc2626; }
+.asis-aviso { font-size: 0.8rem; color: #78350f; background: #fef3c7; border: 1px solid #fcd34d; padding: 8px 10px; margin-bottom: 12px; }
+
 .empty-placeholder {
     color: #cbd5e1;
     font-weight: normal;
@@ -746,6 +766,35 @@
     </div>
 </div>
 
+<!-- Asistencia del día: llegada y salida en cada clase -->
+<div class="modal-overlay" id="asisModal" role="dialog" aria-modal="true" aria-labelledby="asisModalTitle">
+    <div class="modal-content-card" style="max-width: 720px;">
+        <div class="modal-header-custom">
+            <h5 class="modal-title" id="asisModalTitle">
+                <i class="ti ti-fingerprint me-2" style="color: #26687B;"></i>
+                Asistencia del día
+            </h5>
+            <button class="btn-close-modal" id="btnCloseAsisModal" aria-label="Cerrar">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <div class="modal-body-custom" style="padding: 20px;">
+            <div class="d-flex align-items-center mb-3" style="gap: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
+                <div class="teacher-avatar" id="asisAvatar"></div>
+                <div>
+                    <h6 class="mb-0 font-weight-bold" id="asisNombre" style="color: #1e293b; font-size: 1rem;"></h6>
+                    <span class="text-secondary" id="asisFecha" style="font-size: 0.8rem;"></span>
+                </div>
+            </div>
+            <div id="asisContenido"></div>
+        </div>
+        <div class="modal-footer-custom" style="background: #f8fafc; padding: 15px 20px; border-top: 1px solid #e2e8f0; justify-content: space-between; align-items: center; display: flex;">
+            <div style="font-size: 0.85rem; color: #64748b;" id="asisResumen"></div>
+            <button class="btn-action-teal" id="btnAceptarAsisModal">Aceptar</button>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     // Current date state: starts in August 1, 2026
@@ -1008,11 +1057,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
                 
                 const realText = realHoursText !== '-' ? realHoursText : '<span class="empty-placeholder">-</span>';
-                const tooltipAttr = observations ? `title="${observations}" style="cursor: help;"` : '';
+                const tooltipAttr = observations ? `title="${observations.replace(/"/g, '&quot;')}"` : '';
+                // Con registro del biométrico: clic para ver a qué hora llegó y salió en cada clase
+                const esRealClicable = totHours > 0 && !!bioRecord;
+                const realAttrs = esRealClicable
+                    ? `role="button" tabindex="0" data-docente-id="${teacherId}" data-docente-name="${teacherName}" data-fecha="${dateString}"`
+                    : '';
 
                 bodyHtml += `
                     <td>${totCellHtml}</td>
-                    <td><span class="hour-cell real-val ${realClass}" ${tooltipAttr}>${realText}</span></td>
+                    <td><span class="hour-cell real-val ${realClass} ${esRealClicable ? 'clickable' : ''}" ${realAttrs} ${tooltipAttr}>${realText}</span></td>
                 `;
             }
 
@@ -1526,6 +1580,96 @@ document.addEventListener("DOMContentLoaded", function() {
         if (e.target === detailModal) {
             closeDetailModal();
         }
+    });
+
+    // ---------------------------------------------------------------
+    // Asistencia del día: clic en el REAL → llegada y salida en cada clase
+    // ---------------------------------------------------------------
+    const asisModal = document.getElementById("asisModal");
+    const asisContenido = document.getElementById("asisContenido");
+    const asisResumen = document.getElementById("asisResumen");
+    const escA = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    function abrirAsistencia(celda) {
+        const nombre = celda.getAttribute("data-docente-name") || '';
+        const fecha = celda.getAttribute("data-fecha");
+        document.getElementById("asisAvatar").textContent = nombre.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+        document.getElementById("asisNombre").textContent = nombre;
+        const f = new Date(fecha + 'T00:00:00').toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById("asisFecha").textContent = f.charAt(0).toUpperCase() + f.slice(1);
+        asisResumen.textContent = '';
+        asisContenido.innerHTML = `<div class="text-center py-4"><div class="spinner-border text-secondary spinner-border-sm me-2" role="status"></div><span class="text-secondary" style="font-size: 0.85rem;">Cargando asistencia…</span></div>`;
+        asisModal.classList.add("active");
+
+        fetch(`/asistencias_docentes/asistencia_dia?fecha=${encodeURIComponent(fecha)}&id_docente=${encodeURIComponent(celda.getAttribute("data-docente-id"))}`,
+              { headers: { 'Accept': 'application/json' } })
+            .then(async r => {
+                const d = await r.json().catch(() => null);
+                if (!r.ok || !d || !Array.isArray(d.clases)) throw new Error((d && d.error) || `HTTP ${r.status}`);
+                return d;
+            })
+            .then(pintarAsistencia)
+            .catch(err => {
+                asisContenido.innerHTML = `<div class="text-center py-4 text-secondary" style="font-size: 0.85rem;">No se pudo cargar la asistencia del día.<br><small style="opacity:.7">${escA(err.message)}</small></div>`;
+            });
+    }
+
+    function pintarAsistencia(d) {
+        const reg = d.registro;
+        let html = '';
+        if (!d.tiene_marcajes) {
+            html += `<div class="asis-aviso"><i class="ti ti-info-circle me-1"></i>Este día se importó antes de guardar los marcajes por hora. Vuelve a importar el biométrico de esta quincena para ver a qué hora llegó a cada clase.</div>`;
+        } else {
+            html += `<div class="asis-marcajes"><span>Marcajes del día:</span>${d.marcajes.map(m => `<span class="chip">${escA(m)}</span>`).join('')}</div>`;
+        }
+
+        const tono = e => !e ? '' : (e === 'A tiempo' ? 'ok' : (e === 'Sin marcaje' ? 'falta' : 'warn'));
+        const filas = d.clases.map(c => `
+            <tr style="border-bottom: 1px solid #f1f5f9; background: white;">
+                <td class="p-2 align-middle" style="font-size: 0.82rem;">
+                    <div style="font-weight: 600; color: rgb(38, 104, 123);">${escA(c.grupo)}</div>
+                    <div style="color: #334155;">${c.materias.map(escA).join('<br>')}</div>
+                </td>
+                <td class="p-2 align-middle text-center" style="font-size: 0.82rem; color: #475569; font-family: monospace; white-space: nowrap;">${escA(c.hora_inicio)} - ${escA(c.hora_fin)}</td>
+                <td class="p-2 align-middle text-center" style="font-size: 0.82rem; font-family: monospace; font-weight: 600; color: #1e293b;">${c.llegada ? escA(c.llegada) : '<span class="empty-placeholder">—</span>'}</td>
+                <td class="p-2 align-middle text-center" style="font-size: 0.82rem; font-family: monospace; font-weight: 600; color: #1e293b;">${c.salida ? escA(c.salida) : '<span class="empty-placeholder">—</span>'}</td>
+                <td class="p-2 align-middle" style="font-size: 0.82rem;">${c.estado ? `<span class="asis-estado ${tono(c.estado)}">${escA(c.estado)}</span>` : '<span class="empty-placeholder">—</span>'}</td>
+            </tr>`).join('');
+
+        const th = 'class="p-2" style="font-size: 0.8rem; font-weight: 700; color: #475569;"';
+        html += d.clases.length
+            ? `<div class="table-responsive-custom" style="border: 1px solid #e2e8f0; max-height: 340px; overflow-y: auto;">
+                <table class="asistencias-table mb-0" style="width: 100%;">
+                    <thead><tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                        <th ${th}>Grupo y materia</th><th ${th} style="text-align:center">Horario</th>
+                        <th ${th} style="text-align:center">Llegó</th><th ${th} style="text-align:center">Salió</th><th ${th}>Estado</th>
+                    </tr></thead>
+                    <tbody>${filas}</tbody>
+                </table></div>`
+            : `<div class="text-center py-4 text-secondary" style="font-size: 0.85rem;">No tiene clases programadas este día.</div>`;
+
+        if (reg && reg.observaciones) {
+            html += `<div style="font-size: 0.8rem; color: #64748b; margin-top: 10px;"><strong>Observación:</strong> ${escA(reg.observaciones)}</div>`;
+        }
+        asisContenido.innerHTML = html;
+        asisResumen.innerHTML = reg
+            ? `Horas reales: <strong class="text-dark">${escA(formatDecimalHours(parseFloat(reg.horas_trabajadas || 0)))}</strong> · ${escA(reg.estado || '')}`
+            : '';
+    }
+
+    function cerrarAsistencia() { asisModal.classList.remove("active"); }
+    document.getElementById("btnCloseAsisModal").addEventListener("click", cerrarAsistencia);
+    document.getElementById("btnAceptarAsisModal").addEventListener("click", cerrarAsistencia);
+    asisModal.addEventListener("click", e => { if (e.target === asisModal) cerrarAsistencia(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape" && asisModal.classList.contains("active")) cerrarAsistencia(); });
+
+    gridBody.addEventListener("click", function(e) {
+        const celda = e.target.closest(".hour-cell.real-val.clickable");
+        if (celda) abrirAsistencia(celda);
+    });
+    gridBody.addEventListener("keydown", function(e) {
+        const celda = e.target.closest(".hour-cell.real-val.clickable");
+        if (celda && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); abrirAsistencia(celda); }
     });
 });
 </script>

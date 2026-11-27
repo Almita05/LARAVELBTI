@@ -156,6 +156,7 @@ Route::middleware(['auth.session', 'docente.admin'])->group(function () use ($FO
         Route::get('/asistencias_docentes', [AsistenciaDocenteController::class, 'index'])->name('asistencias_docentes');
         Route::get('/asistencias_docentes/datos', [AsistenciaDocenteController::class, 'getHorasDocentes']);
         Route::get('/asistencias_docentes/detalle', [AsistenciaDocenteController::class, 'getDetalleHorasDocente']);
+        Route::get('/asistencias_docentes/asistencia_dia', [AsistenciaDocenteController::class, 'getDetalleAsistenciaDocente']);
         Route::get('/asistencias', [AsistenciaDocenteController::class, 'getAsistencias']);
         Route::post('/asistencias/upload', [AsistenciaDocenteController::class, 'uploadBiometrico'])->middleware('sin.docente');
         Route::delete('/asistencias/clear', [AsistenciaDocenteController::class, 'clearAsistencias'])->middleware('sin.docente');

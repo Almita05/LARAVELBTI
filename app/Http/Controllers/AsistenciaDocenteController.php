@@ -42,6 +42,29 @@ class AsistenciaDocenteController extends Controller
         return response()->json($response->json());
     }
 
+    // Asistencia de un docente en un día: llegada y salida en cada clase según el biométrico
+    public function getDetalleAsistenciaDocente(Request $request)
+    {
+        $request->validate([
+            'fecha' => 'required|date_format:Y-m-d',
+            'id_docente' => 'required|integer',
+        ]);
+
+        $response = Http::get(config('services.api.base_url') . '/asistencias/detalle_docente', [
+            'fecha' => $request->query('fecha'),
+            'id_docente' => $request->query('id_docente'),
+        ]);
+
+        if ($response->failed()) {
+            return response()->json(
+                $response->json() ?? ['error' => 'No se pudo consultar el detalle de asistencia'],
+                $response->status()
+            );
+        }
+
+        return response()->json($response->json());
+    }
+
     public function getAsistencias(Request $request)
     {
         $fechaInicio = $request->query('fecha_inicio');
