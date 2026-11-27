@@ -252,6 +252,15 @@
                             </div>
                         </div>
                     </div>
+                    <div id="bannerSoloFaltantes" class="tw:mb-4" style="display: none;">
+                        <div class="tw:flex tw:items-start tw:gap-3 tw:border tw:border-brand-200 tw:bg-brand-50 tw:px-4 tw:py-3">
+                            <i data-lucide="calendar-plus" class="tw:mt-0.5 tw:size-4 tw:shrink-0 tw:text-brand-700"></i>
+                            <div>
+                                <p class="tw:m-0 tw:text-sm tw:font-semibold tw:text-slate-900">Prórroga: solo alumnos sin calificación</p>
+                                <p class="tw:m-0 tw:mt-0.5 tw:text-[0.8125rem] tw:text-slate-600" id="mensajeSoloFaltantes">—</p>
+                            </div>
+                        </div>
+                    </div>
 
                     {{-- Selección y datos de la asignatura --}}
                     <div class=" tw:border tw:border-slate-200 tw:bg-white tw:p-4 tw:shadow-xs">
@@ -837,9 +846,10 @@ function renderDatosControlOficial(data) {
         captura_semestral: true,
         captura_extraordinario: true
     };
-    
+
     const isDocente = '{{ session("rol") }}' === 'DOCENTE';
-    const disP1 = (isSoloLectura || (isDocente && !cctConfig.captura_p1)) ? 'disabled' : '';
+    { const b = document.getElementById('bannerSoloFaltantes'); if (b) b.style.display = 'none'; }
+    const disP1 =(isSoloLectura || (isDocente && !cctConfig.captura_p1)) ? 'disabled' : '';
     const disP2 = (isSoloLectura || (isDocente && !cctConfig.captura_p2)) ? 'disabled' : '';
     const disP3 = (isSoloLectura || (isDocente && !cctConfig.captura_p3)) ? 'disabled' : '';
     const disSem = (isSoloLectura || (isDocente && !cctConfig.captura_semestral)) ? 'disabled' : '';
@@ -1217,6 +1227,24 @@ function renderDatosControlOficial(data) {
     });
 
     tbody.innerHTML = html;
+
+    // Prórroga de un periodo ya enviado (BTI): solo se capturan los alumnos sin calificación en ese periodo
+    const periodoFaltantes = isDocente && !isSoloLectura ? data.periodo_solo_faltantes : null;
+    const avisoFaltantes = document.getElementById('bannerSoloFaltantes');
+    if (avisoFaltantes) avisoFaltantes.style.display = periodoFaltantes ? 'block' : 'none';
+    if (periodoFaltantes) {
+        const CLASE = { p1: 'inp-p1', p2: 'inp-p2', p3: 'inp-p3', semestral: 'inp-semestral', extraordinario: 'inp-extraordinario' };
+        const NOMBRE = { p1: '1er parcial', p2: '2do parcial', p3: '3er parcial', semestral: 'examen semestral', extraordinario: 'extraordinario' };
+        document.getElementById('mensajeSoloFaltantes').textContent =
+            `Ya enviaste el ${NOMBRE[periodoFaltantes]}. Con la prórroga solo puedes capturar a los alumnos que quedaron sin calificación; las calificaciones enviadas no se pueden modificar.`;
+        tbody.querySelectorAll(`.${CLASE[periodoFaltantes]}`).forEach(inp => {
+            if (inp.value === '') return;
+            inp.disabled = true;
+            inp.title = 'Calificación ya enviada';
+            const obs = inp.closest('tr')?.querySelector('.inp-obs');
+            if (obs) obs.disabled = true;
+        });
+    }
 
     // Recalcular estilos y estadísticas iniciales
     tbody.querySelectorAll('tr').forEach(tr => {
