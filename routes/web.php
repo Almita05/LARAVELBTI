@@ -327,6 +327,7 @@ Route::middleware('auth.session')->group(function () use ($FORMATOS) {
     Route::get('/busqueda-grupos', [GrupoController::class, 'busqueda'])->middleware('permiso:busqueda_grupos')->name('busqueda_grupos');
     Route::middleware('permiso:grupos_calificaciones')->group(function () {
         Route::get('/grupos/captura_calificaciones', [GrupoController::class, 'capturaCalificaciones'])->name('grupos.captura_calificaciones');
+        Route::get('/captura-calificaciones/estado-grupos', [GrupoController::class, 'estadoCapturaGrupos']);
         Route::get('/grupos/{id_grupo}/calificaciones-materia', [GrupoController::class, 'getCalificacionesGrupoMateria']);
         Route::post('/grupos/{id_grupo}/calificaciones-materia/{id_materia}', [GrupoController::class, 'saveCalificacionesGrupoMateria']);
         Route::get('/grupos/{id_grupo}/asistencias-semestre', [GrupoController::class, 'getAsistenciasSemestre']);

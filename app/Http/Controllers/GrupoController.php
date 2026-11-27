@@ -35,6 +35,16 @@ class GrupoController extends Controller
         return view('grupos.captura_calificaciones');
     }
 
+    // Estado de la captura de cada grupo (abierta, próxima, cerrada…) para la tabla de Captura de calificaciones
+    public function estadoCapturaGrupos()
+    {
+        $response = Http::get(config('services.api.base_url') . '/permisos-captura/estado-grupos');
+        if ($response->failed()) {
+            return response()->json(['error' => 'No se pudo obtener el estado de la captura.'], 500);
+        }
+        return response()->json($response->json());
+    }
+
     public function getCalificacionesGrupoMateria(Request $request, $id_grupo)
     {
         $rol = session('rol');

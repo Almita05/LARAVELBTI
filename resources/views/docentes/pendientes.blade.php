@@ -206,7 +206,8 @@
         const url = `/grupos/captura_calificaciones?id_grupo=${encodeURIComponent(g.id)}&id_materia=${encodeURIComponent(m.id)}`;
         const idMotivo = `pd-mot-${g.id}-${i}`;
         let accion;
-        if (m.bloqueado) accion = `<button type="button" class="pd-bloq" aria-expanded="false" aria-controls="${idMotivo}"><i class="fa-solid fa-lock"></i> Bloqueada</button>`;
+        // Bloqueada: sin etiqueta propia (la tarjeta ya dice "Captura bloqueada"); se muestra el motivo debajo
+        if (m.bloqueado) accion = '';
         else if (completa) accion = `<a class="pd-btn sec" href="${url}">Revisar</a>`;
         else accion = `<a class="pd-btn" href="${url}">Capturar</a>`;
         const cuenta = !m.total ? 'Sin alumnos'
@@ -216,7 +217,7 @@
                 <div class="nom">${esc(m.nombre)}${prorrogas[`${g.id}-${m.id}`] && !m.bloqueado ? `<small>Prórroga hasta el ${esc(larga(prorrogas[`${g.id}-${m.id}`]))}</small>` : ''}</div>
                 <div class="cuenta ${completa ? 'ok' : ''}" title="Alumnos calificados">${cuenta}</div>
                 <div>${accion}</div>
-                ${m.bloqueado && m.motivo ? `<div class="motivo" id="${idMotivo}" hidden>${esc(m.motivo)}</div>` : ''}
+                ${m.bloqueado && m.motivo ? `<div class="motivo" id="${idMotivo}"><i class="fa-solid fa-lock"></i> ${esc(m.motivo)}</div>` : ''}
             </li>`;
     }
 

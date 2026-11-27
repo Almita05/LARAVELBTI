@@ -191,6 +191,13 @@
             <div class="tw:flex tw:flex-col tw:items-center tw:gap-3 tw:py-16 tw:text-[0.8125rem] tw:text-slate-500">{!! $spinner !!} Cargando grupos…</div>
         </div>
 
+        <style>
+            .estado-captura { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; font-size: .6875rem; font-weight: 600; white-space: nowrap; background: #f1f5f9; color: #64748b; }
+            .estado-captura::before { content: ''; width: 6px; height: 6px; border-radius: 999px; background: currentColor; }
+            .estado-captura.abierta { background: #dcfce7; color: #15803d; }
+            .estado-captura.proxima { background: #dbeafe; color: #1d4ed8; }
+            .estado-captura.cerrada { background: #fef3c7; color: #b45309; }
+        </style>
         <div id="contenedorTablaGruposWrapper" style="display:none;">
             <div class="tw:overflow-x-auto">
                 <table class="tw:w-full tw:min-w-[900px] tw:border-collapse" id="tablaGruposCaptura">
@@ -200,7 +207,7 @@
                             <th class="{{ $th }}">Nivel</th>
                             <th class="{{ $th }}">Vigencia</th>
                             <th class="{{ $th }} tw:w-[240px]">Avance del periodo</th>
-                            <th class="{{ $th }}">Estatus</th>
+                            <th class="{{ $th }}">Captura</th>
                             <th class="{{ $th }} tw:pr-5 tw:text-right"><span class="tw:sr-only">Acciones</span></th>
                         </tr>
                     </thead>
@@ -331,6 +338,7 @@
 
 <script>
 let listaTodosGrupos = [];
+let estadoCapturaGrupos = null;   // {id_grupo: {estado, etapas, inicio, fin}}; null mientras carga
 let filtroCctActual = '';
 let grupoCapturaActualId = null;
 let datosGrupoMateriaActual = null;
@@ -574,6 +582,13 @@ function cargarGruposCaptura() {
     const loading = document.getElementById('loadingGrupos');
     if (loading) loading.style.display = 'block';
 
+    // Estado de la captura (abierta, próxima, cerrada…) de cada grupo; no bloquea la tabla
+    fetch('/captura-calificaciones/estado-grupos', { headers: { 'Accept': 'application/json' } })
+        .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+        .then(data => { estadoCapturaGrupos = (data && !data.error) ? data : {}; })
+        .catch(err => { console.error('Error al cargar el estado de la captura:', err); estadoCapturaGrupos = {}; })
+        .finally(() => { if (listaTodosGrupos.length) aplicarFiltros(); });
+
     fetch('/grupos/lista?limit=200')
         .then(async res => {
             const data = await res.json().catch(() => null);
@@ -650,6 +665,26 @@ function aplicarFiltros() {
     renderTablaGrupos(filtrados);
 }
 
+// Columna "Captura": si hoy se pueden capturar calificaciones en el grupo y de qué periodo
+function celdaEstadoCaptura(idGrupo, grupoActivo) {
+    const ddmm = iso => iso ? iso.slice(0, 10).split('-').reverse().slice(0, 2).join('/') : '';
+    const chip = (tono, texto, detalle) => `
+        <span class="estado-captura ${tono}">${escHtml(texto)}</span>
+        ${detalle ? `<div class="tw:mt-0.5 tw:text-[0.6875rem] tw:text-slate-500">${escHtml(detalle)}</div>` : ''}`;
+    if (estadoCapturaGrupos === null) return '<span class="tw:text-xs tw:text-slate-400">…</span>';
+    const e = estadoCapturaGrupos[idGrupo] || estadoCapturaGrupos[String(idGrupo)];
+    const sufijo = grupoActivo ? '' : ' · grupo inactivo';
+    if (!e) return chip('', 'Sin información', grupoActivo ? '' : 'Grupo inactivo');
+    const etapas = (e.etapas || []).join(', ');
+    switch (e.estado) {
+        case 'abierta':  return chip('abierta', 'Abierta', `${etapas}${e.fin ? ` · hasta el ${ddmm(e.fin)}` : ''}${sufijo}`);
+        case 'proxima':  return chip('proxima', `Abre el ${ddmm(e.inicio)}`, `${etapas}${sufijo}`);
+        case 'deshabilitada': return chip('cerrada', 'Desactivada', `La administración la desactivó${sufijo}`);
+        case 'sin_fechas': return chip('', 'Sin fechas', `No se han configurado periodos${sufijo}`);
+        default:         return chip('cerrada', 'Cerrada', `Ningún periodo abierto${sufijo}`);
+    }
+}
+
 function renderTablaGrupos(grupos) {
     const tbody = document.getElementById('tbodyGruposCaptura');
     const tableWrapper = document.getElementById('contenedorTablaGruposWrapper');
@@ -699,11 +734,7 @@ function renderTablaGrupos(grupos) {
                 <div class="tw:h-1.5 tw:overflow-hidden tw:bg-slate-100"><div class="tw:h-full tw:bg-brand-700" style="width:${progreso.percent}%"></div></div>
                 <div class="tw:mt-1 tw:flex tw:justify-between tw:font-mono tw:text-[0.625rem] tw:text-slate-400"><span>${progreso.inicioPeriodo}</span><span>${progreso.finPeriodo}</span></div>
             </td>
-            <td class="tw:px-4 tw:py-3 tw:align-middle">
-                <span class="tw:inline-flex tw:items-center tw:gap-1.5 tw:rounded-none tw:px-2.5 tw:py-0.5 tw:text-[0.6875rem] tw:font-semibold ${activo ? 'tw:bg-success-100 tw:text-success-700' : 'tw:bg-slate-100 tw:text-slate-500'}">
-                    <span class="tw:size-1.5 tw:rounded-full ${activo ? 'tw:bg-success-700' : 'tw:bg-slate-400'}"></span>${activo ? 'Activo' : 'Inactivo'}
-                </span>
-            </td>
+            <td class="tw:px-4 tw:py-3 tw:align-middle">${celdaEstadoCaptura(id, activo)}</td>
             <td class="tw:py-3 tw:pr-5 tw:pl-4 tw:text-right tw:align-middle tw:whitespace-nowrap">
                 <button type="button" onclick="abrirCapturaGrupoMateria(${id})" title="Capturar calificaciones por asignatura"
                     class="tw:inline-flex tw:h-8 tw:cursor-pointer tw:items-center tw:gap-1.5 tw:border-0 tw:bg-brand-700 tw:px-3 tw:text-xs tw:font-semibold tw:text-white tw:shadow-xs tw:transition-colors tw:hover:bg-brand-800">
