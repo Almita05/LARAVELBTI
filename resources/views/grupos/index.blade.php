@@ -97,9 +97,14 @@
                         <th>CCT</th>
                         <th>Semestre / Trimestre</th>
                         <th>Progreso Periodo</th>
+                        @if(session('rol') === 'DOCENTE')
+                        {{-- Docente: inicio y fin en una sola columna y sin estatus --}}
+                        <th>Periodo</th>
+                        @else
                         <th>Inicio Periodo</th>
                         <th>Fin Periodo</th>
                         <th>Estatus</th>
+                        @endif
                         <th style="text-align: right; padding-right: 20px;">Acciones</th>
                     </tr>
                 </thead>
@@ -653,7 +658,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (!grupos.length) {
             document.getElementById('tablaGrupos').innerHTML = `
                 <tr>
-                    <td colspan="8" class="text-center py-4 text-muted" style="font-size: 0.875rem;">
+                    <td colspan="${isDocente ? 6 : 8}" class="text-center py-4 text-muted" style="font-size: 0.875rem;">
                         No se encontraron grupos
                     </td>
                 </tr>
@@ -762,12 +767,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
             let actionButtons = '';
             if (isDocente) {
-                actionButtons = `
-                    <button type="button" class="btn-ghost-icon" onclick="verGrupo(${grupo.id})" title="Detalles del grupo">
-                        <i class="ti ti-eye"></i>
-                    </button>
-                    ${menuOpcionesDocente}
-                `;
+                // El docente no necesita "Ver detalles" (ojo): solo el menú de opciones
+                actionButtons = menuOpcionesDocente;
             } else {
                 actionButtons = `
                     <button type="button" class="btn-ghost-icon" onclick="verGrupo(${grupo.id})" title="Detalles del grupo">
@@ -798,9 +799,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     <td>${cctBadge}</td>
                     <td><span class="badge-soft badge-soft-inf">${nivelNombre}</span></td>
                     <td>${progresoHtml}</td>
-                    <td><span style="font-size: 0.8125rem; color: var(--text-secondary);" title="Inicio del grupo: ${formatearFecha(grupo.fechaInicio)}">${progreso.inicioPeriodo}</span></td>
+                    ${isDocente
+                        ? `<td><span style="font-size: 0.8125rem; color: var(--text-secondary); white-space: nowrap;" title="Grupo: ${formatearFecha(grupo.fechaInicio)} – ${formatearFecha(grupo.fechaFin)}">${progreso.inicioPeriodo} – ${progreso.finPeriodo}</span></td>`
+                        : `<td><span style="font-size: 0.8125rem; color: var(--text-secondary);" title="Inicio del grupo: ${formatearFecha(grupo.fechaInicio)}">${progreso.inicioPeriodo}</span></td>
                     <td><span style="font-size: 0.8125rem; color: var(--text-secondary);" title="Fin del grupo: ${formatearFecha(grupo.fechaFin)}">${progreso.finPeriodo}</span></td>
-                    <td>${statusBadge}</td>
+                    <td>${statusBadge}</td>`}
                     <td style="text-align: right; padding-right: 20px;">
                         <div class="actions-cell" style="justify-content: flex-end;">${actionButtons}</div>
                     </td>
