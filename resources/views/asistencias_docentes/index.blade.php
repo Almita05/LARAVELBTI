@@ -269,11 +269,6 @@
     min-width: 75px;
 }
 
-.asistencias-table th.sub-col-header {
-    font-size: 0.7rem;
-    background: #f8fafc;
-    padding: 6px 4px;
-}
 
 /* Table body rows */
 .asistencias-table td {
@@ -373,6 +368,42 @@
     color: #dc2626;
     border: 1px solid rgba(239, 68, 68, 0.15);
 }
+
+/* ---- Tabla quincenal: una celda por día (reales de programadas) ---- */
+.asistencias-table th.day-header { min-width: 58px; padding: 6px 4px; line-height: 1.15; }
+.asistencias-table th.day-header span { display: block; font-size: 0.65rem; font-weight: 600; color: #94a3b8; letter-spacing: .04em; }
+.asistencias-table th.quincena-header { min-width: 132px; font-size: 0.78rem; }
+.asistencias-table th.fin-semana,
+.asistencias-table td.fin-semana { background-color: #f8fafc; }
+
+/* Docente fijo al desplazarse a la derecha */
+.asistencias-table th.docente-header,
+.asistencias-table td.docente-cell { position: sticky; left: 0; z-index: 2; background: #ffffff; }
+.asistencias-table th.docente-header { background: #f8fafc; z-index: 3; }
+
+.asistencias-table td.dia-cell { padding: 5px 3px; line-height: 1.2; }
+.asistencias-table td.dia-cell .hour-cell { display: block; }
+.dia-cell .real-val { font-size: 0.82rem; font-weight: 700; color: #334155; padding: 1px 2px; }
+.dia-cell .tot-val.clickable { font-size: 0.68rem; font-weight: 500; color: #64748b; text-decoration: none; margin-top: 1px; }
+.dia-cell .tot-val.clickable:hover { color: rgb(38, 104, 123); text-decoration: underline; transform: none; }
+.dia-cell .real-pendiente { color: #cbd5e1; font-weight: 400; }
+.asistencias-table td.dia-cell.status-completo { background-color: rgba(16, 185, 129, 0.08); box-shadow: inset 0 -2px 0 #10b981; }
+.asistencias-table td.dia-cell.status-completo .real-val { color: #047857; }
+.asistencias-table td.dia-cell.status-parcial { background-color: rgba(245, 158, 11, 0.09); box-shadow: inset 0 -2px 0 #f59e0b; }
+.asistencias-table td.dia-cell.status-parcial .real-val { color: #b45309; }
+.asistencias-table td.dia-cell.status-falta { background-color: rgba(239, 68, 68, 0.08); box-shadow: inset 0 -2px 0 #ef4444; }
+.asistencias-table td.dia-cell.status-falta .real-val { color: #b91c1c; }
+
+/* Totales de la quincena */
+.asistencias-table td.quincena-cell { text-align: left; padding: 6px 10px; line-height: 1.3; background: #fcfdfe; }
+.quincena-cell .q-horas { font-size: 0.8rem; color: #64748b; font-variant-numeric: tabular-nums; }
+.quincena-cell .q-horas strong { font-size: 0.9rem; color: #1e293b; }
+.quincena-cell .q-pct { font-size: 0.72rem; font-weight: 700; }
+.quincena-cell .q-pct.ok { color: #047857; }
+.quincena-cell .q-pct.warn { color: #b45309; }
+.quincena-cell .q-pct.mal { color: #b91c1c; }
+.quincena-cell .q-inc { font-size: 0.7rem; color: #94a3b8; }
+.quincena-cell .q-inc.con { color: #b45309; font-weight: 600; }
 
 /* REAL con biométrico: clic para ver la llegada a cada clase */
 .hour-cell.real-val.clickable {
@@ -759,7 +790,7 @@
         </div>
         <div class="modal-footer-custom" style="background: #f8fafc; padding: 15px 20px; border-top: 1px solid #e2e8f0; justify-content: space-between; align-items: center; display: flex;">
             <div style="font-size: 0.85rem; color: #64748b;">
-                Suma de horas del día: <strong class="text-dark" id="detailSumLabel">7 hrs</strong>
+                Suma de horas del día: <strong class="text-dark" id="detailSumLabel"></strong>
             </div>
             <button class="btn-action-teal" id="btnCloseDetailModalBtn">Aceptar</button>
         </div>
@@ -929,29 +960,16 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        // 2. Generate header row
-        let headerRow1 = '<tr><th rowspan="2" class="docente-header">Docente</th>';
-        let headerRow2 = '<tr>';
-
+        // 2. Encabezado: Docente · Quincena (totales) · un día por columna
+        const totalDias = endDay - startDay + 1;
+        let headerRow = '<tr><th class="docente-header">Docente</th><th class="quincena-header">Quincena</th>';
         for (let d = startDay; d <= endDay; d++) {
-            const currentDayDate = new Date(currentYear, currentMonthIdx, d);
-            const dayOfWeekIdx = currentDayDate.getDay();
-            const dayOfWeekStr = daysWeekShort[dayOfWeekIdx];
-            
-            headerRow1 += `<th colspan="2" class="day-header">${d} ${dayOfWeekStr}</th>`;
-            headerRow2 += `
-                <th class="sub-col-header">TOT</th>
-                <th class="sub-col-header">REAL</th>
-            `;
+            const dow = new Date(currentYear, currentMonthIdx, d).getDay();
+            headerRow += `<th class="day-header ${dow === 0 || dow === 6 ? 'fin-semana' : ''}">${d}<span>${daysWeekShort[dow]}</span></th>`;
         }
+        gridHeader.innerHTML = headerRow + '</tr>';
 
-        headerRow1 += '</tr>';
-        headerRow2 += '</tr>';
-
-        gridHeader.innerHTML = headerRow1 + headerRow2;
-
-        // 3. Generate body rows
-        // 3. Generate body rows
+        // 3. Filas
         let bodyHtml = '';
         const searchQuery = document.getElementById("txtSearchTeacher") ? document.getElementById("txtSearchTeacher").value.toLowerCase().trim() : "";
         const filteredData = attendanceData.filter(teacher => {
@@ -961,12 +979,13 @@ document.addEventListener("DOMContentLoaded", function() {
         const escTxt = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         const filaAviso = (icono, texto) => `
                 <tr>
-                    <td colspan="${(endDay - startDay + 1) * 2 + 1}" class="text-center py-5 text-secondary" style="font-size: 0.9rem; background: white;">
+                    <td colspan="${totalDias + 2}" class="text-center py-5 text-secondary" style="font-size: 0.9rem; background: white;">
                         <i class="fa-solid ${icono} d-block fs-4 mb-2 text-muted"></i>
                         ${texto}
                     </td>
                 </tr>
             `;
+        const hayBiometrico = biometricLogs && biometricLogs.length > 0;
 
         if (errorCarga) {
             bodyHtml = filaAviso('fa-triangle-exclamation',
@@ -977,101 +996,101 @@ document.addEventListener("DOMContentLoaded", function() {
             bodyHtml = filaAviso('fa-user-slash', `No se encontraron docentes con el nombre "${escTxt(searchQuery)}".`);
         } else {
             filteredData.forEach(teacher => {
-            const teacherName = teacher.docente || "Docente";
-            const initials = teacherName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
-
-            // Sin área bajo el nombre: no hay un dato real de área por docente
-            bodyHtml += `
-                <tr>
-                    <td>
-                        <div class="teacher-cell">
-                            <div class="teacher-avatar">${initials}</div>
-                            <div class="teacher-info">
-                                <span class="teacher-name">${teacherName}</span>
-                            </div>
-                        </div>
-                    </td>
-            `;
-
-            for (let d = startDay; d <= endDay; d++) {
-                const dateString = `${currentYear}-${monthNumStr}-${String(d).padStart(2, '0')}`;
-                
-                // Buscar el registro correspondiente a esta fecha
-                const dayRecord = teacher.dias ? teacher.dias.find(dr => dr.fecha === dateString) : null;
-                
-                let totHours = 0;
-                let realHours = 0;
-
-                if (dayRecord) {
-                    totHours = parseFloat(dayRecord.total || 0);
-                    realHours = parseFloat(dayRecord.real || 0);
-                }
-
+                const teacherName = teacher.docente || "Docente";
+                const nombreAttr = escTxt(teacherName);
+                const initials = teacherName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
                 const teacherId = teacher.id_docente || teacher.id;
-                const bioRecord = biometricLogs ? biometricLogs.find(log => {
-                    return log.id_docente === teacherId && log.fecha === dateString;
-                }) : null;
 
-                let realHoursText = '-';
-                let realClass = '';
-                let observations = '';
+                // Totales de la quincena (solo días con clases programadas)
+                let sumProg = 0, sumReal = 0, retardos = 0, faltas = 0;
+                let celdasDias = '';
 
-                if (totHours > 0) {
-                    const hasBiometricData = biometricLogs && biometricLogs.length > 0;
+                for (let d = startDay; d <= endDay; d++) {
+                    const dateString = `${currentYear}-${monthNumStr}-${String(d).padStart(2, '0')}`;
+                    const dow = new Date(currentYear, currentMonthIdx, d).getDay();
+                    const finSemana = (dow === 0 || dow === 6) ? 'fin-semana' : '';
+                    const dayRecord = teacher.dias ? teacher.dias.find(dr => dr.fecha === dateString) : null;
+                    const totHours = dayRecord ? parseFloat(dayRecord.total || 0) : 0;
 
-                    if (hasBiometricData) {
+                    if (!(totHours > 0)) {
+                        celdasDias += `<td class="dia-cell ${finSemana}"></td>`;
+                        continue;
+                    }
+                    sumProg += totHours;
+
+                    const bioRecord = hayBiometrico ? biometricLogs.find(log => log.id_docente === teacherId && log.fecha === dateString) : null;
+
+                    // Horas reales y estado del día
+                    let realHtml = '<span class="real-pendiente">—</span>';
+                    let estadoClass = '';
+                    let observations = '';
+                    if (hayBiometrico) {
                         if (bioRecord) {
-                            const hrsWorked = parseFloat(bioRecord.horas_trabajadas || 0);
-                            realHoursText = formatDecimalHours(hrsWorked);
+                            const hrs = parseFloat(bioRecord.horas_trabajadas || 0);
+                            sumReal += hrs;
+                            realHtml = formatDecimalHours(hrs);
                             observations = bioRecord.observaciones || '';
-
-                            const estado = bioRecord.estado ? bioRecord.estado.toLowerCase() : '';
+                            const estado = (bioRecord.estado || '').toLowerCase();
                             if (estado.includes('completo')) {
-                                realClass = 'status-completo';
+                                estadoClass = 'status-completo';
                             } else if (estado.includes('parcial') || estado.includes('retardo') || estado.includes('advertencia')) {
-                                realClass = 'status-parcial';
+                                estadoClass = 'status-parcial';
+                                retardos++;
                             } else {
-                                realClass = 'status-falta';
+                                estadoClass = 'status-falta';
+                                faltas++;
                             }
                         } else {
-                            // Si ya se importó y no hay registro, es falta
-                            realHoursText = '0.00';
-                            realClass = 'status-falta';
+                            // Ya se importó la quincena y no hay registro: falta
+                            realHtml = '0:00';
+                            estadoClass = 'status-falta';
                             observations = 'Sin registros de entrada ni salida (Falta)';
+                            faltas++;
                         }
                     } else if (biometricFileProcessing) {
-                        // Mostramos un loader indicador de que está cargando en la base de datos
-                        realHoursText = `<span class="spinner-border spinner-border-sm text-secondary" style="width: 12px; height: 12px; margin-right: 2px;" role="status"></span><span style="font-size: 0.72rem; color: #64748b;">Proc...</span>`;
-                        realClass = '';
-                    } else {
-                        realHoursText = '-';
-                        realClass = '';
+                        realHtml = `<span class="spinner-border spinner-border-sm text-secondary" style="width: 11px; height: 11px;" role="status"></span>`;
                     }
+
+                    const datos = `data-docente-id="${teacherId}" data-docente-name="${nombreAttr}" data-fecha="${dateString}"`;
+                    const tooltip = observations ? `title="${escTxt(observations)}"` : '';
+                    // REAL: clic para ver la llegada a cada clase (solo con registro del biométrico)
+                    const real = bioRecord
+                        ? `<span class="hour-cell real-val clickable" role="button" tabindex="0" ${datos} ${tooltip}>${realHtml}</span>`
+                        : `<span class="hour-cell real-val" ${tooltip}>${realHtml}</span>`;
+                    // Programadas: clic para ver el horario del día
+                    const tot = `<span class="hour-cell tot-val clickable" role="button" tabindex="0" ${datos} data-total="${totHours}" title="Ver horario del día">de ${formatDecimalHours(totHours)}</span>`;
+
+                    celdasDias += `<td class="dia-cell ${finSemana} ${estadoClass}">${real}${tot}</td>`;
                 }
 
-                let totCellHtml = '';
-                if (totHours > 0) {
-                    totCellHtml = `<span class="hour-cell tot-val clickable" data-docente-id="${teacherId}" data-docente-name="${teacherName}" data-fecha="${dateString}" data-total="${totHours}">${totHours.toFixed(1)}</span>`;
+                // Celda de la quincena
+                let quincenaHtml = `<div class="q-horas"><strong>${hayBiometrico ? formatDecimalHours(sumReal) : '—'}</strong> de ${formatDecimalHours(sumProg)}</div>`;
+                if (sumProg > 0 && hayBiometrico) {
+                    const pct = Math.round(sumReal * 100 / sumProg);
+                    const tono = pct >= 95 ? 'ok' : (pct >= 80 ? 'warn' : 'mal');
+                    quincenaHtml += `<div class="q-pct ${tono}">${pct}% cumplido</div>`;
+                    const inc = [];
+                    if (retardos) inc.push(`${retardos} ${retardos === 1 ? 'retardo' : 'retardos'}`);
+                    if (faltas) inc.push(`${faltas} ${faltas === 1 ? 'falta' : 'faltas'}`);
+                    quincenaHtml += `<div class="q-inc ${inc.length ? 'con' : ''}">${inc.length ? inc.join(' · ') : 'Sin incidencias'}</div>`;
+                } else if (sumProg === 0) {
+                    quincenaHtml = '<div class="q-inc">Sin clases en la quincena</div>';
                 } else {
-                    totCellHtml = `<span class="empty-placeholder">-</span>`;
+                    quincenaHtml += '<div class="q-inc">Biométrico sin importar</div>';
                 }
-                
-                const realText = realHoursText !== '-' ? realHoursText : '<span class="empty-placeholder">-</span>';
-                const tooltipAttr = observations ? `title="${observations.replace(/"/g, '&quot;')}"` : '';
-                // Con registro del biométrico: clic para ver a qué hora llegó y salió en cada clase
-                const esRealClicable = totHours > 0 && !!bioRecord;
-                const realAttrs = esRealClicable
-                    ? `role="button" tabindex="0" data-docente-id="${teacherId}" data-docente-name="${teacherName}" data-fecha="${dateString}"`
-                    : '';
 
                 bodyHtml += `
-                    <td>${totCellHtml}</td>
-                    <td><span class="hour-cell real-val ${realClass} ${esRealClicable ? 'clickable' : ''}" ${realAttrs} ${tooltipAttr}>${realText}</span></td>
-                `;
-            }
-
-            bodyHtml += '</tr>';
-        });
+                    <tr>
+                        <td class="docente-cell">
+                            <div class="teacher-cell">
+                                <div class="teacher-avatar">${escTxt(initials)}</div>
+                                <div class="teacher-info"><span class="teacher-name">${escTxt(teacherName)}</span></div>
+                            </div>
+                        </td>
+                        <td class="quincena-cell">${quincenaHtml}</td>
+                        ${celdasDias}
+                    </tr>`;
+            });
         }
 
         gridBody.innerHTML = bodyHtml;
@@ -1467,7 +1486,7 @@ document.addEventListener("DOMContentLoaded", function() {
             detailDateLabel.textContent = fechaStr;
         }
 
-        detailSumLabel.textContent = `${parseFloat(totalHours).toFixed(1)} hrs`;
+        detailSumLabel.textContent = `${formatDecimalHours(parseFloat(totalHours))} h`;
 
         // Render Loading inside modal table body
         detailTableBody.innerHTML = `
@@ -1527,7 +1546,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
 
             // Actualizar la suma total del día con las horas calculadas
-            detailSumLabel.textContent = `${sumCalculatedHours.toFixed(1)} hrs`;
+            detailSumLabel.textContent = `${formatDecimalHours(sumCalculatedHours)} h`;
 
             let bodyHtml = '';
             Object.values(groupedDetails).forEach(item => {
@@ -1541,7 +1560,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 const aula = item.aula || "N/A";
                 const formatTime = (t) => t ? t.substring(0, 5) : "";
                 const horaStr = `${formatTime(item.hora_inicio)} - ${formatTime(item.hora_fin)}`;
-                const duration = parseFloat(item.duracion || 0).toFixed(1);
+                const duration = formatDecimalHours(parseFloat(item.duracion || 0));
 
                 bodyHtml += `
                     <tr style="border-bottom: 1px solid #f1f5f9; background: white;">
@@ -1551,7 +1570,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         </td>
                         <td class="p-2 align-middle text-start" style="font-size: 0.82rem; color: #64748b;">${aula}</td>
                         <td class="p-2 align-middle text-center" style="font-size: 0.82rem; color: #475569; font-family: monospace;">${horaStr}</td>
-                        <td class="p-2 align-middle text-center font-weight-bold" style="font-size: 0.82rem; color: #1e293b;">${duration} hrs</td>
+                        <td class="p-2 align-middle text-center font-weight-bold" style="font-size: 0.82rem; color: #1e293b;">${duration} h</td>
                     </tr>
                 `;
             });
@@ -1668,8 +1687,11 @@ document.addEventListener("DOMContentLoaded", function() {
         if (celda) abrirAsistencia(celda);
     });
     gridBody.addEventListener("keydown", function(e) {
-        const celda = e.target.closest(".hour-cell.real-val.clickable");
-        if (celda && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); abrirAsistencia(celda); }
+        if (e.key !== "Enter" && e.key !== " ") return;
+        const real = e.target.closest(".hour-cell.real-val.clickable");
+        const tot = e.target.closest(".hour-cell.tot-val.clickable");
+        if (real) { e.preventDefault(); abrirAsistencia(real); }
+        else if (tot) { e.preventDefault(); tot.click(); }
     });
 });
 </script>
