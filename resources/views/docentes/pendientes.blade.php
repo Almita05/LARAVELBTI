@@ -47,6 +47,7 @@
 .pd-materias { list-style: none; margin: 0; padding: 0 16px 6px; }
 .pd-materia { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 9px 0; border-top: 1px solid var(--pd-line); }
 .pd-materia .nom { font-size: .8125rem; font-weight: 600; color: var(--pd-ink); overflow-wrap: anywhere; }
+.pd-materia .pd-etq { font-size: .75rem; font-weight: 500; color: var(--pd-muted); }
 .pd-materia .cuenta { font-size: .75rem; color: var(--pd-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pd-materia .cuenta.ok { color: var(--pd-ok); font-weight: 600; }
 .pd-materia .motivo { grid-column: 1 / -1; font-size: .75rem; color: var(--pd-muted); background: var(--pd-bg); padding: 6px 10px; }
@@ -190,37 +191,47 @@
         else accion = `<a class="pd-btn" href="${url}">Capturar</a>`;
         const cuenta = !m.total ? 'Sin alumnos'
             : (completa ? `<i class="fa-solid fa-check"></i> ${m.calificados}/${m.total}` : `${m.calificados}/${m.total}`);
+        // El nombre de la asignatura va en el título de la tarjeta (CLAVE - MATERIA); aquí solo el avance
+        const prorroga = prorrogas[`${g.id}-${m.id}`] && !m.bloqueado
+            ? `<small>Prórroga hasta el ${esc(larga(prorrogas[`${g.id}-${m.id}`]))}</small>` : '';
         return `
             <li class="pd-materia">
-                <div class="nom">${esc(m.nombre)}${prorrogas[`${g.id}-${m.id}`] && !m.bloqueado ? `<small>Prórroga hasta el ${esc(larga(prorrogas[`${g.id}-${m.id}`]))}</small>` : ''}</div>
+                <div class="nom">${prorroga || '<span class="pd-etq">Alumnos calificados</span>'}</div>
                 <div class="cuenta ${completa ? 'ok' : ''}" title="Alumnos calificados">${cuenta}</div>
                 <div>${accion}</div>
                 ${m.bloqueado && m.motivo ? `<div class="motivo" id="${idMotivo}"><i class="fa-solid fa-lock"></i> ${esc(m.motivo)}</div>` : ''}
             </li>`;
     }
 
+    // Una tarjeta por grupo y asignatura: g.materias trae solo esa asignatura (o ninguna)
     function tarjeta(g) {
         const clase = urgente(g) ? 'urgente' : (puede(g) ? 'abierta' : '');
+        const m = g.materias[0];
+        const titulo = m ? `${esc(g.clave)} - ${esc(m.nombre)}` : esc(g.clave);
         return `
-            <article class="pd-card ${clase}" aria-label="Grupo ${esc(g.clave)}">
+            <article class="pd-card ${clase}" aria-label="${titulo}">
                 <div class="pd-card-head">
                     <div>
-                        <h2>${esc(g.clave)}${g.plantel ? `<span class="pd-chip">${esc(g.plantel)}</span>` : ''}</h2>
+                        <h2>${titulo}${g.plantel ? `<span class="pd-chip">${esc(g.plantel)}</span>` : ''}</h2>
                         <div class="sub">${subtitulo(g)}</div>
                     </div>
                     ${pill(g)}
                 </div>
                 ${fechasCaptura(g.captura, g)}
-                ${g.materias.length
-                    ? `<ul class="pd-materias">${g.materias.map((m, i) => filaMateria(g, m, i)).join('')}</ul>`
+                ${m
+                    ? `<ul class="pd-materias">${filaMateria(g, m, 0)}</ul>`
                     : '<div class="pd-sin">Sin asignaturas en tu horario.</div>'}
             </article>`;
     }
 
     function pintarGrupos() {
         const cont = document.getElementById('pdGrupos');
-        cont.innerHTML = grupos.length
-            ? ordenar(grupos).map(tarjeta).join('')
+        // Separar cada grupo en una tarjeta por asignatura (mismo grupo, captura y periodo)
+        const tarjetas = grupos.flatMap(g => g.materias.length
+            ? g.materias.map(m => ({ ...g, materias: [m] }))
+            : [g]);
+        cont.innerHTML = tarjetas.length
+            ? ordenar(tarjetas).map(tarjeta).join('')
             : `<div class="pd-vacio"><i class="fa-solid fa-chalkboard-user"></i>No tienes grupos asignados en tu horario.</div>`;
     }
 
