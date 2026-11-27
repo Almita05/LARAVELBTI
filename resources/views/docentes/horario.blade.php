@@ -355,6 +355,11 @@ function cargarHorariosServicio(idDocente) {
         .catch(err => console.error("Error al cargar el horario del docente:", err));
 }
 
+// Horas de clase: dos o más materias en la misma franja (día + hora) cuentan como una sola hora
+function horasUnicas(clases) {
+    return new Set(clases.map(c => `${c.diaSemana}|${formatTimeHM(c.horaInicio)}|${formatTimeHM(c.horaFin)}`)).size;
+}
+
 function renderCalendars() {
     const btiClasses = [];
     const bgneClasses = [];
@@ -366,9 +371,10 @@ function renderCalendars() {
         else if (c.id_centroTrabajo === 3 || c.diaSemana >= 6) bgneClasses.push(c);
     });
 
-    document.getElementById("resumen-bti").textContent = `${btiClasses.length}h`;
-    document.getElementById("resumen-bgne").textContent = `${bgneClasses.length}h`;
-    document.getElementById("resumen-total").textContent = `${btiClasses.length + bgneClasses.length}h`;
+    const horasBti = horasUnicas(btiClasses), horasBgne = horasUnicas(bgneClasses);
+    document.getElementById("resumen-bti").textContent = `${horasBti}h`;
+    document.getElementById("resumen-bgne").textContent = `${horasBgne}h`;
+    document.getElementById("resumen-total").textContent = `${horasBti + horasBgne}h`;
 
     // 1. BTI (Lunes=1 … Viernes=5)
     const btiBody = document.getElementById("bti-tbody");
@@ -478,8 +484,10 @@ function imprimirReporteHorario() {
         `;
     }
 
-    const totalHours = btiClasses.length + bgneClasses.length;
-    
+    // Misma regla que el resumen: materias en la misma franja cuentan una sola hora
+    const horasBti = horasUnicas(btiClasses), horasBgne = horasUnicas(bgneClasses);
+    const totalHours = horasBti + horasBgne;
+
     // Crear la ventana de impresión
     const win = window.open("", "_blank");
     win.document.write(`
@@ -692,11 +700,11 @@ function imprimirReporteHorario() {
                     </div>
                     <div class="info-group">
                         <span class="info-lbl">Horas BTI (CCT: 21PCT0073R)</span>
-                        <span class="info-val">${btiClasses.length} horas</span>
+                        <span class="info-val">${horasBti} horas</span>
                     </div>
                     <div class="info-group">
                         <span class="info-lbl">Horas BGNE (CCT: 21PBH0353G)</span>
-                        <span class="info-val">${bgneClasses.length} horas</span>
+                        <span class="info-val">${horasBgne} horas</span>
                     </div>
                     <div class="info-group">
                         <span class="info-lbl">Carga Horaria Semanal</span>
