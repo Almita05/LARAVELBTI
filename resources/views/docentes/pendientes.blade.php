@@ -37,13 +37,6 @@
 .pd-fechas { display: flex; gap: 8px; align-items: baseline; margin: 0 16px 10px; padding: 8px 10px; background: var(--pd-bg); font-size: .75rem; color: var(--pd-text); font-variant-numeric: tabular-nums; }
 .pd-fechas i { color: var(--pd-muted); }
 .pd-fechas b { color: var(--pd-ink); font-weight: 600; }
-.pd-calendario { margin: -4px 16px 10px; padding: 0; list-style: none; font-size: .75rem; color: var(--pd-text); font-variant-numeric: tabular-nums; }
-.pd-calendario li { display: flex; justify-content: space-between; gap: 8px; padding: 4px 10px; border-top: 1px solid var(--pd-bg); }
-.pd-calendario li:first-child { border-top: 0; }
-.pd-calendario .et { font-weight: 600; color: var(--pd-ink); }
-.pd-calendario .est { color: var(--pd-muted); white-space: nowrap; }
-.pd-calendario .est.abierta { color: #15803d; font-weight: 600; }
-.pd-calendario .est.proxima { color: #1d4ed8; }
 .pd-materia .nom small { display: block; font-weight: 500; font-size: .6875rem; color: var(--pd-ok); margin-top: 1px; }
 .pd-pill { flex: none; font-size: .75rem; font-weight: 600; padding: 4px 8px; white-space: nowrap; background: var(--pd-bg); color: var(--pd-muted); text-align: right; line-height: 1.25; }
 .pd-pill small { display: block; font-weight: 500; font-size: .6875rem; opacity: .85; }
@@ -98,7 +91,6 @@
     const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
     let prorrogas = {};   // "idGrupo-idMateria" → fecha límite
     const PERIODO_PRORROGA = { p1: '1er parcial', p2: '2do parcial', p3: '3er parcial', semestral: 'examen semestral', extraordinario: 'extraordinario' };
-    const enDias = (n, hoy, manana) => n === 0 ? hoy : (n === 1 ? manana : `en ${plural(n, 'día', 'días')}`);
 
     let grupos = [];
     const porCapturar = g => g.materias.filter(m => !m.bloqueado && m.total > 0 && m.calificados < m.total);
@@ -145,14 +137,9 @@
         }
         // Fuera de las fechas del grupo pero con alguna asignatura habilitada (p. ej. por prórroga)
         if (puede(g) && g.materias.length) return `<span class="pd-pill abierta">Puedes capturar</span>`;
-        // Ventana abierta pero todas sus asignaturas bloqueadas (ya enviadas, desactivadas…): no hay nada que hacer
-        if (c.estado === 'abierta' || c.estado === 'sin_fechas') return `<span class="pd-pill" title="Toca «Bloqueada» en la asignatura para ver el motivo.">Captura bloqueada</span>`;
-        if (c.estado === 'proxima') {
-            return `<span class="pd-pill">Captura abre ${enDias(c.dias_para_abrir, 'hoy', 'mañana')}</span>`;
-        }
-        if (c.estado === 'cerrada') return `<span class="pd-pill" title="Si te falta capturar, solicita una prórroga.">Captura cerrada</span>`;
-        if (c.estado === 'deshabilitada') return `<span class="pd-pill">Captura desactivada</span>`;
-        return `<span class="pd-pill abierta">Captura abierta</span>`;
+        // Cualquier otro caso (cerrada, bloqueada, próxima, desactivada, sin fechas): un solo estado;
+        // el motivo concreto se lee debajo de cada asignatura
+        return `<span class="pd-pill">Captura deshabilitada</span>`;
     }
 
     function subtitulo(g) {
@@ -191,15 +178,6 @@
         return `<div class="pd-fechas"><i class="fa-regular fa-calendar"></i><span>${txt}</span></div>`;
     }
 
-    // BTI: todas las fechas de captura que programó la administración (si hay más de una)
-    function calendarioCaptura(c) {
-        const ps = c.periodos || [];
-        if (ps.length < 2) return '';
-        const EST = { abierta: 'Abierta', proxima: 'Próxima', cerrada: 'Cerrada' };
-        return `<ul class="pd-calendario" aria-label="Fechas de captura">${ps.map(p => `
-            <li><span><span class="et">${esc(p.etapa)}</span> · ${esc(larga(p.inicio))} al ${esc(larga(p.fin))}</span>
-                <span class="est ${esc(p.estado)}">${EST[p.estado] || ''}</span></li>`).join('')}</ul>`;
-    }
 
     function filaMateria(g, m, i) {
         const completa = m.total > 0 && m.calificados >= m.total;
@@ -233,7 +211,6 @@
                     ${pill(g)}
                 </div>
                 ${fechasCaptura(g.captura, g)}
-                ${calendarioCaptura(g.captura)}
                 ${g.materias.length
                     ? `<ul class="pd-materias">${g.materias.map((m, i) => filaMateria(g, m, i)).join('')}</ul>`
                     : '<div class="pd-sin">Sin asignaturas en tu horario.</div>'}
