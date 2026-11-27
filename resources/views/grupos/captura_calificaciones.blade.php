@@ -676,6 +676,12 @@ function celdaEstadoCaptura(idGrupo, grupoActivo) {
     const sufijo = grupoActivo ? '' : ' · grupo inactivo';
     const etapas = e ? (e.etapas || []).join(', ') : '';
     // Solo dos estados: Abierta (hoy se puede capturar) o Desactivada (cualquier otro caso)
+    // El docente ve solo el estatus, sin fechas de apertura/cierre ni periodos
+    if (ES_DOCENTE_CAPTURA) {
+        return e && e.estado === 'abierta'
+            ? chip('abierta', 'Abierta', grupoActivo ? '' : 'Grupo inactivo')
+            : chip('', 'Desactivada', grupoActivo ? '' : 'Grupo inactivo');
+    }
     if (e && e.estado === 'abierta') {
         return chip('abierta', 'Abierta', `${etapas}${e.fin ? ` · hasta el ${ddmm(e.fin)}` : ''}${sufijo}`);
     }
