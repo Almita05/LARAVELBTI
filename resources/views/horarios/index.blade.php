@@ -1775,16 +1775,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 "12:10 - 13:00",
                 "13:00 - 13:50"
             ];
-            // Informática y Computación (CCT 1) escolarizado: la jornada sigue en bloques de 50 min hasta las 7 pm
+            // Informática y Computación (CCT 1) escolarizado: horas cerradas (07:00 - 08:00 … 18:00 - 19:00),
+            // sin receso; cada bloque cuenta como una hora para el docente
             if (parseInt(group.id_centroTrabajo || group.idCentroTrabajo || 0) === 1) {
-                timeBlocks.push(
-                    "13:50 - 14:40",
-                    "14:40 - 15:30",
-                    "15:30 - 16:20",
-                    "16:20 - 17:10",
-                    "17:10 - 18:00",
-                    "18:00 - 18:50"
-                );
+                timeBlocks = [];
+                for (let h = 7; h < 19; h++) {
+                    const hh = n => String(n).padStart(2, '0');
+                    timeBlocks.push(`${hh(h)}:00 - ${hh(h + 1)}:00`);
+                }
             }
         }
 
