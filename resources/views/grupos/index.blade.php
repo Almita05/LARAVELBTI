@@ -689,32 +689,18 @@ document.addEventListener("DOMContentLoaded", function() {
             const progreso = calcularProgresoPeriodo(grupo);
             const nivelNombre = grupo.nombre_nivel || (progreso.currentNivel ? (progreso.currentNivel <= 6 ? `${progreso.currentNivel}° Trimestre` : `${progreso.currentNivel - 6}° Semestre`) : (grupo.id_nivel_academico ? (grupo.id_nivel_academico <= 6 ? `${grupo.id_nivel_academico}° Trimestre` : `${grupo.id_nivel_academico - 6}° Semestre`) : '—'));
 
+            // Docente: las tres opciones a la vista (sin menú de tres puntos)
+            const btnDocente = 'width: auto; gap: 6px; padding: 0 10px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;';
             const menuOpcionesDocente = `
-                <div class="dropdown d-inline-block">
-                    <button type="button" class="btn-ghost-icon" data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false" title="Más opciones">
-                        <i class="ti ti-dots-vertical"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                        <li>
-                            <a class="dropdown-item" href="/grupos/${grupo.id}/alumnos">
-                                <i class="ti ti-users"></i>
-                                <span>Alumnos del grupo</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="${routeCapturaBGNE}">
-                                <i class="ti ti-notes"></i>
-                                <span>Captura calificaciones</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="/asistencias_alumnos/grupo/${grupo.id}">
-                                <i class="ti ti-calendar-check"></i>
-                                <span>Pase de lista</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+                <a class="btn-ghost-icon" style="${btnDocente}" href="/grupos/${grupo.id}/alumnos" title="Alumnos del grupo">
+                    <i class="ti ti-users"></i><span>Alumnos</span>
+                </a>
+                <a class="btn-ghost-icon" style="${btnDocente}" href="${routeCapturaBGNE}" title="Captura de calificaciones">
+                    <i class="ti ti-notes"></i><span>Calificaciones</span>
+                </a>
+                <a class="btn-ghost-icon" style="${btnDocente}" href="/asistencias_alumnos/grupo/${grupo.id}" title="Pase de lista">
+                    <i class="ti ti-calendar-check"></i><span>Pase de lista</span>
+                </a>
             `;
 
             const menuOpcionesAdmin = `
